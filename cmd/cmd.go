@@ -11,12 +11,12 @@ import (
 
 var (
 	Version = "next"
-	Commit = ""
+	Commit  = ""
 )
 
 var Command = &cobra.Command{
-	Use:   "kubedb",
-	Short: "Interact with a database inside of Kubernetes",
+	Use:     "kubedb",
+	Short:   "Interact with a database inside of Kubernetes",
 	Version: buildVersion(),
 	PersistentPreRun: func(cmd *cobra.Command, args []string) {
 		cmd.SilenceUsage = true

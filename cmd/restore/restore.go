@@ -22,9 +22,9 @@ var Command = &cobra.Command{
 }
 
 var (
-	database  string
-	username  string
-	password  string
+	database          string
+	username          string
+	password          string
 	singleTransaction bool
 )
 
@@ -108,7 +108,7 @@ func buildCommand(gunzip bool) []string {
 	if gunzip {
 		cmd = []string{"gunzip", "|"}
 	}
-	cmd = append(cmd, "PGPASSWORD=" + password, "psql", "--username=" + username, database)
+	cmd = append(cmd, "PGPASSWORD="+password, "psql", "--username="+username, database)
 	if singleTransaction {
 		cmd = append(cmd, "--single-transaction")
 	}

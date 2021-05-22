@@ -29,10 +29,10 @@ var (
 	username  string
 	password  string
 	directory string
-	gzipFile bool
-	ifExists bool
-	clean bool
-	noOwner bool
+	gzipFile  bool
+	ifExists  bool
+	clean     bool
+	noOwner   bool
 )
 
 func init() {

@@ -51,7 +51,7 @@ func run(cmd *cobra.Command, args []string) (err error) {
 	log.Println("Execing into \"" + postgresPod.Name + "\"")
 
 	stdin := streams.NewIn(os.Stdin)
-	if err := stdin.SetRawTerminal(); err != nil{
+	if err := stdin.SetRawTerminal(); err != nil {
 		return err
 	}
 	defer stdin.RestoreTerminal()
