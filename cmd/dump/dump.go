@@ -36,12 +36,12 @@ var (
 )
 
 func init() {
-	Command.Flags().StringVarP(&database, "dbname", "d", "db", "Database name to connect to")
-	Command.Flags().StringVarP(&username, "username", "U", "postgres", "Database username")
-	Command.Flags().StringVarP(&password, "password", "p", "", "Database password")
-	Command.Flags().StringVarP(&directory, "directory", "C", ".", "Directory to dump to")
+	Command.Flags().StringVarP(&database, "dbname", "d", "db", "database name to connect to")
+	Command.Flags().StringVarP(&username, "username", "U", "postgres", "database username")
+	Command.Flags().StringVarP(&password, "password", "p", "", "database password")
+	Command.Flags().StringVarP(&directory, "directory", "C", ".", "directory to dump to")
 
-	Command.Flags().BoolVar(&gzipFile, "gzip", false, "Gzip on disk")
+	Command.Flags().BoolVar(&gzipFile, "gzip", false, "gzip output file on disk")
 
 	Command.Flags().BoolVar(&ifExists, "if-exists", true, "use IF EXISTS when dropping objects")
 	Command.Flags().BoolVar(&clean, "clean", true, "clean (drop) database objects before recreating")

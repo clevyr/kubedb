@@ -29,11 +29,11 @@ var (
 )
 
 func init() {
-	Command.Flags().StringVarP(&database, "dbname", "d", "db", "Database name to connect to")
-	Command.Flags().StringVarP(&username, "username", "U", "postgres", "Database username")
-	Command.Flags().StringVarP(&password, "password", "p", "", "Database password")
+	Command.Flags().StringVarP(&database, "dbname", "d", "db", "database name to connect to")
+	Command.Flags().StringVarP(&username, "username", "U", "postgres", "database username")
+	Command.Flags().StringVarP(&password, "password", "p", "", "database password")
 
-	Command.Flags().BoolVar(&singleTransaction, "single-transaction", true, "Restore with --single-transaction")
+	Command.Flags().BoolVar(&singleTransaction, "single-transaction", true, "execute as a single transaction")
 }
 
 func run(cmd *cobra.Command, args []string) (err error) {

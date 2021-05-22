@@ -25,9 +25,9 @@ var (
 )
 
 func init() {
-	Command.Flags().StringVarP(&database, "dbname", "d", "db", "Database name to connect to")
-	Command.Flags().StringVarP(&username, "username", "U", "postgres", "Database username")
-	Command.Flags().StringVarP(&password, "password", "p", "", "Database password")
+	Command.Flags().StringVarP(&database, "dbname", "d", "db", "database name to connect to")
+	Command.Flags().StringVarP(&username, "username", "U", "postgres", "database username")
+	Command.Flags().StringVarP(&password, "password", "p", "", "database password")
 }
 
 func run(cmd *cobra.Command, args []string) (err error) {
