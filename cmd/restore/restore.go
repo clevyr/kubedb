@@ -83,9 +83,10 @@ func run(cmd *cobra.Command, args []string) (err error) {
 		return err
 	}
 
-	if contentType == "application/x-gzip" {
+	switch contentType {
+	case "application/x-gzip":
 		_, err = io.Copy(pw, fileReader)
-	} else {
+	default:
 		gzw := gzip.NewWriter(pw)
 		_, err = io.Copy(gzw, fileReader)
 		gzw.Close()
