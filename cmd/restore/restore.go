@@ -25,7 +25,6 @@ var (
 	database  string
 	username  string
 	password  string
-	directory string
 	singleTransaction bool
 )
 
@@ -33,7 +32,6 @@ func init() {
 	Command.Flags().StringVarP(&database, "dbname", "d", "db", "Database name to connect to")
 	Command.Flags().StringVarP(&username, "username", "U", "postgres", "Database username")
 	Command.Flags().StringVarP(&password, "password", "p", "", "Database password")
-	Command.Flags().StringVarP(&directory, "directory", "C", ".", "Directory to dump to")
 
 	Command.Flags().BoolVar(&singleTransaction, "single-transaction", true, "Restore with --single-transaction")
 }
