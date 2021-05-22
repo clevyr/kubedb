@@ -9,9 +9,15 @@ import (
 	"path/filepath"
 )
 
+var (
+	Version = "next"
+	Commit = ""
+)
+
 var Command = &cobra.Command{
 	Use:   "kubedb",
 	Short: "Interact with a database inside of Kubernetes",
+	Version: buildVersion(),
 	PersistentPreRun: func(cmd *cobra.Command, args []string) {
 		cmd.SilenceUsage = true
 	},
@@ -34,4 +40,12 @@ func init() {
 		dump.Command,
 		restore.Command,
 	)
+}
+
+func buildVersion() string {
+	result := Version
+	if Commit != "" {
+		result += " (" + Commit + ")"
+	}
+	return result
 }

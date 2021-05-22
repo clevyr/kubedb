@@ -1,0 +1,11 @@
+*.md
+.dockerignore
+.git/
+.gitignore
+.idea/
+Dockerfile
+dist/
+docker-compose.yml
+kubedb
+out/
+vendor/

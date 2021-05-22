@@ -1,0 +1,37 @@
+builds:
+  - ldflags:
+      - -s -w -X github.com/clevyr/kubedb/cmd.Version={{.Version}} -X github.com/clevyr/kubedb/cmd.Commit={{.Commit}}
+    env:
+      - CGO_ENABLED=0
+    goarch:
+      - 386
+      - amd64
+      - arm
+      - arm64
+    goarm:
+      - 6
+      - 7
+    hooks:
+      post:
+        - upx -q "{{ .Path }}"
+archives:
+  - replacements:
+      darwin: Darwin
+      linux: Linux
+      windows: Windows
+      386: i386
+      amd64: x86_64
+checksum:
+  name_template: "checksums.txt"
+snapshot:
+  name_template: "{{ .Version }}-next"
+changelog:
+  sort: asc
+  filters:
+    exclude:
+      - "^:pencil:"
+brews:
+  - tap:
+      owner: clevyr
+      name: homebrew-tap
+    folder: Formula
