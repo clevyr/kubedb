@@ -37,6 +37,8 @@ func init() {
 }
 
 func run(cmd *cobra.Command, args []string) (err error) {
+	cmd.SilenceUsage = true
+
 	client, err := kubernetes.CreateClientForCmd(cmd)
 	if err != nil {
 		return err
