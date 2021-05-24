@@ -22,7 +22,7 @@ var Command = &cobra.Command{
 	Use:     "dump",
 	Aliases: []string{"d"},
 	Short:   "Dump a database",
-	PreRunE: validate,
+	PreRunE: preRun,
 	RunE:    run,
 }
 
@@ -52,11 +52,11 @@ func init() {
 	Command.Flags().StringP("format", "F", "g", "output file format ([g]zip, [c]ustom, [p]lain text)")
 
 	Command.Flags().BoolVar(&ifExists, "if-exists", true, "use IF EXISTS when dropping objects")
-	Command.Flags().BoolVar(&clean, "clean", true, "clean (drop) database objects before recreating")
-	Command.Flags().BoolVar(&noOwner, "no-owner", true, "skip restoration of object ownership in plain-text format")
+	Command.Flags().BoolVarP(&clean, "clean", "c", true, "clean (drop) database objects before recreating")
+	Command.Flags().BoolVarP(&noOwner, "no-owner", "O", true, "skip restoration of object ownership in plain-text format")
 }
 
-func validate(cmd *cobra.Command, args []string) (err error) {
+func preRun(cmd *cobra.Command, args []string) error {
 	format, _ := cmd.Flags().GetString("format")
 	switch format {
 	case "gzip", "gz", "g":
@@ -68,7 +68,7 @@ func validate(cmd *cobra.Command, args []string) (err error) {
 	default:
 		return errors.New("invalid output format specified")
 	}
-	return err
+	return nil
 }
 
 func run(cmd *cobra.Command, args []string) (err error) {
