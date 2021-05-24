@@ -22,14 +22,14 @@ var Command = &cobra.Command{
 }
 
 var (
-	database          string
+	dbname            string
 	username          string
 	password          string
 	singleTransaction bool
 )
 
 func init() {
-	Command.Flags().StringVarP(&database, "dbname", "d", "db", "database name to connect to")
+	Command.Flags().StringVarP(&dbname, "dbname", "d", "db", "database name to connect to")
 	Command.Flags().StringVarP(&username, "username", "U", "postgres", "database username")
 	Command.Flags().StringVarP(&password, "password", "p", "", "database password")
 
@@ -110,7 +110,7 @@ func buildCommand(gunzip bool) []string {
 	if gunzip {
 		cmd = []string{"gunzip", "|"}
 	}
-	cmd = append(cmd, "PGPASSWORD="+password, "psql", "--username="+username, database)
+	cmd = append(cmd, "PGPASSWORD="+password, "psql", "--username="+username, "--dbname="+dbname)
 	if singleTransaction {
 		cmd = append(cmd, "--single-transaction")
 	}

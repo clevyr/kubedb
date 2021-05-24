@@ -33,7 +33,7 @@ const (
 )
 
 var (
-	database     string
+	dbname       string
 	username     string
 	password     string
 	directory    string
@@ -44,7 +44,7 @@ var (
 )
 
 func init() {
-	Command.Flags().StringVarP(&database, "dbname", "d", "db", "database name to connect to")
+	Command.Flags().StringVarP(&dbname, "dbname", "d", "db", "database name to connect to")
 	Command.Flags().StringVarP(&username, "username", "U", "postgres", "database username")
 	Command.Flags().StringVarP(&password, "password", "p", "", "database password")
 	Command.Flags().StringVarP(&directory, "directory", "C", ".", "directory to dump to")
@@ -173,7 +173,7 @@ func generateFilename(directory, namespace string) (string, error) {
 }
 
 func buildCommand() []string {
-	cmd := []string{"PGPASSWORD=" + password, "pg_dump", "--username=" + username, database}
+	cmd := []string{"PGPASSWORD=" + password, "pg_dump", "--username=" + username, "--dbname=" + dbname}
 	if clean {
 		cmd = append(cmd, "--clean")
 	}

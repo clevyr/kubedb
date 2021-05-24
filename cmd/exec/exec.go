@@ -19,13 +19,13 @@ var Command = &cobra.Command{
 }
 
 var (
-	database string
+	dbname   string
 	username string
 	password string
 )
 
 func init() {
-	Command.Flags().StringVarP(&database, "dbname", "d", "db", "database name to connect to")
+	Command.Flags().StringVarP(&dbname, "dbname", "d", "db", "database name to connect to")
 	Command.Flags().StringVarP(&username, "username", "U", "postgres", "database username")
 	Command.Flags().StringVarP(&password, "password", "p", "", "database password")
 }
@@ -64,7 +64,7 @@ func run(cmd *cobra.Command, args []string) (err error) {
 func buildCommand(args []string) []string {
 	var cmd []string
 	if len(args) == 0 {
-		cmd = []string{"PGPASSWORD=" + password, "psql", "--username=" + username, database}
+		cmd = []string{"PGPASSWORD=" + password, "psql", "--username=" + username, "--dbname=" + dbname}
 	} else {
 		cmd = append([]string{"PGPASSWORD=" + password, "exec"}, args...)
 	}
