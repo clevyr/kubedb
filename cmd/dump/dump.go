@@ -4,6 +4,7 @@ import (
 	"bufio"
 	"bytes"
 	"compress/gzip"
+	"errors"
 	"github.com/clevyr/kubedb/internal/kubernetes"
 	"github.com/clevyr/kubedb/internal/postgres"
 	"github.com/spf13/cobra"
@@ -21,18 +22,25 @@ var Command = &cobra.Command{
 	Use:     "dump",
 	Aliases: []string{"d"},
 	Short:   "Dump a database",
+	PreRunE: validate,
 	RunE:    run,
 }
 
+const (
+	GzipFormat = iota
+	CustomFormat
+	PlainFormat
+)
+
 var (
-	database  string
-	username  string
-	password  string
-	directory string
-	gzipFile  bool
-	ifExists  bool
-	clean     bool
-	noOwner   bool
+	database     string
+	username     string
+	password     string
+	directory    string
+	outputFormat uint8
+	ifExists     bool
+	clean        bool
+	noOwner      bool
 )
 
 func init() {
@@ -41,11 +49,26 @@ func init() {
 	Command.Flags().StringVarP(&password, "password", "p", "", "database password")
 	Command.Flags().StringVarP(&directory, "directory", "C", ".", "directory to dump to")
 
-	Command.Flags().BoolVar(&gzipFile, "gzip", false, "gzip output file on disk")
+	Command.Flags().StringP("format", "F", "g", "output file format ([g]zip, [c]ustom, [p]lain text)")
 
 	Command.Flags().BoolVar(&ifExists, "if-exists", true, "use IF EXISTS when dropping objects")
 	Command.Flags().BoolVar(&clean, "clean", true, "clean (drop) database objects before recreating")
 	Command.Flags().BoolVar(&noOwner, "no-owner", true, "skip restoration of object ownership in plain-text format")
+}
+
+func validate(cmd *cobra.Command, args []string) (err error) {
+	format, _ := cmd.Flags().GetString("format")
+	switch format {
+	case "gzip", "gz", "g":
+		outputFormat = GzipFormat
+	case "plain", "sql", "p":
+		outputFormat = PlainFormat
+	case "custom", "c":
+		outputFormat = CustomFormat
+	default:
+		return errors.New("invalid output format specified")
+	}
+	return err
 }
 
 func run(cmd *cobra.Command, args []string) (err error) {
@@ -99,9 +122,10 @@ func run(cmd *cobra.Command, args []string) (err error) {
 		ch <- err
 	}()
 
-	if gzipFile {
+	switch outputFormat {
+	case GzipFormat, CustomFormat:
 		_, err = io.Copy(fileWriter, pr)
-	} else {
+	case PlainFormat:
 		var gzr *gzip.Reader
 		gzr, err = gzip.NewReader(pr)
 		if err != nil {
@@ -136,9 +160,13 @@ func generateFilename(directory, namespace string) (string, error) {
 	}
 	err = t.Execute(&tpl, data)
 
-	tpl.WriteString(".sql")
-	if gzipFile {
-		tpl.WriteString(".gz")
+	switch outputFormat {
+	case GzipFormat:
+		tpl.WriteString(".sql.gz")
+	case PlainFormat:
+		tpl.WriteString(".sql")
+	case CustomFormat:
+		tpl.WriteString(".dmp")
 	}
 
 	return tpl.String(), err
@@ -155,6 +183,10 @@ func buildCommand() []string {
 	if ifExists {
 		cmd = append(cmd, "--if-exists")
 	}
-	cmd = append(cmd, "|", "gzip", "--force")
+	if outputFormat == CustomFormat {
+		cmd = append(cmd, "--format=c")
+	} else {
+		cmd = append(cmd, "|", "gzip", "--force")
+	}
 	return []string{"sh", "-c", strings.Join(cmd, " ")}
 }
