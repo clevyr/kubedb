@@ -4,7 +4,7 @@ import (
 	"bufio"
 	"bytes"
 	"compress/gzip"
-	"errors"
+	"github.com/clevyr/kubedb/internal/database/sqlformat"
 	"github.com/clevyr/kubedb/internal/kubernetes"
 	"github.com/clevyr/kubedb/internal/postgres"
 	"github.com/spf13/cobra"
@@ -25,12 +25,6 @@ var Command = &cobra.Command{
 	PreRunE: preRun,
 	RunE:    run,
 }
-
-const (
-	GzipFormat = iota
-	CustomFormat
-	PlainFormat
-)
 
 var (
 	dbname           string
@@ -60,17 +54,14 @@ func init() {
 	Command.Flags().StringArrayVar(&excludeTableData, "exclude-table-data", []string{}, "do NOT dump data for the specified table(s)")
 }
 
-func preRun(cmd *cobra.Command, args []string) error {
-	format, _ := cmd.Flags().GetString("format")
-	switch format {
-	case "gzip", "gz", "g":
-		outputFormat = GzipFormat
-	case "plain", "sql", "p":
-		outputFormat = PlainFormat
-	case "custom", "c":
-		outputFormat = CustomFormat
-	default:
-		return errors.New("invalid output format specified")
+func preRun(cmd *cobra.Command, args []string) (err error) {
+	formatStr, err := cmd.Flags().GetString("format")
+	if err != nil {
+		return err
+	}
+	outputFormat, err = sqlformat.ParseFormat(formatStr)
+	if err != nil {
+		return err
 	}
 	return nil
 }
@@ -127,9 +118,9 @@ func run(cmd *cobra.Command, args []string) (err error) {
 	}()
 
 	switch outputFormat {
-	case GzipFormat, CustomFormat:
+	case sqlformat.Gzip, sqlformat.Custom:
 		_, err = io.Copy(fileWriter, pr)
-	case PlainFormat:
+	case sqlformat.Plain:
 		var gzr *gzip.Reader
 		gzr, err = gzip.NewReader(pr)
 		if err != nil {
@@ -165,11 +156,11 @@ func generateFilename(directory, namespace string) (string, error) {
 	err = t.Execute(&tpl, data)
 
 	switch outputFormat {
-	case GzipFormat:
+	case sqlformat.Gzip:
 		tpl.WriteString(".sql.gz")
-	case PlainFormat:
+	case sqlformat.Plain:
 		tpl.WriteString(".sql")
-	case CustomFormat:
+	case sqlformat.Custom:
 		tpl.WriteString(".dmp")
 	}
 
@@ -193,7 +184,7 @@ func buildCommand() []string {
 	for _, table := range excludeTableData {
 		cmd = append(cmd, "--exclude-table-data=" + table)
 	}
-	if outputFormat == CustomFormat {
+	if outputFormat == sqlformat.Custom {
 		cmd = append(cmd, "--format=c")
 	} else {
 		cmd = append(cmd, "|", "gzip", "--force")

@@ -3,7 +3,7 @@ package restore
 import (
 	"bufio"
 	"compress/gzip"
-	"errors"
+	"github.com/clevyr/kubedb/internal/database/sqlformat"
 	"github.com/clevyr/kubedb/internal/kubernetes"
 	"github.com/clevyr/kubedb/internal/postgres"
 	"github.com/spf13/cobra"
@@ -12,12 +12,6 @@ import (
 	"log"
 	"os"
 	"strings"
-)
-
-const (
-	GzipContentType = iota
-	CustomContentType
-	PlainContentType
 )
 
 var Command = &cobra.Command{
@@ -52,25 +46,15 @@ func init() {
 }
 
 func preRun(cmd *cobra.Command, args []string) error {
-	format, _ := cmd.Flags().GetString("format")
-	switch format {
-	case "gzip", "gz", "g":
-		inputFormat = GzipContentType
-	case "plain", "sql", "p":
-		inputFormat = PlainContentType
-	case "custom", "c":
-		inputFormat = CustomContentType
-	default:
-		lower := strings.ToLower(args[0])
-		switch {
-		case strings.HasSuffix(lower, ".sql.gz"):
-			inputFormat = GzipContentType
-		case strings.HasSuffix(lower, ".dmp"):
-			inputFormat = CustomContentType
-		case strings.HasSuffix(lower, ".sql"):
-			inputFormat = PlainContentType
-		default:
-			return errors.New("invalid input file type")
+	formatStr, err := cmd.Flags().GetString("format")
+	if err != nil {
+		return err
+	}
+	inputFormat, err = sqlformat.ParseFormat(formatStr)
+	if err != nil {
+		inputFormat, err = sqlformat.ParseFilename(args[0])
+		if err != nil {
+			return err
 		}
 	}
 	return nil
@@ -111,7 +95,7 @@ func run(cmd *cobra.Command, args []string) (err error) {
 	go func() {
 		if clean {
 			resetReader := strings.NewReader("drop schema public cascade; create schema public;")
-			err := kubernetes.Exec(client, postgresPod, buildCommand(PlainContentType, false), resetReader, os.Stdout, false)
+			err := kubernetes.Exec(client, postgresPod, buildCommand(sqlformat.Plain, false), resetReader, os.Stdout, false)
 			if err != nil {
 				pw.Close()
 				ch <- err
@@ -125,9 +109,9 @@ func run(cmd *cobra.Command, args []string) (err error) {
 	}()
 
 	switch inputFormat {
-	case GzipContentType, CustomContentType:
+	case sqlformat.Gzip, sqlformat.Custom:
 		_, err = io.Copy(pw, fileReader)
-	case PlainContentType:
+	case sqlformat.Plain:
 		gzw := gzip.NewWriter(pw)
 		_, err = io.Copy(gzw, fileReader)
 		gzw.Close()
@@ -147,12 +131,12 @@ func run(cmd *cobra.Command, args []string) (err error) {
 func buildCommand(inputFormat uint8, gunzip bool) []string {
 	cmd := []string{"PGPASSWORD=" + password}
 	switch inputFormat {
-	case GzipContentType, PlainContentType:
+	case sqlformat.Gzip, sqlformat.Plain:
 		if gunzip {
 			cmd = append([]string{"gunzip", "--force", "|"}, cmd...)
 		}
 		cmd = append(cmd, "psql")
-	case CustomContentType:
+	case sqlformat.Custom:
 		cmd = append(cmd, "pg_restore", "--format=custom", "--verbose")
 		if noOwner {
 			cmd = append(cmd, "--no-owner")
