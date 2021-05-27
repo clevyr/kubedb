@@ -33,14 +33,16 @@ const (
 )
 
 var (
-	dbname       string
-	username     string
-	password     string
-	directory    string
-	outputFormat uint8
-	ifExists     bool
-	clean        bool
-	noOwner      bool
+	dbname           string
+	username         string
+	password         string
+	directory        string
+	outputFormat     uint8
+	ifExists         bool
+	clean            bool
+	noOwner          bool
+	excludeTable     []string
+	excludeTableData []string
 )
 
 func init() {
@@ -54,6 +56,8 @@ func init() {
 	Command.Flags().BoolVar(&ifExists, "if-exists", true, "use IF EXISTS when dropping objects")
 	Command.Flags().BoolVarP(&clean, "clean", "c", true, "clean (drop) database objects before recreating")
 	Command.Flags().BoolVarP(&noOwner, "no-owner", "O", true, "skip restoration of object ownership in plain-text format")
+	Command.Flags().StringArrayVarP(&excludeTable, "exclude-table", "T", []string{}, "do NOT dump the specified table(s)")
+	Command.Flags().StringArrayVar(&excludeTableData, "exclude-table-data", []string{}, "do NOT dump data for the specified table(s)")
 }
 
 func preRun(cmd *cobra.Command, args []string) error {
@@ -182,6 +186,12 @@ func buildCommand() []string {
 	}
 	if ifExists {
 		cmd = append(cmd, "--if-exists")
+	}
+	for _, table := range excludeTable {
+		cmd = append(cmd, "--exclude-table=" + table)
+	}
+	for _, table := range excludeTableData {
+		cmd = append(cmd, "--exclude-table-data=" + table)
 	}
 	if outputFormat == CustomFormat {
 		cmd = append(cmd, "--format=c")
