@@ -50,8 +50,8 @@ func init() {
 	Command.Flags().BoolVar(&ifExists, "if-exists", true, "use IF EXISTS when dropping objects")
 	Command.Flags().BoolVarP(&clean, "clean", "c", true, "clean (drop) database objects before recreating")
 	Command.Flags().BoolVarP(&noOwner, "no-owner", "O", true, "skip restoration of object ownership in plain-text format")
-	Command.Flags().StringArrayVarP(&excludeTable, "exclude-table", "T", []string{}, "do NOT dump the specified table(s)")
-	Command.Flags().StringArrayVar(&excludeTableData, "exclude-table-data", []string{}, "do NOT dump data for the specified table(s)")
+	Command.Flags().StringSliceVarP(&excludeTable, "exclude-table", "T", []string{}, "do NOT dump the specified table(s)")
+	Command.Flags().StringSliceVar(&excludeTableData, "exclude-table-data", []string{}, "do NOT dump data for the specified table(s)")
 }
 
 func preRun(cmd *cobra.Command, args []string) (err error) {
