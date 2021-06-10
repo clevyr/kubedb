@@ -3,6 +3,7 @@ package restore
 import (
 	"bufio"
 	"compress/gzip"
+	"github.com/clevyr/kubedb/internal/cli"
 	"github.com/clevyr/kubedb/internal/database/sqlformat"
 	"github.com/clevyr/kubedb/internal/kubernetes"
 	"github.com/clevyr/kubedb/internal/postgres"
@@ -90,6 +91,10 @@ func run(cmd *cobra.Command, args []string) (err error) {
 	pr, pw := io.Pipe()
 
 	log.Println("Restoring \"" + args[0] + "\" to \"" + postgresPod.Name + "\"")
+
+	if err = cli.Confirm(os.Stdin, false); err != nil {
+		return err
+	}
 
 	ch := make(chan error)
 	go func() {
