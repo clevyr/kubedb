@@ -22,11 +22,11 @@ func TestConfirm(t *testing.T) {
 	}
 
 	testCases := []confirmTestCase{
-		{response: "yes", defaultVal: true, error: nil},
-		{response: "yes", defaultVal: false, error: nil},
+		{response: "yes", defaultVal: true},
+		{response: "yes", defaultVal: false},
 		{response: "no", defaultVal: true, error: UserDeclinedErr},
 		{response: "no", defaultVal: false, error: UserDeclinedErr},
-		{response: "", defaultVal: true, error: nil},
+		{response: "", defaultVal: true},
 		{response: "", defaultVal: false, error: UserDeclinedErr},
 	}
 
