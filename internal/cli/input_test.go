@@ -1,39 +1,35 @@
 package cli
 
 import (
+	"fmt"
 	"os"
 	"strings"
 	"testing"
 )
 
-func testConfirm(response string, defaultVal bool) error {
-	temp := os.Stdout
-	os.Stdout = nil
-	result := Confirm(strings.NewReader(response + "\n"), defaultVal)
-	os.Stdout = temp
-	return result
-}
-
 func TestConfirm(t *testing.T) {
-	type confirmTestCase struct {
+	testCases := []struct{
 		response string
 		defaultVal bool
-		error error
+		err error
+	}{
+		{"yes", true, nil},
+		{"yes", false, nil},
+		{"no", true, UserDeclinedErr},
+		{"no", false, UserDeclinedErr},
+		{"", true, nil},
+		{"", false, UserDeclinedErr},
 	}
 
-	testCases := []confirmTestCase{
-		{response: "yes", defaultVal: true},
-		{response: "yes", defaultVal: false},
-		{response: "no", defaultVal: true, error: UserDeclinedErr},
-		{response: "no", defaultVal: false, error: UserDeclinedErr},
-		{response: "", defaultVal: true},
-		{response: "", defaultVal: false, error: UserDeclinedErr},
-	}
-
-	for key, testCase := range testCases {
-		err := testConfirm(testCase.response, testCase.defaultVal)
-		if err != testCase.error {
-			t.Errorf("case %d: got %v; expected %v", key, err, testCase.error)
-		}
+	for _, tc := range testCases {
+		t.Run(fmt.Sprintf("respond %v default %v error %v", tc.response, tc.defaultVal, tc.err), func(t *testing.T) {
+			temp := os.Stdout
+			os.Stdout = nil
+			err := Confirm(strings.NewReader(tc.response + "\n"), tc.defaultVal)
+			os.Stdout = temp
+			if err != tc.err {
+				t.Errorf("got %v; expected %v", err, tc.err)
+			}
+		})
 	}
 }

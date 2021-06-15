@@ -1,56 +1,83 @@
 package sqlformat
 
-import "testing"
+import (
+	"fmt"
+	"testing"
+)
 
 func TestParseFilename(t *testing.T) {
-	type filenameTestCase struct {
+	testCases := []struct{
 		filename string
-		filetype uint8
-		error   error
+		expected Format
+		err error
+	}{
+		{"dump.sql.gz", Gzip, nil},
+		{"dump.sql", Plain, nil},
+		{"dump.dmp", Custom, nil},
+		{"dump.png", Unknown, UnknownFormatError},
 	}
-
-	testCases := []filenameTestCase{
-		{filename: "dump.sql.gz", filetype: Gzip},
-		{filename: "dump.sql", filetype: Plain},
-		{filename: "dump.dmp", filetype: Custom},
-		{filename: "dump.png", filetype: Unknown, error: UnknownFormatError},
-	}
-	for key, testCase := range testCases {
-		filetype, err := ParseFilename(testCase.filename)
-		if err != testCase.error {
-			t.Error(err)
-		}
-		if filetype != testCase.filetype {
-			t.Errorf("case %d: got %v; expected %v", key, filetype, testCase.filetype)
-		}
+	for _, tc := range testCases {
+		t.Run(fmt.Sprintf("%v to %v with err %v", tc.filename, tc.expected, tc.err), func(t *testing.T) {
+			filetype, err := ParseFilename(tc.filename)
+			if err != tc.err {
+				t.Error(err)
+			}
+			if filetype != tc.expected {
+				t.Errorf("got %v; expected %v", filetype, tc.expected)
+			}
+		})
 	}
 }
 
 func TestParseFormat(t *testing.T) {
-	type formatTestCase struct {
+	testCases := []struct{
 		format string
-		filetype uint8
-		error   error
+		expected Format
+		err error
+	}{
+		{"gzip", Gzip, nil},
+		{"gz", Gzip, nil},
+		{"g", Gzip, nil},
+		{"plain", Plain, nil},
+		{"sql", Plain, nil},
+		{"p", Plain, nil},
+		{"custom", Custom, nil},
+		{"c", Custom, nil},
+		{"png", Unknown, UnknownFormatError},
 	}
+	for _, tc := range testCases {
+		t.Run(fmt.Sprintf("%v to %v with error %v", tc.format, tc.expected, tc.err), func(t *testing.T) {
+			format, err := ParseFormat(tc.format)
+			if err != tc.err {
+				t.Error(err)
+			}
+			if format != tc.expected {
+				t.Errorf("got %v; expected %v", format, tc.expected)
+			}
+		})
+	}
+}
 
-	testCases := []formatTestCase{
-		{format: "gzip", filetype: Gzip},
-		{format: "gz", filetype: Gzip},
-		{format: "g", filetype: Gzip},
-		{format: "plain", filetype: Plain},
-		{format: "sql", filetype: Plain},
-		{format: "p", filetype: Plain},
-		{format: "custom", filetype: Custom},
-		{format: "c", filetype: Custom},
-		{format: "png", filetype: Unknown, error: UnknownFormatError},
+func TestWriteExtension(t *testing.T) {
+	testCases := []struct{
+		format Format
+		expected string
+		err error
+	}{
+		{Gzip, ".sql.gz", nil},
+		{Plain, ".sql", nil},
+		{Custom, ".dmp", nil},
+		{Unknown, "", UnknownFormatError},
 	}
-	for key, testCase := range testCases {
-		format, err := ParseFormat(testCase.format)
-		if err != testCase.error {
-			t.Error(err)
-		}
-		if format != testCase.filetype {
-			t.Errorf("case %d: got %v; expected %v", key, format, testCase.filetype)
-		}
+	for _, tc := range testCases {
+		t.Run(fmt.Sprintf("%v to %v with error %v", tc.format, tc.expected, tc.err), func(t *testing.T) {
+			ext, err := WriteExtension(tc.format)
+			if err != tc.err {
+				t.Error(err)
+			}
+			if ext != tc.expected {
+				t.Errorf("got %v; expected %v", ext, tc.expected)
+			}
+		})
 	}
 }
