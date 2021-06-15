@@ -28,7 +28,7 @@ var (
 	dbname            string
 	username          string
 	password          string
-	inputFormat       uint8
+	inputFormat       sqlformat.Format
 	singleTransaction bool
 	clean             bool
 	noOwner           bool
@@ -133,7 +133,7 @@ func run(cmd *cobra.Command, args []string) (err error) {
 	return err
 }
 
-func buildCommand(inputFormat uint8, gunzip bool) []string {
+func buildCommand(inputFormat sqlformat.Format, gunzip bool) []string {
 	cmd := []string{"PGPASSWORD=" + password}
 	switch inputFormat {
 	case sqlformat.Gzip, sqlformat.Plain:

@@ -31,7 +31,7 @@ var (
 	username         string
 	password         string
 	directory        string
-	outputFormat     uint8
+	outputFormat     sqlformat.Format
 	ifExists         bool
 	clean            bool
 	noOwner          bool
@@ -86,7 +86,7 @@ func run(cmd *cobra.Command, args []string) (err error) {
 		}
 	}
 
-	filename, err := generateFilename(directory, client.Namespace)
+	filename, err := generateFilename(directory, client.Namespace, outputFormat)
 	if err != nil {
 		return err
 	}
@@ -140,7 +140,7 @@ func run(cmd *cobra.Command, args []string) (err error) {
 	return err
 }
 
-func generateFilename(directory, namespace string) (string, error) {
+func generateFilename(directory, namespace string, outputFormat sqlformat.Format) (string, error) {
 	directory = path.Clean(directory)
 	t, err := template.New("filename").Parse("{{.directory}}/{{.namespace}}-{{.now.Format \"2006-01-02-150405\"}}")
 	if err != nil {
@@ -155,14 +155,11 @@ func generateFilename(directory, namespace string) (string, error) {
 	}
 	err = t.Execute(&tpl, data)
 
-	switch outputFormat {
-	case sqlformat.Gzip:
-		tpl.WriteString(".sql.gz")
-	case sqlformat.Plain:
-		tpl.WriteString(".sql")
-	case sqlformat.Custom:
-		tpl.WriteString(".dmp")
+	ext, err := sqlformat.WriteExtension(outputFormat)
+	if err != nil {
+		return "", err
 	}
+	tpl.WriteString(ext)
 
 	return tpl.String(), err
 }

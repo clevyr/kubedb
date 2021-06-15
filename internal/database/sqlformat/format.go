@@ -5,6 +5,8 @@ import (
 	"strings"
 )
 
+type Format uint8
+
 const (
 	Unknown = iota
 	Gzip
@@ -14,7 +16,7 @@ const (
 
 var UnknownFormatError = errors.New("unknown format specified")
 
-func ParseFormat(format string) (uint8, error) {
+func ParseFormat(format string) (Format, error) {
 	format = strings.ToLower(format)
 	switch format {
 	case "gzip", "gz", "g":
@@ -28,7 +30,7 @@ func ParseFormat(format string) (uint8, error) {
 	}
 }
 
-func ParseFilename(filename string) (uint8, error) {
+func ParseFilename(filename string) (Format, error) {
 	filename = strings.ToLower(filename)
 	switch {
 	case strings.HasSuffix(filename, ".sql.gz"):
@@ -39,4 +41,16 @@ func ParseFilename(filename string) (uint8, error) {
 		return Plain, nil
 	}
 	return Unknown, UnknownFormatError
+}
+
+func WriteExtension(outputFormat Format) (extension string, err error) {
+	switch outputFormat {
+	case Gzip:
+		return ".sql.gz", nil
+	case Plain:
+		return ".sql", nil
+	case Custom:
+		return ".dmp", nil
+	}
+	return "", UnknownFormatError
 }
