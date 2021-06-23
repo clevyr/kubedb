@@ -154,6 +154,9 @@ func generateFilename(directory, namespace string, outputFormat sqlformat.Format
 		"now":       time.Now(),
 	}
 	err = t.Execute(&tpl, data)
+	if err != nil {
+		return "", err
+	}
 
 	ext, err := sqlformat.WriteExtension(outputFormat)
 	if err != nil {
