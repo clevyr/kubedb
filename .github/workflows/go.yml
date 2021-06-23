@@ -30,6 +30,12 @@ jobs:
         uses: actions/setup-go@v2
         with:
           go-version: ${{ env.go_version }}
+      - uses: actions/cache@v2
+        with:
+          path: ~/go/pkg/mod
+          key: ${{ runner.os }}-go-${{ hashFiles('**/go.sum') }}
+          restore-keys: |
+            ${{ runner.os }}-go-
       - name: Test
         run: go test ./...
 
@@ -51,6 +57,12 @@ jobs:
         uses: actions/setup-go@v2
         with:
           go-version: ${{ env.go_version }}
+      - uses: actions/cache@v2
+        with:
+          path: ~/go/pkg/mod
+          key: ${{ runner.os }}-go-${{ hashFiles('**/go.sum') }}
+          restore-keys: |
+            ${{ runner.os }}-go-
       - name: Upgrade UPX
         run: brew install upx
       - name: Run GoReleaser
