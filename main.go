@@ -2,8 +2,11 @@ package main
 
 import (
 	"github.com/clevyr/kubedb/cmd"
+	"os"
 )
 
 func main() {
-	_ = cmd.Execute()
+	if err := cmd.Execute(); err != nil {
+		os.Exit(1)
+	}
 }
