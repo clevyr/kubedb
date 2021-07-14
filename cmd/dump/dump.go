@@ -35,6 +35,7 @@ var (
 	ifExists         bool
 	clean            bool
 	noOwner          bool
+	tables           []string
 	excludeTable     []string
 	excludeTableData []string
 )
@@ -50,6 +51,7 @@ func init() {
 	Command.Flags().BoolVar(&ifExists, "if-exists", true, "use IF EXISTS when dropping objects")
 	Command.Flags().BoolVarP(&clean, "clean", "c", true, "clean (drop) database objects before recreating")
 	Command.Flags().BoolVarP(&noOwner, "no-owner", "O", true, "skip restoration of object ownership in plain-text format")
+	Command.Flags().StringSliceVarP(&tables, "table", "t", []string{}, "dump the specified table(s) only")
 	Command.Flags().StringSliceVarP(&excludeTable, "exclude-table", "T", []string{}, "do NOT dump the specified table(s)")
 	Command.Flags().StringSliceVar(&excludeTableData, "exclude-table-data", []string{}, "do NOT dump data for the specified table(s)")
 }
@@ -178,11 +180,14 @@ func buildCommand() []string {
 	if ifExists {
 		cmd = append(cmd, "--if-exists")
 	}
+	for _, table := range tables {
+		cmd = append(cmd, "--table="+table)
+	}
 	for _, table := range excludeTable {
-		cmd = append(cmd, "--exclude-table=" + table)
+		cmd = append(cmd, "--exclude-table="+table)
 	}
 	for _, table := range excludeTableData {
-		cmd = append(cmd, "--exclude-table-data=" + table)
+		cmd = append(cmd, "--exclude-table-data="+table)
 	}
 	if outputFormat == sqlformat.Custom {
 		cmd = append(cmd, "--format=c")
