@@ -4,6 +4,7 @@ import (
 	"bufio"
 	"bytes"
 	"compress/gzip"
+	"fmt"
 	"github.com/clevyr/kubedb/internal/database/sqlformat"
 	"github.com/clevyr/kubedb/internal/kubernetes"
 	"github.com/clevyr/kubedb/internal/postgres"
@@ -111,6 +112,9 @@ func run(cmd *cobra.Command, args []string) (err error) {
 	pr, pw := io.Pipe()
 
 	log.Println("Dumping \"" + postgresPod.Name + "\" to \"" + filename + "\"")
+	if githubActions, _ := cmd.Flags().GetBool("github-actions"); githubActions {
+		fmt.Println("::set-output name=filename::" + filename)
+	}
 
 	ch := make(chan error)
 	go func() {

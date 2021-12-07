@@ -32,6 +32,9 @@ func init() {
 	Command.PersistentFlags().String("kubeconfig", kubeconfigDefault, "absolute path to the kubeconfig file")
 	Command.PersistentFlags().StringP("namespace", "n", "", "the namespace scope for this CLI request")
 
+	Command.PersistentFlags().Bool("github-actions", false, "Enables GitHub Actions log output")
+	_ = Command.PersistentFlags().MarkHidden("github-actions")
+
 	Command.AddCommand(
 		exec.Command,
 		dump.Command,
