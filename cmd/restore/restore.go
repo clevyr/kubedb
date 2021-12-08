@@ -110,7 +110,18 @@ func run(cmd *cobra.Command, args []string) (err error) {
 
 		err := kubernetes.Exec(client, postgresPod, buildCommand(inputFormat, true), pr, os.Stdout, false)
 		pw.Close()
-		ch <- err
+		if err != nil {
+			ch <- err
+			return
+		}
+
+		err = kubernetes.Exec(client, postgresPod, buildCommand(sqlformat.Plain, false), strings.NewReader("analyze"), os.Stdout, false)
+		if err != nil {
+			ch <- err
+			return
+		}
+
+		ch <- nil
 	}()
 
 	switch inputFormat {
