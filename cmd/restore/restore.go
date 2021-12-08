@@ -32,6 +32,7 @@ var (
 	singleTransaction bool
 	clean             bool
 	noOwner           bool
+	force             bool
 )
 
 func init() {
@@ -44,6 +45,8 @@ func init() {
 	Command.Flags().BoolVarP(&singleTransaction, "single-transaction", "1", true, "restore as a single transaction")
 	Command.Flags().BoolVarP(&clean, "clean", "c", true, "clean (drop) database objects before recreating")
 	Command.Flags().BoolVarP(&noOwner, "no-owner", "O", true, "skip restoration of object ownership in plain-text format")
+
+	Command.Flags().BoolVarP(&force, "force", "f", false, "do not prompt before restore")
 }
 
 func preRun(cmd *cobra.Command, args []string) error {
@@ -92,8 +95,10 @@ func run(cmd *cobra.Command, args []string) (err error) {
 
 	log.Println("Restoring \"" + args[0] + "\" to \"" + postgresPod.Name + "\"")
 
-	if err = cli.Confirm(os.Stdin, false); err != nil {
-		return err
+	if !force {
+		if err = cli.Confirm(os.Stdin, false); err != nil {
+			return err
+		}
 	}
 
 	ch := make(chan error)
