@@ -185,13 +185,13 @@ func buildCommand() []string {
 		cmd = append(cmd, "--if-exists")
 	}
 	for _, table := range tables {
-		cmd = append(cmd, "--table="+table)
+		cmd = append(cmd, "--table='"+table+"'")
 	}
 	for _, table := range excludeTable {
-		cmd = append(cmd, "--exclude-table="+table)
+		cmd = append(cmd, "--exclude-table='"+table+"'")
 	}
 	for _, table := range excludeTableData {
-		cmd = append(cmd, "--exclude-table-data="+table)
+		cmd = append(cmd, "--exclude-table-data='"+table+"'")
 	}
 	if outputFormat == sqlformat.Custom {
 		cmd = append(cmd, "--format=c")
