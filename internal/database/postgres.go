@@ -1,13 +1,9 @@
 package database
 
 import (
-	"context"
 	"github.com/clevyr/kubedb/internal/config"
 	"github.com/clevyr/kubedb/internal/database/sqlformat"
 	"github.com/clevyr/kubedb/internal/kubernetes"
-	v1core "k8s.io/api/core/v1"
-	v1meta "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"k8s.io/apimachinery/pkg/selection"
 )
 
 type Postgres struct{}
@@ -32,24 +28,33 @@ func (Postgres) AnalyzeQuery() string {
 	return "analyze;"
 }
 
-func (Postgres) GetPod(client kubernetes.KubeClient) (v1core.Pod, error) {
-	return kubernetes.GetPodByLabel(client, "app", selection.Equals, []string{"postgresql"})
+func (Postgres) PodLabels() []kubernetes.LabelQueryable {
+	return []kubernetes.LabelQueryable{
+		kubernetes.LabelQuery{
+			Name:  "app",
+			Value: "postgresql",
+		},
+		kubernetes.LabelQueryAnd{
+			{"app.kubernetes.io/name", "postgresql"},
+			{"app.kubernetes.io/component", "primary"},
+		},
+		kubernetes.LabelQueryAnd{
+			{"app.kubernetes.io/name", "postgresql-ha"},
+			{"app.kubernetes.io/component", "postgresql"},
+		},
+	}
 }
 
-func (Postgres) GetSecret(client kubernetes.KubeClient) (string, error) {
-	secret, err := client.Secrets().Get(context.TODO(), "postgresql", v1meta.GetOptions{})
-	if err != nil {
-		return "", err
-	}
-	return string(secret.Data["postgresql-password"]), err
+func (Postgres) PasswordEnvNames() []string {
+	return []string{"POSTGRES_PASSWORD", "PGPOOL_POSTGRES_PASSWORD"}
 }
 
 func (Postgres) ExecCommand(conf config.Exec) []string {
-	return []string{"PGPASSWORD=" + conf.Password, "psql", "--username=" + conf.Username, "--dbname=" + conf.Database}
+	return []string{"PGPASSWORD=" + conf.Password, "psql", "--host=127.0.0.1", "--username=" + conf.Username, "--dbname=" + conf.Database}
 }
 
 func (Postgres) DumpCommand(conf config.Dump) []string {
-	cmd := []string{"PGPASSWORD=" + conf.Password, "pg_dump", "--username=" + conf.Username, "--dbname=" + conf.Database}
+	cmd := []string{"PGPASSWORD=" + conf.Password, "pg_dump", "--host=127.0.0.1", "--username=" + conf.Username, "--dbname=" + conf.Database}
 	if conf.Clean {
 		cmd = append(cmd, "--clean")
 	}
@@ -85,7 +90,7 @@ func (Postgres) RestoreCommand(conf config.Restore, inputFormat sqlformat.Format
 			cmd = append(cmd, "--no-owner")
 		}
 	}
-	cmd = append(cmd, "--username="+conf.Username, "--dbname="+conf.Database)
+	cmd = append(cmd, "--host=127.0.0.1", "--username="+conf.Username, "--dbname="+conf.Database)
 	if conf.SingleTransaction {
 		cmd = append(cmd, "--single-transaction")
 	}

@@ -1,13 +1,9 @@
 package database
 
 import (
-	"context"
 	"github.com/clevyr/kubedb/internal/config"
 	"github.com/clevyr/kubedb/internal/database/sqlformat"
 	"github.com/clevyr/kubedb/internal/kubernetes"
-	v1core "k8s.io/api/core/v1"
-	v1meta "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"k8s.io/apimachinery/pkg/selection"
 )
 
 type MariaDB struct{}
@@ -32,24 +28,29 @@ func (MariaDB) AnalyzeQuery() string {
 	return ";"
 }
 
-func (MariaDB) GetPod(client kubernetes.KubeClient) (v1core.Pod, error) {
-	return kubernetes.GetPodByLabel(client, "app", selection.Equals, []string{"mariadb"})
+func (MariaDB) PodLabels() []kubernetes.LabelQueryable {
+	return []kubernetes.LabelQueryable{
+		kubernetes.LabelQuery{
+			Name:  "app",
+			Value: "mariadb",
+		},
+		kubernetes.LabelQueryAnd{
+			{"app.kubernetes.io/name", "mariadb"},
+			{"app.kubernetes.io/component", "primary"},
+		},
+	}
 }
 
-func (MariaDB) GetSecret(client kubernetes.KubeClient) (string, error) {
-	secret, err := client.Secrets().Get(context.TODO(), "mariadb", v1meta.GetOptions{})
-	if err != nil {
-		return "", err
-	}
-	return string(secret.Data["mariadb-password"]), err
+func (MariaDB) PasswordEnvNames() []string {
+	return []string{"MARIADB_PASSWORD"}
 }
 
 func (MariaDB) ExecCommand(conf config.Exec) []string {
-	return []string{"MYSQL_PWD=" + conf.Password, "mysql", "--user=" + conf.Username, "--database=" + conf.Database}
+	return []string{"MYSQL_PWD=" + conf.Password, "mysql", "--host=127.0.0.1", "--user=" + conf.Username, "--database=" + conf.Database}
 }
 
 func (MariaDB) DumpCommand(conf config.Dump) []string {
-	cmd := []string{"MYSQL_PWD=" + conf.Password, "mysqldump", "--user=" + conf.Username, conf.Database}
+	cmd := []string{"MYSQL_PWD=" + conf.Password, "mysqldump", "--host=127.0.0.1", "--user=" + conf.Username, conf.Database}
 	if conf.Clean {
 		cmd = append(cmd, "--add-drop-table")
 	}
@@ -63,5 +64,5 @@ func (MariaDB) DumpCommand(conf config.Dump) []string {
 }
 
 func (MariaDB) RestoreCommand(conf config.Restore, inputFormat sqlformat.Format) []string {
-	return []string{"MYSQL_PWD=" + conf.Password, "mysql", "--user=" + conf.Username, conf.Database}
+	return []string{"MYSQL_PWD=" + conf.Password, "mysql", "--host=127.0.0.1", "--user=" + conf.Username, conf.Database}
 }

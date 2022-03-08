@@ -14,12 +14,12 @@ type KubeClient struct {
 	Namespace    string
 }
 
-func (config KubeClient) Pods() v1.PodInterface {
-	return config.ClientSet.CoreV1().Pods(config.Namespace)
+func (client KubeClient) Pods() v1.PodInterface {
+	return client.ClientSet.CoreV1().Pods(client.Namespace)
 }
 
-func (config KubeClient) Secrets() v1.SecretInterface {
-	return config.ClientSet.CoreV1().Secrets(config.Namespace)
+func (client KubeClient) Secrets() v1.SecretInterface {
+	return client.ClientSet.CoreV1().Secrets(client.Namespace)
 }
 
 func CreateClient(kubeconfigPath string, namespace string) (config KubeClient, err error) {

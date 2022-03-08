@@ -80,13 +80,13 @@ func run(cmd *cobra.Command, args []string) (err error) {
 		return err
 	}
 
-	pod, err := db.GetPod(client)
+	pod, err := client.GetPodByQueries(db.PodLabels())
 	if err != nil {
 		return err
 	}
 
 	if conf.Password == "" {
-		conf.Password, err = db.GetSecret(client)
+		conf.Password, err = client.GetSecretFromEnv(pod, db.PasswordEnvNames())
 		if err != nil {
 			return err
 		}
@@ -133,7 +133,7 @@ func run(cmd *cobra.Command, args []string) (err error) {
 
 	bar := progressbar.DefaultBytes(-1)
 
-	err = kubernetes.Exec(client, pod, buildCommand(db, conf), os.Stdin, io.MultiWriter(w, bar), false)
+	err = client.Exec(pod, buildCommand(db, conf), os.Stdin, io.MultiWriter(w, bar), false)
 	if err != nil {
 		return err
 	}

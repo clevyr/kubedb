@@ -3,36 +3,34 @@ package kubernetes
 import (
 	"context"
 	"errors"
+	"fmt"
 	"io"
 	v1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"k8s.io/apimachinery/pkg/labels"
-	"k8s.io/apimachinery/pkg/selection"
 	"k8s.io/client-go/kubernetes/scheme"
 	"k8s.io/client-go/tools/remotecommand"
+	"log"
 	"os"
 )
 
-var PodNotFoundError = errors.New("could not find pod")
+var ErrNoPods = errors.New("no pods in namespace")
 
-func GetPodByLabel(client KubeClient, key string, op selection.Operator, value []string) (pod v1.Pod, err error) {
-	req, err := labels.NewRequirement(key, op, value)
+var ErrPodNotFound = errors.New("no pods with matching label")
+
+func GetNamespacedPods(client KubeClient) (*v1.PodList, error) {
+	pods, err := client.Pods().List(context.TODO(), metav1.ListOptions{})
 	if err != nil {
-		return v1.Pod{}, err
+		return pods, err
 	}
 
-	pods, err := client.Pods().List(context.TODO(), metav1.ListOptions{
-		LabelSelector: labels.NewSelector().Add(*req).String(),
-	})
-
-	if len(pods.Items) > 0 {
-		return pods.Items[0], err
-	} else {
-		return v1.Pod{}, PodNotFoundError
+	if len(pods.Items) == 0 {
+		return pods, fmt.Errorf("%w: %s", ErrNoPods, client.Namespace)
 	}
+
+	return pods, nil
 }
 
-func Exec(client KubeClient, pod v1.Pod, command []string, stdin io.Reader, stdout io.Writer, tty bool) error {
+func (client KubeClient) Exec(pod v1.Pod, command []string, stdin io.Reader, stdout io.Writer, tty bool) error {
 	req := client.ClientSet.CoreV1().RESTClient().Post().Resource("pods").Namespace(client.Namespace).
 		Name(pod.Name).SubResource("exec")
 	req.VersionedParams(&v1.PodExecOptions{
@@ -54,4 +52,30 @@ func Exec(client KubeClient, pod v1.Pod, command []string, stdin io.Reader, stdo
 	})
 
 	return err
+}
+
+func (client KubeClient) GetPodByQueries(queries []LabelQueryable) (v1.Pod, error) {
+	pods, err := GetNamespacedPods(client)
+	if err != nil {
+		return v1.Pod{}, err
+	}
+
+	var errs []error
+	for _, query := range queries {
+		pod, err := query.FindPod(pods)
+		if err != nil {
+			errs = append(errs, err)
+			continue
+		}
+		return *pod, nil
+	}
+
+	if errors.Is(err, ErrPodNotFound) {
+		for _, err := range errs {
+			log.Println(err)
+		}
+		err = ErrPodNotFound
+	}
+
+	return v1.Pod{}, err
 }

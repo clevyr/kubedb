@@ -80,13 +80,13 @@ func run(cmd *cobra.Command, args []string) (err error) {
 		return err
 	}
 
-	pod, err := db.GetPod(client)
+	pod, err := client.GetPodByQueries(db.PodLabels())
 	if err != nil {
 		return err
 	}
 
 	if conf.Password == "" {
-		conf.Password, err = db.GetSecret(client)
+		conf.Password, err = client.GetSecretFromEnv(pod, db.PasswordEnvNames())
 		if err != nil {
 			return err
 		}
@@ -118,7 +118,7 @@ func run(cmd *cobra.Command, args []string) (err error) {
 		if conf.Clean {
 			log.Println("Cleaning existing data")
 			resetReader := strings.NewReader(db.DropDatabaseQuery(conf.Database))
-			err = kubernetes.Exec(client, pod, buildCommand(db, conf, sqlformat.Plain, false), resetReader, os.Stdout, false)
+			err = client.Exec(pod, buildCommand(db, conf, sqlformat.Plain, false), resetReader, os.Stdout, false)
 			if err != nil {
 				ch <- err
 				return
@@ -126,14 +126,14 @@ func run(cmd *cobra.Command, args []string) (err error) {
 		}
 
 		log.Println("Restoring database")
-		err = kubernetes.Exec(client, pod, buildCommand(db, conf, inputFormat, true), pr, os.Stdout, false)
+		err = client.Exec(pod, buildCommand(db, conf, inputFormat, true), pr, os.Stdout, false)
 		if err != nil {
 			ch <- err
 			return
 		}
 
 		analyzeReader := strings.NewReader(db.AnalyzeQuery())
-		err = kubernetes.Exec(client, pod, buildCommand(db, conf, sqlformat.Plain, false), analyzeReader, os.Stdout, false)
+		err = client.Exec(pod, buildCommand(db, conf, sqlformat.Plain, false), analyzeReader, os.Stdout, false)
 		if err != nil {
 			ch <- err
 			return
