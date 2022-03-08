@@ -17,7 +17,9 @@ func TestParseFilename(t *testing.T) {
 		{"dump.png", Unknown, UnknownFormatError},
 	}
 	for _, tc := range testCases {
+        tc := tc // capture range variable
 		t.Run(fmt.Sprintf("%v to %v with err %v", tc.filename, tc.expected, tc.err), func(t *testing.T) {
+            t.Parallel()
 			filetype, err := ParseFilename(tc.filename)
 			if err != tc.err {
 				t.Error(err)
@@ -46,7 +48,9 @@ func TestParseFormat(t *testing.T) {
 		{"png", Unknown, UnknownFormatError},
 	}
 	for _, tc := range testCases {
+        tc := tc // capture range variable
 		t.Run(fmt.Sprintf("%v to %v with error %v", tc.format, tc.expected, tc.err), func(t *testing.T) {
+            t.Parallel()
 			format, err := ParseFormat(tc.format)
 			if err != tc.err {
 				t.Error(err)
@@ -70,7 +74,9 @@ func TestWriteExtension(t *testing.T) {
 		{Unknown, "", UnknownFormatError},
 	}
 	for _, tc := range testCases {
+        tc := tc // capture range variable
 		t.Run(fmt.Sprintf("%v to %v with error %v", tc.format, tc.expected, tc.err), func(t *testing.T) {
+            t.Parallel()
 			ext, err := WriteExtension(tc.format)
 			if err != tc.err {
 				t.Error(err)

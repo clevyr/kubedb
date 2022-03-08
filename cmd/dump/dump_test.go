@@ -18,7 +18,9 @@ func TestGenerateFilename(t *testing.T) {
 		{"/home/test", "another", sqlformat.Plain, nil},
 	}
 	for _, tc := range testCases {
+        tc := tc // capture range variable
 		t.Run(fmt.Sprintf("%v in %v to %v with error %v", tc.directory, tc.namespace, tc.filetype, tc.err), func(t *testing.T) {
+            t.Parallel()
 			filename, err := generateFilename(tc.directory, tc.namespace, tc.filetype)
 			if err != tc.err {
 				t.Error(err)

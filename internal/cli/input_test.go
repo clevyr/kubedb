@@ -22,7 +22,9 @@ func TestConfirm(t *testing.T) {
 	}
 
 	for _, tc := range testCases {
+        tc := tc // capture range variable
 		t.Run(fmt.Sprintf("respond %v default %v error %v", tc.response, tc.defaultVal, tc.err), func(t *testing.T) {
+            t.Parallel()
 			temp := os.Stdout
 			os.Stdout = nil
 			err := Confirm(strings.NewReader(tc.response + "\n"), tc.defaultVal)
