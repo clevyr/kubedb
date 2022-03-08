@@ -1,28 +1,31 @@
 package sqlformat
 
 import (
+	"errors"
 	"fmt"
 	"testing"
 )
 
 func TestParseFilename(t *testing.T) {
-	testCases := []struct{
+	testCases := []struct {
 		filename string
 		expected Format
-		err error
+		err      error
 	}{
 		{"dump.sql.gz", Gzip, nil},
 		{"dump.sql", Plain, nil},
 		{"dump.dmp", Custom, nil},
-		{"dump.png", Unknown, UnknownFormatError},
+		{"dump.png", Unknown, UnknownFileFormat},
 	}
 	for _, tc := range testCases {
-        tc := tc // capture range variable
+		tc := tc // capture range variable
 		t.Run(fmt.Sprintf("%v to %v with err %v", tc.filename, tc.expected, tc.err), func(t *testing.T) {
-            t.Parallel()
+			t.Parallel()
 			filetype, err := ParseFilename(tc.filename)
-			if err != tc.err {
-				t.Error(err)
+			if err != nil {
+				if !errors.Is(err, tc.err) {
+					t.Error(err)
+				}
 			}
 			if filetype != tc.expected {
 				t.Errorf("got %v; expected %v", filetype, tc.expected)
@@ -32,10 +35,10 @@ func TestParseFilename(t *testing.T) {
 }
 
 func TestParseFormat(t *testing.T) {
-	testCases := []struct{
-		format string
+	testCases := []struct {
+		format   string
 		expected Format
-		err error
+		err      error
 	}{
 		{"gzip", Gzip, nil},
 		{"gz", Gzip, nil},
@@ -45,15 +48,17 @@ func TestParseFormat(t *testing.T) {
 		{"p", Plain, nil},
 		{"custom", Custom, nil},
 		{"c", Custom, nil},
-		{"png", Unknown, UnknownFormatError},
+		{"png", Unknown, UnknownFileFormat},
 	}
 	for _, tc := range testCases {
-        tc := tc // capture range variable
+		tc := tc // capture range variable
 		t.Run(fmt.Sprintf("%v to %v with error %v", tc.format, tc.expected, tc.err), func(t *testing.T) {
-            t.Parallel()
+			t.Parallel()
 			format, err := ParseFormat(tc.format)
-			if err != tc.err {
-				t.Error(err)
+			if err != nil {
+				if !errors.Is(err, tc.err) {
+					t.Error(err)
+				}
 			}
 			if format != tc.expected {
 				t.Errorf("got %v; expected %v", format, tc.expected)
@@ -63,23 +68,25 @@ func TestParseFormat(t *testing.T) {
 }
 
 func TestWriteExtension(t *testing.T) {
-	testCases := []struct{
-		format Format
+	testCases := []struct {
+		format   Format
 		expected string
-		err error
+		err      error
 	}{
 		{Gzip, ".sql.gz", nil},
 		{Plain, ".sql", nil},
 		{Custom, ".dmp", nil},
-		{Unknown, "", UnknownFormatError},
+		{Unknown, "", UnknownFileFormat},
 	}
 	for _, tc := range testCases {
-        tc := tc // capture range variable
+		tc := tc // capture range variable
 		t.Run(fmt.Sprintf("%v to %v with error %v", tc.format, tc.expected, tc.err), func(t *testing.T) {
-            t.Parallel()
+			t.Parallel()
 			ext, err := WriteExtension(tc.format)
-			if err != tc.err {
-				t.Error(err)
+			if err != nil {
+				if !errors.Is(err, tc.err) {
+					t.Error(err)
+				}
 			}
 			if ext != tc.expected {
 				t.Errorf("got %v; expected %v", ext, tc.expected)

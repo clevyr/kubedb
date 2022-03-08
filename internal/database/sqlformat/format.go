@@ -2,6 +2,7 @@ package sqlformat
 
 import (
 	"errors"
+	"fmt"
 	"strings"
 )
 
@@ -14,7 +15,7 @@ const (
 	Custom
 )
 
-var UnknownFormatError = errors.New("unknown format specified")
+var UnknownFileFormat = errors.New("unknown file format")
 
 func ParseFormat(format string) (Format, error) {
 	format = strings.ToLower(format)
@@ -26,7 +27,7 @@ func ParseFormat(format string) (Format, error) {
 	case "custom", "c":
 		return Custom, nil
 	default:
-		return Unknown, UnknownFormatError
+		return Unknown, fmt.Errorf("%w: %s", UnknownFileFormat, format)
 	}
 }
 
@@ -40,7 +41,7 @@ func ParseFilename(filename string) (Format, error) {
 	case strings.HasSuffix(filename, ".sql"):
 		return Plain, nil
 	}
-	return Unknown, UnknownFormatError
+	return Unknown, fmt.Errorf("%w: %s", UnknownFileFormat, filename)
 }
 
 func WriteExtension(outputFormat Format) (extension string, err error) {
@@ -52,5 +53,5 @@ func WriteExtension(outputFormat Format) (extension string, err error) {
 	case Custom:
 		return ".dmp", nil
 	}
-	return "", UnknownFormatError
+	return "", fmt.Errorf("%w: %d", UnknownFileFormat, outputFormat)
 }
