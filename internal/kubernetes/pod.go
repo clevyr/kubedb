@@ -16,13 +16,13 @@ import (
 var PodNotFoundError = errors.New("could not find pod")
 
 func GetPodByLabel(client KubeClient, key string, op selection.Operator, value []string) (pod v1.Pod, err error) {
-	postgresReq, err := labels.NewRequirement(key, op, value)
+	req, err := labels.NewRequirement(key, op, value)
 	if err != nil {
 		return v1.Pod{}, err
 	}
 
 	pods, err := client.Pods().List(context.TODO(), metav1.ListOptions{
-		LabelSelector: labels.NewSelector().Add(*postgresReq).String(),
+		LabelSelector: labels.NewSelector().Add(*req).String(),
 	})
 
 	if len(pods.Items) > 0 {

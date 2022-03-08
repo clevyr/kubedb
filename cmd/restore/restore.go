@@ -2,10 +2,11 @@ package restore
 
 import (
 	"github.com/clevyr/kubedb/internal/cli"
+	"github.com/clevyr/kubedb/internal/config"
+	"github.com/clevyr/kubedb/internal/database"
 	"github.com/clevyr/kubedb/internal/database/sqlformat"
 	"github.com/clevyr/kubedb/internal/gzips"
 	"github.com/clevyr/kubedb/internal/kubernetes"
-	"github.com/clevyr/kubedb/internal/postgres"
 	"github.com/spf13/cobra"
 	"io"
 	_ "k8s.io/client-go/plugin/pkg/client/auth"
@@ -24,28 +25,22 @@ var Command = &cobra.Command{
 }
 
 var (
-	dbname            string
-	username          string
-	password          string
-	inputFormat       sqlformat.Format
-	singleTransaction bool
-	clean             bool
-	noOwner           bool
-	force             bool
+	conf        config.Restore
+	inputFormat sqlformat.Format
 )
 
 func init() {
-	Command.Flags().StringVarP(&dbname, "dbname", "d", "db", "database name to connect to")
-	Command.Flags().StringVarP(&username, "username", "U", "postgres", "database username")
-	Command.Flags().StringVarP(&password, "password", "p", "", "database password")
+	Command.Flags().StringVarP(&conf.Database, "dbname", "d", "", "database name to connect to")
+	Command.Flags().StringVarP(&conf.Username, "username", "U", "", "database username")
+	Command.Flags().StringVarP(&conf.Password, "password", "p", "", "database password")
 
 	Command.Flags().StringP("format", "F", "", "input format. inferred by default ([g]zip, [c]ustom, [p]lain text)")
 
-	Command.Flags().BoolVarP(&singleTransaction, "single-transaction", "1", true, "restore as a single transaction")
-	Command.Flags().BoolVarP(&clean, "clean", "c", true, "clean (drop) database objects before recreating")
-	Command.Flags().BoolVarP(&noOwner, "no-owner", "O", true, "skip restoration of object ownership in plain-text format")
+	Command.Flags().BoolVarP(&conf.SingleTransaction, "single-transaction", "1", true, "restore as a single transaction")
+	Command.Flags().BoolVarP(&conf.Clean, "clean", "c", true, "clean (drop) database objects before recreating")
+	Command.Flags().BoolVarP(&conf.NoOwner, "no-owner", "O", true, "skip restoration of object ownership in plain-text format")
 
-	Command.Flags().BoolVarP(&force, "force", "f", false, "do not prompt before restore")
+	Command.Flags().BoolVarP(&conf.Force, "force", "f", false, "do not prompt before restore")
 }
 
 func preRun(cmd *cobra.Command, args []string) error {
@@ -66,18 +61,31 @@ func preRun(cmd *cobra.Command, args []string) error {
 func run(cmd *cobra.Command, args []string) (err error) {
 	cmd.SilenceUsage = true
 
+	dbName, err := cmd.Flags().GetString("type")
+	if err != nil {
+		return err
+	}
+	db, err := database.New(dbName)
+
+	if conf.Database == "" {
+		conf.Database = db.DefaultDatabase()
+	}
+	if conf.Username == "" {
+		conf.Username = db.DefaultUser()
+	}
+
 	client, err := kubernetes.CreateClientForCmd(cmd)
 	if err != nil {
 		return err
 	}
 
-	postgresPod, err := postgres.GetPod(client)
+	pod, err := db.GetPod(client)
 	if err != nil {
 		return err
 	}
 
-	if password == "" {
-		password, err = postgres.GetSecret(client)
+	if conf.Password == "" {
+		conf.Password, err = db.GetSecret(client)
 		if err != nil {
 			return err
 		}
@@ -89,9 +97,9 @@ func run(cmd *cobra.Command, args []string) (err error) {
 	}
 	defer f.Close()
 
-	log.Println("Restoring \"" + args[0] + "\" to \"" + postgresPod.Name + "\"")
+	log.Println("Restoring \"" + args[0] + "\" to \"" + pod.Name + "\"")
 
-	if !force {
+	if !conf.Force {
 		if err = cli.Confirm(os.Stdin, false); err != nil {
 			return err
 		}
@@ -105,20 +113,20 @@ func run(cmd *cobra.Command, args []string) (err error) {
 		r = gzips.NewCompressReader(f)
 	}
 
-	if clean {
-		resetReader := strings.NewReader("drop schema public cascade; create schema public;")
-		err = kubernetes.Exec(client, postgresPod, buildCommand(sqlformat.Plain, false), resetReader, os.Stdout, false)
+	if conf.Clean {
+		resetReader := strings.NewReader(db.DropDatabaseQuery(conf.Database))
+		err = kubernetes.Exec(client, pod, buildCommand(db, conf, sqlformat.Plain, false), resetReader, os.Stdout, false)
 		if err != nil {
 			return err
 		}
 	}
 
-	err = kubernetes.Exec(client, postgresPod, buildCommand(inputFormat, true), r, os.Stdout, false)
+	err = kubernetes.Exec(client, pod, buildCommand(db, conf, inputFormat, true), r, os.Stdout, false)
 	if err != nil {
 		return err
 	}
 
-	err = kubernetes.Exec(client, postgresPod, buildCommand(sqlformat.Plain, false), strings.NewReader("analyze"), os.Stdout, false)
+	err = kubernetes.Exec(client, pod, buildCommand(db, conf, sqlformat.Plain, false), strings.NewReader(db.AnalyzeQuery()), os.Stdout, false)
 	if err != nil {
 		return err
 	}
@@ -127,23 +135,14 @@ func run(cmd *cobra.Command, args []string) (err error) {
 	return nil
 }
 
-func buildCommand(inputFormat sqlformat.Format, gunzip bool) []string {
-	cmd := []string{"PGPASSWORD=" + password}
+func buildCommand(db database.Databaser, conf config.Restore, inputFormat sqlformat.Format, gunzip bool) []string {
+	var cmd []string
 	switch inputFormat {
 	case sqlformat.Gzip, sqlformat.Plain:
 		if gunzip {
 			cmd = append([]string{"gunzip", "--force", "|"}, cmd...)
 		}
-		cmd = append(cmd, "psql")
-	case sqlformat.Custom:
-		cmd = append(cmd, "pg_restore", "--format=custom", "--verbose")
-		if noOwner {
-			cmd = append(cmd, "--no-owner")
-		}
 	}
-	cmd = append(cmd, "--username="+username, "--dbname="+dbname)
-	if singleTransaction {
-		cmd = append(cmd, "--single-transaction")
-	}
+	cmd = append(cmd, db.RestoreCommand(conf, inputFormat)...)
 	return []string{"sh", "-c", strings.Join(cmd, " ")}
 }

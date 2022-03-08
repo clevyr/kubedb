@@ -1,8 +1,9 @@
 package exec
 
 import (
+	"github.com/clevyr/kubedb/internal/config"
+	"github.com/clevyr/kubedb/internal/database"
 	"github.com/clevyr/kubedb/internal/kubernetes"
-	"github.com/clevyr/kubedb/internal/postgres"
 	"github.com/docker/cli/cli/streams"
 	"github.com/spf13/cobra"
 	_ "k8s.io/client-go/plugin/pkg/client/auth"
@@ -18,39 +19,48 @@ var Command = &cobra.Command{
 	RunE:    run,
 }
 
-var (
-	dbname   string
-	username string
-	password string
-)
+var conf config.Exec
 
 func init() {
-	Command.Flags().StringVarP(&dbname, "dbname", "d", "db", "database name to connect to")
-	Command.Flags().StringVarP(&username, "username", "U", "postgres", "database username")
-	Command.Flags().StringVarP(&password, "password", "p", "", "database password")
+	Command.Flags().StringVarP(&conf.Database, "dbname", "d", "", "database name to connect to")
+	Command.Flags().StringVarP(&conf.Username, "username", "U", "", "database username")
+	Command.Flags().StringVarP(&conf.Password, "password", "p", "", "database password")
 }
 
 func run(cmd *cobra.Command, args []string) (err error) {
 	cmd.SilenceUsage = true
+
+	dbName, err := cmd.Flags().GetString("type")
+	if err != nil {
+		return err
+	}
+	db, err := database.New(dbName)
+
+	if conf.Database == "" {
+		conf.Database = db.DefaultDatabase()
+	}
+	if conf.Username == "" {
+		conf.Username = db.DefaultUser()
+	}
 
 	client, err := kubernetes.CreateClientForCmd(cmd)
 	if err != nil {
 		return err
 	}
 
-	postgresPod, err := postgres.GetPod(client)
+	pod, err := db.GetPod(client)
 	if err != nil {
 		return err
 	}
 
-	if password == "" {
-		password, err = postgres.GetSecret(client)
+	if conf.Password == "" {
+		conf.Password, err = db.GetSecret(client)
 		if err != nil {
 			return err
 		}
 	}
 
-	log.Println("Execing into \"" + postgresPod.Name + "\"")
+	log.Println("Exec into \"" + pod.Name + "\"")
 
 	stdin := streams.NewIn(os.Stdin)
 	if err := stdin.SetRawTerminal(); err != nil {
@@ -58,15 +68,15 @@ func run(cmd *cobra.Command, args []string) (err error) {
 	}
 	defer stdin.RestoreTerminal()
 
-	return kubernetes.Exec(client, postgresPod, buildCommand(args), stdin, os.Stdout, stdin.IsTerminal())
+	return kubernetes.Exec(client, pod, buildCommand(db, conf, args), stdin, os.Stdout, stdin.IsTerminal())
 }
 
-func buildCommand(args []string) []string {
+func buildCommand(db database.Databaser, conf config.Exec, args []string) []string {
 	var cmd []string
 	if len(args) == 0 {
-		cmd = []string{"PGPASSWORD=" + password, "psql", "--username=" + username, "--dbname=" + dbname}
+		cmd = db.ExecCommand(conf)
 	} else {
-		cmd = append([]string{"PGPASSWORD=" + password, "exec"}, args...)
+		cmd = append([]string{"exec"}, args...)
 	}
 	return []string{"sh", "-c", strings.Join(cmd, " ")}
 }
