@@ -116,6 +116,7 @@ func run(cmd *cobra.Command, args []string) (err error) {
 		}(pw)
 
 		if conf.Clean {
+			log.Println("Cleaning existing data")
 			resetReader := strings.NewReader(db.DropDatabaseQuery(conf.Database))
 			err = kubernetes.Exec(client, pod, buildCommand(db, conf, sqlformat.Plain, false), resetReader, os.Stdout, false)
 			if err != nil {
@@ -124,6 +125,7 @@ func run(cmd *cobra.Command, args []string) (err error) {
 			}
 		}
 
+		log.Println("Restoring database")
 		err = kubernetes.Exec(client, pod, buildCommand(db, conf, inputFormat, true), pr, os.Stdout, false)
 		if err != nil {
 			ch <- err
