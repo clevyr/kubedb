@@ -1,11 +1,11 @@
 package dump
 
 import (
-	"bufio"
 	"bytes"
-	"compress/gzip"
+	"errors"
 	"fmt"
 	"github.com/clevyr/kubedb/internal/database/sqlformat"
+	"github.com/clevyr/kubedb/internal/gzips"
 	"github.com/clevyr/kubedb/internal/kubernetes"
 	"github.com/clevyr/kubedb/internal/postgres"
 	"github.com/spf13/cobra"
@@ -101,49 +101,61 @@ func run(cmd *cobra.Command, args []string) (err error) {
 		}
 	}
 
-	outfile, err := os.Create(filename)
+	f, err := os.Create(filename)
 	if err != nil {
 		return err
 	}
-	defer outfile.Close()
-	fileWriter := bufio.NewWriter(outfile)
-	defer fileWriter.Flush()
-
-	pr, pw := io.Pipe()
+	defer f.Close()
 
 	log.Println("Dumping \"" + postgresPod.Name + "\" to \"" + filename + "\"")
 	if githubActions, _ := cmd.Flags().GetBool("github-actions"); githubActions {
 		fmt.Println("::set-output name=filename::" + filename)
 	}
 
-	ch := make(chan error)
-	go func() {
-		err := kubernetes.Exec(client, postgresPod, buildCommand(), os.Stdin, pw, false)
-		pw.Close()
-		ch <- err
-	}()
-
+	ch := make(chan error, 1)
+	var w io.WriteCloser
 	switch outputFormat {
 	case sqlformat.Gzip, sqlformat.Custom:
-		_, err = io.Copy(fileWriter, pr)
+		w = f
+		close(ch)
 	case sqlformat.Plain:
-		var gzr *gzip.Reader
-		gzr, err = gzip.NewReader(pr)
+		w = gzips.NewDecompressWriter(f, ch)
 		if err != nil {
 			return err
 		}
-		defer gzr.Close()
-		_, err = io.Copy(fileWriter, gzr)
 	}
+	defer func(w io.WriteCloser) {
+		_ = w.Close()
+	}(w)
+
+	err = kubernetes.Exec(client, postgresPod, buildCommand(), os.Stdin, w, false)
 	if err != nil {
 		return err
 	}
 
-	err = <-ch
-	if err == nil {
-		log.Println("Finished")
+	// Close writer
+	err = w.Close()
+	if err != nil {
+		return err
 	}
-	return err
+
+	// Check errors in channel
+	err = <-ch
+	if err != nil {
+		return err
+	}
+
+	// Close file
+	err = f.Close()
+	if err != nil {
+		// Ignore file already closed errors since w can be the same as f
+		if !errors.Is(err, os.ErrClosed) {
+			return err
+		}
+	}
+
+	log.Println("Finished")
+	return nil
 }
 
 func generateFilename(directory, namespace string, outputFormat sqlformat.Format) (string, error) {

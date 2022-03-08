@@ -1,10 +1,9 @@
 package restore
 
 import (
-	"bufio"
-	"compress/gzip"
 	"github.com/clevyr/kubedb/internal/cli"
 	"github.com/clevyr/kubedb/internal/database/sqlformat"
+	"github.com/clevyr/kubedb/internal/gzips"
 	"github.com/clevyr/kubedb/internal/kubernetes"
 	"github.com/clevyr/kubedb/internal/postgres"
 	"github.com/spf13/cobra"
@@ -84,14 +83,11 @@ func run(cmd *cobra.Command, args []string) (err error) {
 		}
 	}
 
-	infile, err := os.Open(args[0])
+	f, err := os.Open(args[0])
 	if err != nil {
 		return err
 	}
-	defer infile.Close()
-	fileReader := bufio.NewReader(infile)
-
-	pr, pw := io.Pipe()
+	defer f.Close()
 
 	log.Println("Restoring \"" + args[0] + "\" to \"" + postgresPod.Name + "\"")
 
@@ -101,52 +97,34 @@ func run(cmd *cobra.Command, args []string) (err error) {
 		}
 	}
 
-	ch := make(chan error)
-	go func() {
-		if clean {
-			resetReader := strings.NewReader("drop schema public cascade; create schema public;")
-			err := kubernetes.Exec(client, postgresPod, buildCommand(sqlformat.Plain, false), resetReader, os.Stdout, false)
-			if err != nil {
-				pw.Close()
-				ch <- err
-				return
-			}
-		}
-
-		err := kubernetes.Exec(client, postgresPod, buildCommand(inputFormat, true), pr, os.Stdout, false)
-		pw.Close()
-		if err != nil {
-			ch <- err
-			return
-		}
-
-		err = kubernetes.Exec(client, postgresPod, buildCommand(sqlformat.Plain, false), strings.NewReader("analyze"), os.Stdout, false)
-		if err != nil {
-			ch <- err
-			return
-		}
-
-		ch <- nil
-	}()
-
+	var r io.Reader
 	switch inputFormat {
 	case sqlformat.Gzip, sqlformat.Custom:
-		_, err = io.Copy(pw, fileReader)
+		r = f
 	case sqlformat.Plain:
-		gzw := gzip.NewWriter(pw)
-		_, err = io.Copy(gzw, fileReader)
-		gzw.Close()
+		r = gzips.NewCompressReader(f)
 	}
+
+	if clean {
+		resetReader := strings.NewReader("drop schema public cascade; create schema public;")
+		err = kubernetes.Exec(client, postgresPod, buildCommand(sqlformat.Plain, false), resetReader, os.Stdout, false)
+		if err != nil {
+			return err
+		}
+	}
+
+	err = kubernetes.Exec(client, postgresPod, buildCommand(inputFormat, true), r, os.Stdout, false)
 	if err != nil {
 		return err
 	}
-	pw.Close()
 
-	err = <-ch
-	if err == nil {
-		log.Println("Finished")
+	err = kubernetes.Exec(client, postgresPod, buildCommand(sqlformat.Plain, false), strings.NewReader("analyze"), os.Stdout, false)
+	if err != nil {
+		return err
 	}
-	return err
+
+	log.Println("Finished")
+	return nil
 }
 
 func buildCommand(inputFormat sqlformat.Format, gunzip bool) []string {
