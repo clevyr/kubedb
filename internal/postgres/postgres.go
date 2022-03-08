@@ -19,7 +19,3 @@ func GetSecret(client kubernetes.KubeClient) (string, error) {
 	}
 	return string(secret.Data["postgresql-password"]), err
 }
-
-func PostgresExec() {
-
-}
