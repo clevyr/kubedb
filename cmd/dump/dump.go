@@ -9,6 +9,7 @@ import (
 	"github.com/clevyr/kubedb/internal/database/sqlformat"
 	"github.com/clevyr/kubedb/internal/gzips"
 	"github.com/clevyr/kubedb/internal/kubernetes"
+	"github.com/schollz/progressbar/v3"
 	"github.com/spf13/cobra"
 	"io"
 	_ "k8s.io/client-go/plugin/pkg/client/auth"
@@ -130,10 +131,14 @@ func run(cmd *cobra.Command, args []string) (err error) {
 		_ = w.Close()
 	}(w)
 
-	err = kubernetes.Exec(client, pod, buildCommand(db, conf), os.Stdin, w, false)
+	bar := progressbar.DefaultBytes(-1)
+
+	err = kubernetes.Exec(client, pod, buildCommand(db, conf), os.Stdin, io.MultiWriter(w, bar), false)
 	if err != nil {
 		return err
 	}
+
+	_ = bar.Finish()
 
 	// Close writer
 	err = w.Close()

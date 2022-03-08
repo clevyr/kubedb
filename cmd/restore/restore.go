@@ -1,12 +1,13 @@
 package restore
 
 import (
+	"compress/gzip"
 	"github.com/clevyr/kubedb/internal/cli"
 	"github.com/clevyr/kubedb/internal/config"
 	"github.com/clevyr/kubedb/internal/database"
 	"github.com/clevyr/kubedb/internal/database/sqlformat"
-	"github.com/clevyr/kubedb/internal/gzips"
 	"github.com/clevyr/kubedb/internal/kubernetes"
+	"github.com/schollz/progressbar/v3"
 	"github.com/spf13/cobra"
 	"io"
 	_ "k8s.io/client-go/plugin/pkg/client/auth"
@@ -97,6 +98,8 @@ func run(cmd *cobra.Command, args []string) (err error) {
 	}
 	defer f.Close()
 
+	pr, pw := io.Pipe()
+
 	log.Println("Restoring \"" + args[0] + "\" to \"" + pod.Name + "\"")
 
 	if !conf.Force {
@@ -105,31 +108,61 @@ func run(cmd *cobra.Command, args []string) (err error) {
 		}
 	}
 
-	var r io.Reader
+	ch := make(chan error, 1)
+	go func() {
+		var err error
+		defer func(pw *io.PipeWriter) {
+			_ = pw.Close()
+		}(pw)
+
+		if conf.Clean {
+			resetReader := strings.NewReader(db.DropDatabaseQuery(conf.Database))
+			err = kubernetes.Exec(client, pod, buildCommand(db, conf, sqlformat.Plain, false), resetReader, os.Stdout, false)
+			if err != nil {
+				ch <- err
+				return
+			}
+		}
+
+		err = kubernetes.Exec(client, pod, buildCommand(db, conf, inputFormat, true), pr, os.Stdout, false)
+		if err != nil {
+			ch <- err
+			return
+		}
+
+		analyzeReader := strings.NewReader(db.AnalyzeQuery())
+		err = kubernetes.Exec(client, pod, buildCommand(db, conf, sqlformat.Plain, false), analyzeReader, os.Stdout, false)
+		if err != nil {
+			ch <- err
+			return
+		}
+
+		ch <- nil
+	}()
+
+	bar := progressbar.DefaultBytes(-1)
+
 	switch inputFormat {
 	case sqlformat.Gzip, sqlformat.Custom:
-		r = f
+		_, err = io.Copy(io.MultiWriter(pw, bar), f)
+		if err != nil {
+			return err
+		}
 	case sqlformat.Plain:
-		r = gzips.NewCompressReader(f)
-	}
+		gzw := gzip.NewWriter(pw)
 
-	if conf.Clean {
-		resetReader := strings.NewReader(db.DropDatabaseQuery(conf.Database))
-		err = kubernetes.Exec(client, pod, buildCommand(db, conf, sqlformat.Plain, false), resetReader, os.Stdout, false)
+		_, err = io.Copy(io.MultiWriter(pw, bar), f)
+		if err != nil {
+			return err
+		}
+
+		err = gzw.Close()
 		if err != nil {
 			return err
 		}
 	}
 
-	err = kubernetes.Exec(client, pod, buildCommand(db, conf, inputFormat, true), r, os.Stdout, false)
-	if err != nil {
-		return err
-	}
-
-	err = kubernetes.Exec(client, pod, buildCommand(db, conf, sqlformat.Plain, false), strings.NewReader(db.AnalyzeQuery()), os.Stdout, false)
-	if err != nil {
-		return err
-	}
+	_ = bar.Finish()
 
 	log.Println("Finished")
 	return nil
