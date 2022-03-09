@@ -38,7 +38,7 @@ func run(cmd *cobra.Command, args []string) (err error) {
 	}
 	defer stdin.RestoreTerminal()
 
-	return conf.Client.Exec(conf.Pod, buildCommand(conf.Databaser, conf, args), stdin, os.Stdout, stdin.IsTerminal())
+	return conf.Client.Exec(conf.Pod, buildCommand(conf.Grammar, conf, args), stdin, os.Stdout, stdin.IsTerminal())
 }
 
 func buildCommand(db config.Databaser, conf config.Exec, args []string) []string {

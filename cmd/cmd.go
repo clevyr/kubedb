@@ -31,7 +31,7 @@ func init() {
 	}
 	Command.PersistentFlags().String("kubeconfig", kubeconfigDefault, "absolute path to the kubeconfig file")
 	Command.PersistentFlags().StringP("namespace", "n", "", "the namespace scope for this CLI request")
-	Command.PersistentFlags().String("type", "", "database type. one of: (postgres|mariadb)")
+	Command.PersistentFlags().String("grammar", "", "database grammar. one of: (postgres|mariadb)")
 
 	Command.PersistentFlags().Bool("github-actions", false, "Enables GitHub Actions log output")
 	_ = Command.PersistentFlags().MarkHidden("github-actions")

@@ -24,36 +24,36 @@ func DefaultSetup(cmd *cobra.Command, conf *config.Global) (err error) {
 	}
 	log.WithField("namespace", conf.Client.Namespace).Info("created kube client")
 
-	dbName, err := cmd.Flags().GetString("type")
+	grammarFlag, err := cmd.Flags().GetString("grammar")
 	if err != nil {
 		return err
 	}
 
-	if dbName == "" {
+	if grammarFlag == "" {
 		// Configure via detection
-		conf.Databaser, conf.Pod, err = database.DetectGrammar(conf.Client)
+		conf.Grammar, conf.Pod, err = database.DetectGrammar(conf.Client)
 		if err != nil {
 			return err
 		}
-		log.WithField("grammar", conf.Databaser.Name()).Info("detected database grammar")
+		log.WithField("grammar", conf.Grammar.Name()).Info("detected database grammar")
 	} else {
 		// Configure via flag
-		conf.Databaser, err = database.New(dbName)
+		conf.Grammar, err = database.New(grammarFlag)
 		if err != nil {
 			return err
 		}
-		log.WithField("grammar", conf.Databaser.Name()).Info("configured database grammar")
+		log.WithField("grammar", conf.Grammar.Name()).Info("configured database grammar")
 
-		conf.Pod, err = conf.Client.GetPodByQueries(conf.Databaser.PodLabels())
+		conf.Pod, err = conf.Client.GetPodByQueries(conf.Grammar.PodLabels())
 		if err != nil {
 			return err
 		}
 	}
 
 	if conf.Database == "" {
-		conf.Database, err = conf.Client.GetValueFromEnv(conf.Pod, conf.Databaser.DatabaseEnvNames())
+		conf.Database, err = conf.Client.GetValueFromEnv(conf.Pod, conf.Grammar.DatabaseEnvNames())
 		if err != nil {
-			conf.Database = conf.Databaser.DefaultDatabase()
+			conf.Database = conf.Grammar.DefaultDatabase()
 			log.WithField("database", conf.Database).Warn("could not configure database from pod env, using default")
 		} else {
 			log.WithField("database", conf.Database).Info("configured database from pod env")
@@ -61,9 +61,9 @@ func DefaultSetup(cmd *cobra.Command, conf *config.Global) (err error) {
 	}
 
 	if conf.Username == "" {
-		conf.Username, err = conf.Client.GetValueFromEnv(conf.Pod, conf.Databaser.UserEnvNames())
+		conf.Username, err = conf.Client.GetValueFromEnv(conf.Pod, conf.Grammar.UserEnvNames())
 		if err != nil {
-			conf.Username = conf.Databaser.DefaultUser()
+			conf.Username = conf.Grammar.DefaultUser()
 			log.WithField("user", conf.Username).Warn("could not configure user from pod env, using default")
 		} else {
 			log.WithField("user", conf.Username).Info("configured user from pod env")
@@ -71,7 +71,7 @@ func DefaultSetup(cmd *cobra.Command, conf *config.Global) (err error) {
 	}
 
 	if conf.Password == "" {
-		conf.Password, err = conf.Client.GetValueFromEnv(conf.Pod, conf.Databaser.PasswordEnvNames())
+		conf.Password, err = conf.Client.GetValueFromEnv(conf.Pod, conf.Grammar.PasswordEnvNames())
 		if err != nil {
 			return err
 		}

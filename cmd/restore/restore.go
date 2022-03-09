@@ -96,8 +96,8 @@ func run(cmd *cobra.Command, args []string) (err error) {
 
 		if conf.Clean {
 			log.Info("cleaning existing data")
-			resetReader := strings.NewReader(conf.Databaser.DropDatabaseQuery(conf.Database))
-			err = conf.Client.Exec(conf.Pod, buildCommand(conf.Databaser, conf, sqlformat.Plain, false), resetReader, os.Stdout, false)
+			resetReader := strings.NewReader(conf.Grammar.DropDatabaseQuery(conf.Database))
+			err = conf.Client.Exec(conf.Pod, buildCommand(conf.Grammar, conf, sqlformat.Plain, false), resetReader, os.Stdout, false)
 			if err != nil {
 				ch <- err
 				return
@@ -105,14 +105,14 @@ func run(cmd *cobra.Command, args []string) (err error) {
 		}
 
 		log.Info("restoring database")
-		err = conf.Client.Exec(conf.Pod, buildCommand(conf.Databaser, conf, inputFormat, true), pr, os.Stdout, false)
+		err = conf.Client.Exec(conf.Pod, buildCommand(conf.Grammar, conf, inputFormat, true), pr, os.Stdout, false)
 		if err != nil {
 			ch <- err
 			return
 		}
 
-		analyzeReader := strings.NewReader(conf.Databaser.AnalyzeQuery())
-		err = conf.Client.Exec(conf.Pod, buildCommand(conf.Databaser, conf, sqlformat.Plain, false), analyzeReader, os.Stdout, false)
+		analyzeReader := strings.NewReader(conf.Grammar.AnalyzeQuery())
+		err = conf.Client.Exec(conf.Pod, buildCommand(conf.Grammar, conf, sqlformat.Plain, false), analyzeReader, os.Stdout, false)
 		if err != nil {
 			ch <- err
 			return

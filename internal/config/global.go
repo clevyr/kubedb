@@ -6,10 +6,10 @@ import (
 )
 
 type Global struct {
-	Client    kubernetes.KubeClient
-	Databaser Databaser
-	Pod       v1.Pod
-	Database  string
-	Username  string
-	Password  string
+	Client   kubernetes.KubeClient
+	Grammar  Databaser
+	Pod      v1.Pod
+	Database string
+	Username string
+	Password string
 }
