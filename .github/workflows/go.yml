@@ -16,7 +16,7 @@ jobs:
       - name: Lint
         uses: golangci/golangci-lint-action@v2
         with:
-          version: v1.31
+          version: v1.44
           args: --timeout=5m
           skip-go-installation: true
 
