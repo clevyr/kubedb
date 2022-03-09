@@ -17,12 +17,13 @@ import (
 )
 
 var Command = &cobra.Command{
-	Use:     "restore",
-	Aliases: []string{"r"},
-	Short:   "Restore a database",
-	Args:    cobra.ExactArgs(1),
-	PreRunE: preRun,
-	RunE:    run,
+	Use:               "restore",
+	Aliases:           []string{"r"},
+	Short:             "Restore a database",
+	Args:              cobra.ExactArgs(1),
+	PreRunE:           preRun,
+	RunE:              run,
+	ValidArgsFunction: validArgs,
 }
 
 var (
@@ -40,6 +41,13 @@ func init() {
 	Command.Flags().BoolVarP(&conf.NoOwner, "no-owner", "O", true, "skip restoration of object ownership in plain-text format")
 
 	Command.Flags().BoolVarP(&conf.Force, "force", "f", false, "do not prompt before restore")
+}
+
+func validArgs(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
+	if len(args) != 0 {
+		return nil, cobra.ShellCompDirectiveNoFileComp
+	}
+	return []string{"sql", "sql.gz", "dmp"}, cobra.ShellCompDirectiveFilterFileExt
 }
 
 func preRun(cmd *cobra.Command, args []string) error {
