@@ -32,7 +32,7 @@ func (MariaDB) DropDatabaseQuery(database string) string {
 }
 
 func (MariaDB) AnalyzeQuery() string {
-	return ";"
+	return ""
 }
 
 func (MariaDB) PodLabels() []kubernetes.LabelQueryable {

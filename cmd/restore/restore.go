@@ -94,7 +94,7 @@ func run(cmd *cobra.Command, args []string) (err error) {
 			_ = pw.Close()
 		}(pw)
 
-		if conf.Clean {
+		if conf.Clean && conf.Grammar.DropDatabaseQuery(conf.Database) != "" {
 			log.Info("cleaning existing data")
 			resetReader := strings.NewReader(conf.Grammar.DropDatabaseQuery(conf.Database))
 			err = conf.Client.Exec(conf.Pod, buildCommand(conf.Grammar, conf, sqlformat.Plain, false), resetReader, os.Stdout, false)
@@ -111,11 +111,13 @@ func run(cmd *cobra.Command, args []string) (err error) {
 			return
 		}
 
-		analyzeReader := strings.NewReader(conf.Grammar.AnalyzeQuery())
-		err = conf.Client.Exec(conf.Pod, buildCommand(conf.Grammar, conf, sqlformat.Plain, false), analyzeReader, os.Stdout, false)
-		if err != nil {
-			ch <- err
-			return
+		if conf.Grammar.AnalyzeQuery() != "" {
+			analyzeReader := strings.NewReader(conf.Grammar.AnalyzeQuery())
+			err = conf.Client.Exec(conf.Pod, buildCommand(conf.Grammar, conf, sqlformat.Plain, false), analyzeReader, os.Stdout, false)
+			if err != nil {
+				ch <- err
+				return
+			}
 		}
 
 		ch <- nil
