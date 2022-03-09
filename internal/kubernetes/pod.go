@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	log "github.com/sirupsen/logrus"
 	"io"
 	v1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -63,6 +64,7 @@ func (client KubeClient) GetPodByQueries(queries []LabelQueryable) (v1.Pod, erro
 		var pod *v1.Pod
 		pod, err = query.FindPod(pods)
 		if errors.Is(err, ErrPodNotFound) {
+			log.Trace(err)
 			continue
 		}
 		return *pod, err
