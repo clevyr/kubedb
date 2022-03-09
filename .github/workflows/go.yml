@@ -1,7 +1,7 @@
 name: Go
 on: push
 env:
-  go_version: ^1.16
+  go_version: ^1.17
 jobs:
   lint:
     name: Lint
