@@ -1,9 +1,7 @@
 package config
 
 type Restore struct {
-	Database          string
-	Username          string
-	Password          string
+	Global
 	SingleTransaction bool
 	Clean             bool
 	NoOwner           bool

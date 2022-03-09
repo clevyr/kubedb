@@ -3,9 +3,7 @@ package config
 import "github.com/clevyr/kubedb/internal/database/sqlformat"
 
 type Dump struct {
-	Database         string
-	Username         string
-	Password         string
+	Global
 	Directory        string
 	OutputFormat     sqlformat.Format
 	IfExists         bool

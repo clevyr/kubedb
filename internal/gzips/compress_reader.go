@@ -3,7 +3,6 @@ package gzips
 import (
 	"compress/gzip"
 	"io"
-	"log"
 )
 
 func NewCompressReader(source io.Reader) io.Reader {
@@ -23,7 +22,6 @@ func NewCompressReader(source io.Reader) io.Reader {
 			_ = w.CloseWithError(err)
 			return
 		}
-		log.Println("done")
 	}()
 	return r
 }

@@ -2,12 +2,11 @@ package exec
 
 import (
 	"github.com/clevyr/kubedb/internal/config"
-	"github.com/clevyr/kubedb/internal/database"
-	"github.com/clevyr/kubedb/internal/kubernetes"
+	"github.com/clevyr/kubedb/internal/util"
 	"github.com/docker/cli/cli/streams"
+	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 	_ "k8s.io/client-go/plugin/pkg/client/auth"
-	"log"
 	"os"
 	"strings"
 )
@@ -17,57 +16,21 @@ var Command = &cobra.Command{
 	Aliases: []string{"e", "shell"},
 	Short:   "Connect to an interactive shell",
 	RunE:    run,
+	PreRunE: preRun,
 }
 
 var conf config.Exec
 
 func init() {
-	Command.Flags().StringVarP(&conf.Database, "dbname", "d", "", "database name to connect to")
-	Command.Flags().StringVarP(&conf.Username, "username", "U", "", "database username")
-	Command.Flags().StringVarP(&conf.Password, "password", "p", "", "database password")
+	util.DefaultFlags(Command, conf.Global)
+}
+
+func preRun(cmd *cobra.Command, args []string) error {
+	return util.DefaultSetup(cmd, &conf.Global)
 }
 
 func run(cmd *cobra.Command, args []string) (err error) {
-	cmd.SilenceUsage = true
-
-	dbName, err := cmd.Flags().GetString("type")
-	if err != nil {
-		return err
-	}
-	db, err := database.New(dbName)
-
-	client, err := kubernetes.CreateClientForCmd(cmd)
-	if err != nil {
-		return err
-	}
-
-	pod, err := client.GetPodByQueries(db.PodLabels())
-	if err != nil {
-		return err
-	}
-
-	if conf.Database == "" {
-		conf.Database, err = client.GetValueFromEnv(pod, db.DatabaseEnvNames())
-		if err != nil {
-			conf.Database = db.DefaultDatabase()
-		}
-	}
-
-	if conf.Username == "" {
-		conf.Username, err = client.GetValueFromEnv(pod, db.UserEnvNames())
-		if err != nil {
-			conf.Username = db.DefaultUser()
-		}
-	}
-
-	if conf.Password == "" {
-		conf.Password, err = client.GetValueFromEnv(pod, db.PasswordEnvNames())
-		if err != nil {
-			return err
-		}
-	}
-
-	log.Println("Exec into \"" + pod.Name + "\"")
+	log.WithField("pod", conf.Pod.Name).Info("exec into pod")
 
 	stdin := streams.NewIn(os.Stdin)
 	if err := stdin.SetRawTerminal(); err != nil {
@@ -75,10 +38,10 @@ func run(cmd *cobra.Command, args []string) (err error) {
 	}
 	defer stdin.RestoreTerminal()
 
-	return client.Exec(pod, buildCommand(db, conf, args), stdin, os.Stdout, stdin.IsTerminal())
+	return conf.Client.Exec(conf.Pod, buildCommand(conf.Databaser, conf, args), stdin, os.Stdout, stdin.IsTerminal())
 }
 
-func buildCommand(db database.Databaser, conf config.Exec, args []string) []string {
+func buildCommand(db config.Databaser, conf config.Exec, args []string) []string {
 	var cmd []string
 	if len(args) == 0 {
 		cmd = db.ExecCommand(conf)

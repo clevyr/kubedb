@@ -5,6 +5,7 @@ go 1.17
 require (
 	github.com/docker/cli v20.10.11+incompatible
 	github.com/schollz/progressbar/v3 v3.8.6
+	github.com/sirupsen/logrus v1.8.1
 	github.com/spf13/cobra v1.2.1
 	k8s.io/api v0.23.0
 	k8s.io/apimachinery v0.23.0
@@ -38,7 +39,6 @@ require (
 	github.com/modern-go/concurrent v0.0.0-20180306012644-bacd9c7ef1dd // indirect
 	github.com/modern-go/reflect2 v1.0.2 // indirect
 	github.com/rivo/uniseg v0.2.0 // indirect
-	github.com/sirupsen/logrus v1.8.1 // indirect
 	github.com/spf13/pflag v1.0.5 // indirect
 	golang.org/x/crypto v0.0.0-20220131195533-30dcbda58838 // indirect
 	golang.org/x/net v0.0.0-20211209124913-491a49abca63 // indirect

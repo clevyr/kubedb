@@ -5,15 +5,14 @@ import (
 	"errors"
 	"fmt"
 	"github.com/clevyr/kubedb/internal/config"
-	"github.com/clevyr/kubedb/internal/database"
 	"github.com/clevyr/kubedb/internal/database/sqlformat"
 	"github.com/clevyr/kubedb/internal/gzips"
-	"github.com/clevyr/kubedb/internal/kubernetes"
+	"github.com/clevyr/kubedb/internal/util"
 	"github.com/schollz/progressbar/v3"
+	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 	"io"
 	_ "k8s.io/client-go/plugin/pkg/client/auth"
-	"log"
 	"os"
 	"path"
 	"strings"
@@ -32,9 +31,8 @@ var Command = &cobra.Command{
 var conf config.Dump
 
 func init() {
-	Command.Flags().StringVarP(&conf.Database, "dbname", "d", "", "database name to connect to")
-	Command.Flags().StringVarP(&conf.Username, "username", "U", "", "database username")
-	Command.Flags().StringVarP(&conf.Password, "password", "p", "", "database password")
+	util.DefaultFlags(Command, conf.Global)
+
 	Command.Flags().StringVarP(&conf.Directory, "directory", "C", ".", "directory to dump to")
 
 	Command.Flags().StringP("format", "F", "g", "output file format ([g]zip, [c]ustom, [p]lain text)")
@@ -52,54 +50,17 @@ func preRun(cmd *cobra.Command, args []string) (err error) {
 	if err != nil {
 		return err
 	}
+
 	conf.OutputFormat, err = sqlformat.ParseFormat(formatStr)
 	if err != nil {
 		return err
 	}
-	return nil
+
+	return util.DefaultSetup(cmd, &conf.Global)
 }
 
 func run(cmd *cobra.Command, args []string) (err error) {
-	cmd.SilenceUsage = true
-
-	dbName, err := cmd.Flags().GetString("type")
-	if err != nil {
-		return err
-	}
-	db, err := database.New(dbName)
-
-	client, err := kubernetes.CreateClientForCmd(cmd)
-	if err != nil {
-		return err
-	}
-
-	pod, err := client.GetPodByQueries(db.PodLabels())
-	if err != nil {
-		return err
-	}
-
-	if conf.Database == "" {
-		conf.Database, err = client.GetValueFromEnv(pod, db.DatabaseEnvNames())
-		if err != nil {
-			conf.Database = db.DefaultDatabase()
-		}
-	}
-
-	if conf.Username == "" {
-		conf.Username, err = client.GetValueFromEnv(pod, db.UserEnvNames())
-		if err != nil {
-			conf.Username = db.DefaultUser()
-		}
-	}
-
-	if conf.Password == "" {
-		conf.Password, err = client.GetValueFromEnv(pod, db.PasswordEnvNames())
-		if err != nil {
-			return err
-		}
-	}
-
-	filename, err := generateFilename(conf.Directory, client.Namespace, conf.OutputFormat)
+	filename, err := generateFilename(conf.Directory, conf.Client.Namespace, conf.OutputFormat)
 	if err != nil {
 		return err
 	}
@@ -117,7 +78,10 @@ func run(cmd *cobra.Command, args []string) (err error) {
 	}
 	defer f.Close()
 
-	log.Println("Dumping \"" + pod.Name + "\" to \"" + filename + "\"")
+	log.WithFields(log.Fields{
+		"pod":  conf.Pod.Name,
+		"file": filename,
+	}).Info("exporting database")
 	if githubActions, _ := cmd.Flags().GetBool("github-actions"); githubActions {
 		fmt.Println("::set-output name=filename::" + filename)
 	}
@@ -140,7 +104,7 @@ func run(cmd *cobra.Command, args []string) (err error) {
 
 	bar := progressbar.DefaultBytes(-1)
 
-	err = client.Exec(pod, buildCommand(db, conf), os.Stdin, io.MultiWriter(w, bar), false)
+	err = conf.Client.Exec(conf.Pod, buildCommand(conf.Databaser, conf), os.Stdin, io.MultiWriter(w, bar), false)
 	if err != nil {
 		return err
 	}
@@ -168,7 +132,7 @@ func run(cmd *cobra.Command, args []string) (err error) {
 		}
 	}
 
-	log.Println("Finished")
+	log.Info("finished")
 	return nil
 }
 
@@ -199,7 +163,7 @@ func generateFilename(directory, namespace string, outputFormat sqlformat.Format
 	return tpl.String(), err
 }
 
-func buildCommand(db database.Databaser, conf config.Dump) []string {
+func buildCommand(db config.Databaser, conf config.Dump) []string {
 	cmd := db.DumpCommand(conf)
 	if conf.OutputFormat != sqlformat.Custom {
 		cmd = append(cmd, "|", "gzip", "--force")

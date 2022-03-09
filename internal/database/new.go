@@ -3,12 +3,13 @@ package database
 import (
 	"errors"
 	"fmt"
+	"github.com/clevyr/kubedb/internal/config"
 	"github.com/clevyr/kubedb/internal/database/grammar"
 )
 
 var ErrUnsupportedDatabase = errors.New("unsupported database")
 
-func New(name string) (Databaser, error) {
+func New(name string) (config.Databaser, error) {
 	switch name {
 	case "postgresql", "postgres", "psql", "pg":
 		return grammar.Postgres{}, nil

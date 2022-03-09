@@ -4,14 +4,13 @@ import (
 	"compress/gzip"
 	"github.com/clevyr/kubedb/internal/cli"
 	"github.com/clevyr/kubedb/internal/config"
-	"github.com/clevyr/kubedb/internal/database"
 	"github.com/clevyr/kubedb/internal/database/sqlformat"
-	"github.com/clevyr/kubedb/internal/kubernetes"
+	"github.com/clevyr/kubedb/internal/util"
 	"github.com/schollz/progressbar/v3"
+	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 	"io"
 	_ "k8s.io/client-go/plugin/pkg/client/auth"
-	"log"
 	"os"
 	"strings"
 )
@@ -31,9 +30,7 @@ var (
 )
 
 func init() {
-	Command.Flags().StringVarP(&conf.Database, "dbname", "d", "", "database name to connect to")
-	Command.Flags().StringVarP(&conf.Username, "username", "U", "", "database username")
-	Command.Flags().StringVarP(&conf.Password, "password", "p", "", "database password")
+	util.DefaultFlags(Command, conf.Global)
 
 	Command.Flags().StringP("format", "F", "", "input format. inferred by default ([g]zip, [c]ustom, [p]lain text)")
 
@@ -49,6 +46,7 @@ func preRun(cmd *cobra.Command, args []string) error {
 	if err != nil {
 		return err
 	}
+
 	inputFormat, err = sqlformat.ParseFormat(formatStr)
 	if err != nil {
 		inputFormat, err = sqlformat.ParseFilename(args[0])
@@ -56,49 +54,11 @@ func preRun(cmd *cobra.Command, args []string) error {
 			return err
 		}
 	}
-	return nil
+
+	return util.DefaultSetup(cmd, &conf.Global)
 }
 
 func run(cmd *cobra.Command, args []string) (err error) {
-	cmd.SilenceUsage = true
-
-	dbName, err := cmd.Flags().GetString("type")
-	if err != nil {
-		return err
-	}
-	db, err := database.New(dbName)
-
-	client, err := kubernetes.CreateClientForCmd(cmd)
-	if err != nil {
-		return err
-	}
-
-	pod, err := client.GetPodByQueries(db.PodLabels())
-	if err != nil {
-		return err
-	}
-
-	if conf.Database == "" {
-		conf.Database, err = client.GetValueFromEnv(pod, db.DatabaseEnvNames())
-		if err != nil {
-			conf.Database = db.DefaultDatabase()
-		}
-	}
-
-	if conf.Username == "" {
-		conf.Username, err = client.GetValueFromEnv(pod, db.UserEnvNames())
-		if err != nil {
-			conf.Username = db.DefaultUser()
-		}
-	}
-
-	if conf.Password == "" {
-		conf.Password, err = client.GetValueFromEnv(pod, db.PasswordEnvNames())
-		if err != nil {
-			return err
-		}
-	}
-
 	f, err := os.Open(args[0])
 	if err != nil {
 		return err
@@ -107,7 +67,10 @@ func run(cmd *cobra.Command, args []string) (err error) {
 
 	pr, pw := io.Pipe()
 
-	log.Println("Restoring \"" + args[0] + "\" to \"" + pod.Name + "\"")
+	log.WithFields(log.Fields{
+		"file": args[0],
+		"pod":  conf.Pod.Name,
+	}).Info("ready to restore database")
 
 	if !conf.Force {
 		if err = cli.Confirm(os.Stdin, false); err != nil {
@@ -123,24 +86,24 @@ func run(cmd *cobra.Command, args []string) (err error) {
 		}(pw)
 
 		if conf.Clean {
-			log.Println("Cleaning existing data")
-			resetReader := strings.NewReader(db.DropDatabaseQuery(conf.Database))
-			err = client.Exec(pod, buildCommand(db, conf, sqlformat.Plain, false), resetReader, os.Stdout, false)
+			log.Info("cleaning existing data")
+			resetReader := strings.NewReader(conf.Databaser.DropDatabaseQuery(conf.Database))
+			err = conf.Client.Exec(conf.Pod, buildCommand(conf.Databaser, conf, sqlformat.Plain, false), resetReader, os.Stdout, false)
 			if err != nil {
 				ch <- err
 				return
 			}
 		}
 
-		log.Println("Restoring database")
-		err = client.Exec(pod, buildCommand(db, conf, inputFormat, true), pr, os.Stdout, false)
+		log.Info("restoring database")
+		err = conf.Client.Exec(conf.Pod, buildCommand(conf.Databaser, conf, inputFormat, true), pr, os.Stdout, false)
 		if err != nil {
 			ch <- err
 			return
 		}
 
-		analyzeReader := strings.NewReader(db.AnalyzeQuery())
-		err = client.Exec(pod, buildCommand(db, conf, sqlformat.Plain, false), analyzeReader, os.Stdout, false)
+		analyzeReader := strings.NewReader(conf.Databaser.AnalyzeQuery())
+		err = conf.Client.Exec(conf.Pod, buildCommand(conf.Databaser, conf, sqlformat.Plain, false), analyzeReader, os.Stdout, false)
 		if err != nil {
 			ch <- err
 			return
@@ -173,11 +136,11 @@ func run(cmd *cobra.Command, args []string) (err error) {
 
 	_ = bar.Finish()
 
-	log.Println("Finished")
+	log.Info("finished")
 	return nil
 }
 
-func buildCommand(db database.Databaser, conf config.Restore, inputFormat sqlformat.Format, gunzip bool) []string {
+func buildCommand(db config.Databaser, conf config.Restore, inputFormat sqlformat.Format, gunzip bool) []string {
 	var cmd []string
 	switch inputFormat {
 	case sqlformat.Gzip, sqlformat.Plain:
