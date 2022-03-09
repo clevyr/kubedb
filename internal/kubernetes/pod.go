@@ -4,7 +4,6 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	log "github.com/sirupsen/logrus"
 	"io"
 	v1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -60,20 +59,16 @@ func (client KubeClient) GetPodByQueries(queries []LabelQueryable) (v1.Pod, erro
 		return v1.Pod{}, err
 	}
 
-	var errs []error
 	for _, query := range queries {
-		pod, err := query.FindPod(pods)
-		if err != nil {
-			errs = append(errs, err)
+		var pod *v1.Pod
+		pod, err = query.FindPod(pods)
+		if errors.Is(err, ErrPodNotFound) {
 			continue
 		}
-		return *pod, nil
+		return *pod, err
 	}
 
 	if errors.Is(err, ErrPodNotFound) {
-		for _, err := range errs {
-			log.Error(err)
-		}
 		err = ErrPodNotFound
 	}
 

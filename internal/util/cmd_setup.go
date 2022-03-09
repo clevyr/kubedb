@@ -28,15 +28,26 @@ func DefaultSetup(cmd *cobra.Command, conf *config.Global) (err error) {
 	if err != nil {
 		return err
 	}
-	conf.Databaser, err = database.New(dbName)
-	if err != nil {
-		return err
-	}
-	log.WithField("type", conf.Databaser.Name()).Info("configured database type")
 
-	conf.Pod, err = conf.Client.GetPodByQueries(conf.Databaser.PodLabels())
-	if err != nil {
-		return err
+	if dbName == "" {
+		// Configure via detection
+		conf.Databaser, conf.Pod, err = database.DetectGrammar(conf.Client)
+		if err != nil {
+			return err
+		}
+		log.WithField("grammar", conf.Databaser.Name()).Info("detected database grammar")
+	} else {
+		// Configure via flag
+		conf.Databaser, err = database.New(dbName)
+		if err != nil {
+			return err
+		}
+		log.WithField("grammar", conf.Databaser.Name()).Info("configured database grammar")
+
+		conf.Pod, err = conf.Client.GetPodByQueries(conf.Databaser.PodLabels())
+		if err != nil {
+			return err
+		}
 	}
 
 	if conf.Database == "" {
