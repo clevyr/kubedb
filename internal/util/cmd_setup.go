@@ -95,9 +95,9 @@ func DefaultSetup(cmd *cobra.Command, conf *config.Global) (err error) {
 		conf.Database, err = conf.Client.GetValueFromEnv(conf.Pod, conf.Grammar.DatabaseEnvNames())
 		if err != nil {
 			conf.Database = conf.Grammar.DefaultDatabase()
-			log.WithField("database", conf.Database).Warn("could not configure database from pod env, using default")
+			log.WithField("database", conf.Database).Warn("could not detect database from pod env, using default")
 		} else {
-			log.WithField("database", conf.Database).Info("configured database from pod env")
+			log.WithField("database", conf.Database).Info("detected database from pod env")
 		}
 	}
 
@@ -105,9 +105,9 @@ func DefaultSetup(cmd *cobra.Command, conf *config.Global) (err error) {
 		conf.Username, err = conf.Client.GetValueFromEnv(conf.Pod, conf.Grammar.UserEnvNames())
 		if err != nil {
 			conf.Username = conf.Grammar.DefaultUser()
-			log.WithField("user", conf.Username).Warn("could not configure user from pod env, using default")
+			log.WithField("user", conf.Username).Warn("could not detect user from pod env, using default")
 		} else {
-			log.WithField("user", conf.Username).Info("configured user from pod env")
+			log.WithField("user", conf.Username).Info("detected user from pod env")
 		}
 	}
 
