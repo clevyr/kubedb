@@ -37,7 +37,7 @@ func init() {
 	}
 	Command.PersistentFlags().String("kubeconfig", kubeconfigDefault, "absolute path to the kubeconfig file")
 	Command.PersistentFlags().StringP("namespace", "n", "", "the namespace scope for this CLI request")
-	Command.PersistentFlags().String("grammar", "", "database grammar. one of: (postgres|mariadb)")
+	Command.PersistentFlags().String("grammar", "", "database grammar. detected if not set. one of: (postgres|mariadb)")
 
 	Command.PersistentFlags().String("log-level", DefaultLogLevel, "log level. one of: trace|debug|info|warning|error|fatal|panic")
 	Command.PersistentFlags().String("log-format", DefaultLogFormat, "log formatter. one of: text|json")
