@@ -34,3 +34,9 @@ brews:
       owner: clevyr
       name: homebrew-tap
     folder: Formula
+    install: |
+      bin.install "{{ .ProjectName }}"
+      output = Utils.safe_popen_read("#{bin}/{{ .ProjectName }}", "completion", "bash")
+      (bash_completion/"{{ .ProjectName }}").write output
+      output = Utils.safe_popen_read("#{bin}/{{ .ProjectName }}", "completion", "zsh")
+      (zsh_completion/"_{{ .ProjectName }}").write output
