@@ -3,6 +3,7 @@ module github.com/clevyr/kubedb
 go 1.17
 
 require (
+	github.com/AlecAivazis/survey/v2 v2.3.2
 	github.com/docker/cli v20.10.11+incompatible
 	github.com/schollz/progressbar/v3 v3.8.6
 	github.com/sirupsen/logrus v1.8.1
@@ -32,7 +33,11 @@ require (
 	github.com/imdario/mergo v0.3.12 // indirect
 	github.com/inconshreveable/mousetrap v1.0.0 // indirect
 	github.com/json-iterator/go v1.1.12 // indirect
+	github.com/kballard/go-shellquote v0.0.0-20180428030007-95032a82bc51 // indirect
+	github.com/mattn/go-colorable v0.1.2 // indirect
+	github.com/mattn/go-isatty v0.0.14 // indirect
 	github.com/mattn/go-runewidth v0.0.13 // indirect
+	github.com/mgutz/ansi v0.0.0-20170206155736-9520e82c474b // indirect
 	github.com/mitchellh/colorstring v0.0.0-20190213212951-d06e56a500db // indirect
 	github.com/moby/spdystream v0.2.0 // indirect
 	github.com/moby/term v0.0.0-20210619224110-3f7ff695adc6 // indirect

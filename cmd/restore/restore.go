@@ -2,7 +2,8 @@ package restore
 
 import (
 	"compress/gzip"
-	"github.com/clevyr/kubedb/internal/cli"
+	"fmt"
+	"github.com/AlecAivazis/survey/v2"
 	"github.com/clevyr/kubedb/internal/config"
 	"github.com/clevyr/kubedb/internal/database/sqlformat"
 	"github.com/clevyr/kubedb/internal/util"
@@ -73,8 +74,16 @@ func run(cmd *cobra.Command, args []string) (err error) {
 	}).Info("ready to restore database")
 
 	if !conf.Force {
-		if err = cli.Confirm(os.Stdin, false); err != nil {
+		var response bool
+		err = survey.AskOne(&survey.Confirm{
+			Message: "Restore to " + conf.Pod.Name + " in " + conf.Client.Namespace + "?",
+		}, &response)
+		if err != nil {
 			return err
+		}
+		if !response {
+			fmt.Println("restore canceled")
+			return
 		}
 	}
 
