@@ -1,4 +1,4 @@
-package database
+package grammar
 
 import (
 	"github.com/clevyr/kubedb/internal/config"
