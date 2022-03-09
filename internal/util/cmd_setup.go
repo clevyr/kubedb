@@ -47,7 +47,7 @@ func DefaultSetup(cmd *cobra.Command, conf *config.Global) (err error) {
 		}
 		log.WithField("grammar", conf.Grammar.Name()).Info("configured database grammar")
 
-		pods, err = conf.Client.GetPodsByQueries(conf.Grammar.PodLabels())
+		pods, err = conf.Client.GetPodsFiltered(conf.Grammar.PodLabels())
 		if err != nil {
 			return err
 		}
