@@ -31,7 +31,7 @@ var (
 )
 
 func init() {
-	util.DefaultFlags(Command, conf.Global)
+	util.DefaultFlags(Command, &conf.Global)
 
 	Command.Flags().StringP("format", "F", "", "input format. inferred by default ([g]zip, [c]ustom, [p]lain text)")
 

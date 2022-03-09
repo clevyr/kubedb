@@ -31,7 +31,7 @@ var Command = &cobra.Command{
 var conf config.Dump
 
 func init() {
-	util.DefaultFlags(Command, conf.Global)
+	util.DefaultFlags(Command, &conf.Global)
 
 	Command.Flags().StringVarP(&conf.Directory, "directory", "C", ".", "directory to dump to")
 

@@ -10,7 +10,7 @@ import (
 	v1 "k8s.io/api/core/v1"
 )
 
-func DefaultFlags(cmd *cobra.Command, conf config.Global) {
+func DefaultFlags(cmd *cobra.Command, conf *config.Global) {
 	cmd.Flags().StringVarP(&conf.Database, "dbname", "d", "", "database name to connect to")
 	cmd.Flags().StringVarP(&conf.Username, "username", "U", "", "database username")
 	cmd.Flags().StringVarP(&conf.Password, "password", "p", "", "database password")
