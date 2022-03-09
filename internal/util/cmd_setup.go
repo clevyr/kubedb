@@ -11,6 +11,7 @@ import (
 	"github.com/spf13/cobra"
 	v1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"strings"
 )
 
 func DefaultFlags(cmd *cobra.Command, conf *config.Global) {
@@ -65,6 +66,10 @@ func DefaultSetup(cmd *cobra.Command, conf *config.Global) (err error) {
 				return err
 			}
 		} else {
+			slashIdx := strings.IndexRune(podFlag, '/')
+			if slashIdx != 0 && slashIdx+1 < len(podFlag) {
+				podFlag = podFlag[slashIdx+1:]
+			}
 			pod, err := conf.Client.Pods().Get(context.Background(), podFlag, metav1.GetOptions{})
 			if err != nil {
 				return err
