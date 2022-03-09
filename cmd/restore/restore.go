@@ -68,13 +68,6 @@ func run(cmd *cobra.Command, args []string) (err error) {
 	}
 	db, err := database.New(dbName)
 
-	if conf.Database == "" {
-		conf.Database = db.DefaultDatabase()
-	}
-	if conf.Username == "" {
-		conf.Username = db.DefaultUser()
-	}
-
 	client, err := kubernetes.CreateClientForCmd(cmd)
 	if err != nil {
 		return err
@@ -85,8 +78,22 @@ func run(cmd *cobra.Command, args []string) (err error) {
 		return err
 	}
 
+	if conf.Database == "" {
+		conf.Database, err = client.GetValueFromEnv(pod, db.DatabaseEnvNames())
+		if err != nil {
+			conf.Database = db.DefaultDatabase()
+		}
+	}
+
+	if conf.Username == "" {
+		conf.Username, err = client.GetValueFromEnv(pod, db.UserEnvNames())
+		if err != nil {
+			conf.Username = db.DefaultUser()
+		}
+	}
+
 	if conf.Password == "" {
-		conf.Password, err = client.GetSecretFromEnv(pod, db.PasswordEnvNames())
+		conf.Password, err = client.GetValueFromEnv(pod, db.PasswordEnvNames())
 		if err != nil {
 			return err
 		}

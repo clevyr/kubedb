@@ -11,9 +11,16 @@ type MariaDB struct{}
 func (MariaDB) Name() string {
 	return "mariadb"
 }
+func (MariaDB) DatabaseEnvNames() []string {
+	return []string{"MARIADB_DATABASE"}
+}
 
 func (MariaDB) DefaultDatabase() string {
 	return "db"
+}
+
+func (MariaDB) UserEnvNames() []string {
+	return []string{"MARIADB_USER"}
 }
 
 func (MariaDB) DefaultUser() string {

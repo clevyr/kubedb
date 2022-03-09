@@ -8,8 +8,13 @@ import (
 
 type Databaser interface {
 	Name() string
+
+	DatabaseEnvNames() []string
 	DefaultDatabase() string
+
+	UserEnvNames() []string
 	DefaultUser() string
+
 	DropDatabaseQuery(database string) string
 	AnalyzeQuery() string
 	PodLabels() []kubernetes.LabelQueryable

@@ -12,8 +12,16 @@ func (Postgres) Name() string {
 	return "postgres"
 }
 
+func (Postgres) DatabaseEnvNames() []string {
+	return []string{"POSTGRES_DB"}
+}
+
 func (Postgres) DefaultDatabase() string {
 	return "db"
+}
+
+func (Postgres) UserEnvNames() []string {
+	return []string{"POSTGRES_USER", "PGPOOL_POSTGRES_USERNAME"}
 }
 
 func (Postgres) DefaultUser() string {

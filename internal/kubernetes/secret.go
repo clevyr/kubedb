@@ -8,39 +8,45 @@ import (
 	v1meta "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
-func FindSecretKeyRef(pod v1.Pod, envName string) *v1.SecretKeySelector {
+var ErrEnvVarNotFound = errors.New("env var not found")
+
+func FindEnvVar(pod v1.Pod, envName string) (*v1.EnvVar, error) {
 	for _, container := range pod.Spec.Containers {
 		for _, env := range container.Env {
 			if env.Name == envName {
-				return env.ValueFrom.SecretKeyRef
+				return &env, nil
 			}
 		}
 	}
-	return nil
+	return nil, fmt.Errorf("%v: %s", ErrEnvVarNotFound, envName)
 }
-
-var ErrNoSecret = errors.New("secret not found")
 
 var ErrSecretDoesNotHaveKey = errors.New("secret does not have key")
 
-func (client KubeClient) GetSecretFromEnv(pod v1.Pod, envNames []string) (string, error) {
-	var secretKeyRef *v1.SecretKeySelector
+func (client KubeClient) GetValueFromEnv(pod v1.Pod, envNames []string) (string, error) {
+	var err error
+	var envVar *v1.EnvVar
 	for _, envName := range envNames {
-		secretKeyRef = FindSecretKeyRef(pod, envName)
-		if secretKeyRef != nil {
+		envVar, err = FindEnvVar(pod, envName)
+		if err == nil {
 			break
 		}
 	}
-	if secretKeyRef == nil {
-		return "", ErrNoSecret
-	}
-	secret, err := client.Secrets().Get(context.Background(), secretKeyRef.Name, v1meta.GetOptions{})
 	if err != nil {
 		return "", err
 	}
-	data, ok := secret.Data[secretKeyRef.Key]
-	if !ok {
-		return "", fmt.Errorf("%w: %v", ErrSecretDoesNotHaveKey, secretKeyRef)
+
+	if envVar.ValueFrom != nil && envVar.ValueFrom.SecretKeyRef != nil {
+		secretKeyRef := envVar.ValueFrom.SecretKeyRef
+		secret, err := client.Secrets().Get(context.Background(), secretKeyRef.Name, v1meta.GetOptions{})
+		if err != nil {
+			return "", err
+		}
+		data, ok := secret.Data[secretKeyRef.Key]
+		if !ok {
+			return "", fmt.Errorf("%w: %v", ErrSecretDoesNotHaveKey, secretKeyRef)
+		}
+		return string(data), nil
 	}
-	return string(data), nil
+	return envVar.Value, nil
 }
