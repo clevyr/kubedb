@@ -1,6 +1,8 @@
 package util
 
 import (
+	"context"
+	"errors"
 	"github.com/AlecAivazis/survey/v2"
 	"github.com/clevyr/kubedb/internal/config"
 	"github.com/clevyr/kubedb/internal/database"
@@ -8,13 +10,13 @@ import (
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 	v1 "k8s.io/api/core/v1"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
 func DefaultFlags(cmd *cobra.Command, conf *config.Global) {
 	cmd.Flags().StringVarP(&conf.Database, "dbname", "d", "", "database name to connect to")
 	cmd.Flags().StringVarP(&conf.Username, "username", "U", "", "database username")
 	cmd.Flags().StringVarP(&conf.Password, "password", "p", "", "database password")
-
 }
 
 func DefaultSetup(cmd *cobra.Command, conf *config.Global) (err error) {
@@ -29,6 +31,16 @@ func DefaultSetup(cmd *cobra.Command, conf *config.Global) (err error) {
 	grammarFlag, err := cmd.Flags().GetString("grammar")
 	if err != nil {
 		return err
+	}
+
+	podFlag, err := cmd.Flags().GetString("pod")
+	if err != nil {
+		return err
+	}
+
+	if podFlag != "" && grammarFlag == "" {
+		cmd.SilenceUsage = false
+		return errors.New("pod flag is set, but grammar is missing. please add --grammar")
 	}
 
 	var pods []v1.Pod
@@ -47,9 +59,17 @@ func DefaultSetup(cmd *cobra.Command, conf *config.Global) (err error) {
 		}
 		log.WithField("grammar", conf.Grammar.Name()).Info("configured database grammar")
 
-		pods, err = conf.Client.GetPodsFiltered(conf.Grammar.PodLabels())
-		if err != nil {
-			return err
+		if podFlag == "" {
+			pods, err = conf.Client.GetPodsFiltered(conf.Grammar.PodLabels())
+			if err != nil {
+				return err
+			}
+		} else {
+			pod, err := conf.Client.Pods().Get(context.Background(), podFlag, metav1.GetOptions{})
+			if err != nil {
+				return err
+			}
+			pods = []v1.Pod{*pod}
 		}
 	}
 
