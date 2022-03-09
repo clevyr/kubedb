@@ -54,25 +54,29 @@ func (client KubeClient) Exec(pod v1.Pod, command []string, stdin io.Reader, std
 	return err
 }
 
-func (client KubeClient) GetPodByQueries(queries []LabelQueryable) (v1.Pod, error) {
+func (client KubeClient) GetPodsByQueries(queries []LabelQueryable) ([]v1.Pod, error) {
 	pods, err := GetNamespacedPods(client)
 	if err != nil {
-		return v1.Pod{}, err
+		return []v1.Pod{}, err
 	}
 
+	var foundPods []v1.Pod
 	for _, query := range queries {
-		var pod *v1.Pod
-		pod, err = query.FindPod(pods)
+		var p []v1.Pod
+		p, err = query.FindPods(pods)
 		if errors.Is(err, ErrPodNotFound) {
 			log.Trace(err)
 			continue
 		}
-		return *pod, err
+		foundPods = append(foundPods, p...)
 	}
 
-	if errors.Is(err, ErrPodNotFound) {
-		err = ErrPodNotFound
-	}
+	if len(foundPods) == 0 {
+		if errors.Is(err, ErrPodNotFound) {
+			err = ErrPodNotFound
+		}
 
-	return v1.Pod{}, err
+		return []v1.Pod{}, err
+	}
+	return foundPods, nil
 }

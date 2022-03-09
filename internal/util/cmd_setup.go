@@ -1,11 +1,13 @@
 package util
 
 import (
+	"github.com/AlecAivazis/survey/v2"
 	"github.com/clevyr/kubedb/internal/config"
 	"github.com/clevyr/kubedb/internal/database"
 	"github.com/clevyr/kubedb/internal/kubernetes"
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
+	v1 "k8s.io/api/core/v1"
 )
 
 func DefaultFlags(cmd *cobra.Command, conf config.Global) {
@@ -29,9 +31,10 @@ func DefaultSetup(cmd *cobra.Command, conf *config.Global) (err error) {
 		return err
 	}
 
+	var pods []v1.Pod
 	if grammarFlag == "" {
 		// Configure via detection
-		conf.Grammar, conf.Pod, err = database.DetectGrammar(conf.Client)
+		conf.Grammar, pods, err = database.DetectGrammar(conf.Client)
 		if err != nil {
 			return err
 		}
@@ -44,10 +47,28 @@ func DefaultSetup(cmd *cobra.Command, conf *config.Global) (err error) {
 		}
 		log.WithField("grammar", conf.Grammar.Name()).Info("configured database grammar")
 
-		conf.Pod, err = conf.Client.GetPodByQueries(conf.Grammar.PodLabels())
+		pods, err = conf.Client.GetPodsByQueries(conf.Grammar.PodLabels())
 		if err != nil {
 			return err
 		}
+	}
+
+	if len(pods) == 1 {
+		conf.Pod = pods[0]
+	} else {
+		names := make([]string, 0, len(pods))
+		for _, pod := range pods {
+			names = append(names, pod.Name)
+		}
+		var idx int
+		err = survey.AskOne(&survey.Select{
+			Message: "Found multiple database pods. Select the desired instance.",
+			Options: names,
+		}, &idx)
+		if err != nil {
+			return err
+		}
+		conf.Pod = pods[idx]
 	}
 
 	if conf.Database == "" {

@@ -10,17 +10,17 @@ import (
 
 var ErrDatabaseNotFound = errors.New("could not detect a database")
 
-func DetectGrammar(client kubernetes.KubeClient) (config.Databaser, v1.Pod, error) {
+func DetectGrammar(client kubernetes.KubeClient) (config.Databaser, []v1.Pod, error) {
 	grammars := []config.Databaser{
 		grammar.Postgres{},
 		grammar.MariaDB{},
 	}
 
 	for _, g := range grammars {
-		pod, err := client.GetPodByQueries(g.PodLabels())
+		pods, err := client.GetPodsByQueries(g.PodLabels())
 		if err == nil {
-			return g, pod, nil
+			return g, pods, nil
 		}
 	}
-	return nil, v1.Pod{}, ErrDatabaseNotFound
+	return nil, []v1.Pod{}, ErrDatabaseNotFound
 }

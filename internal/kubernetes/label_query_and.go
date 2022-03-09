@@ -16,7 +16,7 @@ func (queries LabelQueryAnd) Matches(pod v1.Pod) bool {
 	return false
 }
 
-func (queries LabelQueryAnd) FindPod(list *v1.PodList) (*v1.Pod, error) {
+func (queries LabelQueryAnd) FindPods(list *v1.PodList) (pods []v1.Pod, err error) {
 	for _, pod := range list.Items {
 		var match bool
 		for _, query := range queries {
@@ -28,8 +28,12 @@ func (queries LabelQueryAnd) FindPod(list *v1.PodList) (*v1.Pod, error) {
 			}
 		}
 		if match {
-			return &pod, nil
+			pods = append(pods, pod)
 		}
 	}
-	return nil, fmt.Errorf("%w: %v", ErrPodNotFound, queries)
+
+	if len(pods) == 0 {
+		err = fmt.Errorf("%w: %v", ErrPodNotFound, queries)
+	}
+	return pods, err
 }
