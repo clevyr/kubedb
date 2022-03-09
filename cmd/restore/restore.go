@@ -6,8 +6,8 @@ import (
 	"github.com/AlecAivazis/survey/v2"
 	"github.com/clevyr/kubedb/internal/config"
 	"github.com/clevyr/kubedb/internal/database/sqlformat"
+	"github.com/clevyr/kubedb/internal/progressbar"
 	"github.com/clevyr/kubedb/internal/util"
-	"github.com/schollz/progressbar/v3"
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 	"io"
@@ -123,7 +123,7 @@ func run(cmd *cobra.Command, args []string) (err error) {
 		ch <- nil
 	}()
 
-	bar := progressbar.DefaultBytes(-1)
+	bar := progressbar.New()
 
 	switch inputFormat {
 	case sqlformat.Gzip, sqlformat.Custom:
