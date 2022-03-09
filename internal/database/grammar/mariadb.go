@@ -37,13 +37,10 @@ func (MariaDB) AnalyzeQuery() string {
 
 func (MariaDB) PodLabels() []kubernetes.LabelQueryable {
 	return []kubernetes.LabelQueryable{
-		kubernetes.LabelQuery{
-			Name:  "app",
-			Value: "mariadb",
-		},
+		kubernetes.LabelQuery{Name: "app", Value: "mariadb"},
 		kubernetes.LabelQueryAnd{
-			{"app.kubernetes.io/name", "mariadb"},
-			{"app.kubernetes.io/component", "primary"},
+			{Name: "app.kubernetes.io/name", Value: "mariadb"},
+			{Name: "app.kubernetes.io/component", Value: "primary"},
 		},
 	}
 }
@@ -61,9 +58,7 @@ func (MariaDB) DumpCommand(conf config.Dump) []string {
 	if conf.Clean {
 		cmd = append(cmd, "--add-drop-table")
 	}
-	for _, table := range conf.Tables {
-		cmd = append(cmd, table)
-	}
+	cmd = append(cmd, conf.Tables...)
 	for _, table := range conf.ExcludeTable {
 		cmd = append(cmd, "--ignore-table='"+table+"'")
 	}
