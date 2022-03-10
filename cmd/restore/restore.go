@@ -18,13 +18,15 @@ import (
 )
 
 var Command = &cobra.Command{
-	Use:               "restore",
-	Aliases:           []string{"r", "import"},
-	Short:             "restore a database from a sql file",
+	Use:     "restore",
+	Aliases: []string{"r", "import"},
+	Short:   "restore a database from a sql file",
+
 	Args:              cobra.ExactArgs(1),
-	PreRunE:           preRun,
-	RunE:              run,
 	ValidArgsFunction: validArgs,
+
+	PreRunE: preRun,
+	RunE:    run,
 }
 
 var (
