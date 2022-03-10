@@ -153,7 +153,7 @@ func run(cmd *cobra.Command, args []string) (err error) {
 
 	_ = bar.Finish()
 
-	log.Info("finished")
+	log.WithField("file", args[0]).Info("restore complete")
 	return nil
 }
 

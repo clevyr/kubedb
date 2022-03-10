@@ -133,7 +133,7 @@ func run(cmd *cobra.Command, args []string) (err error) {
 		}
 	}
 
-	log.Info("finished")
+	log.WithField("file", filename).Info("dump complete")
 	return nil
 }
 
