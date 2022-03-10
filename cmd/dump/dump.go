@@ -25,6 +25,10 @@ var Command = &cobra.Command{
 	Use:     "dump",
 	Aliases: []string{"d", "export"},
 	Short:   "dump a database to a sql file",
+
+	Args:              cobra.MaximumNArgs(1),
+	ValidArgsFunction: validArgs,
+
 	PreRunE: preRun,
 	RunE:    run,
 }
@@ -43,6 +47,13 @@ func init() {
 	flags.ExcludeTableData(Command, &conf.ExcludeTableData)
 }
 
+func validArgs(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
+	if len(args) != 0 {
+		return nil, cobra.ShellCompDirectiveNoFileComp
+	}
+	return []string{"sql", "sql.gz", "dmp"}, cobra.ShellCompDirectiveFilterFileExt
+}
+
 func preRun(cmd *cobra.Command, args []string) (err error) {
 	formatStr, err := cmd.Flags().GetString("format")
 	if err != nil {
@@ -58,9 +69,14 @@ func preRun(cmd *cobra.Command, args []string) (err error) {
 }
 
 func run(cmd *cobra.Command, args []string) (err error) {
-	filename, err := generateFilename(conf.Directory, conf.Client.Namespace, conf.OutputFormat)
-	if err != nil {
-		return err
+	var filename string
+	if len(args) > 0 {
+		filename = args[1]
+	} else {
+		filename, err = generateFilename(conf.Directory, conf.Client.Namespace, conf.OutputFormat)
+		if err != nil {
+			return err
+		}
 	}
 
 	if _, err := os.Stat(path.Dir(filename)); os.IsNotExist(err) {
