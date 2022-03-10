@@ -14,7 +14,7 @@ import (
 var Command = &cobra.Command{
 	Use:     "exec",
 	Aliases: []string{"e", "shell"},
-	Short:   "Connect to an interactive shell",
+	Short:   "connect to an interactive shell",
 	RunE:    run,
 	PreRunE: preRun,
 }

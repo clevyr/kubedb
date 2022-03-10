@@ -24,7 +24,7 @@ import (
 var Command = &cobra.Command{
 	Use:     "dump",
 	Aliases: []string{"d"},
-	Short:   "Dump a database",
+	Short:   "dump a database to a sql file",
 	PreRunE: preRun,
 	RunE:    run,
 }

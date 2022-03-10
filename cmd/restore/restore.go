@@ -20,7 +20,7 @@ import (
 var Command = &cobra.Command{
 	Use:               "restore",
 	Aliases:           []string{"r"},
-	Short:             "Restore a database",
+	Short:             "restore a database from a sql file",
 	Args:              cobra.ExactArgs(1),
 	PreRunE:           preRun,
 	RunE:              run,
