@@ -22,9 +22,14 @@ import (
 )
 
 var Command = &cobra.Command{
-	Use:     "dump",
+	Use:     "dump [filename]",
 	Aliases: []string{"d", "export"},
 	Short:   "dump a database to a sql file",
+	Long: `The "dump" command dumps a running database to a sql file.
+
+If no filename is provided, the filename will be generated.
+For example, if a dump is performed in the namespace "clevyr" with no extra flags,
+the generated filename might look like "clevyr_2022-04-01_094100.sql.gz"`,
 
 	Args:              cobra.MaximumNArgs(1),
 	ValidArgsFunction: validArgs,

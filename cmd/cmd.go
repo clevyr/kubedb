@@ -16,9 +16,26 @@ var (
 )
 
 var Command = &cobra.Command{
-	Use:               "kubedb",
-	Short:             "Interact with a database inside of Kubernetes",
-	Version:           buildVersion(),
+	Use:     "kubedb",
+	Short:   "interact with a database inside of Kubernetes",
+	Version: buildVersion(),
+	Long: `kubedb is a command to interact with a database running in a Kubernetes cluster.
+
+Multiple database types (referred to as the "grammar") are supported.
+If the grammar is not configured via flag, it will be detected dynamically.
+
+Supported Database Grammars:
+  - PostgreSQL
+  - MariaDB
+
+If not configured via flag, some configuration variables will be loaded from the target pod's env vars.
+
+Dynamic Env Var Variables:
+  - Database (fallback value: "db")
+  - Username (fallback value: "db" if PostgreSQL, "mariadb" if MariaDB)
+  - Password (required)
+`,
+
 	PersistentPreRunE: preRun,
 }
 
