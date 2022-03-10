@@ -3,6 +3,7 @@ package dump
 import (
 	"fmt"
 	"github.com/clevyr/kubedb/internal/database/sqlformat"
+	"path/filepath"
 	"strings"
 	"testing"
 )
@@ -18,16 +19,20 @@ func TestGenerateFilename(t *testing.T) {
 		{"/home/test", "another", sqlformat.Plain, nil},
 	}
 	for _, tc := range testCases {
-        tc := tc // capture range variable
+		tc := tc // capture range variable
 		t.Run(fmt.Sprintf("%v in %v to %v with error %v", tc.directory, tc.namespace, tc.filetype, tc.err), func(t *testing.T) {
-            t.Parallel()
-			filename, err := generateFilename(tc.directory, tc.namespace, tc.filetype)
+			t.Parallel()
+			filename, err := Filename{
+				Dir:       tc.directory,
+				Namespace: tc.namespace,
+				Format:    tc.filetype,
+			}.Generate()
 			if err != tc.err {
 				t.Error(err)
 			}
-			expected := tc.directory + "/" + tc.namespace + "-"
+			expected := filepath.Clean(tc.directory + "/" + tc.namespace + "_")
 			if !strings.HasPrefix(filename, expected) {
-				t.Errorf("got %v; expected %v", filename, expected)
+				t.Errorf("got %v; expected %#v", filename, expected)
 			}
 		})
 	}
