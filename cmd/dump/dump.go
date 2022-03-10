@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"github.com/clevyr/kubedb/internal/config"
+	"github.com/clevyr/kubedb/internal/config/flags"
 	"github.com/clevyr/kubedb/internal/database/sqlformat"
 	"github.com/clevyr/kubedb/internal/gzips"
 	"github.com/clevyr/kubedb/internal/progressbar"
@@ -32,17 +33,14 @@ var conf config.Dump
 
 func init() {
 	util.DefaultFlags(Command, &conf.Global)
-
-	Command.Flags().StringVarP(&conf.Directory, "directory", "C", ".", "directory to dump to")
-
-	Command.Flags().StringP("format", "F", "g", "output file format ([g]zip, [c]ustom, [p]lain text)")
-
-	Command.Flags().BoolVar(&conf.IfExists, "if-exists", true, "use IF EXISTS when dropping objects")
-	Command.Flags().BoolVarP(&conf.Clean, "clean", "c", true, "clean (drop) database objects before recreating")
-	Command.Flags().BoolVarP(&conf.NoOwner, "no-owner", "O", true, "skip restoration of object ownership in plain-text format")
-	Command.Flags().StringSliceVarP(&conf.Tables, "table", "t", []string{}, "dump the specified table(s) only")
-	Command.Flags().StringSliceVarP(&conf.ExcludeTable, "exclude-table", "T", []string{}, "do NOT dump the specified table(s)")
-	Command.Flags().StringSliceVar(&conf.ExcludeTableData, "exclude-table-data", []string{}, "do NOT dump data for the specified table(s)")
+	flags.Directory(Command, &conf.Directory)
+	flags.Format(Command)
+	flags.IfExists(Command, &conf.IfExists)
+	flags.Clean(Command, &conf.Clean)
+	flags.NoOwner(Command, &conf.NoOwner)
+	flags.Tables(Command, &conf.Tables)
+	flags.ExcludeTable(Command, &conf.ExcludeTable)
+	flags.ExcludeTableData(Command, &conf.ExcludeTableData)
 }
 
 func preRun(cmd *cobra.Command, args []string) (err error) {

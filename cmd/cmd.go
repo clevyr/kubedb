@@ -5,10 +5,9 @@ import (
 	"github.com/clevyr/kubedb/cmd/dump"
 	"github.com/clevyr/kubedb/cmd/exec"
 	"github.com/clevyr/kubedb/cmd/restore"
+	"github.com/clevyr/kubedb/internal/config/flags"
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
-	"k8s.io/client-go/util/homedir"
-	"path/filepath"
 )
 
 var (
@@ -45,26 +44,16 @@ func Execute() error {
 	return Command.Execute()
 }
 
-const DefaultLogLevel = "info"
-const DefaultLogFormat = "text"
-
 func init() {
 	cobra.OnInitialize(initLog)
 
-	var kubeconfigDefault string
-	if home := homedir.HomeDir(); home != "" {
-		kubeconfigDefault = filepath.Join(home, ".kube", "config")
-	}
-	Command.PersistentFlags().String("kubeconfig", kubeconfigDefault, "absolute path to the kubeconfig file")
-	Command.PersistentFlags().StringP("namespace", "n", "", "the namespace scope for this CLI request")
-	Command.PersistentFlags().String("grammar", "", "database grammar. detected if not set. one of: (postgres|mariadb)")
-	Command.PersistentFlags().String("pod", "", "force a specific pod. if this flag is set, grammar is required.")
-
-	Command.PersistentFlags().String("log-level", DefaultLogLevel, "log level. one of: trace|debug|info|warning|error|fatal|panic")
-	Command.PersistentFlags().String("log-format", DefaultLogFormat, "log formatter. one of: text|json")
-
-	Command.PersistentFlags().Bool("github-actions", false, "Enables GitHub Actions log output")
-	_ = Command.PersistentFlags().MarkHidden("github-actions")
+	flags.Kubeconfig(Command)
+	flags.Namespace(Command)
+	flags.Grammar(Command)
+	flags.Pod(Command)
+	flags.LogLevel(Command)
+	flags.LogFormat(Command)
+	flags.GitHubActions(Command)
 
 	Command.AddCommand(
 		exec.Command,
@@ -74,16 +63,25 @@ func init() {
 }
 
 func initLog() {
-	logLevel, _ := Command.PersistentFlags().GetString("log-level")
+	logLevel, err := Command.PersistentFlags().GetString("log-level")
+	if err != nil {
+		panic(err)
+	}
 	parsedLevel, err := log.ParseLevel(logLevel)
 	if err != nil {
 		log.WithField("log-level", logLevel).Warn("invalid log level. defaulting to info.")
-		_ = Command.PersistentFlags().Set("log-level", DefaultLogLevel)
+		err = Command.PersistentFlags().Set("log-level", "info")
+		if err != nil {
+			panic(err)
+		}
 		parsedLevel = log.InfoLevel
 	}
 	log.SetLevel(parsedLevel)
 
-	logFormat, _ := Command.PersistentFlags().GetString("log-format")
+	logFormat, err := Command.PersistentFlags().GetString("log-format")
+	if err != nil {
+		panic(err)
+	}
 	switch logFormat {
 	case "text", "txt", "t":
 		log.SetFormatter(&log.TextFormatter{})
@@ -91,7 +89,10 @@ func initLog() {
 		log.SetFormatter(&log.JSONFormatter{})
 	default:
 		log.WithField("log-format", logFormat).Warn("invalid log formatter. defaulting to text.")
-		_ = Command.PersistentFlags().Set("log-format", DefaultLogFormat)
+		err = Command.PersistentFlags().Set("log-format", "text")
+		if err != nil {
+			panic(err)
+		}
 	}
 }
 

@@ -14,6 +14,10 @@ type KubeClient struct {
 	Namespace    string
 }
 
+func (client KubeClient) Namespaces() v1.NamespaceInterface {
+	return client.ClientSet.CoreV1().Namespaces()
+}
+
 func (client KubeClient) Pods() v1.PodInterface {
 	return client.ClientSet.CoreV1().Pods(client.Namespace)
 }

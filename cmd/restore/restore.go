@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"github.com/AlecAivazis/survey/v2"
 	"github.com/clevyr/kubedb/internal/config"
+	"github.com/clevyr/kubedb/internal/config/flags"
 	"github.com/clevyr/kubedb/internal/database/sqlformat"
 	"github.com/clevyr/kubedb/internal/progressbar"
 	"github.com/clevyr/kubedb/internal/util"
@@ -33,14 +34,11 @@ var (
 
 func init() {
 	util.DefaultFlags(Command, &conf.Global)
-
-	Command.Flags().StringP("format", "F", "", "input format. inferred by default ([g]zip, [c]ustom, [p]lain text)")
-
-	Command.Flags().BoolVarP(&conf.SingleTransaction, "single-transaction", "1", true, "restore as a single transaction")
-	Command.Flags().BoolVarP(&conf.Clean, "clean", "c", true, "clean (drop) database objects before recreating")
-	Command.Flags().BoolVarP(&conf.NoOwner, "no-owner", "O", true, "skip restoration of object ownership in plain-text format")
-
-	Command.Flags().BoolVarP(&conf.Force, "force", "f", false, "do not prompt before restore")
+	flags.Format(Command)
+	flags.SingleTransaction(Command, &conf.SingleTransaction)
+	flags.Clean(Command, &conf.Clean)
+	flags.NoOwner(Command, &conf.NoOwner)
+	flags.Force(Command, &conf.Force)
 }
 
 func validArgs(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
