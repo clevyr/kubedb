@@ -23,7 +23,7 @@ import (
 
 var Command = &cobra.Command{
 	Use:     "dump",
-	Aliases: []string{"d"},
+	Aliases: []string{"d", "export"},
 	Short:   "dump a database to a sql file",
 	PreRunE: preRun,
 	RunE:    run,
