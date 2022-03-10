@@ -16,7 +16,7 @@ func DetectGrammar(client kubernetes.KubeClient) (config.Databaser, []v1.Pod, er
 		grammar.MariaDB{},
 	}
 
-	pods, err := kubernetes.GetNamespacedPods(client)
+	pods, err := client.GetNamespacedPods()
 	if err != nil {
 		return nil, []v1.Pod{}, err
 	}

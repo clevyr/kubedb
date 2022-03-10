@@ -17,7 +17,7 @@ var ErrNoPods = errors.New("no pods in namespace")
 
 var ErrPodNotFound = errors.New("no pods with matching label")
 
-func GetNamespacedPods(client KubeClient) (*v1.PodList, error) {
+func (client KubeClient) GetNamespacedPods() (*v1.PodList, error) {
 	pods, err := client.Pods().List(context.TODO(), metav1.ListOptions{})
 	if err != nil {
 		return pods, err
@@ -55,7 +55,7 @@ func (client KubeClient) Exec(pod v1.Pod, command []string, stdin io.Reader, std
 }
 
 func (client KubeClient) GetPodsFiltered(queries []LabelQueryable) ([]v1.Pod, error) {
-	pods, err := GetNamespacedPods(client)
+	pods, err := client.GetNamespacedPods()
 	if err != nil {
 		return []v1.Pod{}, err
 	}

@@ -50,7 +50,7 @@ func Pod(cmd *cobra.Command) {
 			if err != nil {
 				return nil, cobra.ShellCompDirectiveNoFileComp
 			}
-			pods, err := kubernetes.GetNamespacedPods(client)
+			pods, err := client.GetNamespacedPods()
 			if err != nil {
 				return nil, cobra.ShellCompDirectiveNoFileComp
 			}
