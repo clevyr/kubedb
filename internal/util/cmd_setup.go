@@ -2,7 +2,6 @@ package util
 
 import (
 	"context"
-	"errors"
 	"github.com/AlecAivazis/survey/v2"
 	"github.com/clevyr/kubedb/internal/config"
 	"github.com/clevyr/kubedb/internal/database"
@@ -34,16 +33,6 @@ func DefaultSetup(cmd *cobra.Command, conf *config.Global) (err error) {
 		return err
 	}
 
-	podFlag, err := cmd.Flags().GetString("pod")
-	if err != nil {
-		return err
-	}
-
-	if podFlag != "" && grammarFlag == "" {
-		cmd.SilenceUsage = false
-		return errors.New("pod flag is set, but grammar is missing. please add --grammar")
-	}
-
 	var pods []v1.Pod
 	if grammarFlag == "" {
 		// Configure via detection
@@ -59,6 +48,11 @@ func DefaultSetup(cmd *cobra.Command, conf *config.Global) (err error) {
 			return err
 		}
 		log.WithField("grammar", conf.Grammar.Name()).Info("configured database grammar")
+
+		podFlag, err := cmd.Flags().GetString("pod")
+		if err != nil {
+			return err
+		}
 
 		if podFlag == "" {
 			pods, err = conf.Client.GetPodsFiltered(conf.Grammar.PodLabels())
