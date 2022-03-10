@@ -155,7 +155,9 @@ func run(cmd *cobra.Command, args []string) (err error) {
 
 func generateFilename(directory, namespace string, outputFormat sqlformat.Format) (string, error) {
 	directory = path.Clean(directory)
-	t, err := template.New("filename").Parse("{{.directory}}/{{.namespace}}-{{.now.Format \"2006-01-02-150405\"}}")
+	t, err := template.
+		New("filename").
+		Parse("{{.directory}}/{{.namespace}}_{{.now.Format \"2006-01-02_150405\"}}")
 	if err != nil {
 		return "", err
 	}
