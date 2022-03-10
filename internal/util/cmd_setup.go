@@ -22,7 +22,7 @@ func DefaultFlags(cmd *cobra.Command, conf *config.Global) {
 func DefaultSetup(cmd *cobra.Command, conf *config.Global) (err error) {
 	cmd.SilenceUsage = true
 
-	conf.Client, err = kubernetes.CreateClientForCmd(cmd)
+	conf.Client, err = kubernetes.NewClientFromCmd(cmd)
 	if err != nil {
 		return err
 	}

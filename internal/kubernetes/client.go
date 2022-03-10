@@ -26,7 +26,7 @@ func (client KubeClient) Secrets() v1.SecretInterface {
 	return client.ClientSet.CoreV1().Secrets(client.Namespace)
 }
 
-func CreateClient(kubeconfigPath string, namespace string) (config KubeClient, err error) {
+func NewClient(kubeconfigPath string, namespace string) (config KubeClient, err error) {
 	configLoader := clientcmd.NewNonInteractiveDeferredLoadingClientConfig(
 		&clientcmd.ClientConfigLoadingRules{ExplicitPath: kubeconfigPath}, nil)
 
@@ -52,7 +52,7 @@ func CreateClient(kubeconfigPath string, namespace string) (config KubeClient, e
 	return config, err
 }
 
-func CreateClientForCmd(cmd *cobra.Command) (KubeClient, error) {
+func NewClientFromCmd(cmd *cobra.Command) (KubeClient, error) {
 	kubeconfig, err := cmd.Flags().GetString("kubeconfig")
 	if err != nil {
 		panic(err)
@@ -63,5 +63,5 @@ func CreateClientForCmd(cmd *cobra.Command) (KubeClient, error) {
 		panic(err)
 	}
 
-	return CreateClient(kubeconfig, namespace)
+	return NewClient(kubeconfig, namespace)
 }

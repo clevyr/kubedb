@@ -22,7 +22,7 @@ func Namespace(cmd *cobra.Command) {
 	err := cmd.RegisterFlagCompletionFunc(
 		"namespace",
 		func(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
-			client, err := kubernetes.CreateClientForCmd(cmd)
+			client, err := kubernetes.NewClientFromCmd(cmd)
 			if err != nil {
 				return nil, cobra.ShellCompDirectiveNoFileComp
 			}
@@ -46,7 +46,7 @@ func Pod(cmd *cobra.Command) {
 	err := cmd.RegisterFlagCompletionFunc(
 		"pod",
 		func(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
-			client, err := kubernetes.CreateClientForCmd(cmd)
+			client, err := kubernetes.NewClientFromCmd(cmd)
 			if err != nil {
 				return nil, cobra.ShellCompDirectiveNoFileComp
 			}
