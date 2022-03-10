@@ -26,12 +26,12 @@ var Command = &cobra.Command{
 func preRun(cmd *cobra.Command, args []string) error {
 	grammarFlag, err := cmd.Flags().GetString("grammar")
 	if err != nil {
-		return err
+		panic(err)
 	}
 
 	podFlag, err := cmd.Flags().GetString("pod")
 	if err != nil {
-		return err
+		panic(err)
 	}
 
 	if podFlag != "" && grammarFlag == "" {

@@ -49,7 +49,15 @@ func CreateClient(kubeconfigPath string, namespace string) (config KubeClient, e
 }
 
 func CreateClientForCmd(cmd *cobra.Command) (KubeClient, error) {
-	kubeconfig, _ := cmd.Flags().GetString("kubeconfig")
-	namespace, _ := cmd.Flags().GetString("namespace")
+	kubeconfig, err := cmd.Flags().GetString("kubeconfig")
+	if err != nil {
+		panic(err)
+	}
+
+	namespace, err := cmd.Flags().GetString("namespace")
+	if err != nil {
+		panic(err)
+	}
+
 	return CreateClient(kubeconfig, namespace)
 }

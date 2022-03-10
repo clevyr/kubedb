@@ -30,7 +30,7 @@ func DefaultSetup(cmd *cobra.Command, conf *config.Global) (err error) {
 
 	grammarFlag, err := cmd.Flags().GetString("grammar")
 	if err != nil {
-		return err
+		panic(err)
 	}
 
 	var pods []v1.Pod
@@ -51,7 +51,7 @@ func DefaultSetup(cmd *cobra.Command, conf *config.Global) (err error) {
 
 		podFlag, err := cmd.Flags().GetString("pod")
 		if err != nil {
-			return err
+			panic(err)
 		}
 
 		if podFlag == "" {

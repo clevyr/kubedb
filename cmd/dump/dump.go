@@ -48,7 +48,7 @@ func init() {
 func preRun(cmd *cobra.Command, args []string) (err error) {
 	formatStr, err := cmd.Flags().GetString("format")
 	if err != nil {
-		return err
+		panic(err)
 	}
 
 	conf.OutputFormat, err = sqlformat.ParseFormat(formatStr)
@@ -82,7 +82,10 @@ func run(cmd *cobra.Command, args []string) (err error) {
 		"pod":  conf.Pod.Name,
 		"file": filename,
 	}).Info("exporting database")
-	if githubActions, _ := cmd.Flags().GetBool("github-actions"); githubActions {
+
+	if githubActions, err := cmd.Flags().GetBool("github-actions"); err != nil {
+		panic(err)
+	} else if githubActions {
 		fmt.Println("::set-output name=filename::" + filename)
 	}
 

@@ -53,7 +53,7 @@ func validArgs(cmd *cobra.Command, args []string, toComplete string) ([]string, 
 func preRun(cmd *cobra.Command, args []string) error {
 	formatStr, err := cmd.Flags().GetString("format")
 	if err != nil {
-		return err
+		panic(err)
 	}
 
 	inputFormat, err = sqlformat.ParseFormat(formatStr)
