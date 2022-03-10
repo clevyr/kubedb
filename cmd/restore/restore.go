@@ -41,7 +41,6 @@ var (
 )
 
 func init() {
-	util.DefaultFlags(Command, &conf.Global)
 	flags.Format(Command)
 	flags.SingleTransaction(Command, &conf.SingleTransaction)
 	flags.Clean(Command, &conf.Clean)

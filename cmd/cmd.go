@@ -71,6 +71,9 @@ func init() {
 	flags.LogLevel(Command)
 	flags.LogFormat(Command)
 	flags.GitHubActions(Command)
+	flags.Database(Command)
+	flags.Username(Command)
+	flags.Password(Command)
 
 	Command.AddCommand(
 		exec.Command,

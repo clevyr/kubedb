@@ -21,10 +21,6 @@ var Command = &cobra.Command{
 
 var conf config.Exec
 
-func init() {
-	util.DefaultFlags(Command, &conf.Global)
-}
-
 func preRun(cmd *cobra.Command, args []string) error {
 	return util.DefaultSetup(cmd, &conf.Global)
 }

@@ -13,12 +13,6 @@ import (
 	"strings"
 )
 
-func DefaultFlags(cmd *cobra.Command, conf *config.Global) {
-	cmd.Flags().StringVarP(&conf.Database, "dbname", "d", "", "database name to connect to")
-	cmd.Flags().StringVarP(&conf.Username, "username", "U", "", "database username")
-	cmd.Flags().StringVarP(&conf.Password, "password", "p", "", "database password")
-}
-
 func DefaultSetup(cmd *cobra.Command, conf *config.Global) (err error) {
 	cmd.SilenceUsage = true
 
@@ -90,6 +84,10 @@ func DefaultSetup(cmd *cobra.Command, conf *config.Global) (err error) {
 		conf.Pod = pods[idx]
 	}
 
+	conf.Database, err = cmd.Flags().GetString("dbname")
+	if err != nil {
+		panic(err)
+	}
 	if conf.Database == "" {
 		conf.Database, err = conf.Client.GetValueFromEnv(conf.Pod, conf.Grammar.DatabaseEnvNames())
 		if err != nil {
@@ -100,6 +98,10 @@ func DefaultSetup(cmd *cobra.Command, conf *config.Global) (err error) {
 		}
 	}
 
+	conf.Username, err = cmd.Flags().GetString("username")
+	if err != nil {
+		panic(err)
+	}
 	if conf.Username == "" {
 		conf.Username, err = conf.Client.GetValueFromEnv(conf.Pod, conf.Grammar.UserEnvNames())
 		if err != nil {
@@ -110,6 +112,10 @@ func DefaultSetup(cmd *cobra.Command, conf *config.Global) (err error) {
 		}
 	}
 
+	conf.Password, err = cmd.Flags().GetString("password")
+	if err != nil {
+		panic(err)
+	}
 	if conf.Password == "" {
 		conf.Password, err = conf.Client.GetValueFromEnv(conf.Pod, conf.Grammar.PasswordEnvNames())
 		if err != nil {

@@ -41,7 +41,6 @@ the generated filename might look like "clevyr_2022-04-01_094100.sql.gz"`,
 var conf config.Dump
 
 func init() {
-	util.DefaultFlags(Command, &conf.Global)
 	flags.Directory(Command, &conf.Directory)
 	flags.Format(Command)
 	flags.IfExists(Command, &conf.IfExists)

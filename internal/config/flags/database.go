@@ -26,6 +26,18 @@ func Format(cmd *cobra.Command) {
 	}
 }
 
+func Database(cmd *cobra.Command) {
+	cmd.PersistentFlags().StringP("dbname", "d", "", "database name to connect to")
+}
+
+func Username(cmd *cobra.Command) {
+	cmd.PersistentFlags().StringP("username", "U", "", "database username")
+}
+
+func Password(cmd *cobra.Command) {
+	cmd.PersistentFlags().StringP("password", "p", "", "database password")
+}
+
 func SingleTransaction(cmd *cobra.Command, p *bool) {
 	cmd.Flags().BoolVarP(p, "single-transaction", "1", true, "restore as a single transaction")
 }
