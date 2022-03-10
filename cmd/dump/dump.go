@@ -15,7 +15,7 @@ import (
 	"io"
 	_ "k8s.io/client-go/plugin/pkg/client/auth"
 	"os"
-	"path"
+	"path/filepath"
 	"strings"
 	"text/template"
 	"time"
@@ -84,8 +84,8 @@ func run(cmd *cobra.Command, args []string) (err error) {
 		}
 	}
 
-	if _, err := os.Stat(path.Dir(filename)); os.IsNotExist(err) {
-		err = os.Mkdir(path.Dir(filename), os.ModePerm)
+	if _, err := os.Stat(filepath.Dir(filename)); os.IsNotExist(err) {
+		err = os.Mkdir(filepath.Dir(filename), os.ModePerm)
 		if err != nil {
 			return err
 		}
@@ -159,7 +159,7 @@ func run(cmd *cobra.Command, args []string) (err error) {
 }
 
 func generateFilename(directory, namespace string, outputFormat sqlformat.Format) (string, error) {
-	directory = path.Clean(directory)
+	directory = filepath.Clean(directory)
 	t, err := template.
 		New("filename").
 		Parse("{{.directory}}/{{.namespace}}_{{.now.Format \"2006-01-02_150405\"}}")
