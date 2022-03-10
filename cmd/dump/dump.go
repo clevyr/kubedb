@@ -1,7 +1,6 @@
 package dump
 
 import (
-	"bytes"
 	"errors"
 	"fmt"
 	"github.com/clevyr/kubedb/internal/config"
@@ -17,8 +16,6 @@ import (
 	"os"
 	"path/filepath"
 	"strings"
-	"text/template"
-	"time"
 )
 
 var Command = &cobra.Command{
@@ -29,7 +26,7 @@ var Command = &cobra.Command{
 
 If no filename is provided, the filename will be generated.
 For example, if a dump is performed in the namespace "clevyr" with no extra flags,
-the generated filename might look like "clevyr_2022-04-01_094100.sql.gz"`,
+the generated filename might look like "` + HelpFilename() + `"`,
 
 	Args:              cobra.MaximumNArgs(1),
 	ValidArgsFunction: validArgs,
@@ -77,7 +74,11 @@ func run(cmd *cobra.Command, args []string) (err error) {
 	if len(args) > 0 {
 		filename = args[1]
 	} else {
-		filename, err = generateFilename(conf.Directory, conf.Client.Namespace, conf.OutputFormat)
+		filename, err = Filename{
+			Dir:       conf.Directory,
+			Namespace: conf.Client.Namespace,
+			Format:    conf.OutputFormat,
+		}.Generate()
 		if err != nil {
 			return err
 		}
@@ -155,35 +156,6 @@ func run(cmd *cobra.Command, args []string) (err error) {
 
 	log.WithField("file", filename).Info("dump complete")
 	return nil
-}
-
-func generateFilename(directory, namespace string, outputFormat sqlformat.Format) (string, error) {
-	directory = filepath.Clean(directory)
-	t, err := template.
-		New("filename").
-		Parse("{{.directory}}/{{.namespace}}_{{.now.Format \"2006-01-02_150405\"}}")
-	if err != nil {
-		return "", err
-	}
-
-	var tpl bytes.Buffer
-	data := map[string]interface{}{
-		"directory": directory,
-		"namespace": namespace,
-		"now":       time.Now(),
-	}
-	err = t.Execute(&tpl, data)
-	if err != nil {
-		return "", err
-	}
-
-	ext, err := sqlformat.WriteExtension(outputFormat)
-	if err != nil {
-		return "", err
-	}
-	tpl.WriteString(ext)
-
-	return tpl.String(), err
 }
 
 func buildCommand(db config.Databaser, conf config.Dump) []string {
