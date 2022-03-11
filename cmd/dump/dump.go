@@ -72,7 +72,7 @@ func preRun(cmd *cobra.Command, args []string) (err error) {
 func run(cmd *cobra.Command, args []string) (err error) {
 	var filename string
 	if len(args) > 0 {
-		filename = args[1]
+		filename = args[0]
 	} else {
 		filename, err = Filename{
 			Dir:       conf.Directory,
