@@ -88,7 +88,7 @@ func (Postgres) RestoreCommand(conf config.Restore, inputFormat sqlformat.Format
 	cmd := []string{"PGPASSWORD=" + conf.Password}
 	switch inputFormat {
 	case sqlformat.Gzip, sqlformat.Plain:
-		cmd = append(cmd, "psql", "--quiet")
+		cmd = append(cmd, "psql", "--quiet", "--output=/dev/null")
 	case sqlformat.Custom:
 		cmd = append(cmd, "pg_restore", "--format=custom", "--verbose")
 		if conf.NoOwner {
