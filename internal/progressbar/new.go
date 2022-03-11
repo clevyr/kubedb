@@ -7,10 +7,10 @@ import (
 	"time"
 )
 
-func New() *progressbar.ProgressBar {
+func New(max int64) *progressbar.ProgressBar {
 	if !terminal.IsTTY() {
 		return progressbar.NewOptions64(
-			-1,
+			max,
 			progressbar.OptionSetWriter(os.Stderr),
 			progressbar.OptionShowBytes(true),
 			progressbar.OptionSetWidth(10),
@@ -19,5 +19,5 @@ func New() *progressbar.ProgressBar {
 			progressbar.OptionSpinnerType(14),
 		)
 	}
-	return progressbar.DefaultBytes(-1)
+	return progressbar.DefaultBytes(max)
 }

@@ -124,7 +124,7 @@ func run(cmd *cobra.Command, args []string) (err error) {
 		_ = w.Close()
 	}(w)
 
-	bar := progressbar.New()
+	bar := progressbar.New(-1)
 
 	err = conf.Client.Exec(conf.Pod, buildCommand(conf.Grammar, conf), os.Stdin, io.MultiWriter(w, bar), false)
 	if err != nil {
