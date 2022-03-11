@@ -125,6 +125,7 @@ func run(cmd *cobra.Command, args []string) (err error) {
 		}
 
 		if conf.Grammar.AnalyzeQuery() != "" {
+			log.Info("analyzing data")
 			analyzeReader := strings.NewReader(conf.Grammar.AnalyzeQuery())
 			err = conf.Client.Exec(conf.Pod, buildCommand(conf.Grammar, conf, sqlformat.Plain, false), analyzeReader, os.Stdout, false)
 			if err != nil {
