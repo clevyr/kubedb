@@ -1,10 +1,10 @@
 package dump
 
 import (
-	"bytes"
 	"fmt"
 	"github.com/clevyr/kubedb/internal/database/sqlformat"
 	"path/filepath"
+	"strings"
 	"text/template"
 	"time"
 )
@@ -39,13 +39,13 @@ func (vars Filename) Generate() (string, error) {
 		return "", err
 	}
 
-	var tpl bytes.Buffer
-	err = t.Execute(&tpl, vars)
+	var buf strings.Builder
+	err = t.Execute(&buf, vars)
 	if err != nil {
 		return "", err
 	}
 
-	return filepath.Join(vars.Dir, tpl.String()), nil
+	return filepath.Join(vars.Dir, buf.String()), nil
 }
 
 func HelpFilename() string {
