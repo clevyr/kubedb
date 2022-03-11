@@ -157,6 +157,7 @@ func run(cmd *cobra.Command, args []string) (err error) {
 			return err
 		}
 	}
+	_ = pw.Close()
 
 	_ = bar.Finish()
 
