@@ -91,11 +91,18 @@ func run(cmd *cobra.Command, args []string) (err error) {
 		}
 	}
 
-	f, err := os.Create(filename)
-	if err != nil {
-		return err
+	var f io.WriteCloser
+	if filename == "-" {
+		f = os.Stdout
+	} else {
+		f, err = os.Create(filename)
+		if err != nil {
+			return err
+		}
+		defer func(f io.WriteCloser) {
+			_ = f.Close()
+		}(f)
 	}
-	defer f.Close()
 
 	log.WithFields(log.Fields{
 		"pod":  conf.Pod.Name,
