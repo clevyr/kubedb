@@ -66,6 +66,11 @@ func DefaultSetup(cmd *cobra.Command, conf *config.Global) (err error) {
 		}
 	}
 
+	pods, err = conf.Grammar.FilterPods(conf.Client, pods)
+	if err != nil {
+		log.WithError(err).Warn("could not query primary instance")
+	}
+
 	if len(pods) == 1 {
 		conf.Pod = pods[0]
 	} else {

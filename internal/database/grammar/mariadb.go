@@ -4,6 +4,7 @@ import (
 	"github.com/clevyr/kubedb/internal/config"
 	"github.com/clevyr/kubedb/internal/database/sqlformat"
 	"github.com/clevyr/kubedb/internal/kubernetes"
+	v1 "k8s.io/api/core/v1"
 )
 
 type MariaDB struct{}
@@ -43,6 +44,10 @@ func (MariaDB) PodLabels() []kubernetes.LabelQueryable {
 			{Name: "app.kubernetes.io/component", Value: "primary"},
 		},
 	}
+}
+
+func (MariaDB) FilterPods(client kubernetes.KubeClient, pods []v1.Pod) ([]v1.Pod, error) {
+	return pods, nil
 }
 
 func (MariaDB) PasswordEnvNames() []string {

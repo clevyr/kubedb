@@ -3,6 +3,7 @@ package config
 import (
 	"github.com/clevyr/kubedb/internal/database/sqlformat"
 	"github.com/clevyr/kubedb/internal/kubernetes"
+	v1 "k8s.io/api/core/v1"
 )
 
 type Databaser interface {
@@ -17,6 +18,7 @@ type Databaser interface {
 	DropDatabaseQuery(database string) string
 	AnalyzeQuery() string
 	PodLabels() []kubernetes.LabelQueryable
+	FilterPods(client kubernetes.KubeClient, pods []v1.Pod) ([]v1.Pod, error)
 	PasswordEnvNames() []string
 
 	ExecCommand(conf Exec) []string

@@ -1,9 +1,14 @@
 package grammar
 
 import (
+	"encoding/csv"
 	"github.com/clevyr/kubedb/internal/config"
 	"github.com/clevyr/kubedb/internal/database/sqlformat"
 	"github.com/clevyr/kubedb/internal/kubernetes"
+	log "github.com/sirupsen/logrus"
+	"io"
+	v1 "k8s.io/api/core/v1"
+	"strings"
 )
 
 type Postgres struct{}
@@ -48,6 +53,44 @@ func (Postgres) PodLabels() []kubernetes.LabelQueryable {
 			{Name: "app.kubernetes.io/component", Value: "postgresql"},
 		},
 	}
+}
+
+func (Postgres) FilterPods(client kubernetes.KubeClient, pods []v1.Pod) ([]v1.Pod, error) {
+	if len(pods) > 0 && pods[0].Labels["app.kubernetes.io/name"] == "postgresql-ha" {
+		// HA chart. Need to detect primary.
+		log.Info("querying for primary instance")
+		cmd := []string{
+			"sh", "-c",
+			"DISABLE_WELCOME_MESSAGE=true /opt/bitnami/scripts/postgresql-repmgr/entrypoint.sh " +
+				"repmgr --config-file=/opt/bitnami/repmgr/conf/repmgr.conf " +
+				"service status --csv",
+		}
+
+		var buf strings.Builder
+		err := client.Exec(pods[0], cmd, strings.NewReader(""), &buf, false)
+		if err != nil {
+			return pods, err
+		}
+
+		r := csv.NewReader(strings.NewReader(buf.String()))
+		for {
+			row, err := r.Read()
+			if err == io.EOF {
+				break
+			}
+			if err != nil {
+				return pods, err
+			}
+			if row[2] == "primary" {
+				for key, pod := range pods {
+					if pod.Name == row[1] {
+						return pods[key : key+1], nil
+					}
+				}
+			}
+		}
+	}
+	return pods, nil
 }
 
 func (Postgres) PasswordEnvNames() []string {
