@@ -161,6 +161,11 @@ func run(cmd *cobra.Command, args []string) (err error) {
 
 	_ = bar.Finish()
 
+	err = <-ch
+	if err != nil {
+		return err
+	}
+
 	log.WithField("file", args[0]).Info("restore complete")
 	return nil
 }
