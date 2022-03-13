@@ -6,6 +6,7 @@ import (
 	v1 "k8s.io/client-go/kubernetes/typed/core/v1"
 	"k8s.io/client-go/rest"
 	"k8s.io/client-go/tools/clientcmd"
+	"k8s.io/client-go/tools/clientcmd/api"
 )
 
 type KubeClient struct {
@@ -26,9 +27,16 @@ func (client KubeClient) Secrets() v1.SecretInterface {
 	return client.ClientSet.CoreV1().Secrets(client.Namespace)
 }
 
-func NewClient(kubeconfigPath string, namespace string) (config KubeClient, err error) {
+func NewClient(kubeconfigPath, context, namespace string) (config KubeClient, err error) {
+	var overrides *clientcmd.ConfigOverrides
+	if context != "" {
+		overrides = &clientcmd.ConfigOverrides{CurrentContext: context}
+	}
+
 	configLoader := clientcmd.NewNonInteractiveDeferredLoadingClientConfig(
-		&clientcmd.ClientConfigLoadingRules{ExplicitPath: kubeconfigPath}, nil)
+		&clientcmd.ClientConfigLoadingRules{ExplicitPath: kubeconfigPath},
+		overrides,
+	)
 
 	config.ClientConfig, err = configLoader.ClientConfig()
 	if err != nil {
@@ -58,10 +66,22 @@ func NewClientFromCmd(cmd *cobra.Command) (KubeClient, error) {
 		panic(err)
 	}
 
+	context, err := cmd.Flags().GetString("context")
+	if err != nil {
+		panic(err)
+	}
+
 	namespace, err := cmd.Flags().GetString("namespace")
 	if err != nil {
 		panic(err)
 	}
 
-	return NewClient(kubeconfig, namespace)
+	return NewClient(kubeconfig, context, namespace)
+}
+
+func RawConfig(kubeconfigPath string) (api.Config, error) {
+	configLoader := clientcmd.NewNonInteractiveDeferredLoadingClientConfig(
+		&clientcmd.ClientConfigLoadingRules{ExplicitPath: kubeconfigPath}, nil,
+	)
+	return configLoader.RawConfig()
 }

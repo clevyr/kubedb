@@ -17,6 +17,30 @@ func Kubeconfig(cmd *cobra.Command) {
 	cmd.PersistentFlags().String("kubeconfig", kubeconfigDefault, "absolute path to the kubeconfig file")
 }
 
+func Context(cmd *cobra.Command) {
+	cmd.PersistentFlags().String("context", "", "name of the kubeconfig context to use")
+	err := cmd.RegisterFlagCompletionFunc(
+		"context",
+		func(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
+			kubeconfig, err := cmd.Flags().GetString("kubeconfig")
+			if err != nil {
+				panic(err)
+			}
+			conf, err := kubernetes.RawConfig(kubeconfig)
+			if err != nil {
+				return nil, cobra.ShellCompDirectiveNoFileComp
+			}
+			names := make([]string, 0, len(conf.Contexts))
+			for name, _ := range conf.Contexts {
+				names = append(names, name)
+			}
+			return names, cobra.ShellCompDirectiveNoFileComp
+		})
+	if err != nil {
+		panic(err)
+	}
+}
+
 func Namespace(cmd *cobra.Command) {
 	cmd.PersistentFlags().StringP("namespace", "n", "", "the namespace scope for this CLI request")
 	err := cmd.RegisterFlagCompletionFunc(

@@ -65,6 +65,7 @@ func init() {
 	cobra.OnInitialize(initLog)
 
 	flags.Kubeconfig(Command)
+	flags.Context(Command)
 	flags.Namespace(Command)
 	flags.Grammar(Command)
 	flags.Pod(Command)
