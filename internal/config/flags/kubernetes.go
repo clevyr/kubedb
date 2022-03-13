@@ -31,7 +31,7 @@ func Context(cmd *cobra.Command) {
 				return nil, cobra.ShellCompDirectiveNoFileComp
 			}
 			names := make([]string, 0, len(conf.Contexts))
-			for name, _ := range conf.Contexts {
+			for name := range conf.Contexts {
 				names = append(names, name)
 			}
 			return names, cobra.ShellCompDirectiveNoFileComp
