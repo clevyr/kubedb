@@ -30,7 +30,7 @@ func Namespace(cmd *cobra.Command) {
 			if err != nil {
 				return nil, cobra.ShellCompDirectiveNoFileComp
 			}
-			var names []string
+			names := make([]string, 0, len(namespaces.Items))
 			for _, namespace := range namespaces.Items {
 				names = append(names, namespace.Name)
 			}
@@ -54,7 +54,7 @@ func Pod(cmd *cobra.Command) {
 			if err != nil {
 				return nil, cobra.ShellCompDirectiveNoFileComp
 			}
-			var names []string
+			names := make([]string, 0, len(pods.Items))
 			for _, pod := range pods.Items {
 				names = append(names, pod.Name)
 			}
