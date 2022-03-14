@@ -5,20 +5,30 @@ import (
 	"io"
 )
 
-func NewDecompressWriter(dest io.Writer, ch chan error) io.WriteCloser {
+func NewDecompressWriter(dest io.Writer) io.WriteCloser {
 	r, w := io.Pipe()
 	go func() {
+		defer func(r *io.PipeReader) {
+			_ = r.Close()
+		}(r)
+
 		gzr, err := gzip.NewReader(r)
 		if err != nil {
 			_ = r.CloseWithError(err)
 			return
 		}
-		defer func(gzr *gzip.Reader) {
-			_ = gzr.Close()
-		}(gzr)
 
 		_, err = io.Copy(dest, gzr)
-		ch <- err
+		if err != nil {
+			_ = r.CloseWithError(err)
+			return
+		}
+
+		err = gzr.Close()
+		if err != nil {
+			_ = r.CloseWithError(err)
+			return
+		}
 	}()
 	return w
 }

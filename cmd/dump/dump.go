@@ -115,17 +115,12 @@ func run(cmd *cobra.Command, args []string) (err error) {
 		fmt.Println("::set-output name=filename::" + filename)
 	}
 
-	ch := make(chan error, 1)
 	var w io.WriteCloser
 	switch conf.OutputFormat {
 	case sqlformat.Gzip, sqlformat.Custom:
 		w = f
-		close(ch)
 	case sqlformat.Plain:
-		w = gzips.NewDecompressWriter(f, ch)
-		if err != nil {
-			return err
-		}
+		w = gzips.NewDecompressWriter(f)
 	}
 	defer func(w io.WriteCloser) {
 		_ = w.Close()
@@ -144,12 +139,6 @@ func run(cmd *cobra.Command, args []string) (err error) {
 
 	// Close writer
 	err = w.Close()
-	if err != nil {
-		return err
-	}
-
-	// Check errors in channel
-	err = <-ch
 	if err != nil {
 		return err
 	}
