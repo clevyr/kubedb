@@ -101,28 +101,14 @@ func run(cmd *cobra.Command, args []string) (err error) {
 	}
 
 	ch := make(chan error, 1)
-	go func() {
-		var err error
-		defer func(pr *io.PipeReader) {
-			_ = pr.Close()
-		}(pr)
-
-		err = conf.Client.Exec(conf.Pod, buildCommand(conf), pr, os.Stdout, false)
-		if err != nil {
-			_ = pr.CloseWithError(err)
-			ch <- err
-			return
-		}
-
-		ch <- nil
-	}()
+	go runInDatabasePod(pr, ch, inputFormat)
 
 	bar := progressbar.New(-1)
 	log.SetOutput(progressbar.NewBarSafeLogger(os.Stderr))
 
 	w := io.MultiWriter(pw, bar)
 
-	if conf.Clean {
+	if conf.Clean && inputFormat != sqlformat.Custom {
 		dropQuery := conf.Grammar.DropDatabaseQuery(conf.Database)
 		if dropQuery != "" {
 			log.Info("cleaning existing data")
@@ -149,6 +135,19 @@ func run(cmd *cobra.Command, args []string) (err error) {
 
 	analyzeQuery := conf.Grammar.AnalyzeQuery()
 	if analyzeQuery != "" {
+		if inputFormat == sqlformat.Custom {
+			_ = pw.Close()
+
+			err = <-ch
+			if err != nil {
+				return err
+			}
+
+			pr, pw = io.Pipe()
+			w = io.MultiWriter(pw, bar)
+			go runInDatabasePod(pr, ch, sqlformat.Gzip)
+		}
+
 		log.Info("analyzing data")
 		err = gzipCopy(w, strings.NewReader(analyzeQuery))
 		if err != nil {
@@ -170,7 +169,7 @@ func run(cmd *cobra.Command, args []string) (err error) {
 	return nil
 }
 
-func buildCommand(conf config.Restore) []string {
+func buildCommand(conf config.Restore, inputFormat sqlformat.Format) []string {
 	cmd := []string{"gunzip", "--force", "|"}
 	cmd = append(cmd, conf.Grammar.RestoreCommand(conf, inputFormat)...)
 	return []string{"sh", "-c", strings.Join(cmd, " ")}
@@ -190,4 +189,20 @@ func gzipCopy(w io.Writer, r io.Reader) (err error) {
 	}
 
 	return nil
+}
+
+func runInDatabasePod(r *io.PipeReader, ch chan error, inputFormat sqlformat.Format) {
+	var err error
+	defer func(pr *io.PipeReader) {
+		_ = pr.Close()
+	}(r)
+
+	err = conf.Client.Exec(conf.Pod, buildCommand(conf, inputFormat), r, os.Stdout, false)
+	if err != nil {
+		_ = r.CloseWithError(err)
+		ch <- err
+		return
+	}
+
+	ch <- nil
 }
