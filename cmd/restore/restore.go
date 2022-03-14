@@ -103,67 +103,63 @@ func run(cmd *cobra.Command, args []string) (err error) {
 	ch := make(chan error, 1)
 	go func() {
 		var err error
-		defer func(pw *io.PipeWriter) {
-			_ = pw.Close()
-		}(pw)
+		defer func(pr *io.PipeReader) {
+			_ = pr.Close()
+		}(pr)
 
-		if conf.Clean && conf.Grammar.DropDatabaseQuery(conf.Database) != "" {
-			log.Info("cleaning existing data")
-			resetReader := strings.NewReader(conf.Grammar.DropDatabaseQuery(conf.Database))
-			err = conf.Client.Exec(conf.Pod, buildCommand(conf.Grammar, conf, sqlformat.Plain, false), resetReader, os.Stdout, false)
-			if err != nil {
-				ch <- err
-				return
-			}
-		}
-
-		log.Info("restoring database")
-		err = conf.Client.Exec(conf.Pod, buildCommand(conf.Grammar, conf, inputFormat, true), pr, os.Stdout, false)
+		err = conf.Client.Exec(conf.Pod, buildCommand(conf), pr, os.Stdout, false)
 		if err != nil {
+			_ = pr.CloseWithError(err)
 			ch <- err
 			return
-		}
-
-		if conf.Grammar.AnalyzeQuery() != "" {
-			log.Info("analyzing data")
-			analyzeReader := strings.NewReader(conf.Grammar.AnalyzeQuery())
-			err = conf.Client.Exec(conf.Pod, buildCommand(conf.Grammar, conf, sqlformat.Plain, false), analyzeReader, os.Stdout, false)
-			if err != nil {
-				ch <- err
-				return
-			}
 		}
 
 		ch <- nil
 	}()
 
-	stat, _ := f.Stat()
-	bar := progressbar.New(stat.Size())
+	bar := progressbar.New(-1)
 	log.SetOutput(progressbar.NewBarSafeLogger(os.Stderr))
 
+	w := io.MultiWriter(pw, bar)
+
+	if conf.Clean {
+		dropQuery := conf.Grammar.DropDatabaseQuery(conf.Database)
+		if dropQuery != "" {
+			log.Info("cleaning existing data")
+			err = gzipCopy(w, strings.NewReader(dropQuery))
+			if err != nil {
+				return err
+			}
+		}
+	}
+
+	log.Info("restoring database")
 	switch inputFormat {
 	case sqlformat.Gzip, sqlformat.Custom:
-		_, err = io.Copy(io.MultiWriter(pw, bar), f)
+		_, err = io.Copy(w, f)
 		if err != nil {
 			return err
 		}
 	case sqlformat.Plain:
-		gzw := gzip.NewWriter(pw)
-
-		_, err = io.Copy(io.MultiWriter(pw, bar), f)
-		if err != nil {
-			return err
-		}
-
-		err = gzw.Close()
+		err = gzipCopy(w, f)
 		if err != nil {
 			return err
 		}
 	}
-	_ = pw.Close()
+
+	analyzeQuery := conf.Grammar.AnalyzeQuery()
+	if analyzeQuery != "" {
+		log.Info("analyzing data")
+		err = gzipCopy(w, strings.NewReader(analyzeQuery))
+		if err != nil {
+			return err
+		}
+	}
 
 	_ = bar.Finish()
 	log.SetOutput(os.Stderr)
+
+	_ = pw.Close()
 
 	err = <-ch
 	if err != nil {
@@ -174,14 +170,24 @@ func run(cmd *cobra.Command, args []string) (err error) {
 	return nil
 }
 
-func buildCommand(db config.Databaser, conf config.Restore, inputFormat sqlformat.Format, gunzip bool) []string {
-	var cmd []string
-	switch inputFormat {
-	case sqlformat.Gzip, sqlformat.Plain:
-		if gunzip {
-			cmd = append([]string{"gunzip", "--force", "|"}, cmd...)
-		}
-	}
-	cmd = append(cmd, db.RestoreCommand(conf, inputFormat)...)
+func buildCommand(conf config.Restore) []string {
+	cmd := []string{"gunzip", "--force", "|"}
+	cmd = append(cmd, conf.Grammar.RestoreCommand(conf, inputFormat)...)
 	return []string{"sh", "-c", strings.Join(cmd, " ")}
+}
+
+func gzipCopy(w io.Writer, r io.Reader) (err error) {
+	gzw := gzip.NewWriter(w)
+
+	_, err = io.Copy(gzw, r)
+	if err != nil {
+		return err
+	}
+
+	err = gzw.Close()
+	if err != nil {
+		return err
+	}
+
+	return nil
 }
