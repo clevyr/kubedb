@@ -139,6 +139,7 @@ func run(cmd *cobra.Command, args []string) (err error) {
 
 	stat, _ := f.Stat()
 	bar := progressbar.New(stat.Size())
+	log.SetOutput(progressbar.NewBarSafeLogger(os.Stderr))
 
 	switch inputFormat {
 	case sqlformat.Gzip, sqlformat.Custom:
@@ -162,6 +163,7 @@ func run(cmd *cobra.Command, args []string) (err error) {
 	_ = pw.Close()
 
 	_ = bar.Finish()
+	log.SetOutput(os.Stderr)
 
 	err = <-ch
 	if err != nil {

@@ -132,6 +132,7 @@ func run(cmd *cobra.Command, args []string) (err error) {
 	}(w)
 
 	bar := progressbar.New(-1)
+	log.SetOutput(progressbar.NewBarSafeLogger(os.Stderr))
 
 	err = conf.Client.Exec(conf.Pod, buildCommand(conf.Grammar, conf), os.Stdin, io.MultiWriter(w, bar), false)
 	if err != nil {
@@ -139,6 +140,7 @@ func run(cmd *cobra.Command, args []string) (err error) {
 	}
 
 	_ = bar.Finish()
+	log.SetOutput(os.Stderr)
 
 	// Close writer
 	err = w.Close()
