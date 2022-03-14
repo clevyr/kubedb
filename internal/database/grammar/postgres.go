@@ -128,7 +128,7 @@ func (Postgres) DumpCommand(conf config.Dump) []string {
 }
 
 func (Postgres) RestoreCommand(conf config.Restore, inputFormat sqlformat.Format) []string {
-	cmd := []string{"PGPASSWORD=" + conf.Password}
+	cmd := []string{"PGPASSWORD=" + conf.Password, "PGOPTIONS='-c client_min_messages=WARNING'"}
 	switch inputFormat {
 	case sqlformat.Gzip, sqlformat.Plain:
 		cmd = append(cmd, "psql", "--quiet", "--output=/dev/null")
