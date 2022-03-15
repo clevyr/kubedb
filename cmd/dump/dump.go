@@ -1,14 +1,16 @@
 package dump
 
 import (
+	"compress/gzip"
+	"encoding/base64"
 	"errors"
 	"fmt"
 	"github.com/clevyr/kubedb/internal/config"
 	"github.com/clevyr/kubedb/internal/config/flags"
 	"github.com/clevyr/kubedb/internal/database/sqlformat"
-	"github.com/clevyr/kubedb/internal/gzips"
 	"github.com/clevyr/kubedb/internal/progressbar"
 	"github.com/clevyr/kubedb/internal/util"
+	"github.com/docker/cli/cli/streams"
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 	"io"
@@ -115,21 +117,50 @@ func run(cmd *cobra.Command, args []string) (err error) {
 		fmt.Println("::set-output name=filename::" + filename)
 	}
 
-	var w io.WriteCloser
-	switch conf.OutputFormat {
-	case sqlformat.Gzip, sqlformat.Custom:
-		w = f
-	case sqlformat.Plain:
-		w = gzips.NewDecompressWriter(f)
-	}
-	defer func(w io.WriteCloser) {
-		_ = w.Close()
-	}(w)
-
 	bar := progressbar.New(-1)
 	log.SetOutput(progressbar.NewBarSafeLogger(os.Stderr))
 
-	err = conf.Client.Exec(conf.Pod, buildCommand(conf.Grammar, conf), os.Stdin, io.MultiWriter(w, bar), false)
+	pr, pw := io.Pipe()
+	ch := make(chan error, 1)
+	go func() {
+		var err error
+		defer func() {
+			ch <- err
+		}()
+
+		// base64 is required since TTYs use CRLF
+		pr := base64.NewDecoder(base64.StdEncoding, pr)
+
+		switch conf.OutputFormat {
+		case sqlformat.Gzip, sqlformat.Custom:
+			_, err = io.Copy(io.MultiWriter(f, bar), pr)
+		case sqlformat.Plain:
+			var gzr *gzip.Reader
+			gzr, err = gzip.NewReader(pr)
+			if err != nil {
+				return
+			}
+
+			_, err = io.Copy(io.MultiWriter(f, bar), gzr)
+			if err != nil {
+				return
+			}
+		}
+	}()
+
+	stdin := streams.NewIn(os.Stdin)
+	if err := stdin.SetRawTerminal(); err != nil {
+		return err
+	}
+
+	err = conf.Client.Exec(conf.Pod, buildCommand(conf.Grammar, conf), stdin, pw, stdin.IsTerminal())
+	stdin.RestoreTerminal()
+	if err != nil {
+		_ = pw.CloseWithError(err)
+		return err
+	}
+
+	err = pw.Close()
 	if err != nil {
 		return err
 	}
@@ -137,8 +168,7 @@ func run(cmd *cobra.Command, args []string) (err error) {
 	_ = bar.Finish()
 	log.SetOutput(os.Stderr)
 
-	// Close writer
-	err = w.Close()
+	err = <-ch
 	if err != nil {
 		return err
 	}
@@ -161,5 +191,7 @@ func buildCommand(db config.Databaser, conf config.Dump) []string {
 	if conf.OutputFormat != sqlformat.Custom {
 		cmd = append(cmd, "|", "gzip", "--force")
 	}
+	// base64 is required since TTYs use CRLF
+	cmd = append(cmd, "|", "base64", "--wrap=0")
 	return []string{"sh", "-c", strings.Join(cmd, " ")}
 }
