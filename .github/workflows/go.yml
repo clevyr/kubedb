@@ -1,7 +1,10 @@
 name: Go
+
 on: push
+
 env:
-  go_version: ^1.17
+  GO_VERSION: 1.18
+
 jobs:
   lint:
     name: Lint
@@ -12,13 +15,12 @@ jobs:
       - name: Set up Go
         uses: actions/setup-go@v2
         with:
-          go-version: ${{ env.go_version }}
+          go-version: ^${{ env.GO_VERSION }}
       - name: Lint
-        uses: golangci/golangci-lint-action@v2
+        uses: golangci/golangci-lint-action@v3
         with:
-          version: v1.44
+          version: v1.45
           args: --timeout=5m
-          skip-go-installation: true
 
   test:
     name: Test
@@ -29,7 +31,7 @@ jobs:
       - name: Set up Go
         uses: actions/setup-go@v2
         with:
-          go-version: ${{ env.go_version }}
+          go-version: ^${{ env.GO_VERSION }}
       - uses: actions/cache@v2
         with:
           path: ~/go/pkg/mod
@@ -56,7 +58,7 @@ jobs:
       - name: Set up Go
         uses: actions/setup-go@v2
         with:
-          go-version: ${{ env.go_version }}
+          go-version: ^${{ env.GO_VERSION }}
       - uses: actions/cache@v2
         with:
           path: ~/go/pkg/mod
