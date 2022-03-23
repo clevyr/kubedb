@@ -1,15 +1,15 @@
-## kubedb exec
+## kubedb port-forward
 
-connect to an interactive shell
+set up a local port forward
 
 ```
-kubedb exec [flags]
+kubedb port-forward [local_port] [flags]
 ```
 
 ### Options
 
 ```
-  -h, --help   help for exec
+  -h, --help   help for port-forward
 ```
 
 ### Options inherited from parent commands
