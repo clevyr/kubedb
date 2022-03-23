@@ -2,6 +2,7 @@ package flags
 
 import (
 	"context"
+	"github.com/clevyr/kubedb/internal/config"
 	"github.com/clevyr/kubedb/internal/kubernetes"
 	"github.com/spf13/cobra"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -55,8 +56,11 @@ func Namespace(cmd *cobra.Command) {
 				return nil, cobra.ShellCompDirectiveNoFileComp
 			}
 			names := make([]string, 0, len(namespaces.Items))
+			access := config.NewNamespaceRegexp(cmd.Annotations["access"])
 			for _, namespace := range namespaces.Items {
-				names = append(names, namespace.Name)
+				if access.Match(namespace.Name) {
+					names = append(names, namespace.Name)
+				}
 			}
 			return names, cobra.ShellCompDirectiveNoFileComp
 		})

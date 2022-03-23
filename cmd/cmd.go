@@ -2,6 +2,7 @@ package cmd
 
 import (
 	"errors"
+	"fmt"
 	"github.com/clevyr/kubedb/cmd/dump"
 	"github.com/clevyr/kubedb/cmd/exec"
 	"github.com/clevyr/kubedb/cmd/port_forward"
@@ -9,6 +10,8 @@ import (
 	"github.com/clevyr/kubedb/internal/config/flags"
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
+	"github.com/spf13/viper"
+	"strings"
 )
 
 var (
@@ -63,7 +66,7 @@ func Execute() error {
 }
 
 func init() {
-	cobra.OnInitialize(initLog)
+	cobra.OnInitialize(initLog, initConfig)
 
 	flags.Kubeconfig(Command)
 	flags.Context(Command)
@@ -115,6 +118,27 @@ func initLog() {
 		err = Command.PersistentFlags().Set("log-format", "text")
 		if err != nil {
 			panic(err)
+		}
+	}
+}
+
+func initConfig() {
+	viper.SetConfigName("kubedb")
+	viper.SetConfigType("yaml")
+	viper.AddConfigPath("$HOME/.config/")
+	viper.AddConfigPath("$HOME/")
+	viper.AddConfigPath("/etc/kubedb/")
+
+	viper.AutomaticEnv()
+	viper.SetEnvPrefix("kubedb")
+	viper.SetEnvKeyReplacer(strings.NewReplacer(".", "_", "-", "_"))
+
+	if err := viper.ReadInConfig(); err != nil {
+		if _, ok := err.(viper.ConfigFileNotFoundError); ok {
+			// Config file not found; ignore error
+		} else {
+			// Config file was found but another error was produced
+			panic(fmt.Errorf("Fatal error reading config file: %w \n", err))
 		}
 	}
 }

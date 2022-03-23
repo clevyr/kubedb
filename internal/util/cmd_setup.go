@@ -2,6 +2,7 @@ package util
 
 import (
 	"context"
+	"errors"
 	"github.com/AlecAivazis/survey/v2"
 	"github.com/clevyr/kubedb/internal/config"
 	"github.com/clevyr/kubedb/internal/database"
@@ -21,6 +22,11 @@ func DefaultSetup(cmd *cobra.Command, conf *config.Global) (err error) {
 		return err
 	}
 	log.WithField("namespace", conf.Client.Namespace).Info("created kube client")
+
+	access := config.NewNamespaceRegexp(cmd.Annotations["access"])
+	if !access.Match(conf.Client.Namespace) {
+		return errors.New("The current action is disabled for namespace " + conf.Client.Namespace)
+	}
 
 	grammarFlag, err := cmd.Flags().GetString("grammar")
 	if err != nil {

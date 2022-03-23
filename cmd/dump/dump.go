@@ -17,6 +17,7 @@ import (
 	_ "k8s.io/client-go/plugin/pkg/client/auth"
 	"os"
 	"path/filepath"
+	"strconv"
 	"strings"
 )
 
@@ -35,6 +36,10 @@ the generated filename might look like "` + HelpFilename() + `"`,
 
 	PreRunE: preRun,
 	RunE:    run,
+
+	Annotations: map[string]string{
+		"access": strconv.Itoa(config.ReadOnly),
+	},
 }
 
 var conf config.Dump
