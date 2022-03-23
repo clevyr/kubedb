@@ -105,6 +105,12 @@ func (Postgres) ExecCommand(conf config.Exec) []string {
 	return []string{"PGPASSWORD=" + conf.Password, "psql", "--host=127.0.0.1", "--username=" + conf.Username, "--dbname=" + conf.Database}
 }
 
+func quoteParam(param string) string {
+	param = `"` + param + `"`
+	param = strings.ReplaceAll(param, "*", `"*"`)
+	return param
+}
+
 func (Postgres) DumpCommand(conf config.Dump) []string {
 	cmd := []string{"PGPASSWORD=" + conf.Password, "pg_dump", "--host=127.0.0.1", "--username=" + conf.Username, "--dbname=" + conf.Database}
 	if conf.Clean {
@@ -117,13 +123,13 @@ func (Postgres) DumpCommand(conf config.Dump) []string {
 		cmd = append(cmd, "--if-exists")
 	}
 	for _, table := range conf.Tables {
-		cmd = append(cmd, "--table='"+table+"'")
+		cmd = append(cmd, "--table='"+quoteParam(table)+"'")
 	}
 	for _, table := range conf.ExcludeTable {
-		cmd = append(cmd, "--exclude-table='"+table+"'")
+		cmd = append(cmd, "--exclude-table='"+quoteParam(table)+"'")
 	}
 	for _, table := range conf.ExcludeTableData {
-		cmd = append(cmd, "--exclude-table-data='"+table+"'")
+		cmd = append(cmd, "--exclude-table-data='"+quoteParam(table)+"'")
 	}
 	if conf.OutputFormat == sqlformat.Custom {
 		cmd = append(cmd, "--format=c")
