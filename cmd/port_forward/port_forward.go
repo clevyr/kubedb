@@ -35,7 +35,7 @@ func preRun(cmd *cobra.Command, args []string) error {
 	}
 
 	if len(args) == 0 {
-		conf.LocalPort = conf.Grammar.DefaultPort()
+		conf.LocalPort = 30000 + conf.Grammar.DefaultPort()
 	} else {
 		port, err := strconv.ParseUint(args[0], 10, 16)
 		if err != nil {
