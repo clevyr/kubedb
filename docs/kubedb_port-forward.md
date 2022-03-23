@@ -9,7 +9,8 @@ kubedb port-forward [local_port] [flags]
 ### Options
 
 ```
-  -h, --help   help for port-forward
+      --address strings   addresses to listen on (comma separated) (default [127.0.0.1,::1])
+  -h, --help              help for port-forward
 ```
 
 ### Options inherited from parent commands

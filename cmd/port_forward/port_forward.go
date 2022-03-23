@@ -3,6 +3,7 @@ package port_forward
 import (
 	"fmt"
 	"github.com/clevyr/kubedb/internal/config"
+	"github.com/clevyr/kubedb/internal/config/flags"
 	"github.com/clevyr/kubedb/internal/util"
 	"github.com/jedib0t/go-pretty/v6/table"
 	log "github.com/sirupsen/logrus"
@@ -27,6 +28,10 @@ var Command = &cobra.Command{
 }
 
 var conf config.PortForward
+
+func init() {
+	flags.Address(Command, &conf.Addresses)
+}
 
 func preRun(cmd *cobra.Command, args []string) error {
 	err := util.DefaultSetup(cmd, &conf.Global)
@@ -62,10 +67,10 @@ func run(cmd *cobra.Command, args []string) (err error) {
 	}
 
 	dialer := spdy.NewDialer(upgrader, &http.Client{Transport: transport}, http.MethodPost, &url.URL{Scheme: "https", Path: path, Host: hostIP})
+	ports := []string{fmt.Sprintf("%d:%d", conf.LocalPort, conf.Grammar.DefaultPort())}
 	stopCh := make(chan struct{}, 1)
 	readyCh := make(chan struct{}, 1)
-	ports := []string{fmt.Sprintf("%d:%d", conf.LocalPort, conf.Grammar.DefaultPort())}
-	fw, err := portforward.New(dialer, ports, stopCh, readyCh, nil, os.Stderr)
+	fw, err := portforward.NewOnAddresses(dialer, conf.Addresses, ports, stopCh, readyCh, os.Stdout, os.Stderr)
 	if err != nil {
 		return err
 	}

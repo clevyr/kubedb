@@ -8,7 +8,7 @@ The "dump" command dumps a running database to a sql file.
 
 If no filename is provided, the filename will be generated.
 For example, if a dump is performed in the namespace "clevyr" with no extra flags,
-the generated filename might look like "clevyr_2022-03-23_101445.sql.gz"
+the generated filename might look like "clevyr_2022-03-23_175919.sql.gz"
 
 ```
 kubedb dump [filename] [flags]
