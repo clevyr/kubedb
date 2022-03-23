@@ -17,6 +17,10 @@ func (Postgres) Name() string {
 	return "postgres"
 }
 
+func (Postgres) DefaultPort() uint16 {
+	return 5432
+}
+
 func (Postgres) DatabaseEnvNames() []string {
 	return []string{"POSTGRES_DB"}
 }

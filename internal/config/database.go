@@ -8,6 +8,7 @@ import (
 
 type Databaser interface {
 	Name() string
+	DefaultPort() uint16
 
 	DatabaseEnvNames() []string
 	DefaultDatabase() string

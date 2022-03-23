@@ -5,6 +5,7 @@ go 1.18
 require (
 	github.com/AlecAivazis/survey/v2 v2.3.2
 	github.com/docker/cli v20.10.11+incompatible
+	github.com/jedib0t/go-pretty/v6 v6.2.7
 	github.com/schollz/progressbar/v3 v3.8.6
 	github.com/sirupsen/logrus v1.8.1
 	github.com/spf13/cobra v1.2.1

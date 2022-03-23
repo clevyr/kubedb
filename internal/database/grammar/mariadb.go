@@ -12,6 +12,11 @@ type MariaDB struct{}
 func (MariaDB) Name() string {
 	return "mariadb"
 }
+
+func (MariaDB) DefaultPort() uint16 {
+	return 3306
+}
+
 func (MariaDB) DatabaseEnvNames() []string {
 	return []string{"MARIADB_DATABASE"}
 }
