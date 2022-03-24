@@ -114,8 +114,6 @@ func queryInDatabase(cmd *cobra.Command, args []string, conf config.Exec, query 
 		return nil, cobra.ShellCompDirectiveNoFileComp
 	}
 
-	cobra.CompDebugln(buf.String(), true)
-
 	names := strings.Split(buf.String(), "\n")
 	return names, cobra.ShellCompDirectiveNoFileComp
 }
