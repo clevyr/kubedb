@@ -26,6 +26,14 @@ func (Postgres) DatabaseEnvNames() []string {
 	return []string{"POSTGRES_DB"}
 }
 
+func (Postgres) ListDatabasesQuery() string {
+	return "SELECT datname FROM pg_database WHERE datistemplate = false"
+}
+
+func (Postgres) ListTablesQuery() string {
+	return "SELECT table_name FROM information_schema.tables WHERE table_schema='public' AND table_type='BASE TABLE'"
+}
+
 func (Postgres) DefaultDatabase() string {
 	return "db"
 }
@@ -103,10 +111,14 @@ func (Postgres) PasswordEnvNames() []string {
 }
 
 func (Postgres) ExecCommand(conf config.Exec) *command.Builder {
-	return command.NewBuilder(
+	cmd := command.NewBuilder(
 		command.NewEnv("PGPASSWORD", conf.Password),
 		"psql", "--host=127.0.0.1", "--username="+conf.Username, "--dbname="+conf.Database,
 	)
+	if conf.DisableHeaders {
+		cmd.Push("--tuples-only")
+	}
+	return cmd
 }
 
 func quoteParam(param string) string {

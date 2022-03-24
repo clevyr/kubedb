@@ -1,6 +1,11 @@
 package flags
 
-import "github.com/spf13/cobra"
+import (
+	"github.com/clevyr/kubedb/internal/config"
+	"github.com/clevyr/kubedb/internal/util"
+	"github.com/spf13/cobra"
+	"strings"
+)
 
 func Grammar(cmd *cobra.Command) {
 	cmd.PersistentFlags().String("grammar", "", "database grammar. detected if not set. (postgres, mariadb)")
@@ -28,6 +33,10 @@ func Format(cmd *cobra.Command) {
 
 func Database(cmd *cobra.Command) {
 	cmd.PersistentFlags().StringP("dbname", "d", "", "database name to connect to")
+	err := cmd.RegisterFlagCompletionFunc("dbname", listDatabases)
+	if err != nil {
+		panic(err)
+	}
 }
 
 func Username(cmd *cobra.Command) {
@@ -56,12 +65,57 @@ func NoOwner(cmd *cobra.Command, p *bool) {
 
 func Tables(cmd *cobra.Command, p *[]string) {
 	cmd.Flags().StringSliceVarP(p, "table", "t", []string{}, "dump the specified table(s) only")
+	err := cmd.RegisterFlagCompletionFunc("table", listTables)
+	if err != nil {
+		panic(err)
+	}
 }
 
 func ExcludeTable(cmd *cobra.Command, p *[]string) {
 	cmd.Flags().StringSliceVarP(p, "exclude-table", "T", []string{}, "do NOT dump the specified table(s)")
+	err := cmd.RegisterFlagCompletionFunc("exclude-table", listTables)
+	if err != nil {
+		panic(err)
+	}
 }
 
 func ExcludeTableData(cmd *cobra.Command, p *[]string) {
 	cmd.Flags().StringSliceVar(p, "exclude-table-data", []string{}, "do NOT dump data for the specified table(s)")
+	err := cmd.RegisterFlagCompletionFunc("exclude-table-data", listTables)
+	if err != nil {
+		panic(err)
+	}
+}
+
+func listTables(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
+	conf := config.Exec{DisableHeaders: true}
+	err := util.DefaultSetup(cmd, &conf.Global)
+	if err != nil {
+		return nil, cobra.ShellCompDirectiveNoFileComp
+	}
+	return queryInDatabase(cmd, args, conf, conf.Grammar.ListTablesQuery())
+}
+
+func listDatabases(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
+	conf := config.Exec{DisableHeaders: true}
+	err := util.DefaultSetup(cmd, &conf.Global)
+	if err != nil {
+		return nil, cobra.ShellCompDirectiveNoFileComp
+	}
+	return queryInDatabase(cmd, args, conf, conf.Grammar.ListDatabasesQuery())
+}
+
+func queryInDatabase(cmd *cobra.Command, args []string, conf config.Exec, query string) ([]string, cobra.ShellCompDirective) {
+	r := strings.NewReader(query)
+	var buf strings.Builder
+	sqlCmd := conf.Grammar.ExecCommand(conf)
+	err := conf.Client.Exec(conf.Pod, []string{"sh", "-c", sqlCmd.Join()}, r, &buf, false)
+	if err != nil {
+		return nil, cobra.ShellCompDirectiveNoFileComp
+	}
+
+	cobra.CompDebugln(buf.String(), true)
+
+	names := strings.Split(buf.String(), "\n")
+	return names, cobra.ShellCompDirectiveNoFileComp
 }
