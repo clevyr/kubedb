@@ -20,9 +20,10 @@ var (
 )
 
 var Command = &cobra.Command{
-	Use:     "kubedb",
-	Short:   "interact with a database inside of Kubernetes",
-	Version: buildVersion(),
+	Use:               "kubedb",
+	Short:             "interact with a database inside of Kubernetes",
+	Version:           buildVersion(),
+	DisableAutoGenTag: true,
 	Long: `kubedb is a command to interact with a database running in a Kubernetes cluster.
 
 Multiple database types (referred to as the "grammar") are supported.
