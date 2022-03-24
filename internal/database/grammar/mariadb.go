@@ -1,6 +1,7 @@
 package grammar
 
 import (
+	"github.com/clevyr/kubedb/internal/command"
 	"github.com/clevyr/kubedb/internal/config"
 	"github.com/clevyr/kubedb/internal/database/sqlformat"
 	"github.com/clevyr/kubedb/internal/kubernetes"
@@ -59,22 +60,33 @@ func (MariaDB) PasswordEnvNames() []string {
 	return []string{"MARIADB_PASSWORD"}
 }
 
-func (MariaDB) ExecCommand(conf config.Exec) []string {
-	return []string{"MYSQL_PWD=" + conf.Password, "mysql", "--host=127.0.0.1", "--user=" + conf.Username, "--database=" + conf.Database}
+func (MariaDB) ExecCommand(conf config.Exec) *command.Builder {
+	return command.NewBuilder(
+		command.NewEnv("MYSQL_PWD", conf.Password),
+		"mysql", "--host=127.0.0.1", "--user="+conf.Username, "--database="+conf.Database,
+	)
 }
 
-func (MariaDB) DumpCommand(conf config.Dump) []string {
-	cmd := []string{"MYSQL_PWD=" + conf.Password, "mysqldump", "--host=127.0.0.1", "--user=" + conf.Username, conf.Database}
+func (MariaDB) DumpCommand(conf config.Dump) *command.Builder {
+	cmd := command.NewBuilder(
+		command.NewEnv("MYSQL_PWD", conf.Password),
+		"mysqldump", "--host=127.0.0.1", "--user="+conf.Username, conf.Database,
+	)
 	if conf.Clean {
-		cmd = append(cmd, "--add-drop-table")
+		cmd.Push("--add-drop-table")
 	}
-	cmd = append(cmd, conf.Tables...)
+	for _, table := range conf.Tables {
+		cmd.Push(table)
+	}
 	for _, table := range conf.ExcludeTable {
-		cmd = append(cmd, "--ignore-table='"+table+"'")
+		cmd.Push("--ignore-table=" + table)
 	}
 	return cmd
 }
 
-func (MariaDB) RestoreCommand(conf config.Restore, inputFormat sqlformat.Format) []string {
-	return []string{"MYSQL_PWD=" + conf.Password, "mysql", "--host=127.0.0.1", "--user=" + conf.Username, conf.Database}
+func (MariaDB) RestoreCommand(conf config.Restore, inputFormat sqlformat.Format) *command.Builder {
+	return command.NewBuilder(
+		command.NewEnv("MYSQL_PWD", conf.Password),
+		"mysql", "--host=127.0.0.1", "--user="+conf.Username, conf.Database,
+	)
 }

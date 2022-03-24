@@ -1,6 +1,7 @@
 package config
 
 import (
+	"github.com/clevyr/kubedb/internal/command"
 	"github.com/clevyr/kubedb/internal/database/sqlformat"
 	"github.com/clevyr/kubedb/internal/kubernetes"
 	v1 "k8s.io/api/core/v1"
@@ -22,7 +23,7 @@ type Databaser interface {
 	FilterPods(client kubernetes.KubeClient, pods []v1.Pod) ([]v1.Pod, error)
 	PasswordEnvNames() []string
 
-	ExecCommand(conf Exec) []string
-	DumpCommand(conf Dump) []string
-	RestoreCommand(conf Restore, inputFormat sqlformat.Format) []string
+	ExecCommand(conf Exec) *command.Builder
+	DumpCommand(conf Dump) *command.Builder
+	RestoreCommand(conf Restore, inputFormat sqlformat.Format) *command.Builder
 }

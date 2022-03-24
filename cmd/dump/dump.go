@@ -5,6 +5,7 @@ import (
 	"encoding/base64"
 	"errors"
 	"fmt"
+	"github.com/clevyr/kubedb/internal/command"
 	"github.com/clevyr/kubedb/internal/config"
 	"github.com/clevyr/kubedb/internal/config/flags"
 	"github.com/clevyr/kubedb/internal/database/sqlformat"
@@ -18,7 +19,6 @@ import (
 	"os"
 	"path/filepath"
 	"strconv"
-	"strings"
 )
 
 var Command = &cobra.Command{
@@ -194,9 +194,9 @@ func run(cmd *cobra.Command, args []string) (err error) {
 func buildCommand(db config.Databaser, conf config.Dump) []string {
 	cmd := db.DumpCommand(conf)
 	if conf.OutputFormat != sqlformat.Custom {
-		cmd = append(cmd, "|", "gzip", "--force")
+		cmd.Push(command.Raw("|"), "gzip", "--force")
 	}
 	// base64 is required since TTYs use CRLF
-	cmd = append(cmd, "|", "base64", "--wrap=0")
-	return []string{"sh", "-c", strings.Join(cmd, " ")}
+	cmd.Push(command.Raw("|"), "base64", "--wrap=0")
+	return []string{"sh", "-c", cmd.Join()}
 }

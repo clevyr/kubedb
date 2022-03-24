@@ -4,6 +4,7 @@ import (
 	"compress/gzip"
 	"fmt"
 	"github.com/AlecAivazis/survey/v2"
+	"github.com/clevyr/kubedb/internal/command"
 	"github.com/clevyr/kubedb/internal/config"
 	"github.com/clevyr/kubedb/internal/config/flags"
 	"github.com/clevyr/kubedb/internal/database/sqlformat"
@@ -170,9 +171,9 @@ func run(cmd *cobra.Command, args []string) (err error) {
 }
 
 func buildCommand(conf config.Restore, inputFormat sqlformat.Format) []string {
-	cmd := []string{"gunzip", "--force", "|"}
-	cmd = append(cmd, conf.Grammar.RestoreCommand(conf, inputFormat)...)
-	return []string{"sh", "-c", strings.Join(cmd, " ")}
+	cmd := conf.Grammar.RestoreCommand(conf, inputFormat)
+	cmd.Unshift("gunzip", "--force", command.Raw("|"))
+	return []string{"sh", "-c", cmd.Join()}
 }
 
 func gzipCopy(w io.Writer, r io.Reader) (err error) {

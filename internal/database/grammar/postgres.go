@@ -2,6 +2,7 @@ package grammar
 
 import (
 	"encoding/csv"
+	"github.com/clevyr/kubedb/internal/command"
 	"github.com/clevyr/kubedb/internal/config"
 	"github.com/clevyr/kubedb/internal/database/sqlformat"
 	"github.com/clevyr/kubedb/internal/kubernetes"
@@ -101,8 +102,11 @@ func (Postgres) PasswordEnvNames() []string {
 	return []string{"POSTGRES_PASSWORD", "PGPOOL_POSTGRES_PASSWORD"}
 }
 
-func (Postgres) ExecCommand(conf config.Exec) []string {
-	return []string{"PGPASSWORD=" + conf.Password, "psql", "--host=127.0.0.1", "--username=" + conf.Username, "--dbname=" + conf.Database}
+func (Postgres) ExecCommand(conf config.Exec) *command.Builder {
+	return command.NewBuilder(
+		command.NewEnv("PGPASSWORD", conf.Password),
+		"psql", "--host=127.0.0.1", "--username="+conf.Username, "--dbname="+conf.Database,
+	)
 }
 
 func quoteParam(param string) string {
@@ -111,46 +115,52 @@ func quoteParam(param string) string {
 	return param
 }
 
-func (Postgres) DumpCommand(conf config.Dump) []string {
-	cmd := []string{"PGPASSWORD=" + conf.Password, "pg_dump", "--host=127.0.0.1", "--username=" + conf.Username, "--dbname=" + conf.Database}
+func (Postgres) DumpCommand(conf config.Dump) *command.Builder {
+	cmd := command.NewBuilder(
+		command.NewEnv("PGPASSWORD", conf.Password),
+		"pg_dump", "--host=127.0.0.1", "--username="+conf.Username, "--dbname="+conf.Database,
+	)
 	if conf.Clean {
-		cmd = append(cmd, "--clean")
+		cmd.Push("--clean")
 	}
 	if conf.NoOwner {
-		cmd = append(cmd, "--no-owner")
+		cmd.Push("--no-owner")
 	}
 	if conf.IfExists {
-		cmd = append(cmd, "--if-exists")
+		cmd.Push("--if-exists")
 	}
 	for _, table := range conf.Tables {
-		cmd = append(cmd, "--table='"+quoteParam(table)+"'")
+		cmd.Push("--table=" + quoteParam(table))
 	}
 	for _, table := range conf.ExcludeTable {
-		cmd = append(cmd, "--exclude-table='"+quoteParam(table)+"'")
+		cmd.Push("--exclude-table=" + quoteParam(table))
 	}
 	for _, table := range conf.ExcludeTableData {
-		cmd = append(cmd, "--exclude-table-data='"+quoteParam(table)+"'")
+		cmd.Push("--exclude-table-data=" + quoteParam(table))
 	}
 	if conf.OutputFormat == sqlformat.Custom {
-		cmd = append(cmd, "--format=c")
+		cmd.Push("--format=c")
 	}
 	return cmd
 }
 
-func (Postgres) RestoreCommand(conf config.Restore, inputFormat sqlformat.Format) []string {
-	cmd := []string{"PGPASSWORD=" + conf.Password, "PGOPTIONS='-c client_min_messages=WARNING'"}
+func (Postgres) RestoreCommand(conf config.Restore, inputFormat sqlformat.Format) *command.Builder {
+	cmd := command.NewBuilder(
+		command.NewEnv("PGPASSWORD", conf.Password),
+		command.NewEnv("PGOPTIONS", "-c client_min_messages=WARNING"),
+	)
 	switch inputFormat {
 	case sqlformat.Gzip, sqlformat.Plain:
-		cmd = append(cmd, "psql", "--quiet", "--output=/dev/null")
+		cmd.Push("psql", "--quiet", "--output=/dev/null")
 	case sqlformat.Custom:
-		cmd = append(cmd, "pg_restore", "--format=custom", "--verbose", "--clean", "--exit-on-error")
+		cmd.Push("pg_restore", "--format=custom", "--verbose", "--clean", "--exit-on-error")
 		if conf.NoOwner {
-			cmd = append(cmd, "--no-owner")
+			cmd.Push("--no-owner")
 		}
 	}
-	cmd = append(cmd, "--host=127.0.0.1", "--username="+conf.Username, "--dbname="+conf.Database)
+	cmd.Push("--host=127.0.0.1", "--username="+conf.Username, "--dbname="+conf.Database)
 	if conf.SingleTransaction {
-		cmd = append(cmd, "--single-transaction")
+		cmd.Push("--single-transaction")
 	}
 	return cmd
 }

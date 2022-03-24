@@ -1,6 +1,7 @@
 package exec
 
 import (
+	"github.com/clevyr/kubedb/internal/command"
 	"github.com/clevyr/kubedb/internal/config"
 	"github.com/clevyr/kubedb/internal/util"
 	"github.com/docker/cli/cli/streams"
@@ -8,7 +9,6 @@ import (
 	"github.com/spf13/cobra"
 	_ "k8s.io/client-go/plugin/pkg/client/auth"
 	"os"
-	"strings"
 )
 
 var Command = &cobra.Command{
@@ -38,11 +38,14 @@ func run(cmd *cobra.Command, args []string) (err error) {
 }
 
 func buildCommand(db config.Databaser, conf config.Exec, args []string) []string {
-	var cmd []string
+	var cmd *command.Builder
 	if len(args) == 0 {
 		cmd = db.ExecCommand(conf)
 	} else {
-		cmd = append([]string{"exec"}, args...)
+		cmd = command.NewBuilder("exec")
+		for _, arg := range args {
+			cmd.Push(arg)
+		}
 	}
-	return []string{"sh", "-c", strings.Join(cmd, " ")}
+	return []string{"sh", "-c", cmd.Join()}
 }
