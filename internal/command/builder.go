@@ -29,13 +29,13 @@ func (j *Builder) Unshift(p ...any) *Builder {
 func (j Builder) Join() string {
 	var buf strings.Builder
 	for k, v := range j.cmd {
-		switch v.(type) {
+		switch v := v.(type) {
 		case string:
-			buf.WriteString(shellescape.Quote(v.(string)))
+			buf.WriteString(shellescape.Quote(v))
 		case Env:
-			buf.WriteString(v.(Env).String())
+			buf.WriteString(v.String())
 		case Raw:
-			buf.WriteString(string(v.(Raw)))
+			buf.WriteString(string(v))
 		default:
 			panic(fmt.Errorf("unknown value in command: %#v", v))
 		}
