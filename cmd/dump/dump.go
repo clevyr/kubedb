@@ -11,11 +11,12 @@ import (
 	"github.com/clevyr/kubedb/internal/database/sqlformat"
 	"github.com/clevyr/kubedb/internal/progressbar"
 	"github.com/clevyr/kubedb/internal/util"
-	"github.com/docker/cli/cli/streams"
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 	"io"
 	_ "k8s.io/client-go/plugin/pkg/client/auth"
+	"k8s.io/client-go/tools/remotecommand"
+	"k8s.io/kubectl/pkg/util/term"
 	"os"
 	"path/filepath"
 	"strconv"
@@ -155,13 +156,27 @@ func run(cmd *cobra.Command, args []string) (err error) {
 		}
 	}()
 
-	stdin := streams.NewIn(os.Stdin)
-	if err := stdin.SetRawTerminal(); err != nil {
-		return err
+	t := term.TTY{
+		In:  os.Stdin,
+		Out: pw,
+	}
+	t.Raw = t.IsTerminalIn()
+	var sizeQueue remotecommand.TerminalSizeQueue
+	if t.Raw {
+		sizeQueue = t.MonitorSize(t.GetSize())
 	}
 
-	err = conf.Client.Exec(conf.Pod, buildCommand(conf.Grammar, conf), stdin, pw, stdin.IsTerminal())
-	stdin.RestoreTerminal()
+	err = t.Safe(func() error {
+		return conf.Client.Exec(
+			conf.Pod,
+			buildCommand(conf.Grammar, conf),
+			t.In,
+			t.Out,
+			os.Stderr,
+			t.IsTerminalIn(),
+			sizeQueue,
+		)
+	})
 	if err != nil {
 		_ = pw.CloseWithError(err)
 		return err

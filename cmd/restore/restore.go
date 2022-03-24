@@ -198,7 +198,7 @@ func runInDatabasePod(r *io.PipeReader, ch chan error, inputFormat sqlformat.For
 		_ = pr.Close()
 	}(r)
 
-	err = conf.Client.Exec(conf.Pod, buildCommand(conf, inputFormat), r, os.Stdout, false)
+	err = conf.Client.Exec(conf.Pod, buildCommand(conf, inputFormat), r, os.Stdout, os.Stderr, false, nil)
 	if err != nil {
 		_ = r.CloseWithError(err)
 		ch <- err

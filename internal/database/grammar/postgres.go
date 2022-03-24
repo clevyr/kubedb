@@ -9,6 +9,7 @@ import (
 	log "github.com/sirupsen/logrus"
 	"io"
 	v1 "k8s.io/api/core/v1"
+	"os"
 	"strings"
 )
 
@@ -80,7 +81,7 @@ func (Postgres) FilterPods(client kubernetes.KubeClient, pods []v1.Pod) ([]v1.Po
 		}
 
 		var buf strings.Builder
-		err := client.Exec(pods[0], cmd, strings.NewReader(""), &buf, false)
+		err := client.Exec(pods[0], cmd, strings.NewReader(""), &buf, os.Stderr, false, nil)
 		if err != nil {
 			return pods, err
 		}

@@ -30,25 +30,30 @@ func (client KubeClient) GetNamespacedPods() (*v1.PodList, error) {
 	return pods, nil
 }
 
-func (client KubeClient) Exec(pod v1.Pod, command []string, stdin io.Reader, stdout io.Writer, tty bool) error {
-	req := client.ClientSet.CoreV1().RESTClient().Post().Resource("pods").Namespace(client.Namespace).
-		Name(pod.Name).SubResource("exec")
-	req.VersionedParams(&v1.PodExecOptions{
-		Command: command,
-		Stdin:   true,
-		Stdout:  true,
-		Stderr:  true,
-		TTY:     tty,
-	}, scheme.ParameterCodec)
+func (client KubeClient) Exec(pod v1.Pod, command []string, stdin io.Reader, stdout, stderr io.Writer, tty bool, terminalSizeQueue remotecommand.TerminalSizeQueue) error {
+	req := client.ClientSet.CoreV1().RESTClient().Post().
+		Resource("pods").
+		Namespace(client.Namespace).
+		Name(pod.Name).
+		SubResource("exec").
+		VersionedParams(&v1.PodExecOptions{
+			Command: command,
+			Stdin:   true,
+			Stdout:  true,
+			Stderr:  true,
+			TTY:     tty,
+		}, scheme.ParameterCodec)
 	exec, err := remotecommand.NewSPDYExecutor(client.ClientConfig, "POST", req.URL())
 	if err != nil {
 		return err
 	}
 
 	err = exec.Stream(remotecommand.StreamOptions{
-		Stdin:  stdin,
-		Stdout: stdout,
-		Stderr: os.Stderr,
+		Stdin:             stdin,
+		Stdout:            stdout,
+		Stderr:            os.Stderr,
+		Tty:               tty,
+		TerminalSizeQueue: terminalSizeQueue,
 	})
 
 	return err
