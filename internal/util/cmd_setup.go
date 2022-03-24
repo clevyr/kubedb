@@ -105,7 +105,7 @@ func DefaultSetup(cmd *cobra.Command, conf *config.Global) (err error) {
 			conf.Database = conf.Grammar.DefaultDatabase()
 			log.WithField("database", conf.Database).Warn("could not detect database from pod env, using default")
 		} else {
-			log.WithField("database", conf.Database).Info("found database from pod env")
+			log.WithField("database", conf.Database).Info("found db name in pod env")
 		}
 	}
 
