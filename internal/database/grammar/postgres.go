@@ -75,9 +75,12 @@ func (Postgres) FilterPods(client kubernetes.KubeClient, pods []v1.Pod) ([]v1.Po
 		log.Info("querying for primary instance")
 		cmd := []string{
 			"sh", "-c",
-			"DISABLE_WELCOME_MESSAGE=true /opt/bitnami/scripts/postgresql-repmgr/entrypoint.sh " +
-				"repmgr --config-file=/opt/bitnami/repmgr/conf/repmgr.conf " +
-				"service status --csv",
+			command.NewBuilder(
+				command.NewEnv("DISABLE_WELCOME_MESSAGE", "true"),
+				"/opt/bitnami/scripts/postgresql-repmgr/entrypoint.sh",
+				"repmgr", "--config-file=/opt/bitnami/repmgr/conf/repmgr.conf",
+				"service", "status", "--csv",
+			).String(),
 		}
 
 		var buf strings.Builder
