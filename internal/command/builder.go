@@ -26,7 +26,7 @@ func (j *Builder) Unshift(p ...any) *Builder {
 	return j
 }
 
-func (j Builder) Join() string {
+func (j Builder) String() string {
 	var buf strings.Builder
 	for k, v := range j.cmd {
 		switch v := v.(type) {

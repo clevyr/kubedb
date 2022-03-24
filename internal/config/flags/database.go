@@ -109,7 +109,7 @@ func queryInDatabase(cmd *cobra.Command, args []string, conf config.Exec, query 
 	r := strings.NewReader(query)
 	var buf strings.Builder
 	sqlCmd := conf.Grammar.ExecCommand(conf)
-	err := conf.Client.Exec(conf.Pod, []string{"sh", "-c", sqlCmd.Join()}, r, &buf, false)
+	err := conf.Client.Exec(conf.Pod, []string{"sh", "-c", sqlCmd.String()}, r, &buf, false)
 	if err != nil {
 		return nil, cobra.ShellCompDirectiveNoFileComp
 	}

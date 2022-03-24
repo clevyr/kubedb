@@ -47,5 +47,5 @@ func buildCommand(db config.Databaser, conf config.Exec, args []string) []string
 			cmd.Push(arg)
 		}
 	}
-	return []string{"sh", "-c", cmd.Join()}
+	return []string{"sh", "-c", cmd.String()}
 }

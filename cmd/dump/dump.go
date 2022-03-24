@@ -200,5 +200,5 @@ func buildCommand(db config.Databaser, conf config.Dump) []string {
 	}
 	// base64 is required since TTYs use CRLF
 	cmd.Push(command.Raw("|"), "base64", "--wrap=0")
-	return []string{"sh", "-c", cmd.Join()}
+	return []string{"sh", "-c", cmd.String()}
 }
