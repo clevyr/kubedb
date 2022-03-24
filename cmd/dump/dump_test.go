@@ -6,6 +6,7 @@ import (
 	"path/filepath"
 	"strings"
 	"testing"
+	"time"
 )
 
 func TestGenerateFilename(t *testing.T) {
@@ -26,6 +27,7 @@ func TestGenerateFilename(t *testing.T) {
 				Dir:       tc.directory,
 				Namespace: tc.namespace,
 				Format:    tc.filetype,
+				Date:      time.Now(),
 			}.Generate()
 			if err != tc.err {
 				t.Error(err)

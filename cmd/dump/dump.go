@@ -19,6 +19,7 @@ import (
 	"os"
 	"path/filepath"
 	"strconv"
+	"time"
 )
 
 var Command = &cobra.Command{
@@ -85,6 +86,7 @@ func run(cmd *cobra.Command, args []string) (err error) {
 			Dir:       conf.Directory,
 			Namespace: conf.Client.Namespace,
 			Format:    conf.OutputFormat,
+			Date:      time.Now(),
 		}.Generate()
 		if err != nil {
 			return err

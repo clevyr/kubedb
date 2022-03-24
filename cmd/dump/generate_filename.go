@@ -11,16 +11,13 @@ import (
 
 const DateFormat = "2006-01-02_150405"
 
-var FilenameTemplate = fmt.Sprintf("{{ .Namespace }}_{{ .Now %#v }}{{ .Ext }}", DateFormat)
+var FilenameTemplate = fmt.Sprintf("{{ .Namespace }}_{{ .Date.Format %#v }}{{ .Ext }}", DateFormat)
 
 type Filename struct {
 	Dir       string
 	Namespace string
 	Format    sqlformat.Format
-}
-
-func (vars Filename) Now(layout string) string {
-	return time.Now().Format(layout)
+	Date      time.Time
 }
 
 func (vars Filename) Ext() string {
@@ -53,6 +50,7 @@ func HelpFilename() string {
 		Dir:       ".",
 		Namespace: "clevyr",
 		Format:    sqlformat.Gzip,
+		Date:      time.Date(2022, 1, 9, 9, 41, 0, 0, time.UTC),
 	}.Generate()
 	return filename
 }
