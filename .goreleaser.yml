@@ -10,9 +10,6 @@ builds:
     goarm:
       - 6
       - 7
-    hooks:
-      post:
-        - upx -q "{{ .Path }}"
 archives:
   - replacements:
       darwin: Darwin
