@@ -170,10 +170,9 @@ func run(cmd *cobra.Command, args []string) (err error) {
 	return nil
 }
 
-func buildCommand(conf config.Restore, inputFormat sqlformat.Format) []string {
-	cmd := conf.Grammar.RestoreCommand(conf, inputFormat)
-	cmd.Unshift("gunzip", "--force", command.Raw("|"))
-	return []string{"sh", "-c", cmd.String()}
+func buildCommand(conf config.Restore, inputFormat sqlformat.Format) *command.Builder {
+	return conf.Grammar.RestoreCommand(conf, inputFormat).
+		Unshift("gunzip", "--force", command.Raw("|"))
 }
 
 func gzipCopy(w io.Writer, r io.Reader) (err error) {
@@ -198,7 +197,7 @@ func runInDatabasePod(r *io.PipeReader, ch chan error, inputFormat sqlformat.For
 		_ = pr.Close()
 	}(r)
 
-	err = conf.Client.Exec(conf.Pod, buildCommand(conf, inputFormat), r, os.Stdout, os.Stderr, false, nil)
+	err = conf.Client.Exec(conf.Pod, buildCommand(conf, inputFormat).String(), r, os.Stdout, os.Stderr, false, nil)
 	if err != nil {
 		_ = r.CloseWithError(err)
 		ch <- err

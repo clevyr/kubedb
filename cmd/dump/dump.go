@@ -169,7 +169,7 @@ func run(cmd *cobra.Command, args []string) (err error) {
 	err = t.Safe(func() error {
 		return conf.Client.Exec(
 			conf.Pod,
-			buildCommand(conf.Grammar, conf),
+			buildCommand(conf.Grammar, conf).String(),
 			t.In,
 			t.Out,
 			os.Stderr,
@@ -208,12 +208,12 @@ func run(cmd *cobra.Command, args []string) (err error) {
 	return nil
 }
 
-func buildCommand(db config.Databaser, conf config.Dump) []string {
+func buildCommand(db config.Databaser, conf config.Dump) *command.Builder {
 	cmd := db.DumpCommand(conf)
 	if conf.OutputFormat != sqlformat.Custom {
 		cmd.Push(command.Raw("|"), "gzip", "--force")
 	}
 	// base64 is required since TTYs use CRLF
 	cmd.Push(command.Raw("|"), "base64", "--wrap=0")
-	return []string{"sh", "-c", cmd.String()}
+	return cmd
 }

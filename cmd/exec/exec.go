@@ -42,7 +42,7 @@ func run(cmd *cobra.Command, args []string) (err error) {
 	return t.Safe(func() error {
 		return conf.Client.Exec(
 			conf.Pod,
-			buildCommand(conf.Grammar, conf, args),
+			buildCommand(conf.Grammar, conf, args).String(),
 			t.In,
 			t.Out,
 			os.Stderr,
@@ -52,15 +52,14 @@ func run(cmd *cobra.Command, args []string) (err error) {
 	})
 }
 
-func buildCommand(db config.Databaser, conf config.Exec, args []string) []string {
-	var cmd *command.Builder
+func buildCommand(db config.Databaser, conf config.Exec, args []string) *command.Builder {
 	if len(args) == 0 {
-		cmd = db.ExecCommand(conf)
-	} else {
-		cmd = command.NewBuilder("exec")
-		for _, arg := range args {
-			cmd.Push(arg)
-		}
+		return db.ExecCommand(conf)
 	}
-	return []string{"sh", "-c", cmd.String()}
+
+	cmd := command.NewBuilder("exec")
+	for _, arg := range args {
+		cmd.Push(arg)
+	}
+	return cmd
 }

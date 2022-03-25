@@ -73,18 +73,15 @@ func (Postgres) FilterPods(client kubernetes.KubeClient, pods []v1.Pod) ([]v1.Po
 	if len(pods) > 0 && pods[0].Labels["app.kubernetes.io/name"] == "postgresql-ha" {
 		// HA chart. Need to detect primary.
 		log.Info("querying for primary instance")
-		cmd := []string{
-			"sh", "-c",
-			command.NewBuilder(
-				command.NewEnv("DISABLE_WELCOME_MESSAGE", "true"),
-				"/opt/bitnami/scripts/postgresql-repmgr/entrypoint.sh",
-				"repmgr", "--config-file=/opt/bitnami/repmgr/conf/repmgr.conf",
-				"service", "status", "--csv",
-			).String(),
-		}
+		cmd := command.NewBuilder(
+			command.NewEnv("DISABLE_WELCOME_MESSAGE", "true"),
+			"/opt/bitnami/scripts/postgresql-repmgr/entrypoint.sh",
+			"repmgr", "--config-file=/opt/bitnami/repmgr/conf/repmgr.conf",
+			"service", "status", "--csv",
+		)
 
 		var buf strings.Builder
-		err := client.Exec(pods[0], cmd, strings.NewReader(""), &buf, os.Stderr, false, nil)
+		err := client.Exec(pods[0], cmd.String(), strings.NewReader(""), &buf, os.Stderr, false, nil)
 		if err != nil {
 			return pods, err
 		}

@@ -30,14 +30,14 @@ func (client KubeClient) GetNamespacedPods() (*v1.PodList, error) {
 	return pods, nil
 }
 
-func (client KubeClient) Exec(pod v1.Pod, command []string, stdin io.Reader, stdout, stderr io.Writer, tty bool, terminalSizeQueue remotecommand.TerminalSizeQueue) error {
+func (client KubeClient) Exec(pod v1.Pod, cmd string, stdin io.Reader, stdout, stderr io.Writer, tty bool, terminalSizeQueue remotecommand.TerminalSizeQueue) error {
 	req := client.ClientSet.CoreV1().RESTClient().Post().
 		Resource("pods").
 		Namespace(client.Namespace).
 		Name(pod.Name).
 		SubResource("exec").
 		VersionedParams(&v1.PodExecOptions{
-			Command: command,
+			Command: []string{"sh", "-c", cmd},
 			Stdin:   true,
 			Stdout:  true,
 			Stderr:  true,
