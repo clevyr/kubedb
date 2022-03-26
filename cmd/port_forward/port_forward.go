@@ -21,17 +21,33 @@ import (
 )
 
 var Command = &cobra.Command{
-	Use:     "port-forward [local_port]",
-	Short:   "set up a local port forward",
-	Args:    cobra.MaximumNArgs(1),
-	RunE:    run,
-	PreRunE: preRun,
+	Use:               "port-forward [local_port]",
+	Short:             "set up a local port forward",
+	Args:              cobra.MaximumNArgs(1),
+	ValidArgsFunction: validArgs,
+	RunE:              run,
+	PreRunE:           preRun,
 }
 
 var conf config.PortForward
 
 func init() {
 	flags.Address(Command, &conf.Addresses)
+}
+
+func validArgs(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
+	err := preRun(cmd, args)
+	if err != nil {
+		return nil, cobra.ShellCompDirectiveNoFileComp
+	}
+
+	defaultPort := uint64(conf.Grammar.DefaultPort())
+
+	return []string{
+		strconv.FormatUint(uint64(conf.LocalPort), 10),
+		strconv.FormatUint(defaultPort, 10),
+		strconv.FormatUint(defaultPort+1, 10),
+	}, cobra.ShellCompDirectiveNoFileComp
 }
 
 func preRun(cmd *cobra.Command, args []string) error {
