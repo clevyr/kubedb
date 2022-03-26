@@ -81,7 +81,7 @@ func ExcludeTable(cmd *cobra.Command, p *[]string) {
 }
 
 func ExcludeTableData(cmd *cobra.Command, p *[]string) {
-	cmd.Flags().StringSliceVar(p, "exclude-table-data", []string{}, "do NOT dump data for the specified table(s)")
+	cmd.Flags().StringSliceVarP(p, "exclude-table-data", "D", []string{}, "do NOT dump data for the specified table(s)")
 	err := cmd.RegisterFlagCompletionFunc("exclude-table-data", listTables)
 	if err != nil {
 		panic(err)
