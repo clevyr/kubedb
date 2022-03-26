@@ -23,6 +23,7 @@ import (
 var Command = &cobra.Command{
 	Use:     "port-forward [local_port]",
 	Short:   "set up a local port forward",
+	Args:    cobra.MaximumNArgs(1),
 	RunE:    run,
 	PreRunE: preRun,
 }
