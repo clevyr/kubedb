@@ -113,6 +113,7 @@ func run(cmd *cobra.Command, args []string) (err error) {
 		})
 		t.SetStyle(table.StyleLight)
 		t.Render()
+		fmt.Println(`Tip: If you are connecting from a Docker container, try setting the hostname to "host.docker.internal"`)
 	}()
 
 	errCh := make(chan error, 1)
