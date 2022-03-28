@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"github.com/clevyr/kubedb/internal/config"
 	"github.com/clevyr/kubedb/internal/config/flags"
+	log2 "github.com/clevyr/kubedb/internal/log"
 	"github.com/clevyr/kubedb/internal/util"
 	"github.com/jedib0t/go-pretty/v6/table"
 	log "github.com/sirupsen/logrus"
@@ -87,7 +88,9 @@ func run(cmd *cobra.Command, args []string) (err error) {
 	ports := []string{fmt.Sprintf("%d:%d", conf.LocalPort, conf.Grammar.DefaultPort())}
 	stopCh := make(chan struct{}, 1)
 	readyCh := make(chan struct{}, 1)
-	fw, err := portforward.NewOnAddresses(dialer, conf.Addresses, ports, stopCh, readyCh, os.Stdout, os.Stderr)
+	outWriter := log2.NewWriter(log.StandardLogger(), log.InfoLevel)
+	errWriter := log2.NewWriter(log.StandardLogger(), log.ErrorLevel)
+	fw, err := portforward.NewOnAddresses(dialer, conf.Addresses, ports, stopCh, readyCh, outWriter, errWriter)
 	if err != nil {
 		return err
 	}
