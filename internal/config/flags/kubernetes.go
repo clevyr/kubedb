@@ -6,16 +6,11 @@ import (
 	"github.com/clevyr/kubedb/internal/kubernetes"
 	"github.com/spf13/cobra"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"k8s.io/client-go/util/homedir"
 	"path/filepath"
 )
 
 func Kubeconfig(cmd *cobra.Command) {
-	var kubeconfigDefault string
-	if home := homedir.HomeDir(); home != "" {
-		kubeconfigDefault = filepath.Join(home, ".kube", "config")
-	}
-	cmd.PersistentFlags().String("kubeconfig", kubeconfigDefault, "absolute path to the kubeconfig file")
+	cmd.PersistentFlags().String("kubeconfig", filepath.Join("$HOME", ".kube", "config"), "absolute path to the kubeconfig file")
 }
 
 func Context(cmd *cobra.Command) {

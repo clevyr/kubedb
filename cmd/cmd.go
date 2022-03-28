@@ -11,6 +11,7 @@ import (
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
+	"os"
 	"strings"
 )
 
@@ -45,6 +46,22 @@ Dynamic Env Var Variables:
 }
 
 func preRun(cmd *cobra.Command, args []string) error {
+	kubeconfig, err := cmd.Flags().GetString("kubeconfig")
+	if err != nil {
+		panic(err)
+	}
+	if kubeconfig == "$HOME" || strings.HasPrefix(kubeconfig, "$HOME"+string(os.PathSeparator)) {
+		home, err := os.UserHomeDir()
+		if err != nil {
+			return err
+		}
+		kubeconfig = home + kubeconfig[5:]
+		err = cmd.Flags().Set("kubeconfig", kubeconfig)
+		if err != nil {
+			panic(err)
+		}
+	}
+
 	grammarFlag, err := cmd.Flags().GetString("grammar")
 	if err != nil {
 		panic(err)
