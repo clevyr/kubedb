@@ -214,6 +214,6 @@ func buildCommand(db config.Databaser, conf config.Dump) *command.Builder {
 		cmd.Push(command.Raw("|"), "gzip", "--force")
 	}
 	// base64 is required since TTYs use CRLF
-	cmd.Push(command.Raw("|"), "base64", "--wrap=0")
+	cmd.Push(command.Raw("|"), "base64", "-w0")
 	return cmd
 }
