@@ -77,8 +77,18 @@ func preRun(cmd *cobra.Command, args []string) (err error) {
 		cmd.SilenceUsage = false
 	}
 
-	switch conf.Filename {
-	case "":
+	if conf.Filename != "" && !cmd.Flags().Lookup("format").Changed {
+		conf.Format, err = sqlformat.ParseFilename(conf.Filename)
+		if err != nil {
+			return err
+		}
+	}
+
+	return util.DefaultSetup(cmd, &conf.Global)
+}
+
+func run(cmd *cobra.Command, args []string) (err error) {
+	if conf.Filename == "" {
 		conf.Filename, err = Filename{
 			Namespace: conf.Client.Namespace,
 			Format:    conf.Format,
@@ -87,19 +97,8 @@ func preRun(cmd *cobra.Command, args []string) (err error) {
 		if err != nil {
 			return err
 		}
-	default:
-		if !cmd.Flags().Lookup("format").Changed {
-			conf.Format, err = sqlformat.ParseFilename(conf.Filename)
-			if err != nil {
-				return err
-			}
-		}
 	}
 
-	return util.DefaultSetup(cmd, &conf.Global)
-}
-
-func run(cmd *cobra.Command, args []string) (err error) {
 	var f io.WriteCloser
 	switch conf.Filename {
 	case "-":
