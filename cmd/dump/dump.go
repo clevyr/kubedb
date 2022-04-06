@@ -187,13 +187,13 @@ func run(cmd *cobra.Command, args []string) (err error) {
 		return err
 	}
 
-	_ = bar.Finish()
-	log.SetOutput(os.Stderr)
-
 	err = <-ch
 	if err != nil {
 		return err
 	}
+
+	_ = bar.Finish()
+	log.SetOutput(os.Stderr)
 
 	// Close file
 	err = f.Close()
