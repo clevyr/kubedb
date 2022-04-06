@@ -2,6 +2,7 @@ package flags
 
 import (
 	"github.com/clevyr/kubedb/internal/config"
+	"github.com/clevyr/kubedb/internal/database/grammar"
 	"github.com/clevyr/kubedb/internal/database/sqlformat"
 	"github.com/clevyr/kubedb/internal/util"
 	"github.com/spf13/cobra"
@@ -14,7 +15,10 @@ func Grammar(cmd *cobra.Command) {
 	err := cmd.RegisterFlagCompletionFunc(
 		"grammar",
 		func(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
-			return []string{"postgres", "mariadb"}, cobra.ShellCompDirectiveNoFileComp
+			return []string{
+				grammar.Postgres{}.Name(),
+				grammar.MariaDB{}.Name(),
+			}, cobra.ShellCompDirectiveNoFileComp
 		})
 	if err != nil {
 		panic(err)
@@ -27,7 +31,11 @@ func Format(cmd *cobra.Command, p *sqlformat.Format) {
 	err := cmd.RegisterFlagCompletionFunc(
 		"format",
 		func(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
-			return []string{"gzip", "plain", "custom"}, cobra.ShellCompDirectiveNoFileComp
+			return []string{
+				sqlformat.Gzip.String(),
+				sqlformat.Plain.String(),
+				sqlformat.Custom.String(),
+			}, cobra.ShellCompDirectiveNoFileComp
 		})
 	if err != nil {
 		panic(err)
