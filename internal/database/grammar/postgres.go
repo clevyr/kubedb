@@ -151,7 +151,7 @@ func (Postgres) DumpCommand(conf config.Dump) *command.Builder {
 	for _, table := range conf.ExcludeTableData {
 		cmd.Push("--exclude-table-data=" + quoteParam(table))
 	}
-	if conf.OutputFormat == sqlformat.Custom {
+	if conf.Format == sqlformat.Custom {
 		cmd.Push("--format=c")
 	}
 	return cmd

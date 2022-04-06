@@ -1,12 +1,9 @@
 package config
 
-import "github.com/clevyr/kubedb/internal/database/sqlformat"
-
 type Dump struct {
 	Global
+	Files
 	Directory        string
-	Filename         string
-	OutputFormat     sqlformat.Format
 	IfExists         bool
 	Clean            bool
 	NoOwner          bool

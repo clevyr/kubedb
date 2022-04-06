@@ -48,7 +48,7 @@ var conf config.Dump
 
 func init() {
 	flags.Directory(Command, &conf.Directory)
-	flags.Format(Command, &conf.OutputFormat)
+	flags.Format(Command, &conf.Format)
 	flags.IfExists(Command, &conf.IfExists)
 	flags.Clean(Command, &conf.Clean)
 	flags.NoOwner(Command, &conf.NoOwner)
@@ -71,26 +71,26 @@ func preRun(cmd *cobra.Command, args []string) (err error) {
 
 	switch conf.Filename {
 	case "":
-		if conf.OutputFormat == sqlformat.Unknown {
-			conf.OutputFormat = sqlformat.Gzip
+		if conf.Format == sqlformat.Unknown {
+			conf.Format = sqlformat.Gzip
 		}
 
 		conf.Filename, err = Filename{
 			Dir:       conf.Directory,
 			Namespace: conf.Client.Namespace,
-			Format:    conf.OutputFormat,
+			Format:    conf.Format,
 			Date:      time.Now(),
 		}.Generate()
 		if err != nil {
 			return err
 		}
 	case "-":
-		if conf.OutputFormat == sqlformat.Unknown {
-			conf.OutputFormat = sqlformat.Plain
+		if conf.Format == sqlformat.Unknown {
+			conf.Format = sqlformat.Plain
 		}
 	default:
-		if conf.OutputFormat == sqlformat.Unknown {
-			conf.OutputFormat, err = sqlformat.ParseFilename(conf.Filename)
+		if conf.Format == sqlformat.Unknown {
+			conf.Format, err = sqlformat.ParseFilename(conf.Filename)
 			if err != nil {
 				return err
 			}
@@ -146,7 +146,7 @@ func run(cmd *cobra.Command, args []string) (err error) {
 		// base64 is required since TTYs use CRLF
 		pr := base64.NewDecoder(base64.StdEncoding, pr)
 
-		if conf.OutputFormat == sqlformat.Plain {
+		if conf.Format == sqlformat.Plain {
 			pr, err = gzip.NewReader(pr)
 			if err != nil {
 				return
@@ -213,7 +213,7 @@ func run(cmd *cobra.Command, args []string) (err error) {
 
 func buildCommand(db config.Databaser, conf config.Dump) *command.Builder {
 	cmd := db.DumpCommand(conf)
-	if conf.OutputFormat != sqlformat.Custom {
+	if conf.Format != sqlformat.Custom {
 		cmd.Push(command.Raw("|"), "gzip", "--force")
 	}
 	// base64 is required since TTYs use CRLF
