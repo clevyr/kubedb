@@ -139,20 +139,16 @@ func run(cmd *cobra.Command, args []string) (err error) {
 		// base64 is required since TTYs use CRLF
 		pr := base64.NewDecoder(base64.StdEncoding, pr)
 
-		switch conf.OutputFormat {
-		case sqlformat.Gzip, sqlformat.Custom:
-			_, err = io.Copy(io.MultiWriter(f, bar), pr)
-		case sqlformat.Plain:
-			var gzr *gzip.Reader
-			gzr, err = gzip.NewReader(pr)
+		if conf.OutputFormat == sqlformat.Plain {
+			pr, err = gzip.NewReader(pr)
 			if err != nil {
 				return
 			}
+		}
 
-			_, err = io.Copy(io.MultiWriter(f, bar), gzr)
-			if err != nil {
-				return
-			}
+		_, err = io.Copy(io.MultiWriter(f, bar), pr)
+		if err != nil {
+			return
 		}
 	}()
 
