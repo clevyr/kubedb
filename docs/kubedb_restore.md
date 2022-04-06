@@ -20,7 +20,7 @@ kubedb restore filename [flags]
 ```
   -c, --clean                clean (drop) database objects before recreating (default true)
   -f, --force                do not prompt before restore
-  -F, --format string        output file format ([g]zip, [c]ustom, [p]lain) (default "g")
+  -F, --format string        output file format ([g]zip, [c]ustom, [p]lain) (default "gzip")
   -h, --help                 help for restore
   -O, --no-owner             skip restoration of object ownership in plain-text format (default true)
   -1, --single-transaction   restore as a single transaction (default true)

@@ -20,7 +20,7 @@ kubedb dump [filename] [flags]
   -c, --clean                        clean (drop) database objects before recreating (default true)
   -T, --exclude-table strings        do NOT dump the specified table(s)
   -D, --exclude-table-data strings   do NOT dump data for the specified table(s)
-  -F, --format string                output file format ([g]zip, [c]ustom, [p]lain) (default "g")
+  -F, --format string                output file format ([g]zip, [c]ustom, [p]lain) (default "gzip")
   -h, --help                         help for dump
       --if-exists                    use IF EXISTS when dropping objects (default true)
   -O, --no-owner                     skip restoration of object ownership in plain-text format (default true)

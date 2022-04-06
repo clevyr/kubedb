@@ -5,6 +5,7 @@ import "github.com/clevyr/kubedb/internal/database/sqlformat"
 type Dump struct {
 	Global
 	Directory        string
+	Filename         string
 	OutputFormat     sqlformat.Format
 	IfExists         bool
 	Clean            bool

@@ -4,6 +4,7 @@ import (
 	"github.com/clevyr/kubedb/internal/config"
 	"github.com/clevyr/kubedb/internal/util"
 	"github.com/spf13/cobra"
+	flag "github.com/spf13/pflag"
 	"os"
 	"strings"
 )
@@ -20,8 +21,8 @@ func Grammar(cmd *cobra.Command) {
 	}
 }
 
-func Format(cmd *cobra.Command) {
-	cmd.Flags().StringP("format", "F", "g", "output file format ([g]zip, [c]ustom, [p]lain)")
+func Format(cmd *cobra.Command, p flag.Value) {
+	cmd.Flags().VarP(p, "format", "F", "output file format ([g]zip, [c]ustom, [p]lain)")
 	err := cmd.RegisterFlagCompletionFunc(
 		"format",
 		func(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {

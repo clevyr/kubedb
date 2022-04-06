@@ -48,7 +48,7 @@ var conf config.Dump
 
 func init() {
 	flags.Directory(Command, &conf.Directory)
-	flags.Format(Command)
+	flags.Format(Command, &conf.OutputFormat)
 	flags.IfExists(Command, &conf.IfExists)
 	flags.Clean(Command, &conf.Clean)
 	flags.NoOwner(Command, &conf.NoOwner)
@@ -65,25 +65,17 @@ func validArgs(cmd *cobra.Command, args []string, toComplete string) ([]string, 
 }
 
 func preRun(cmd *cobra.Command, args []string) (err error) {
-	formatStr, err := cmd.Flags().GetString("format")
-	if err != nil {
-		panic(err)
-	}
-
-	conf.OutputFormat, err = sqlformat.ParseFormat(formatStr)
-	if err != nil {
-		return err
-	}
-
-	return util.DefaultSetup(cmd, &conf.Global)
-}
-
-func run(cmd *cobra.Command, args []string) (err error) {
-	var filename string
 	if len(args) > 0 {
-		filename = args[0]
-	} else {
-		filename, err = Filename{
+		conf.Filename = args[0]
+	}
+
+	switch conf.Filename {
+	case "":
+		if conf.OutputFormat == sqlformat.Unknown {
+			conf.OutputFormat = sqlformat.Gzip
+		}
+
+		conf.Filename, err = Filename{
 			Dir:       conf.Directory,
 			Namespace: conf.Client.Namespace,
 			Format:    conf.OutputFormat,
@@ -92,20 +84,35 @@ func run(cmd *cobra.Command, args []string) (err error) {
 		if err != nil {
 			return err
 		}
-	}
-
-	if _, err := os.Stat(filepath.Dir(filename)); os.IsNotExist(err) {
-		err = os.MkdirAll(filepath.Dir(filename), os.ModePerm)
-		if err != nil {
-			return err
+	case "-":
+		if conf.OutputFormat == sqlformat.Unknown {
+			conf.OutputFormat = sqlformat.Plain
+		}
+	default:
+		if conf.OutputFormat == sqlformat.Unknown {
+			conf.OutputFormat, err = sqlformat.ParseFilename(conf.Filename)
+			if err != nil {
+				return err
+			}
 		}
 	}
 
+	return util.DefaultSetup(cmd, &conf.Global)
+}
+
+func run(cmd *cobra.Command, args []string) (err error) {
 	var f io.WriteCloser
-	if filename == "-" {
+	if conf.Filename == "-" {
 		f = os.Stdout
 	} else {
-		f, err = os.Create(filename)
+		if _, err := os.Stat(filepath.Dir(conf.Filename)); os.IsNotExist(err) {
+			err = os.MkdirAll(filepath.Dir(conf.Filename), os.ModePerm)
+			if err != nil {
+				return err
+			}
+		}
+
+		f, err = os.Create(conf.Filename)
 		if err != nil {
 			return err
 		}
@@ -116,13 +123,13 @@ func run(cmd *cobra.Command, args []string) (err error) {
 
 	log.WithFields(log.Fields{
 		"pod":  conf.Pod.Name,
-		"file": filename,
+		"file": conf.Filename,
 	}).Info("exporting database")
 
 	if githubActions, err := cmd.Flags().GetBool("github-actions"); err != nil {
 		panic(err)
 	} else if githubActions {
-		fmt.Println("::set-output name=filename::" + filename)
+		fmt.Println("::set-output name=filename::" + conf.Filename)
 	}
 
 	bar := progressbar.New(-1)
@@ -200,7 +207,7 @@ func run(cmd *cobra.Command, args []string) (err error) {
 		}
 	}
 
-	log.WithField("file", filename).Info("dump complete")
+	log.WithField("file", conf.Filename).Info("dump complete")
 	return nil
 }
 

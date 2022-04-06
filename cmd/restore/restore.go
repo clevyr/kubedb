@@ -37,12 +37,11 @@ Supported Input Filetypes:
 }
 
 var (
-	conf        config.Restore
-	inputFormat sqlformat.Format
+	conf config.Restore
 )
 
 func init() {
-	flags.Format(Command)
+	flags.Format(Command, &conf.Format)
 	flags.SingleTransaction(Command, &conf.SingleTransaction)
 	flags.Clean(Command, &conf.Clean)
 	flags.NoOwner(Command, &conf.NoOwner)
@@ -56,25 +55,13 @@ func validArgs(cmd *cobra.Command, args []string, toComplete string) ([]string, 
 	return []string{"sql", "sql.gz", "dmp"}, cobra.ShellCompDirectiveFilterFileExt
 }
 
-func preRun(cmd *cobra.Command, args []string) error {
-	formatStr, err := cmd.Flags().GetString("format")
-	if err != nil {
-		panic(err)
-	}
-
-	inputFormat, err = sqlformat.ParseFormat(formatStr)
-	if err != nil {
-		inputFormat, err = sqlformat.ParseFilename(args[0])
-		if err != nil {
-			return err
-		}
-	}
-
+func preRun(cmd *cobra.Command, args []string) (err error) {
+	conf.Filename = args[0]
 	return util.DefaultSetup(cmd, &conf.Global)
 }
 
 func run(cmd *cobra.Command, args []string) (err error) {
-	f, err := os.Open(args[0])
+	f, err := os.Open(conf.Filename)
 	if err != nil {
 		return err
 	}
@@ -83,7 +70,7 @@ func run(cmd *cobra.Command, args []string) (err error) {
 	pr, pw := io.Pipe()
 
 	log.WithFields(log.Fields{
-		"file": args[0],
+		"file": conf.Filename,
 		"pod":  conf.Pod.Name,
 	}).Info("ready to restore database")
 
@@ -102,14 +89,14 @@ func run(cmd *cobra.Command, args []string) (err error) {
 	}
 
 	ch := make(chan error, 1)
-	go runInDatabasePod(pr, ch, inputFormat)
+	go runInDatabasePod(pr, ch, conf.Format)
 
 	bar := progressbar.New(-1)
 	log.SetOutput(progressbar.NewBarSafeLogger(os.Stderr))
 
 	w := io.MultiWriter(pw, bar)
 
-	if conf.Clean && inputFormat != sqlformat.Custom {
+	if conf.Clean && conf.Format != sqlformat.Custom {
 		dropQuery := conf.Grammar.DropDatabaseQuery(conf.Database)
 		if dropQuery != "" {
 			log.Info("cleaning existing data")
@@ -121,7 +108,7 @@ func run(cmd *cobra.Command, args []string) (err error) {
 	}
 
 	log.Info("restoring database")
-	switch inputFormat {
+	switch conf.Format {
 	case sqlformat.Gzip, sqlformat.Custom:
 		_, err = io.Copy(w, f)
 		if err != nil {
@@ -136,7 +123,7 @@ func run(cmd *cobra.Command, args []string) (err error) {
 
 	analyzeQuery := conf.Grammar.AnalyzeQuery()
 	if analyzeQuery != "" {
-		if inputFormat == sqlformat.Custom {
+		if conf.Format == sqlformat.Custom {
 			_ = pw.Close()
 
 			err = <-ch
@@ -166,7 +153,7 @@ func run(cmd *cobra.Command, args []string) (err error) {
 		return err
 	}
 
-	log.WithField("file", args[0]).Info("restore complete")
+	log.WithField("file", conf.Filename).Info("restore complete")
 	return nil
 }
 
