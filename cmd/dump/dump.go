@@ -213,9 +213,9 @@ func run(cmd *cobra.Command, args []string) (err error) {
 func buildCommand(db config.Databaser, conf config.Dump) *command.Builder {
 	cmd := db.DumpCommand(conf)
 	if conf.Format != sqlformat.Custom {
-		cmd.Push(command.Raw("|"), "gzip", "--force")
+		cmd.Push(command.Pipe, "gzip", "--force")
 	}
 	// base64 is required since TTYs use CRLF
-	cmd.Push(command.Raw("|"), "base64", "-w0")
+	cmd.Push(command.Pipe, "base64", "-w0")
 	return cmd
 }

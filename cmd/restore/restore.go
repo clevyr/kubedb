@@ -159,7 +159,7 @@ func run(cmd *cobra.Command, args []string) (err error) {
 
 func buildCommand(conf config.Restore, inputFormat sqlformat.Format) *command.Builder {
 	return conf.Grammar.RestoreCommand(conf, inputFormat).
-		Unshift("gunzip", "--force", command.Raw("|"))
+		Unshift("gunzip", "--force", command.Pipe)
 }
 
 func gzipCopy(w io.Writer, r io.Reader) (err error) {
