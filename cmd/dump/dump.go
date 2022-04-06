@@ -69,14 +69,17 @@ func preRun(cmd *cobra.Command, args []string) (err error) {
 		conf.Filename = args[0]
 	}
 
+	if conf.Directory != "" {
+		cmd.SilenceUsage = true
+		if err = os.Chdir(conf.Directory); err != nil {
+			return err
+		}
+		cmd.SilenceUsage = false
+	}
+
 	switch conf.Filename {
 	case "":
-		if conf.Format == sqlformat.Unknown {
-			conf.Format = sqlformat.Gzip
-		}
-
 		conf.Filename, err = Filename{
-			Dir:       conf.Directory,
 			Namespace: conf.Client.Namespace,
 			Format:    conf.Format,
 			Date:      time.Now(),
@@ -84,12 +87,8 @@ func preRun(cmd *cobra.Command, args []string) (err error) {
 		if err != nil {
 			return err
 		}
-	case "-":
-		if conf.Format == sqlformat.Unknown {
-			conf.Format = sqlformat.Plain
-		}
 	default:
-		if conf.Format == sqlformat.Unknown {
+		if !cmd.Flags().Lookup("format").Changed {
 			conf.Format, err = sqlformat.ParseFilename(conf.Filename)
 			if err != nil {
 				return err
@@ -102,9 +101,10 @@ func preRun(cmd *cobra.Command, args []string) (err error) {
 
 func run(cmd *cobra.Command, args []string) (err error) {
 	var f io.WriteCloser
-	if conf.Filename == "-" {
+	switch conf.Filename {
+	case "-":
 		f = os.Stdout
-	} else {
+	default:
 		if _, err := os.Stat(filepath.Dir(conf.Filename)); os.IsNotExist(err) {
 			err = os.MkdirAll(filepath.Dir(conf.Filename), os.ModePerm)
 			if err != nil {
