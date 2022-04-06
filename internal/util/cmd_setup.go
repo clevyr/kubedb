@@ -40,14 +40,14 @@ func DefaultSetup(cmd *cobra.Command, conf *config.Global) (err error) {
 		if err != nil {
 			return err
 		}
-		log.WithField("grammar", conf.Grammar.Name()).Info("detected database grammar")
+		log.WithField("grammar", conf.Grammar.Name()).Info("detected database")
 	} else {
 		// Configure via flag
 		conf.Grammar, err = database.New(grammarFlag)
 		if err != nil {
 			return err
 		}
-		log.WithField("grammar", conf.Grammar.Name()).Info("configured database grammar")
+		log.WithField("grammar", conf.Grammar.Name()).Info("configured database")
 
 		podFlag, err := cmd.Flags().GetString("pod")
 		if err != nil {
