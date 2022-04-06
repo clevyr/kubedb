@@ -95,7 +95,7 @@ func run(cmd *cobra.Command, args []string) (err error) {
 	}
 
 	if _, err := os.Stat(filepath.Dir(filename)); os.IsNotExist(err) {
-		err = os.Mkdir(filepath.Dir(filename), os.ModePerm)
+		err = os.MkdirAll(filepath.Dir(filename), os.ModePerm)
 		if err != nil {
 			return err
 		}
