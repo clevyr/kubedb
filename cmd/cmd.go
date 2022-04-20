@@ -1,7 +1,6 @@
 package cmd
 
 import (
-	"errors"
 	"fmt"
 	"github.com/clevyr/kubedb/cmd/dump"
 	"github.com/clevyr/kubedb/cmd/exec"
@@ -60,26 +59,6 @@ func preRun(cmd *cobra.Command, args []string) error {
 		if err != nil {
 			panic(err)
 		}
-	}
-
-	dialectFlag, err := cmd.Flags().GetString("dialect")
-	if err != nil {
-		panic(err)
-	}
-	if dialectFlag == "" {
-		dialectFlag, err = cmd.Flags().GetString("grammar")
-		if err != nil {
-			panic(err)
-		}
-	}
-
-	podFlag, err := cmd.Flags().GetString("pod")
-	if err != nil {
-		panic(err)
-	}
-
-	if podFlag != "" && dialectFlag == "" {
-		return errors.New("pod flag is set, but dialect is missing. please add --dialect")
 	}
 
 	return nil
