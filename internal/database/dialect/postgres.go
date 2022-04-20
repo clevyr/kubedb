@@ -1,4 +1,4 @@
-package grammar
+package dialect
 
 import (
 	"encoding/csv"

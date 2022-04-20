@@ -2,7 +2,7 @@ package flags
 
 import (
 	"github.com/clevyr/kubedb/internal/config"
-	"github.com/clevyr/kubedb/internal/database/grammar"
+	"github.com/clevyr/kubedb/internal/database/dialect"
 	"github.com/clevyr/kubedb/internal/database/sqlformat"
 	"github.com/clevyr/kubedb/internal/util"
 	"github.com/spf13/cobra"
@@ -10,14 +10,20 @@ import (
 	"strings"
 )
 
-func Grammar(cmd *cobra.Command) {
-	cmd.PersistentFlags().String("grammar", "", "database grammar. detected if not set. (postgres, mariadb)")
-	err := cmd.RegisterFlagCompletionFunc(
-		"grammar",
+func Dialect(cmd *cobra.Command) {
+	cmd.PersistentFlags().String("grammar", "", "database dialect. detected if not set. (postgres, mariadb)")
+	err := cmd.PersistentFlags().MarkDeprecated("grammar", "please use --dialect instead")
+	if err != nil {
+		panic(err)
+	}
+
+	cmd.PersistentFlags().String("dialect", "", "database dialect. detected if not set. (postgres, mariadb)")
+	err = cmd.RegisterFlagCompletionFunc(
+		"dialect",
 		func(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
 			return []string{
-				grammar.Postgres{}.Name(),
-				grammar.MariaDB{}.Name(),
+				dialect.Postgres{}.Name(),
+				dialect.MariaDB{}.Name(),
 			}, cobra.ShellCompDirectiveNoFileComp
 		})
 	if err != nil {
@@ -104,7 +110,7 @@ func listTables(cmd *cobra.Command, args []string, toComplete string) ([]string,
 	if err != nil {
 		return nil, cobra.ShellCompDirectiveNoFileComp
 	}
-	return queryInDatabase(cmd, args, conf, conf.Grammar.ListTablesQuery())
+	return queryInDatabase(cmd, args, conf, conf.Dialect.ListTablesQuery())
 }
 
 func listDatabases(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
@@ -113,13 +119,13 @@ func listDatabases(cmd *cobra.Command, args []string, toComplete string) ([]stri
 	if err != nil {
 		return nil, cobra.ShellCompDirectiveNoFileComp
 	}
-	return queryInDatabase(cmd, args, conf, conf.Grammar.ListDatabasesQuery())
+	return queryInDatabase(cmd, args, conf, conf.Dialect.ListDatabasesQuery())
 }
 
 func queryInDatabase(cmd *cobra.Command, args []string, conf config.Exec, query string) ([]string, cobra.ShellCompDirective) {
 	r := strings.NewReader(query)
 	var buf strings.Builder
-	sqlCmd := conf.Grammar.ExecCommand(conf)
+	sqlCmd := conf.Dialect.ExecCommand(conf)
 	err := conf.Client.Exec(conf.Pod, sqlCmd.String(), r, &buf, os.Stderr, false, nil)
 	if err != nil {
 		return nil, cobra.ShellCompDirectiveNoFileComp

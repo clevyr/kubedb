@@ -65,7 +65,7 @@ func Namespace(cmd *cobra.Command) {
 }
 
 func Pod(cmd *cobra.Command) {
-	cmd.PersistentFlags().String("pod", "", "force a specific pod. if this flag is set, grammar is required.")
+	cmd.PersistentFlags().String("pod", "", "force a specific pod. if this flag is set, dialect is required.")
 	err := cmd.RegisterFlagCompletionFunc(
 		"pod",
 		func(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {

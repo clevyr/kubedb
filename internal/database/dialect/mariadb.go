@@ -1,4 +1,4 @@
-package grammar
+package dialect
 
 import (
 	"github.com/clevyr/kubedb/internal/command"

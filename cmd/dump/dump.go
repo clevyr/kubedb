@@ -171,7 +171,7 @@ func run(cmd *cobra.Command, args []string) (err error) {
 	err = t.Safe(func() error {
 		return conf.Client.Exec(
 			conf.Pod,
-			buildCommand(conf.Grammar, conf).String(),
+			buildCommand(conf.Dialect, conf).String(),
 			t.In,
 			t.Out,
 			os.Stderr,

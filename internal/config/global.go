@@ -7,7 +7,7 @@ import (
 
 type Global struct {
 	Client   kubernetes.KubeClient
-	Grammar  Databaser
+	Dialect  Databaser
 	Pod      v1.Pod
 	Database string
 	Username string

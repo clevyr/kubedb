@@ -31,14 +31,14 @@ kubedb restore filename [flags]
 ```
       --context string      name of the kubeconfig context to use
   -d, --dbname string       database name to connect to
+      --dialect string      database dialect. detected if not set. (postgres, mariadb)
   -C, --directory string    dir to hold the generated config (default "./docs")
-      --grammar string      database grammar. detected if not set. (postgres, mariadb)
       --kubeconfig string   absolute path to the kubeconfig file (default "$HOME/.kube/config")
       --log-format string   log formatter (text, json) (default "text")
       --log-level string    log level (trace, debug, info, warning, error, fatal, panic) (default "info")
   -n, --namespace string    the namespace scope for this CLI request
   -p, --password string     database password
-      --pod string          force a specific pod. if this flag is set, grammar is required.
+      --pod string          force a specific pod. if this flag is set, dialect is required.
   -U, --username string     database username
 ```
 

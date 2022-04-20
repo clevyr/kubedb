@@ -42,7 +42,7 @@ func validArgs(cmd *cobra.Command, args []string, toComplete string) ([]string, 
 		return nil, cobra.ShellCompDirectiveNoFileComp
 	}
 
-	defaultPort := uint64(conf.Grammar.DefaultPort())
+	defaultPort := uint64(conf.Dialect.DefaultPort())
 
 	return []string{
 		strconv.FormatUint(uint64(conf.LocalPort), 10),
@@ -58,7 +58,7 @@ func preRun(cmd *cobra.Command, args []string) error {
 	}
 
 	if len(args) == 0 {
-		conf.LocalPort = 30000 + conf.Grammar.DefaultPort()
+		conf.LocalPort = 30000 + conf.Dialect.DefaultPort()
 	} else {
 		port, err := strconv.ParseUint(args[0], 10, 16)
 		if err != nil {
@@ -85,7 +85,7 @@ func run(cmd *cobra.Command, args []string) (err error) {
 	}
 
 	dialer := spdy.NewDialer(upgrader, &http.Client{Transport: transport}, http.MethodPost, &url.URL{Scheme: "https", Path: path, Host: hostIP})
-	ports := []string{fmt.Sprintf("%d:%d", conf.LocalPort, conf.Grammar.DefaultPort())}
+	ports := []string{fmt.Sprintf("%d:%d", conf.LocalPort, conf.Dialect.DefaultPort())}
 	stopCh := make(chan struct{}, 1)
 	readyCh := make(chan struct{}, 1)
 	outWriter := log2.NewWriter(log.StandardLogger(), log.InfoLevel)
@@ -99,7 +99,7 @@ func run(cmd *cobra.Command, args []string) (err error) {
 		<-readyCh
 		log.WithFields(log.Fields{
 			"local":  conf.LocalPort,
-			"remote": conf.Grammar.DefaultPort(),
+			"remote": conf.Dialect.DefaultPort(),
 		}).Info("port forward is ready")
 		t := table.NewWriter()
 		t.SetOutputMirror(os.Stdout)

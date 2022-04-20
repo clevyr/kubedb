@@ -42,7 +42,7 @@ func run(cmd *cobra.Command, args []string) (err error) {
 	return t.Safe(func() error {
 		return conf.Client.Exec(
 			conf.Pod,
-			buildCommand(conf.Grammar, conf, args).String(),
+			buildCommand(conf.Dialect, conf, args).String(),
 			t.In,
 			t.Out,
 			os.Stderr,

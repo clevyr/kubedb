@@ -27,10 +27,10 @@ var Command = &cobra.Command{
 	DisableAutoGenTag: true,
 	Long: `kubedb is a command to interact with a database running in a Kubernetes cluster.
 
-Multiple database types (referred to as the "grammar") are supported.
-If the grammar is not configured via flag, it will be detected dynamically.
+Multiple database types (referred to as the "dialect") are supported.
+If the dialect is not configured via flag, it will be detected dynamically.
 
-Supported Database Grammars:
+Supported Database Dialects:
   - PostgreSQL
   - MariaDB
 
@@ -62,9 +62,15 @@ func preRun(cmd *cobra.Command, args []string) error {
 		}
 	}
 
-	grammarFlag, err := cmd.Flags().GetString("grammar")
+	dialectFlag, err := cmd.Flags().GetString("dialect")
 	if err != nil {
 		panic(err)
+	}
+	if dialectFlag == "" {
+		dialectFlag, err = cmd.Flags().GetString("grammar")
+		if err != nil {
+			panic(err)
+		}
 	}
 
 	podFlag, err := cmd.Flags().GetString("pod")
@@ -72,8 +78,8 @@ func preRun(cmd *cobra.Command, args []string) error {
 		panic(err)
 	}
 
-	if podFlag != "" && grammarFlag == "" {
-		return errors.New("pod flag is set, but grammar is missing. please add --grammar")
+	if podFlag != "" && dialectFlag == "" {
+		return errors.New("pod flag is set, but dialect is missing. please add --dialect")
 	}
 
 	return nil
@@ -89,7 +95,7 @@ func init() {
 	flags.Kubeconfig(Command)
 	flags.Context(Command)
 	flags.Namespace(Command)
-	flags.Grammar(Command)
+	flags.Dialect(Command)
 	flags.Pod(Command)
 	flags.LogLevel(Command)
 	flags.LogFormat(Command)

@@ -97,7 +97,7 @@ func run(cmd *cobra.Command, args []string) (err error) {
 	w := io.MultiWriter(pw, bar)
 
 	if conf.Clean && conf.Format != sqlformat.Custom {
-		dropQuery := conf.Grammar.DropDatabaseQuery(conf.Database)
+		dropQuery := conf.Dialect.DropDatabaseQuery(conf.Database)
 		if dropQuery != "" {
 			log.Info("cleaning existing data")
 			err = gzipCopy(w, strings.NewReader(dropQuery))
@@ -121,7 +121,7 @@ func run(cmd *cobra.Command, args []string) (err error) {
 		}
 	}
 
-	analyzeQuery := conf.Grammar.AnalyzeQuery()
+	analyzeQuery := conf.Dialect.AnalyzeQuery()
 	if analyzeQuery != "" {
 		if conf.Format == sqlformat.Custom {
 			_ = pw.Close()
@@ -158,7 +158,7 @@ func run(cmd *cobra.Command, args []string) (err error) {
 }
 
 func buildCommand(conf config.Restore, inputFormat sqlformat.Format) *command.Builder {
-	return conf.Grammar.RestoreCommand(conf, inputFormat).
+	return conf.Dialect.RestoreCommand(conf, inputFormat).
 		Unshift("gunzip", "--force", command.Pipe)
 }
 

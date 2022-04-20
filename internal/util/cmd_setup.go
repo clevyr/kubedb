@@ -28,26 +28,32 @@ func DefaultSetup(cmd *cobra.Command, conf *config.Global) (err error) {
 		return errors.New("The current action is disabled for namespace " + conf.Client.Namespace)
 	}
 
-	grammarFlag, err := cmd.Flags().GetString("grammar")
+	dialectFlag, err := cmd.Flags().GetString("dialect")
 	if err != nil {
 		panic(err)
 	}
+	if dialectFlag == "" {
+		dialectFlag, err = cmd.Flags().GetString("grammar")
+		if err != nil {
+			panic(err)
+		}
+	}
 
 	var pods []v1.Pod
-	if grammarFlag == "" {
+	if dialectFlag == "" {
 		// Configure via detection
-		conf.Grammar, pods, err = database.DetectGrammar(conf.Client)
+		conf.Dialect, pods, err = database.DetectDialect(conf.Client)
 		if err != nil {
 			return err
 		}
-		log.WithField("grammar", conf.Grammar.Name()).Info("detected database")
+		log.WithField("dialect", conf.Dialect.Name()).Info("detected database")
 	} else {
 		// Configure via flag
-		conf.Grammar, err = database.New(grammarFlag)
+		conf.Dialect, err = database.New(dialectFlag)
 		if err != nil {
 			return err
 		}
-		log.WithField("grammar", conf.Grammar.Name()).Info("configured database")
+		log.WithField("dialect", conf.Dialect.Name()).Info("configured database")
 
 		podFlag, err := cmd.Flags().GetString("pod")
 		if err != nil {
@@ -55,7 +61,7 @@ func DefaultSetup(cmd *cobra.Command, conf *config.Global) (err error) {
 		}
 
 		if podFlag == "" {
-			pods, err = conf.Client.GetPodsFiltered(conf.Grammar.PodLabels())
+			pods, err = conf.Client.GetPodsFiltered(conf.Dialect.PodLabels())
 			if err != nil {
 				return err
 			}
@@ -72,7 +78,7 @@ func DefaultSetup(cmd *cobra.Command, conf *config.Global) (err error) {
 		}
 	}
 
-	pods, err = conf.Grammar.FilterPods(conf.Client, pods)
+	pods, err = conf.Dialect.FilterPods(conf.Client, pods)
 	if err != nil {
 		log.WithError(err).Warn("could not query primary instance")
 	}
@@ -100,9 +106,9 @@ func DefaultSetup(cmd *cobra.Command, conf *config.Global) (err error) {
 		panic(err)
 	}
 	if conf.Database == "" {
-		conf.Database, err = conf.Client.GetValueFromEnv(conf.Pod, conf.Grammar.DatabaseEnvNames())
+		conf.Database, err = conf.Client.GetValueFromEnv(conf.Pod, conf.Dialect.DatabaseEnvNames())
 		if err != nil {
-			conf.Database = conf.Grammar.DefaultDatabase()
+			conf.Database = conf.Dialect.DefaultDatabase()
 			log.WithField("database", conf.Database).Warn("could not detect database from pod env, using default")
 		} else {
 			log.WithField("database", conf.Database).Info("found db name in pod env")
@@ -114,9 +120,9 @@ func DefaultSetup(cmd *cobra.Command, conf *config.Global) (err error) {
 		panic(err)
 	}
 	if conf.Username == "" {
-		conf.Username, err = conf.Client.GetValueFromEnv(conf.Pod, conf.Grammar.UserEnvNames())
+		conf.Username, err = conf.Client.GetValueFromEnv(conf.Pod, conf.Dialect.UserEnvNames())
 		if err != nil {
-			conf.Username = conf.Grammar.DefaultUser()
+			conf.Username = conf.Dialect.DefaultUser()
 			log.WithField("user", conf.Username).Warn("could not detect user from pod env, using default")
 		} else {
 			log.WithField("user", conf.Username).Info("found user in pod env")
@@ -128,7 +134,7 @@ func DefaultSetup(cmd *cobra.Command, conf *config.Global) (err error) {
 		panic(err)
 	}
 	if conf.Password == "" {
-		conf.Password, err = conf.Client.GetValueFromEnv(conf.Pod, conf.Grammar.PasswordEnvNames())
+		conf.Password, err = conf.Client.GetValueFromEnv(conf.Pod, conf.Dialect.PasswordEnvNames())
 		if err != nil {
 			return err
 		}
