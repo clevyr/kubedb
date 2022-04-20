@@ -105,6 +105,7 @@ func run(cmd *cobra.Command, args []string) (err error) {
 		t.SetOutputMirror(os.Stdout)
 		t.SetTitle("%s Connection Parameters", conf.Pod.Namespace)
 		t.AppendRows([]table.Row{
+			{"Type", conf.Dialect.Name()},
 			{"Hostname", "localhost"},
 			{"Port", conf.LocalPort},
 			{"Username", conf.Username},
