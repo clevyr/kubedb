@@ -10,7 +10,7 @@ import (
 )
 
 type KubeClient struct {
-	ClientSet    *kubernetes.Clientset
+	ClientSet    kubernetes.Interface
 	ClientConfig *rest.Config
 	Namespace    string
 }
