@@ -1,37 +1,81 @@
 package dump
 
 import (
-	"fmt"
+	"github.com/clevyr/kubedb/internal/command"
+	"github.com/clevyr/kubedb/internal/config"
+	"github.com/clevyr/kubedb/internal/database/dialect"
 	"github.com/clevyr/kubedb/internal/database/sqlformat"
-	"strings"
+	"github.com/spf13/cobra"
+	"reflect"
 	"testing"
-	"time"
 )
 
-func TestGenerateFilename(t *testing.T) {
-	testCases := []struct {
-		namespace string
-		filetype  sqlformat.Format
-		err       error
-	}{
-		{"test", sqlformat.Gzip, nil},
-		{"another", sqlformat.Plain, nil},
+func Test_buildCommand(t *testing.T) {
+	pgpassword := command.NewEnv("PGPASSWORD", "")
+	mysql_pwd := command.NewEnv("MYSQL_PWD", "")
+
+	type args struct {
+		db   config.Databaser
+		conf config.Dump
 	}
-	for _, tc := range testCases {
-		tc := tc // capture range variable
-		t.Run(fmt.Sprintf("%v to %v with error %v", tc.namespace, tc.filetype, tc.err), func(t *testing.T) {
-			t.Parallel()
-			filename, err := Filename{
-				Namespace: tc.namespace,
-				Format:    tc.filetype,
-				Date:      time.Now(),
-			}.Generate()
-			if err != tc.err {
-				t.Error(err)
+	tests := []struct {
+		name string
+		args args
+		want *command.Builder
+	}{
+		{
+			"postgres-gzip",
+			args{dialect.Postgres{}, config.Dump{Global: config.Global{Database: "d", Username: "u"}}},
+			command.NewBuilder(pgpassword, "pg_dump", "--host=127.0.0.1", "--username=u", "--dbname=d", command.Pipe, "gzip", "--force", command.Pipe, "base64", "-w0"),
+		},
+		{
+			"postgres-plain",
+			args{dialect.Postgres{}, config.Dump{Files: config.Files{Format: sqlformat.Plain}, Global: config.Global{Database: "d", Username: "u"}}},
+			command.NewBuilder(pgpassword, "pg_dump", "--host=127.0.0.1", "--username=u", "--dbname=d", command.Pipe, "gzip", "--force", command.Pipe, "base64", "-w0"),
+		},
+		{
+			"postgres-custom",
+			args{dialect.Postgres{}, config.Dump{Files: config.Files{Format: sqlformat.Custom}, Global: config.Global{Database: "d", Username: "u"}}},
+			command.NewBuilder(pgpassword, "pg_dump", "--host=127.0.0.1", "--username=u", "--dbname=d", "--format=c", command.Pipe, "base64", "-w0"),
+		},
+		{
+			"mariadb-gzip",
+			args{dialect.MariaDB{}, config.Dump{Files: config.Files{Format: sqlformat.Gzip}, Global: config.Global{Database: "d", Username: "u"}}},
+			command.NewBuilder(mysql_pwd, "mysqldump", "--host=127.0.0.1", "--user=u", "d", command.Pipe, "gzip", "--force", command.Pipe, "base64", "-w0"),
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if got := buildCommand(tt.args.db, tt.args.conf); !reflect.DeepEqual(got, tt.want) {
+				t.Errorf("buildCommand() = %v, want %v", got, tt.want)
 			}
-			expected := tc.namespace + "_"
-			if !strings.HasPrefix(filename, expected) {
-				t.Errorf("got %v; expected %#v", filename, expected)
+		})
+	}
+}
+
+func Test_validArgs(t *testing.T) {
+	type args struct {
+		cmd        *cobra.Command
+		args       []string
+		toComplete string
+	}
+	tests := []struct {
+		name  string
+		args  args
+		want  []string
+		want1 cobra.ShellCompDirective
+	}{
+		{"0 arg", args{}, []string{"sql", "sql.gz", "dmp"}, cobra.ShellCompDirectiveFilterFileExt},
+		{"1 arg", args{args: []string{"sql.gz"}}, nil, cobra.ShellCompDirectiveNoFileComp},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got, got1 := validArgs(tt.args.cmd, tt.args.args, tt.args.toComplete)
+			if !reflect.DeepEqual(got, tt.want) {
+				t.Errorf("validArgs() got = %v, want %v", got, tt.want)
+			}
+			if got1 != tt.want1 {
+				t.Errorf("validArgs() got1 = %v, want %v", got1, tt.want1)
 			}
 		})
 	}

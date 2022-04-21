@@ -1,95 +1,142 @@
 package sqlformat
 
 import (
-	"errors"
-	"fmt"
 	"testing"
 )
 
-func TestParseFilename(t *testing.T) {
-	testCases := []struct {
-		filename string
-		expected Format
-		err      error
-	}{
-		{"dump.sql.gz", Gzip, nil},
-		{"dump.sql", Plain, nil},
-		{"dump.dmp", Custom, nil},
-		{"dump.png", Unknown, UnknownFileFormat},
+func TestFormat_Set(t *testing.T) {
+	type args struct {
+		s string
 	}
-	for _, tc := range testCases {
-		tc := tc // capture range variable
-		t.Run(fmt.Sprintf("%v to %v with err %v", tc.filename, tc.expected, tc.err), func(t *testing.T) {
-			t.Parallel()
-			filetype, err := ParseFilename(tc.filename)
-			if err != nil {
-				if !errors.Is(err, tc.err) {
-					t.Error(err)
-				}
+	tests := []struct {
+		name    string
+		i       Format
+		args    args
+		wantErr bool
+	}{
+		{"gzip", Format(0), args{"gzip"}, false},
+		{"gz", Format(0), args{"gz"}, false},
+		{"g", Format(0), args{"g"}, false},
+		{"plain", Format(0), args{"plain"}, false},
+		{"sql", Format(0), args{"sql"}, false},
+		{"p", Format(0), args{"p"}, false},
+		{"custom", Format(0), args{"custom"}, false},
+		{"c", Format(0), args{"c"}, false},
+		{"png", Format(0), args{"png"}, true},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if err := tt.i.Set(tt.args.s); (err != nil) != tt.wantErr {
+				t.Errorf("Set() error = %v, wantErr %v", err, tt.wantErr)
 			}
-			if filetype != tc.expected {
-				t.Errorf("got %v; expected %v", filetype, tc.expected)
+		})
+	}
+}
+
+func TestFormat_Type(t *testing.T) {
+	tests := []struct {
+		name string
+		i    Format
+		want string
+	}{
+		{"simple", Format(0), "string"},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if got := tt.i.Type(); got != tt.want {
+				t.Errorf("Type() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+
+func TestParseFilename(t *testing.T) {
+	type args struct {
+		filename string
+	}
+	tests := []struct {
+		name    string
+		args    args
+		want    Format
+		wantErr bool
+	}{
+		{"sql.gz", args{"test.sql.gz"}, Format(1), false},
+		{"sql", args{"test.sql"}, Format(2), false},
+		{"dmp", args{"test.dmp"}, Format(3), false},
+		{"png", args{"test.png"}, Format(0), true},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got, err := ParseFilename(tt.args.filename)
+			if (err != nil) != tt.wantErr {
+				t.Errorf("ParseFilename() error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
+			if got != tt.want {
+				t.Errorf("ParseFilename() got = %v, want %v", got, tt.want)
 			}
 		})
 	}
 }
 
 func TestParseFormat(t *testing.T) {
-	testCases := []struct {
-		format   string
-		expected Format
-		err      error
-	}{
-		{"gzip", Gzip, nil},
-		{"gz", Gzip, nil},
-		{"g", Gzip, nil},
-		{"plain", Plain, nil},
-		{"sql", Plain, nil},
-		{"p", Plain, nil},
-		{"custom", Custom, nil},
-		{"c", Custom, nil},
-		{"png", Unknown, UnknownFileFormat},
+	type args struct {
+		format string
 	}
-	for _, tc := range testCases {
-		tc := tc // capture range variable
-		t.Run(fmt.Sprintf("%v to %v with error %v", tc.format, tc.expected, tc.err), func(t *testing.T) {
-			t.Parallel()
-			format, err := ParseFormat(tc.format)
-			if err != nil {
-				if !errors.Is(err, tc.err) {
-					t.Error(err)
-				}
+	tests := []struct {
+		name    string
+		args    args
+		want    Format
+		wantErr bool
+	}{
+		{Gzip.String(), args{Gzip.String()}, Gzip, false},
+		{"gz", args{"gz"}, Gzip, false},
+		{"g", args{"g"}, Gzip, false},
+		{Plain.String(), args{Plain.String()}, Plain, false},
+		{"sql", args{"sql"}, Plain, false},
+		{"p", args{"p"}, Plain, false},
+		{Custom.String(), args{Custom.String()}, Custom, false},
+		{"c", args{"c"}, Custom, false},
+		{"png", args{"png"}, Unknown, true},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got, err := ParseFormat(tt.args.format)
+			if (err != nil) != tt.wantErr {
+				t.Errorf("ParseFormat() error = %v, wantErr %v", err, tt.wantErr)
+				return
 			}
-			if format != tc.expected {
-				t.Errorf("got %v; expected %v", format, tc.expected)
+			if got != tt.want {
+				t.Errorf("ParseFormat() got = %v, want %v", got, tt.want)
 			}
 		})
 	}
 }
 
 func TestWriteExtension(t *testing.T) {
-	testCases := []struct {
-		format   Format
-		expected string
-		err      error
-	}{
-		{Gzip, ".sql.gz", nil},
-		{Plain, ".sql", nil},
-		{Custom, ".dmp", nil},
-		{Unknown, "", UnknownFileFormat},
+	type args struct {
+		outputFormat Format
 	}
-	for _, tc := range testCases {
-		tc := tc // capture range variable
-		t.Run(fmt.Sprintf("%v to %v with error %v", tc.format, tc.expected, tc.err), func(t *testing.T) {
-			t.Parallel()
-			ext, err := WriteExtension(tc.format)
-			if err != nil {
-				if !errors.Is(err, tc.err) {
-					t.Error(err)
-				}
+	tests := []struct {
+		name          string
+		args          args
+		wantExtension string
+		wantErr       bool
+	}{
+		{"gzip", args{Gzip}, ".sql.gz", false},
+		{"plain", args{Plain}, ".sql", false},
+		{"custom", args{Custom}, ".dmp", false},
+		{"unknown", args{Unknown}, "", true},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			gotExtension, err := WriteExtension(tt.args.outputFormat)
+			if (err != nil) != tt.wantErr {
+				t.Errorf("WriteExtension() error = %v, wantErr %v", err, tt.wantErr)
+				return
 			}
-			if ext != tc.expected {
-				t.Errorf("got %v; expected %v", ext, tc.expected)
+			if gotExtension != tt.wantExtension {
+				t.Errorf("WriteExtension() gotExtension = %v, want %v", gotExtension, tt.wantExtension)
 			}
 		})
 	}

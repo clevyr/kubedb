@@ -1,0 +1,127 @@
+package restore
+
+import (
+	"bytes"
+	"compress/gzip"
+	"github.com/clevyr/kubedb/internal/command"
+	"github.com/clevyr/kubedb/internal/config"
+	"github.com/clevyr/kubedb/internal/database/dialect"
+	"github.com/clevyr/kubedb/internal/database/sqlformat"
+	"github.com/spf13/cobra"
+	"io"
+	"reflect"
+	"strings"
+	"testing"
+)
+
+func Test_buildCommand(t *testing.T) {
+	pgpassword := command.NewEnv("PGPASSWORD", "")
+	pgoptions := command.NewEnv("PGOPTIONS", "-c client_min_messages=WARNING")
+
+	type args struct {
+		conf        config.Restore
+		inputFormat sqlformat.Format
+	}
+	tests := []struct {
+		name string
+		args args
+		want *command.Builder
+	}{
+		{
+			"postgres-gzip",
+			args{
+				config.Restore{Global: config.Global{Dialect: dialect.Postgres{}, Database: "d", Username: "u"}},
+				sqlformat.Gzip,
+			},
+			command.NewBuilder("gunzip", "--force", command.Pipe, pgpassword, pgoptions, "psql", "--quiet", "--output=/dev/null", "--host=127.0.0.1", "--username=u", "--dbname=d"),
+		},
+		{
+			"postgres-plain",
+			args{
+				config.Restore{Global: config.Global{Dialect: dialect.Postgres{}, Database: "d", Username: "u"}},
+				sqlformat.Gzip,
+			},
+			command.NewBuilder("gunzip", "--force", command.Pipe, pgpassword, pgoptions, "psql", "--quiet", "--output=/dev/null", "--host=127.0.0.1", "--username=u", "--dbname=d"),
+		},
+		{
+			"postgres-custom",
+			args{
+				config.Restore{Global: config.Global{Dialect: dialect.Postgres{}, Database: "d", Username: "u"}},
+				sqlformat.Gzip,
+			},
+			command.NewBuilder("gunzip", "--force", command.Pipe, pgpassword, pgoptions, "psql", "--quiet", "--output=/dev/null", "--host=127.0.0.1", "--username=u", "--dbname=d"),
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if got := buildCommand(tt.args.conf, tt.args.inputFormat); !reflect.DeepEqual(got, tt.want) {
+				t.Errorf("buildCommand() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+
+func Test_gzipCopy(t *testing.T) {
+	input := "hello world"
+	var output strings.Builder
+	gzw := gzip.NewWriter(&output)
+	if _, err := gzw.Write([]byte(input)); err != nil {
+		panic(err)
+	}
+	if err := gzw.Close(); err != nil {
+		panic(err)
+	}
+
+	type args struct {
+		r io.Reader
+	}
+	tests := []struct {
+		name    string
+		args    args
+		wantW   string
+		wantErr bool
+	}{
+		{"", args{strings.NewReader(input)}, output.String(), false},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			w := &bytes.Buffer{}
+			err := gzipCopy(w, tt.args.r)
+			if (err != nil) != tt.wantErr {
+				t.Errorf("gzipCopy() error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
+			if gotW := w.String(); gotW != tt.wantW {
+				t.Errorf("gzipCopy() gotW = %v, want %v", gotW, tt.wantW)
+			}
+		})
+	}
+}
+
+func Test_validArgs(t *testing.T) {
+	type args struct {
+		cmd        *cobra.Command
+		args       []string
+		toComplete string
+	}
+	tests := []struct {
+		name  string
+		args  args
+		want  []string
+		want1 cobra.ShellCompDirective
+	}{
+		{"0 arg", args{}, []string{"sql", "sql.gz", "dmp"}, cobra.ShellCompDirectiveFilterFileExt},
+		{"1 arg", args{args: []string{"sql.gz"}}, nil, cobra.ShellCompDirectiveNoFileComp},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got, got1 := validArgs(tt.args.cmd, tt.args.args, tt.args.toComplete)
+			if !reflect.DeepEqual(got, tt.want) {
+				t.Errorf("validArgs() got = %v, want %v", got, tt.want)
+			}
+			if got1 != tt.want1 {
+				t.Errorf("validArgs() got1 = %v, want %v", got1, tt.want1)
+			}
+		})
+	}
+}

@@ -21,13 +21,17 @@ type Filename struct {
 func (vars Filename) Ext() string {
 	ext, err := sqlformat.WriteExtension(vars.Format)
 	if err != nil {
-		panic(err)
+		return ""
 	}
 	return ext
 }
 
 func (vars Filename) Generate() (string, error) {
-	t, err := template.New("filename").Parse(FilenameTemplate)
+	return generate(vars, FilenameTemplate)
+}
+
+func generate(vars Filename, tmpl string) (string, error) {
+	t, err := template.New("filename").Parse(tmpl)
 	if err != nil {
 		return "", err
 	}
