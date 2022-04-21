@@ -9,25 +9,16 @@ type LabelQueryAnd []LabelQuery
 
 func (queries LabelQueryAnd) Matches(pod v1.Pod) bool {
 	for _, query := range queries {
-		if query.Matches(pod) {
-			return true
+		if !query.Matches(pod) {
+			return false
 		}
 	}
-	return false
+	return true
 }
 
 func (queries LabelQueryAnd) FindPods(list *v1.PodList) (pods []v1.Pod, err error) {
 	for _, pod := range list.Items {
-		var match bool
-		for _, query := range queries {
-			if query.Matches(pod) {
-				match = true
-			} else {
-				match = false
-				break
-			}
-		}
-		if match {
+		if queries.Matches(pod) {
 			pods = append(pods, pod)
 		}
 	}
