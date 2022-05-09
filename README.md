@@ -17,7 +17,11 @@ brew install clevyr/tap/kubedb
 
 Kubedb requires an existing Kubeconfig. See below for details. 
 
-### GCP
+## Usage
+
+[View the generated docs for usage information.](docs/kubedb.md)
+
+### Connecting to GKE
 
 1. To connect to a Kubernetes cluster running in GKE,
    ensure you have the `gcloud` command installed. 
@@ -45,7 +49,3 @@ Kubedb requires an existing Kubeconfig. See below for details.
 
    All of your current namespaces should show up in your shell.
    Many of the kubedb flags support tab completion.
-
-## Usage
-
-[View the help docs for usage information.](docs/kubedb.md)
