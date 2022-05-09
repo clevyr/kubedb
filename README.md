@@ -9,11 +9,66 @@ to configure itself via the Kubernetes EnvVar API.
 
 ## Installation
 
-To install kubedb, run the following command:
+### Homebrew (macOS, Linux)
 
-```shell
-brew install clevyr/tap/kubedb
-```
+<details>
+  <summary>Click to expand</summary>
+
+  ```shell
+  brew install clevyr/tap/kubedb
+  ```
+</details>
+
+### APT Repository (Ubuntu, Debian)
+
+<details>
+  <summary>Click to expand</summary>
+
+1. If you don't have it already, install the `ca-certificates` package
+   ```shell
+   apt install ca-certificates
+   ```
+
+2. Add Clevyr's apt repository to `/etc/apt/sources.list.d/clevyr.list`
+   ```
+   deb [trusted=yes] https://apt.clevyr.com /
+   ```
+
+3. Update apt repositories
+   ```shell
+   apt update
+   ```
+
+4. Install yampl
+   ```shell
+   apt install kubedb
+   ```
+</details>
+
+### RPM Repository (CentOS, RHEL)
+
+<details>
+  <summary>Click to expand</summary>
+
+1. If you don't have it already, install the `ca-certificates` package
+   ```shell
+   yum install ca-certificates
+   ```
+
+2. Add Clevyr's rpm repository to `/etc/yum.repos.d/clevyr.repo`
+   ```ini
+   [clevyr]
+   name=Clevyr
+   baseurl=https://rpm.clevyr.com
+   enabled=1
+   gpgcheck=0
+   ```
+
+3. Install yampl
+   ```shell
+   yum install kubedb
+   ```
+</details>
 
 Kubedb requires an existing Kubeconfig. See below for details. 
 

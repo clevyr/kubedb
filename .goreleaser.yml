@@ -36,3 +36,15 @@ brews:
       (bash_completion/"{{ .ProjectName }}").write output
       output = Utils.safe_popen_read("#{bin}/{{ .ProjectName }}", "completion", "zsh")
       (zsh_completion/"_{{ .ProjectName }}").write output
+nfpms:
+  - id: packages
+    formats:
+      - deb
+      - rpm
+    maintainer: Gabe Cook <gabe@clevyr.com>
+publishers:
+  - name: fury.io
+    ids:
+      - packages
+    dir: "{{ dir .ArtifactPath }}"
+    cmd: curl -sf -Fpackage=@{{ .ArtifactName }} https://{{ .Env.FURY_TOKEN }}@push.fury.io/clevyr/
