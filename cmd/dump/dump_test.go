@@ -26,22 +26,22 @@ func Test_buildCommand(t *testing.T) {
 		{
 			"postgres-gzip",
 			args{dialect.Postgres{}, config.Dump{Global: config.Global{Database: "d", Username: "u"}}},
-			command.NewBuilder(pgpassword, "pg_dump", "--host=127.0.0.1", "--username=u", "--dbname=d", command.Pipe, "gzip", "--force", command.Pipe, "base64", "-w0"),
+			command.NewBuilder(pgpassword, "pg_dump", "--host=127.0.0.1", "--username=u", "--dbname=d", command.Pipe, "gzip", "--force"),
 		},
 		{
 			"postgres-plain",
 			args{dialect.Postgres{}, config.Dump{Files: config.Files{Format: sqlformat.Plain}, Global: config.Global{Database: "d", Username: "u"}}},
-			command.NewBuilder(pgpassword, "pg_dump", "--host=127.0.0.1", "--username=u", "--dbname=d", command.Pipe, "gzip", "--force", command.Pipe, "base64", "-w0"),
+			command.NewBuilder(pgpassword, "pg_dump", "--host=127.0.0.1", "--username=u", "--dbname=d", command.Pipe, "gzip", "--force"),
 		},
 		{
 			"postgres-custom",
 			args{dialect.Postgres{}, config.Dump{Files: config.Files{Format: sqlformat.Custom}, Global: config.Global{Database: "d", Username: "u"}}},
-			command.NewBuilder(pgpassword, "pg_dump", "--host=127.0.0.1", "--username=u", "--dbname=d", "--format=c", command.Pipe, "base64", "-w0"),
+			command.NewBuilder(pgpassword, "pg_dump", "--host=127.0.0.1", "--username=u", "--dbname=d", "--format=c"),
 		},
 		{
 			"mariadb-gzip",
 			args{dialect.MariaDB{}, config.Dump{Files: config.Files{Format: sqlformat.Gzip}, Global: config.Global{Database: "d", Username: "u"}}},
-			command.NewBuilder(mysql_pwd, "mysqldump", "--host=127.0.0.1", "--user=u", "d", command.Pipe, "gzip", "--force", command.Pipe, "base64", "-w0"),
+			command.NewBuilder(mysql_pwd, "mysqldump", "--host=127.0.0.1", "--user=u", "d", command.Pipe, "gzip", "--force"),
 		},
 	}
 	for _, tt := range tests {

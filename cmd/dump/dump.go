@@ -2,7 +2,6 @@ package dump
 
 import (
 	"compress/gzip"
-	"encoding/base64"
 	"errors"
 	"fmt"
 	"github.com/clevyr/kubedb/internal/command"
@@ -142,8 +141,7 @@ func run(cmd *cobra.Command, args []string) (err error) {
 			ch <- err
 		}()
 
-		// base64 is required since TTYs use CRLF
-		pr := base64.NewDecoder(base64.StdEncoding, pr)
+		pr := io.Reader(pr)
 
 		if conf.Format == sqlformat.Plain {
 			pr, err = gzip.NewReader(pr)
@@ -168,17 +166,15 @@ func run(cmd *cobra.Command, args []string) (err error) {
 		sizeQueue = t.MonitorSize(t.GetSize())
 	}
 
-	err = t.Safe(func() error {
-		return conf.Client.Exec(
-			conf.Pod,
-			buildCommand(conf.Dialect, conf).String(),
-			t.In,
-			t.Out,
-			os.Stderr,
-			t.IsTerminalIn(),
-			sizeQueue,
-		)
-	})
+	err = conf.Client.Exec(
+		conf.Pod,
+		buildCommand(conf.Dialect, conf).String(),
+		t.In,
+		t.Out,
+		os.Stderr,
+		false,
+		sizeQueue,
+	)
 	if err != nil {
 		_ = pw.CloseWithError(err)
 		return err
@@ -215,7 +211,5 @@ func buildCommand(db config.Databaser, conf config.Dump) *command.Builder {
 	if conf.Format != sqlformat.Custom {
 		cmd.Push(command.Pipe, "gzip", "--force")
 	}
-	// base64 is required since TTYs use CRLF
-	cmd.Push(command.Pipe, "base64", "-w0")
 	return cmd
 }
