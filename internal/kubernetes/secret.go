@@ -21,9 +21,14 @@ func FindEnvVar(pod v1.Pod, envName string) (*v1.EnvVar, error) {
 	return nil, fmt.Errorf("%v: %s", ErrEnvVarNotFound, envName)
 }
 
+var ErrNoEnvNames = errors.New("dialect does not contain any env names")
 var ErrSecretDoesNotHaveKey = errors.New("secret does not have key")
 
 func (client KubeClient) GetValueFromEnv(pod v1.Pod, envNames []string) (string, error) {
+	if len(envNames) == 0 {
+		return "", ErrNoEnvNames
+	}
+
 	var err error
 	var envVar *v1.EnvVar
 	for _, envName := range envNames {
