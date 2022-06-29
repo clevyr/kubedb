@@ -68,7 +68,7 @@ func (Postgres) PodLabels() []kubernetes.LabelQueryable {
 func (Postgres) FilterPods(client kubernetes.KubeClient, pods []v1.Pod) ([]v1.Pod, error) {
 	if len(pods) > 0 && pods[0].Labels["app.kubernetes.io/name"] == "postgresql-ha" {
 		// HA chart. Need to detect primary.
-		log.Info("querying for primary instance")
+		log.Debug("querying for primary instance")
 		cmd := command.NewBuilder(
 			command.NewEnv("DISABLE_WELCOME_MESSAGE", "true"),
 			"/opt/bitnami/scripts/postgresql-repmgr/entrypoint.sh",

@@ -27,7 +27,10 @@ func preRun(cmd *cobra.Command, args []string) error {
 }
 
 func run(cmd *cobra.Command, args []string) (err error) {
-	log.WithField("pod", conf.Pod.Name).Info("exec into pod")
+	log.WithFields(log.Fields{
+		"namespace": conf.Client.Namespace,
+		"pod":       conf.Pod.Name,
+	}).Info("exec into pod")
 
 	t := term.TTY{
 		In:  os.Stdin,

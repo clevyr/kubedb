@@ -70,7 +70,10 @@ func preRun(cmd *cobra.Command, args []string) error {
 }
 
 func run(cmd *cobra.Command, args []string) (err error) {
-	log.WithField("pod", conf.Pod.Name).Info("setting up port forward")
+	log.WithFields(log.Fields{
+		"namespace": conf.Client.Namespace,
+		"pod":       conf.Pod.Name,
+	}).Info("setting up port forward")
 
 	path := fmt.Sprintf(
 		"/api/v1/namespaces/%s/pods/%s/portforward",

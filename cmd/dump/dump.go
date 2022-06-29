@@ -131,8 +131,9 @@ func run(cmd *cobra.Command, args []string) (err error) {
 	}
 
 	log.WithFields(log.Fields{
-		"pod":  conf.Pod.Name,
-		"file": conf.Filename,
+		"pod":       conf.Pod.Name,
+		"namespace": conf.Client.Namespace,
+		"file":      conf.Filename,
 	}).Info("exporting database")
 
 	if githubActions, err := cmd.Flags().GetBool("github-actions"); err != nil {

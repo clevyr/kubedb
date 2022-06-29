@@ -21,7 +21,7 @@ func DefaultSetup(cmd *cobra.Command, conf *config.Global) (err error) {
 	if err != nil {
 		return err
 	}
-	log.WithField("namespace", conf.Client.Namespace).Info("created kube client")
+	log.WithField("namespace", conf.Client.Namespace).Debug("created kube client")
 
 	access := config.NewNamespaceRegexp(cmd.Annotations["access"])
 	if !access.Match(conf.Client.Namespace) {
@@ -46,14 +46,14 @@ func DefaultSetup(cmd *cobra.Command, conf *config.Global) (err error) {
 		if err != nil {
 			return err
 		}
-		log.WithField("dialect", conf.Dialect.Name()).Info("detected database")
+		log.WithField("dialect", conf.Dialect.Name()).Debug("detected database")
 	} else {
 		// Configure via flag
 		conf.Dialect, err = database.New(dialectFlag)
 		if err != nil {
 			return err
 		}
-		log.WithField("dialect", conf.Dialect.Name()).Info("configured database")
+		log.WithField("dialect", conf.Dialect.Name()).Debug("configured database")
 
 		podFlag, err := cmd.Flags().GetString("pod")
 		if err != nil {
@@ -108,9 +108,9 @@ func DefaultSetup(cmd *cobra.Command, conf *config.Global) (err error) {
 	if conf.Database == "" {
 		conf.Database, err = conf.Client.GetValueFromEnv(conf.Pod, conf.Dialect.DatabaseEnvNames())
 		if err != nil {
-			log.Warn("could not detect database from pod env")
+			log.Debug("could not detect database from pod env")
 		} else {
-			log.WithField("database", conf.Database).Info("found db name in pod env")
+			log.WithField("database", conf.Database).Debug("found db name in pod env")
 		}
 	}
 
@@ -122,9 +122,9 @@ func DefaultSetup(cmd *cobra.Command, conf *config.Global) (err error) {
 		conf.Username, err = conf.Client.GetValueFromEnv(conf.Pod, conf.Dialect.UserEnvNames())
 		if err != nil {
 			conf.Username = conf.Dialect.DefaultUser()
-			log.WithField("user", conf.Username).Warn("could not detect user from pod env, using default")
+			log.WithField("user", conf.Username).Debug("could not detect user from pod env, using default")
 		} else {
-			log.WithField("user", conf.Username).Info("found user in pod env")
+			log.WithField("user", conf.Username).Debug("found user in pod env")
 		}
 	}
 

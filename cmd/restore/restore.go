@@ -101,8 +101,9 @@ func run(cmd *cobra.Command, args []string) (err error) {
 	pr, pw := io.Pipe()
 
 	log.WithFields(log.Fields{
-		"file": conf.Filename,
-		"pod":  conf.Pod.Name,
+		"file":      conf.Filename,
+		"namespace": conf.Client.Namespace,
+		"pod":       conf.Pod.Name,
 	}).Info("ready to restore database")
 
 	if !conf.Force {
@@ -172,7 +173,7 @@ func run(cmd *cobra.Command, args []string) (err error) {
 			go runInDatabasePod(pr, ch, sqlformat.Gzip)
 		}
 
-		log.Info("analyzing data")
+		log.Info("running analyze query")
 		err = gzipCopy(w, strings.NewReader(analyzeQuery))
 		if err != nil {
 			return err
