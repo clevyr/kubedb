@@ -436,3 +436,51 @@ func Test_quoteParam(t *testing.T) {
 		})
 	}
 }
+
+func TestPostgres_DumpExtension(t *testing.T) {
+	type args struct {
+		format sqlformat.Format
+	}
+	tests := []struct {
+		name string
+		args args
+		want string
+	}{
+		{"plain", args{sqlformat.Plain}, ".sql"},
+		{"gzip", args{sqlformat.Gzip}, ".sql.gz"},
+		{"custom", args{sqlformat.Custom}, ".dmp"},
+		{"other", args{sqlformat.Unknown}, ""},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			po := Postgres{}
+			if got := po.DumpExtension(tt.args.format); got != tt.want {
+				t.Errorf("DumpFileExt() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+
+func TestPostgres_FormatFromFilename(t *testing.T) {
+	type args struct {
+		filename string
+	}
+	tests := []struct {
+		name string
+		args args
+		want sqlformat.Format
+	}{
+		{"gzip", args{"test.sql.gz"}, sqlformat.Gzip},
+		{"plain", args{"test.sql"}, sqlformat.Plain},
+		{"custom", args{"test.dmp"}, sqlformat.Custom},
+		{"unknown", args{"test.png"}, sqlformat.Unknown},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			ma := Postgres{}
+			if got := ma.FormatFromFilename(tt.args.filename); got != tt.want {
+				t.Errorf("FormatFromFilename() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}

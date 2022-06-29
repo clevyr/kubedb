@@ -2,7 +2,6 @@ package dump
 
 import (
 	"fmt"
-	"github.com/clevyr/kubedb/internal/database/sqlformat"
 	"strings"
 	"text/template"
 	"time"
@@ -14,16 +13,8 @@ var FilenameTemplate = fmt.Sprintf("{{ .Namespace }}_{{ .Date.Format %#v }}{{ .E
 
 type Filename struct {
 	Namespace string
-	Format    sqlformat.Format
+	Ext       string
 	Date      time.Time
-}
-
-func (vars Filename) Ext() string {
-	ext, err := sqlformat.WriteExtension(vars.Format)
-	if err != nil {
-		return ""
-	}
-	return ext
 }
 
 func (vars Filename) Generate() (string, error) {
@@ -48,7 +39,7 @@ func generate(vars Filename, tmpl string) (string, error) {
 func HelpFilename() string {
 	filename, _ := Filename{
 		Namespace: "clevyr",
-		Format:    sqlformat.Gzip,
+		Ext:       ".sql.gz",
 		Date:      time.Date(2022, 1, 9, 9, 41, 0, 0, time.UTC),
 	}.Generate()
 	return filename

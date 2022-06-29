@@ -340,3 +340,50 @@ func TestMongoDB_UserEnvNames(t *testing.T) {
 		})
 	}
 }
+
+func TestMongoDB_DumpExtension(t *testing.T) {
+	type args struct {
+		format sqlformat.Format
+	}
+	tests := []struct {
+		name string
+		args args
+		want string
+	}{
+		{"plain", args{sqlformat.Plain}, ".archive"},
+		{"gzip", args{sqlformat.Gzip}, ".archive.gz"},
+		{"custom", args{sqlformat.Custom}, ""},
+		{"unknown", args{sqlformat.Unknown}, ""},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			po := MongoDB{}
+			if got := po.DumpExtension(tt.args.format); got != tt.want {
+				t.Errorf("DumpFileExt() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+
+func TestMongoDB_FormatFromFilename(t *testing.T) {
+	type args struct {
+		filename string
+	}
+	tests := []struct {
+		name string
+		args args
+		want sqlformat.Format
+	}{
+		{"gzip", args{"test.archive.gz"}, sqlformat.Gzip},
+		{"plain", args{"test.archive"}, sqlformat.Plain},
+		{"unknown", args{"test.png"}, sqlformat.Unknown},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			ma := MongoDB{}
+			if got := ma.FormatFromFilename(tt.args.filename); got != tt.want {
+				t.Errorf("FormatFromFilename() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}

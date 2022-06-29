@@ -76,21 +76,22 @@ func preRun(cmd *cobra.Command, args []string) (err error) {
 		cmd.SilenceUsage = false
 	}
 
-	if conf.Filename != "" && !cmd.Flags().Lookup("format").Changed {
-		conf.Format, err = sqlformat.ParseFilename(conf.Filename)
-		if err != nil {
-			return err
-		}
+	if err := util.DefaultSetup(cmd, &conf.Global); err != nil {
+		return err
 	}
 
-	return util.DefaultSetup(cmd, &conf.Global)
+	if conf.Filename != "" && !cmd.Flags().Lookup("format").Changed {
+		conf.Format = conf.Dialect.FormatFromFilename(conf.Filename)
+	}
+
+	return nil
 }
 
 func run(cmd *cobra.Command, args []string) (err error) {
 	if conf.Filename == "" {
 		conf.Filename, err = Filename{
 			Namespace: conf.Client.Namespace,
-			Format:    conf.Format,
+			Ext:       conf.Dialect.DumpExtension(conf.Format),
 			Date:      time.Now(),
 		}.Generate()
 		if err != nil {

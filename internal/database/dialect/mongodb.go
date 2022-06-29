@@ -6,6 +6,7 @@ import (
 	"github.com/clevyr/kubedb/internal/database/sqlformat"
 	"github.com/clevyr/kubedb/internal/kubernetes"
 	v1 "k8s.io/api/core/v1"
+	"strings"
 )
 
 type MongoDB struct{}
@@ -118,4 +119,26 @@ func (MongoDB) RestoreCommand(conf config.Restore, inputFormat sqlformat.Format)
 		}
 	}
 	return cmd
+}
+
+var mongodbFormats = map[sqlformat.Format]string{
+	sqlformat.Plain: ".archive",
+	sqlformat.Gzip:  ".archive.gz",
+}
+
+func (MongoDB) FormatFromFilename(filename string) sqlformat.Format {
+	for format, ext := range mongodbFormats {
+		if strings.HasSuffix(filename, ext) {
+			return format
+		}
+	}
+	return sqlformat.Unknown
+}
+
+func (MongoDB) DumpExtension(format sqlformat.Format) string {
+	ext, ok := mongodbFormats[format]
+	if ok {
+		return ext
+	}
+	return ""
 }

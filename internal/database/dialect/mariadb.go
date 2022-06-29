@@ -6,6 +6,7 @@ import (
 	"github.com/clevyr/kubedb/internal/database/sqlformat"
 	"github.com/clevyr/kubedb/internal/kubernetes"
 	v1 "k8s.io/api/core/v1"
+	"strings"
 )
 
 type MariaDB struct{}
@@ -103,4 +104,26 @@ func (MariaDB) RestoreCommand(conf config.Restore, inputFormat sqlformat.Format)
 		command.NewEnv("MYSQL_PWD", conf.Password),
 		"mysql", "--host=127.0.0.1", "--user="+conf.Username, conf.Database,
 	)
+}
+
+var mariadbFormats = map[sqlformat.Format]string{
+	sqlformat.Plain: ".sql",
+	sqlformat.Gzip:  ".sql.gz",
+}
+
+func (MariaDB) FormatFromFilename(filename string) sqlformat.Format {
+	for format, ext := range mariadbFormats {
+		if strings.HasSuffix(filename, ext) {
+			return format
+		}
+	}
+	return sqlformat.Unknown
+}
+
+func (MariaDB) DumpExtension(format sqlformat.Format) string {
+	ext, ok := mariadbFormats[format]
+	if ok {
+		return ext
+	}
+	return ""
 }

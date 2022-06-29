@@ -340,3 +340,50 @@ func TestMariaDB_UserEnvNames(t *testing.T) {
 		})
 	}
 }
+
+func TestMariaDB_DumpExtension(t *testing.T) {
+	type args struct {
+		format sqlformat.Format
+	}
+	tests := []struct {
+		name string
+		args args
+		want string
+	}{
+		{"plain", args{sqlformat.Plain}, ".sql"},
+		{"gzip", args{sqlformat.Gzip}, ".sql.gz"},
+		{"custom", args{sqlformat.Custom}, ""},
+		{"unknown", args{sqlformat.Unknown}, ""},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			po := MariaDB{}
+			if got := po.DumpExtension(tt.args.format); got != tt.want {
+				t.Errorf("DumpFileExt() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+
+func TestMariaDB_FormatFromFilename(t *testing.T) {
+	type args struct {
+		filename string
+	}
+	tests := []struct {
+		name string
+		args args
+		want sqlformat.Format
+	}{
+		{"gzip", args{"test.sql.gz"}, sqlformat.Gzip},
+		{"plain", args{"test.sql"}, sqlformat.Plain},
+		{"unknown", args{"test.png"}, sqlformat.Unknown},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			ma := MariaDB{}
+			if got := ma.FormatFromFilename(tt.args.filename); got != tt.want {
+				t.Errorf("FormatFromFilename() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}

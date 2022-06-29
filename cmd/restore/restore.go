@@ -57,7 +57,16 @@ func validArgs(cmd *cobra.Command, args []string, toComplete string) ([]string, 
 
 func preRun(cmd *cobra.Command, args []string) (err error) {
 	conf.Filename = args[0]
-	return util.DefaultSetup(cmd, &conf.Global)
+
+	if err := util.DefaultSetup(cmd, &conf.Global); err != nil {
+		return err
+	}
+
+	if !cmd.Flags().Lookup("format").Changed {
+		conf.Format = conf.Dialect.FormatFromFilename(conf.Filename)
+	}
+
+	return nil
 }
 
 func run(cmd *cobra.Command, args []string) (err error) {

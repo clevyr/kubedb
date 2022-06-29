@@ -1,46 +1,14 @@
 package dump
 
 import (
-	"github.com/clevyr/kubedb/internal/database/sqlformat"
 	"testing"
 	"time"
 )
 
-func TestFilename_Ext(t *testing.T) {
-	type fields struct {
-		Namespace string
-		Format    sqlformat.Format
-		Date      time.Time
-	}
-	tests := []struct {
-		name   string
-		fields fields
-		want   string
-	}{
-		{"gzip", fields{"test", sqlformat.Gzip, time.Time{}}, ".sql.gz"},
-		{"plain", fields{"test", sqlformat.Plain, time.Time{}}, ".sql"},
-		{"custom", fields{"test", sqlformat.Custom, time.Time{}}, ".dmp"},
-		{"unknown", fields{"test", sqlformat.Unknown, time.Time{}}, ""},
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			vars := Filename{
-				Namespace: tt.fields.Namespace,
-				Format:    tt.fields.Format,
-				Date:      tt.fields.Date,
-			}
-			got := vars.Ext()
-			if got != tt.want {
-				t.Errorf("Ext() got = %v, want %v", got, tt.want)
-			}
-		})
-	}
-}
-
 func TestFilename_Generate(t *testing.T) {
 	type fields struct {
 		Namespace string
-		Format    sqlformat.Format
+		Ext       string
 		Date      time.Time
 	}
 	tests := []struct {
@@ -49,13 +17,13 @@ func TestFilename_Generate(t *testing.T) {
 		want    string
 		wantErr bool
 	}{
-		{"simple", fields{"test", sqlformat.Gzip, time.Time{}}, "test_0001-01-01_000000.sql.gz", false},
+		{"simple", fields{"test", ".sql.gz", time.Time{}}, "test_0001-01-01_000000.sql.gz", false},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			vars := Filename{
 				Namespace: tt.fields.Namespace,
-				Format:    tt.fields.Format,
+				Ext:       tt.fields.Ext,
 				Date:      tt.fields.Date,
 			}
 			got, err := vars.Generate()
@@ -99,19 +67,19 @@ func Test_generate(t *testing.T) {
 	}{
 		{
 			"simple",
-			args{Filename{"test", sqlformat.Gzip, time.Time{}}, FilenameTemplate},
+			args{Filename{"test", ".sql.gz", time.Time{}}, FilenameTemplate},
 			"test_0001-01-01_000000.sql.gz",
 			false,
 		},
 		{
 			"invalid template",
-			args{Filename{"test", sqlformat.Gzip, time.Time{}}, "{{"},
+			args{Filename{"test", ".sql.gz", time.Time{}}, "{{"},
 			"",
 			true,
 		},
 		{
 			"invalid function",
-			args{Filename{"test", sqlformat.Gzip, time.Time{}}, "{{ .NotARealFunction }}"},
+			args{Filename{"test", ".sql.gz", time.Time{}}, "{{ .NotARealFunction }}"},
 			"",
 			true,
 		},
