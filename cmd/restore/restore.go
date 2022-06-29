@@ -18,6 +18,7 @@ import (
 	"k8s.io/kubectl/pkg/util/term"
 	"os"
 	"strings"
+	"time"
 )
 
 var Command = &cobra.Command{
@@ -126,6 +127,8 @@ func run(cmd *cobra.Command, args []string) (err error) {
 		}
 	}
 
+	startTime := time.Now()
+
 	bar := progressbar.New(-1, "uploading")
 	errLog := progressbar.NewBarSafeLogger(os.Stderr, bar)
 	outLog := progressbar.NewBarSafeLogger(os.Stdout, bar)
@@ -193,7 +196,10 @@ func run(cmd *cobra.Command, args []string) (err error) {
 		return err
 	}
 
-	log.WithField("file", conf.Filename).Info("restore complete")
+	log.WithFields(log.Fields{
+		"file": conf.Filename,
+		"in":   time.Since(startTime).Truncate(10 * time.Millisecond),
+	}).Info("restore complete")
 	return nil
 }
 

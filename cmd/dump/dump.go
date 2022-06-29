@@ -143,6 +143,8 @@ func run(cmd *cobra.Command, args []string) (err error) {
 		fmt.Println("::set-output name=filename::" + conf.Filename)
 	}
 
+	var startTime = time.Now()
+
 	bar := progressbar.New(-1, "downloading")
 	plogger := progressbar.NewBarSafeLogger(os.Stderr, bar)
 	log.SetOutput(plogger)
@@ -216,7 +218,10 @@ func run(cmd *cobra.Command, args []string) (err error) {
 		}
 	}
 
-	log.WithField("file", conf.Filename).Info("dump complete")
+	log.WithFields(log.Fields{
+		"file": conf.Filename,
+		"in":   time.Since(startTime).Truncate(10 * time.Millisecond),
+	}).Info("dump complete")
 	return nil
 }
 
