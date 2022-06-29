@@ -87,7 +87,7 @@ func TestMariaDB_DropDatabaseQuery(t *testing.T) {
 		args args
 		want string
 	}{
-		{"database", args{"database"}, "set FOREIGN_KEY_CHECKS=0; create or replace database database; set FOREIGN_KEY_CHECKS=1;"},
+		{"database", args{"database"}, "set FOREIGN_KEY_CHECKS=0; create or replace database database; set FOREIGN_KEY_CHECKS=1; use database;"},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -111,22 +111,22 @@ func TestMariaDB_DumpCommand(t *testing.T) {
 		{
 			"default",
 			args{config.Dump{Global: config.Global{Database: "d", Username: "u"}}},
-			command.NewBuilder(command.NewEnv("MYSQL_PWD", ""), "mysqldump", "--host=127.0.0.1", "--user=u", "d"),
+			command.NewBuilder(command.NewEnv("MYSQL_PWD", ""), "mysqldump", "--host=127.0.0.1", "--user=u", "d", "--verbose"),
 		},
 		{
 			"clean",
 			args{config.Dump{Clean: true, Global: config.Global{Database: "d", Username: "u"}}},
-			command.NewBuilder(command.NewEnv("MYSQL_PWD", ""), "mysqldump", "--host=127.0.0.1", "--user=u", "d", "--add-drop-table"),
+			command.NewBuilder(command.NewEnv("MYSQL_PWD", ""), "mysqldump", "--host=127.0.0.1", "--user=u", "d", "--add-drop-table", "--verbose"),
 		},
 		{
 			"tables",
 			args{config.Dump{Tables: []string{"table1", "table2"}, Global: config.Global{Database: "d", Username: "u"}}},
-			command.NewBuilder(command.NewEnv("MYSQL_PWD", ""), "mysqldump", "--host=127.0.0.1", "--user=u", "d", "table1", "table2"),
+			command.NewBuilder(command.NewEnv("MYSQL_PWD", ""), "mysqldump", "--host=127.0.0.1", "--user=u", "d", "table1", "table2", "--verbose"),
 		},
 		{
 			"exclude-table",
 			args{config.Dump{ExcludeTable: []string{"table1", "table2"}, Global: config.Global{Database: "d", Username: "u"}}},
-			command.NewBuilder(command.NewEnv("MYSQL_PWD", ""), "mysqldump", "--host=127.0.0.1", "--user=u", "d", "--ignore-table=table1", "--ignore-table=table2"),
+			command.NewBuilder(command.NewEnv("MYSQL_PWD", ""), "mysqldump", "--host=127.0.0.1", "--user=u", "d", "--ignore-table=table1", "--ignore-table=table2", "--verbose"),
 		},
 	}
 	for _, tt := range tests {
@@ -306,17 +306,17 @@ func TestMariaDB_RestoreCommand(t *testing.T) {
 		{
 			"gzip",
 			args{config.Restore{Global: config.Global{Database: "d", Username: "u"}}, sqlformat.Gzip},
-			command.NewBuilder(command.Env{Key: "MYSQL_PWD"}, "mysql", "--host=127.0.0.1", "--user=u", "d"),
+			command.NewBuilder(command.Env{Key: "MYSQL_PWD"}, "mysql", "--host=127.0.0.1", "--user=u", "--database=d"),
 		},
 		{
 			"plain",
 			args{config.Restore{Global: config.Global{Database: "d", Username: "u"}}, sqlformat.Plain},
-			command.NewBuilder(command.Env{Key: "MYSQL_PWD"}, "mysql", "--host=127.0.0.1", "--user=u", "d"),
+			command.NewBuilder(command.Env{Key: "MYSQL_PWD"}, "mysql", "--host=127.0.0.1", "--user=u", "--database=d"),
 		},
 		{
 			"custom",
 			args{config.Restore{Global: config.Global{Database: "d", Username: "u"}}, sqlformat.Custom},
-			command.NewBuilder(command.Env{Key: "MYSQL_PWD"}, "mysql", "--host=127.0.0.1", "--user=u", "d"),
+			command.NewBuilder(command.Env{Key: "MYSQL_PWD"}, "mysql", "--host=127.0.0.1", "--user=u", "--database=d"),
 		},
 	}
 	for _, tt := range tests {

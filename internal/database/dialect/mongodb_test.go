@@ -128,6 +128,11 @@ func TestMongoDB_DumpCommand(t *testing.T) {
 			args{config.Dump{ExcludeTable: []string{"table1", "table2"}, Global: config.Global{Database: "d", Username: "u", Password: "p"}}},
 			command.NewBuilder("mongodump", "--archive", "--host=127.0.0.1", "--username=u", "--password=p", "--db=d", "--excludeCollection=table1", "--excludeCollection=table2"),
 		},
+		{
+			"quiet",
+			args{config.Dump{Global: config.Global{Database: "d", Username: "u", Password: "p", Quiet: true}}},
+			command.NewBuilder("mongodump", "--archive", "--host=127.0.0.1", "--username=u", "--password=p", "--db=d", "--quiet"),
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -322,6 +327,11 @@ func TestMongoDB_RestoreCommand(t *testing.T) {
 			"clean",
 			args{config.Restore{Clean: true, Global: config.Global{Database: "d", Username: "u", Password: "p"}}, sqlformat.Gzip},
 			command.NewBuilder("mongorestore", "--archive", "--host=127.0.0.1", "--username=u", "--password=p", "--drop", "--db=d"),
+		},
+		{
+			"quiet",
+			args{config.Restore{Global: config.Global{Database: "d", Username: "u", Password: "p", Quiet: true}}, sqlformat.Gzip},
+			command.NewBuilder("mongorestore", "--archive", "--host=127.0.0.1", "--username=u", "--password=p", "--db=d", "--quiet"),
 		},
 	}
 	for _, tt := range tests {

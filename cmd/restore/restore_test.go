@@ -15,7 +15,6 @@ import (
 
 func Test_buildCommand(t *testing.T) {
 	pgpassword := command.NewEnv("PGPASSWORD", "")
-	pgoptions := command.NewEnv("PGOPTIONS", "-c client_min_messages=WARNING")
 
 	type args struct {
 		conf        config.Restore
@@ -32,7 +31,7 @@ func Test_buildCommand(t *testing.T) {
 				config.Restore{Global: config.Global{Dialect: dialect.Postgres{}, Database: "d", Username: "u"}},
 				sqlformat.Gzip,
 			},
-			command.NewBuilder("gunzip", "--force", command.Pipe, pgpassword, pgoptions, "psql", "--quiet", "--output=/dev/null", "--host=127.0.0.1", "--username=u", "--dbname=d"),
+			command.NewBuilder("gunzip", "--force", command.Pipe, pgpassword, "psql", "--host=127.0.0.1", "--username=u", "--dbname=d"),
 		},
 		{
 			"postgres-plain",
@@ -40,7 +39,7 @@ func Test_buildCommand(t *testing.T) {
 				config.Restore{Global: config.Global{Dialect: dialect.Postgres{}, Database: "d", Username: "u"}},
 				sqlformat.Gzip,
 			},
-			command.NewBuilder("gunzip", "--force", command.Pipe, pgpassword, pgoptions, "psql", "--quiet", "--output=/dev/null", "--host=127.0.0.1", "--username=u", "--dbname=d"),
+			command.NewBuilder("gunzip", "--force", command.Pipe, pgpassword, "psql", "--host=127.0.0.1", "--username=u", "--dbname=d"),
 		},
 		{
 			"postgres-custom",
@@ -48,7 +47,7 @@ func Test_buildCommand(t *testing.T) {
 				config.Restore{Global: config.Global{Dialect: dialect.Postgres{}, Database: "d", Username: "u"}},
 				sqlformat.Gzip,
 			},
-			command.NewBuilder("gunzip", "--force", command.Pipe, pgpassword, pgoptions, "psql", "--quiet", "--output=/dev/null", "--host=127.0.0.1", "--username=u", "--dbname=d"),
+			command.NewBuilder("gunzip", "--force", command.Pipe, pgpassword, "psql", "--host=127.0.0.1", "--username=u", "--dbname=d"),
 		},
 	}
 	for _, tt := range tests {
