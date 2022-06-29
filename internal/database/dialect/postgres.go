@@ -165,7 +165,7 @@ func (Postgres) RestoreCommand(conf config.Restore, inputFormat sqlformat.Format
 		command.NewEnv("PGOPTIONS", "-c client_min_messages=WARNING"),
 	)
 	switch inputFormat {
-	case sqlformat.Gzip, sqlformat.Plain:
+	case sqlformat.Gzip, sqlformat.Plain, sqlformat.Unknown:
 		cmd.Push("psql", "--quiet", "--output=/dev/null")
 	case sqlformat.Custom:
 		cmd.Push("pg_restore", "--format=custom", "--verbose", "--clean", "--exit-on-error")

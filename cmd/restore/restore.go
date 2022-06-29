@@ -82,11 +82,19 @@ func preRun(cmd *cobra.Command, args []string) (err error) {
 }
 
 func run(cmd *cobra.Command, args []string) (err error) {
-	f, err := os.Open(conf.Filename)
-	if err != nil {
-		return err
+	var f io.ReadCloser
+	switch conf.Filename {
+	case "-":
+		f = os.Stdin
+	default:
+		f, err = os.Open(conf.Filename)
+		if err != nil {
+			return err
+		}
+		defer func(f io.ReadCloser) {
+			_ = f.Close()
+		}(f)
 	}
-	defer f.Close()
 
 	pr, pw := io.Pipe()
 
@@ -130,7 +138,7 @@ func run(cmd *cobra.Command, args []string) (err error) {
 
 	log.Info("restoring database")
 	switch conf.Format {
-	case sqlformat.Gzip, sqlformat.Custom:
+	case sqlformat.Gzip, sqlformat.Custom, sqlformat.Unknown:
 		_, err = io.Copy(w, f)
 		if err != nil {
 			return err
