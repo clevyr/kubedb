@@ -179,6 +179,11 @@ func TestPostgres_ExecCommand(t *testing.T) {
 			args{config.Exec{DisableHeaders: true, Global: config.Global{Database: "d", Username: "u"}}},
 			command.NewBuilder(command.NewEnv("PGPASSWORD", ""), "psql", "--host=127.0.0.1", "--username=u", "--dbname=d", "--tuples-only"),
 		},
+		{
+			"command",
+			args{config.Exec{Command: "select true", Global: config.Global{Database: "d", Username: "u"}}},
+			command.NewBuilder(command.NewEnv("PGPASSWORD", ""), "psql", "--host=127.0.0.1", "--username=u", "--dbname=d", "--command=select true"),
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {

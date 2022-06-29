@@ -24,6 +24,8 @@ func TestNew(t *testing.T) {
 		{"mariadb", args{"mariadb"}, dialect.MariaDB{}, false},
 		{"maria", args{"maria"}, dialect.MariaDB{}, false},
 		{"mysql", args{"mysql"}, dialect.MariaDB{}, false},
+		{"mongodb", args{"mongodb"}, dialect.MongoDB{}, false},
+		{"mongo", args{"mongo"}, dialect.MongoDB{}, false},
 		{"invalid", args{"invalid"}, nil, true},
 	}
 	for _, tt := range tests {

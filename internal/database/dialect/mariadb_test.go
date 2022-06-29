@@ -158,6 +158,11 @@ func TestMariaDB_ExecCommand(t *testing.T) {
 			args{config.Exec{DisableHeaders: true, Global: config.Global{Database: "d", Username: "u"}}},
 			command.NewBuilder(command.Env{Key: "MYSQL_PWD"}, "mysql", "--host=127.0.0.1", "--user=u", "--database=d", "--skip-column-names"),
 		},
+		{
+			"command",
+			args{config.Exec{Command: "show databases", Global: config.Global{Database: "d", Username: "u"}}},
+			command.NewBuilder(command.Env{Key: "MYSQL_PWD"}, "mysql", "--host=127.0.0.1", "--user=u", "--database=d", "--execute=show databases"),
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {

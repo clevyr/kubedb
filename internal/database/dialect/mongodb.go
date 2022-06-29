@@ -113,10 +113,10 @@ func (MongoDB) RestoreCommand(conf config.Restore, inputFormat sqlformat.Format)
 		"--password="+conf.Password,
 	)
 	if conf.Database != "" {
-		cmd.Push("--db=" + conf.Database)
 		if conf.Clean {
 			cmd.Push("--drop")
 		}
+		cmd.Push("--db=" + conf.Database)
 	}
 	return cmd
 }

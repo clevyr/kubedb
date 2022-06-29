@@ -158,6 +158,11 @@ func TestMongoDB_ExecCommand(t *testing.T) {
 			args{config.Exec{DisableHeaders: true, Global: config.Global{Database: "d", Username: "u", Password: "p"}}},
 			command.NewBuilder("mongosh", "--host=127.0.0.1", "--username=u", "--password=p", "--quiet", "d"),
 		},
+		{
+			"command",
+			args{config.Exec{Command: "show databases", Global: config.Global{Database: "d", Username: "u", Password: "p"}}},
+			command.NewBuilder("mongosh", "--host=127.0.0.1", "--username=u", "--password=p", "--eval=show databases", "d"),
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -312,6 +317,11 @@ func TestMongoDB_RestoreCommand(t *testing.T) {
 			"custom",
 			args{config.Restore{Global: config.Global{Database: "d", Username: "u", Password: "p"}}, sqlformat.Custom},
 			command.NewBuilder("mongorestore", "--archive", "--host=127.0.0.1", "--username=u", "--password=p", "--db=d"),
+		},
+		{
+			"clean",
+			args{config.Restore{Clean: true, Global: config.Global{Database: "d", Username: "u", Password: "p"}}, sqlformat.Gzip},
+			command.NewBuilder("mongorestore", "--archive", "--host=127.0.0.1", "--username=u", "--password=p", "--drop", "--db=d"),
 		},
 	}
 	for _, tt := range tests {
