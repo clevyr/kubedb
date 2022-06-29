@@ -10,7 +10,6 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/kubernetes/scheme"
 	"k8s.io/client-go/tools/remotecommand"
-	"os"
 )
 
 var ErrNoPods = errors.New("no pods in namespace")
@@ -51,7 +50,7 @@ func (client KubeClient) Exec(pod v1.Pod, cmd string, stdin io.Reader, stdout, s
 	err = exec.Stream(remotecommand.StreamOptions{
 		Stdin:             stdin,
 		Stdout:            stdout,
-		Stderr:            os.Stderr,
+		Stderr:            stderr,
 		Tty:               tty,
 		TerminalSizeQueue: terminalSizeQueue,
 	})
