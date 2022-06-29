@@ -36,9 +36,9 @@ Supported Database Dialects:
 If not configured via flag, some configuration variables will be loaded from the target pod's env vars.
 
 Dynamic Env Var Variables:
-  - Database (fallback value: "db")
-  - Username (fallback value: "db" if PostgreSQL, "mariadb" if MariaDB)
-  - Password (required)
+  - Database
+  - Username (fallback value: "postgres" if PostgreSQL, "mariadb" if MariaDB)
+  - Password
 `,
 
 	PersistentPreRunE: preRun,

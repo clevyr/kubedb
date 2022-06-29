@@ -35,10 +35,6 @@ func (Postgres) ListTablesQuery() string {
 	return "SELECT table_name FROM information_schema.tables WHERE table_schema='public' AND table_type='BASE TABLE'"
 }
 
-func (Postgres) DefaultDatabase() string {
-	return "db"
-}
-
 func (Postgres) UserEnvNames() []string {
 	return []string{"POSTGRES_USER", "PGPOOL_POSTGRES_USERNAME"}
 }
@@ -114,8 +110,11 @@ func (Postgres) PasswordEnvNames() []string {
 func (Postgres) ExecCommand(conf config.Exec) *command.Builder {
 	cmd := command.NewBuilder(
 		command.NewEnv("PGPASSWORD", conf.Password),
-		"psql", "--host=127.0.0.1", "--username="+conf.Username, "--dbname="+conf.Database,
+		"psql", "--host=127.0.0.1", "--username="+conf.Username,
 	)
+	if conf.Database != "" {
+		cmd.Push("--dbname=" + conf.Database)
+	}
 	if conf.DisableHeaders {
 		cmd.Push("--tuples-only")
 	}

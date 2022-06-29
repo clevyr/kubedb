@@ -30,10 +30,6 @@ func (MariaDB) ListTablesQuery() string {
 	return "show tables"
 }
 
-func (MariaDB) DefaultDatabase() string {
-	return "db"
-}
-
 func (MariaDB) UserEnvNames() []string {
 	return []string{"MARIADB_USER"}
 }
@@ -71,8 +67,11 @@ func (MariaDB) PasswordEnvNames() []string {
 func (MariaDB) ExecCommand(conf config.Exec) *command.Builder {
 	cmd := command.NewBuilder(
 		command.NewEnv("MYSQL_PWD", conf.Password),
-		"mysql", "--host=127.0.0.1", "--user="+conf.Username, "--database="+conf.Database,
+		"mysql", "--host=127.0.0.1", "--user="+conf.Username,
 	)
+	if conf.Database != "" {
+		cmd.Push("--database=" + conf.Database)
+	}
 	if conf.DisableHeaders {
 		cmd.Push("--skip-column-names")
 	}

@@ -14,7 +14,6 @@ type Databaser interface {
 	DatabaseEnvNames() []string
 	ListDatabasesQuery() string
 	ListTablesQuery() string
-	DefaultDatabase() string
 
 	UserEnvNames() []string
 	DefaultUser() string

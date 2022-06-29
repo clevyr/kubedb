@@ -45,23 +45,6 @@ func TestPostgres_DatabaseEnvNames(t *testing.T) {
 	}
 }
 
-func TestPostgres_DefaultDatabase(t *testing.T) {
-	tests := []struct {
-		name string
-		want string
-	}{
-		{"default", "db"},
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			po := Postgres{}
-			if got := po.DefaultDatabase(); got != tt.want {
-				t.Errorf("DefaultDatabase() = %v, want %v", got, tt.want)
-			}
-		})
-	}
-}
-
 func TestPostgres_DefaultPort(t *testing.T) {
 	tests := []struct {
 		name string
