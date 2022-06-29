@@ -23,6 +23,7 @@ kubedb restore filename [flags]
   -F, --format string        output file format ([g]zip, [c]ustom, [p]lain) (default "gzip")
   -h, --help                 help for restore
   -O, --no-owner             skip restoration of object ownership in plain-text format (default true)
+  -q, --quiet                Silence remote log output
   -1, --single-transaction   restore as a single transaction (default true)
 ```
 

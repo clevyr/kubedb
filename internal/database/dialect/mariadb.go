@@ -96,6 +96,9 @@ func (MariaDB) DumpCommand(conf config.Dump) *command.Builder {
 	for _, table := range conf.ExcludeTable {
 		cmd.Push("--ignore-table=" + table)
 	}
+	if !conf.Quiet {
+		cmd.Push("--verbose")
+	}
 	return cmd
 }
 

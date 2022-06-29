@@ -24,6 +24,7 @@ kubedb dump [filename] [flags]
   -h, --help                         help for dump
       --if-exists                    use IF EXISTS when dropping objects (default true)
   -O, --no-owner                     skip restoration of object ownership in plain-text format (default true)
+  -q, --quiet                        Silence remote log output
   -t, --table strings                dump the specified table(s) only
 ```
 

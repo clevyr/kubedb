@@ -54,6 +54,7 @@ func init() {
 	flags.Tables(Command, &conf.Tables)
 	flags.ExcludeTable(Command, &conf.ExcludeTable)
 	flags.ExcludeTableData(Command, &conf.ExcludeTableData)
+	flags.Quiet(Command, &conf.Quiet)
 }
 
 func validArgs(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {

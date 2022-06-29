@@ -156,21 +156,32 @@ func (Postgres) DumpCommand(conf config.Dump) *command.Builder {
 	if conf.Format == sqlformat.Custom {
 		cmd.Push("--format=c")
 	}
+	if !conf.Quiet {
+		cmd.Push("--verbose")
+	}
 	return cmd
 }
 
 func (Postgres) RestoreCommand(conf config.Restore, inputFormat sqlformat.Format) *command.Builder {
 	cmd := command.NewBuilder(
 		command.NewEnv("PGPASSWORD", conf.Password),
-		command.NewEnv("PGOPTIONS", "-c client_min_messages=WARNING"),
 	)
+	if conf.Quiet {
+		cmd.Push(command.NewEnv("PGOPTIONS", "-c client_min_messages=WARNING"))
+	}
 	switch inputFormat {
 	case sqlformat.Gzip, sqlformat.Plain, sqlformat.Unknown:
-		cmd.Push("psql", "--quiet", "--output=/dev/null")
+		cmd.Push("psql")
+		if conf.Quiet {
+			cmd.Push("--quiet", "--output=/dev/null")
+		}
 	case sqlformat.Custom:
-		cmd.Push("pg_restore", "--format=custom", "--verbose", "--clean", "--exit-on-error")
+		cmd.Push("pg_restore", "--format=custom", "--clean", "--exit-on-error")
 		if conf.NoOwner {
 			cmd.Push("--no-owner")
+		}
+		if !conf.Quiet {
+			cmd.Push("--verbose")
 		}
 	}
 	cmd.Push("--host=127.0.0.1", "--username="+conf.Username, "--dbname="+conf.Database)

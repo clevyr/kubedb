@@ -12,4 +12,5 @@ type Global struct {
 	Database string
 	Username string
 	Password string
+	Quiet    bool
 }

@@ -101,6 +101,9 @@ func (MongoDB) DumpCommand(conf config.Dump) *command.Builder {
 	for _, table := range conf.ExcludeTable {
 		cmd.Push("--excludeCollection=" + table)
 	}
+	if conf.Quiet {
+		cmd.Push("--quiet")
+	}
 	return cmd
 }
 
@@ -117,6 +120,9 @@ func (MongoDB) RestoreCommand(conf config.Restore, inputFormat sqlformat.Format)
 			cmd.Push("--drop")
 		}
 		cmd.Push("--db=" + conf.Database)
+	}
+	if conf.Quiet {
+		cmd.Push("--quiet")
 	}
 	return cmd
 }

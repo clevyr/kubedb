@@ -48,6 +48,7 @@ func init() {
 	flags.Clean(Command, &conf.Clean)
 	flags.NoOwner(Command, &conf.NoOwner)
 	flags.Force(Command, &conf.Force)
+	flags.Quiet(Command, &conf.Quiet)
 }
 
 func validArgs(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {

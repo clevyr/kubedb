@@ -5,6 +5,10 @@ import (
 	"github.com/spf13/cobra"
 )
 
+func Quiet(cmd *cobra.Command, p *bool) {
+	cmd.PersistentFlags().BoolVarP(p, "quiet", "q", false, "Silence remote log output")
+}
+
 func LogLevel(cmd *cobra.Command) {
 	cmd.PersistentFlags().String("log-level", "info", "log level (trace, debug, info, warning, error, fatal, panic)")
 	err := cmd.RegisterFlagCompletionFunc(
