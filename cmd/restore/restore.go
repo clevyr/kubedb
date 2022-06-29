@@ -2,6 +2,7 @@ package restore
 
 import (
 	"compress/gzip"
+	"errors"
 	"fmt"
 	"github.com/AlecAivazis/survey/v2"
 	"github.com/clevyr/kubedb/internal/command"
@@ -14,6 +15,7 @@ import (
 	"github.com/spf13/cobra"
 	"io"
 	_ "k8s.io/client-go/plugin/pkg/client/auth"
+	"k8s.io/kubectl/pkg/util/term"
 	"os"
 	"strings"
 )
@@ -104,16 +106,21 @@ func run(cmd *cobra.Command, args []string) (err error) {
 	}).Info("ready to restore database")
 
 	if !conf.Force {
-		var response bool
-		err = survey.AskOne(&survey.Confirm{
-			Message: "Restore to " + conf.Pod.Name + " in " + conf.Client.Namespace + "?",
-		}, &response)
-		if err != nil {
-			return err
-		}
-		if !response {
-			fmt.Println("restore canceled")
-			return
+		tty := term.TTY{In: os.Stdin}.IsTerminalIn()
+		if tty {
+			var response bool
+			err = survey.AskOne(&survey.Confirm{
+				Message: "Restore to " + conf.Pod.Name + " in " + conf.Client.Namespace + "?",
+			}, &response)
+			if err != nil {
+				return err
+			}
+			if !response {
+				fmt.Println("restore canceled")
+				return nil
+			}
+		} else {
+			return errors.New("refusing to restore a database non-interactively without the --force flag")
 		}
 	}
 
