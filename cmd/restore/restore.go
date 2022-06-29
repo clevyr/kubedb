@@ -125,7 +125,7 @@ func run(cmd *cobra.Command, args []string) (err error) {
 		}
 	}
 
-	bar := progressbar.New(-1)
+	bar := progressbar.New(-1, "uploading")
 	plogger := progressbar.NewBarSafeLogger(os.Stderr, bar)
 	log.SetOutput(plogger)
 

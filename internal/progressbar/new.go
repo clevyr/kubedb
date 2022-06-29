@@ -9,10 +9,11 @@ import (
 	"time"
 )
 
-func New(max int64) *progressbar.ProgressBar {
+func New(max int64, label string) *progressbar.ProgressBar {
 	if !terminal.IsTTY() {
 		return progressbar.NewOptions64(
 			max,
+			progressbar.OptionSetDescription(label),
 			progressbar.OptionSetWriter(os.Stderr),
 			progressbar.OptionShowBytes(true),
 			progressbar.OptionSetWidth(10),
@@ -21,7 +22,7 @@ func New(max int64) *progressbar.ProgressBar {
 			progressbar.OptionSpinnerType(14),
 		)
 	}
-	return progressbar.DefaultBytes(max)
+	return progressbar.DefaultBytes(max, label)
 }
 
 func NewBarSafeLogger(w io.Writer, bar *progressbar.ProgressBar) *BarSafeLogger {

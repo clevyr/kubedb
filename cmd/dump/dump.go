@@ -142,7 +142,7 @@ func run(cmd *cobra.Command, args []string) (err error) {
 		fmt.Println("::set-output name=filename::" + conf.Filename)
 	}
 
-	bar := progressbar.New(-1)
+	bar := progressbar.New(-1, "downloading")
 	plogger := progressbar.NewBarSafeLogger(os.Stderr, bar)
 	log.SetOutput(plogger)
 
