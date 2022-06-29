@@ -40,7 +40,7 @@ func (MariaDB) DefaultUser() string {
 }
 
 func (MariaDB) DropDatabaseQuery(database string) string {
-	return "set FOREIGN_KEY_CHECKS=0; create or replace database " + database + "; set FOREIGN_KEY_CHECKS=1;"
+	return "set FOREIGN_KEY_CHECKS=0; create or replace database " + database + "; set FOREIGN_KEY_CHECKS=1; use " + database + ";"
 }
 
 func (MariaDB) AnalyzeQuery() string {
@@ -102,7 +102,7 @@ func (MariaDB) DumpCommand(conf config.Dump) *command.Builder {
 func (MariaDB) RestoreCommand(conf config.Restore, inputFormat sqlformat.Format) *command.Builder {
 	return command.NewBuilder(
 		command.NewEnv("MYSQL_PWD", conf.Password),
-		"mysql", "--host=127.0.0.1", "--user="+conf.Username, conf.Database,
+		"mysql", "--host=127.0.0.1", "--user="+conf.Username, "--database="+conf.Database,
 	)
 }
 
