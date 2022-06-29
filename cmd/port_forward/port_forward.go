@@ -42,12 +42,12 @@ func validArgs(cmd *cobra.Command, args []string, toComplete string) ([]string, 
 		return nil, cobra.ShellCompDirectiveNoFileComp
 	}
 
-	defaultPort := uint64(conf.Dialect.DefaultPort())
+	defaultPort := conf.Dialect.DefaultPort()
 
 	return []string{
-		strconv.FormatUint(uint64(conf.LocalPort), 10),
-		strconv.FormatUint(defaultPort, 10),
-		strconv.FormatUint(defaultPort+1, 10),
+		strconv.Itoa(int(conf.LocalPort)),
+		strconv.Itoa(int(defaultPort)),
+		strconv.Itoa(int(defaultPort + 1)),
 	}, cobra.ShellCompDirectiveNoFileComp
 }
 
