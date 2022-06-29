@@ -24,18 +24,28 @@ func New(max int64) *progressbar.ProgressBar {
 	return progressbar.DefaultBytes(max)
 }
 
-func NewBarSafeLogger(w io.Writer) *BarSafeLogger {
+func NewBarSafeLogger(w io.Writer, bar *progressbar.ProgressBar) *BarSafeLogger {
 	return &BarSafeLogger{
 		out: w,
+		bar: bar,
 	}
 }
 
 type BarSafeLogger struct {
 	out io.Writer
+	bar *progressbar.ProgressBar
 }
 
 func (l *BarSafeLogger) Write(p []byte) (int, error) {
+	if l.bar.IsFinished() {
+		return l.out.Write(p)
+	}
+
 	buf := bytes.NewBuffer([]byte("\r"))
 	buf.Write(p)
-	return l.out.Write(buf.Bytes())
+	buf.WriteString(l.bar.String())
+	if b, err := l.out.Write(buf.Bytes()); err != nil {
+		return b, err
+	}
+	return len(p), nil
 }

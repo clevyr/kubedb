@@ -125,11 +125,12 @@ func run(cmd *cobra.Command, args []string) (err error) {
 		}
 	}
 
-	ch := make(chan error, 1)
-	go runInDatabasePod(pr, ch, conf.Format)
-
 	bar := progressbar.New(-1)
-	log.SetOutput(progressbar.NewBarSafeLogger(os.Stderr))
+	plogger := progressbar.NewBarSafeLogger(os.Stderr, bar)
+	log.SetOutput(plogger)
+
+	ch := make(chan error, 1)
+	go runInDatabasePod(pr, plogger, ch, conf.Format)
 
 	w := io.MultiWriter(pw, bar)
 
@@ -170,7 +171,7 @@ func run(cmd *cobra.Command, args []string) (err error) {
 
 			pr, pw = io.Pipe()
 			w = io.MultiWriter(pw, bar)
-			go runInDatabasePod(pr, ch, sqlformat.Gzip)
+			go runInDatabasePod(pr, plogger, ch, sqlformat.Gzip)
 		}
 
 		log.Info("running analyze query")
@@ -215,13 +216,21 @@ func gzipCopy(w io.Writer, r io.Reader) (err error) {
 	return nil
 }
 
-func runInDatabasePod(r *io.PipeReader, ch chan error, inputFormat sqlformat.Format) {
+func runInDatabasePod(r *io.PipeReader, stderr io.Writer, ch chan error, inputFormat sqlformat.Format) {
 	var err error
 	defer func(pr *io.PipeReader) {
 		_ = pr.Close()
 	}(r)
 
-	err = conf.Client.Exec(conf.Pod, buildCommand(conf, inputFormat).String(), r, os.Stdout, os.Stderr, false, nil)
+	err = conf.Client.Exec(
+		conf.Pod,
+		buildCommand(conf, inputFormat).String(),
+		r,
+		os.Stdout,
+		stderr,
+		false,
+		nil,
+	)
 	if err != nil {
 		_ = r.CloseWithError(err)
 		ch <- err

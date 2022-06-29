@@ -143,7 +143,8 @@ func run(cmd *cobra.Command, args []string) (err error) {
 	}
 
 	bar := progressbar.New(-1)
-	log.SetOutput(progressbar.NewBarSafeLogger(os.Stderr))
+	plogger := progressbar.NewBarSafeLogger(os.Stderr, bar)
+	log.SetOutput(plogger)
 
 	pr, pw := io.Pipe()
 	ch := make(chan error, 1)
@@ -183,7 +184,7 @@ func run(cmd *cobra.Command, args []string) (err error) {
 		buildCommand(conf.Dialect, conf).String(),
 		t.In,
 		t.Out,
-		os.Stderr,
+		plogger,
 		false,
 		sizeQueue,
 	)
