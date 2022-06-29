@@ -118,6 +118,9 @@ func (Postgres) ExecCommand(conf config.Exec) *command.Builder {
 	if conf.DisableHeaders {
 		cmd.Push("--tuples-only")
 	}
+	if conf.Command != "" {
+		cmd.Push("--command=" + conf.Command)
+	}
 	return cmd
 }
 

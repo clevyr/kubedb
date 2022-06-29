@@ -75,6 +75,9 @@ func (MariaDB) ExecCommand(conf config.Exec) *command.Builder {
 	if conf.DisableHeaders {
 		cmd.Push("--skip-column-names")
 	}
+	if conf.Command != "" {
+		cmd.Push("--execute=" + conf.Command)
+	}
 	return cmd
 }
 

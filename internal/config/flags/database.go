@@ -110,7 +110,8 @@ func listTables(cmd *cobra.Command, args []string, toComplete string) ([]string,
 	if err != nil {
 		return nil, cobra.ShellCompDirectiveNoFileComp
 	}
-	return queryInDatabase(cmd, args, conf, conf.Dialect.ListTablesQuery())
+	conf.Command = conf.Dialect.ListTablesQuery()
+	return queryInDatabase(cmd, args, conf)
 }
 
 func listDatabases(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
@@ -119,14 +120,14 @@ func listDatabases(cmd *cobra.Command, args []string, toComplete string) ([]stri
 	if err != nil {
 		return nil, cobra.ShellCompDirectiveNoFileComp
 	}
-	return queryInDatabase(cmd, args, conf, conf.Dialect.ListDatabasesQuery())
+	conf.Command = conf.Dialect.ListDatabasesQuery()
+	return queryInDatabase(cmd, args, conf)
 }
 
-func queryInDatabase(cmd *cobra.Command, args []string, conf config.Exec, query string) ([]string, cobra.ShellCompDirective) {
-	r := strings.NewReader(query)
+func queryInDatabase(cmd *cobra.Command, args []string, conf config.Exec) ([]string, cobra.ShellCompDirective) {
 	var buf strings.Builder
 	sqlCmd := conf.Dialect.ExecCommand(conf)
-	err := conf.Client.Exec(conf.Pod, sqlCmd.String(), r, &buf, os.Stderr, false, nil)
+	err := conf.Client.Exec(conf.Pod, sqlCmd.String(), nil, &buf, os.Stderr, false, nil)
 	if err != nil {
 		return nil, cobra.ShellCompDirectiveNoFileComp
 	}
