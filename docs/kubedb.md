@@ -17,7 +17,7 @@ If not configured via flag, some configuration variables will be loaded from the
 
 Dynamic Env Var Variables:
   - Database
-  - Username (fallback value: "postgres" if PostgreSQL, "mariadb" if MariaDB)
+  - Username (fallback value: "postgres" if PostgreSQL, "mariadb" if MariaDB, "root" if MongoDB)
   - Password
 
 
@@ -26,7 +26,7 @@ Dynamic Env Var Variables:
 ```
       --context string      name of the kubeconfig context to use
   -d, --dbname string       database name to connect to
-      --dialect string      database dialect. detected if not set. (postgres, mariadb)
+      --dialect string      database dialect. detected if not set. (postgres, mariadb, mongodb)
   -C, --directory string    dir to hold the generated config (default "./docs")
   -h, --help                help for kubedb
       --kubeconfig string   absolute path to the kubeconfig file (default "$HOME/.kube/config")

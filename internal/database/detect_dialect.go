@@ -14,6 +14,7 @@ func DetectDialect(client kubernetes.KubeClient) (config.Databaser, []v1.Pod, er
 	dialects := []config.Databaser{
 		dialect.Postgres{},
 		dialect.MariaDB{},
+		dialect.MongoDB{},
 	}
 
 	pods, err := client.GetNamespacedPods()

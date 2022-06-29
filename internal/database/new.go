@@ -15,6 +15,8 @@ func New(name string) (config.Databaser, error) {
 		return dialect.Postgres{}, nil
 	case "mariadb", "maria", "mysql":
 		return dialect.MariaDB{}, nil
+	case "mongodb", "mongo":
+		return dialect.MongoDB{}, nil
 	}
 	return nil, fmt.Errorf("%v: %s", ErrUnsupportedDatabase, name)
 }

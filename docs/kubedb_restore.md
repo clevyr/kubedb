@@ -31,7 +31,7 @@ kubedb restore filename [flags]
 ```
       --context string      name of the kubeconfig context to use
   -d, --dbname string       database name to connect to
-      --dialect string      database dialect. detected if not set. (postgres, mariadb)
+      --dialect string      database dialect. detected if not set. (postgres, mariadb, mongodb)
   -C, --directory string    dir to hold the generated config (default "./docs")
       --kubeconfig string   absolute path to the kubeconfig file (default "$HOME/.kube/config")
       --log-format string   log formatter (text, json) (default "text")

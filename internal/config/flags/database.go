@@ -11,19 +11,20 @@ import (
 )
 
 func Dialect(cmd *cobra.Command) {
-	cmd.PersistentFlags().String("grammar", "", "database dialect. detected if not set. (postgres, mariadb)")
+	cmd.PersistentFlags().String("grammar", "", "database dialect. detected if not set. (postgres, mariadb, mongodb)")
 	err := cmd.PersistentFlags().MarkDeprecated("grammar", "please use --dialect instead")
 	if err != nil {
 		panic(err)
 	}
 
-	cmd.PersistentFlags().String("dialect", "", "database dialect. detected if not set. (postgres, mariadb)")
+	cmd.PersistentFlags().String("dialect", "", "database dialect. detected if not set. (postgres, mariadb, mongodb)")
 	err = cmd.RegisterFlagCompletionFunc(
 		"dialect",
 		func(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
 			return []string{
 				dialect.Postgres{}.Name(),
 				dialect.MariaDB{}.Name(),
+				dialect.MongoDB{}.Name(),
 			}, cobra.ShellCompDirectiveNoFileComp
 		})
 	if err != nil {

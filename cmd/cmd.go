@@ -37,7 +37,7 @@ If not configured via flag, some configuration variables will be loaded from the
 
 Dynamic Env Var Variables:
   - Database
-  - Username (fallback value: "postgres" if PostgreSQL, "mariadb" if MariaDB)
+  - Username (fallback value: "postgres" if PostgreSQL, "mariadb" if MariaDB, "root" if MongoDB)
   - Password
 `,
 
