@@ -271,11 +271,11 @@ func TestMariaDB_PodLabels(t *testing.T) {
 		want []kubernetes.LabelQueryable
 	}{
 		{"default", []kubernetes.LabelQueryable{
-			kubernetes.LabelQuery{Name: "app", Value: "mariadb"},
 			kubernetes.LabelQueryAnd{
 				{Name: "app.kubernetes.io/name", Value: "mariadb"},
 				{Name: "app.kubernetes.io/component", Value: "primary"},
 			},
+			kubernetes.LabelQuery{Name: "app", Value: "mariadb"},
 		}},
 	}
 	for _, tt := range tests {

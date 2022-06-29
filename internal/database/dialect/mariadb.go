@@ -49,11 +49,11 @@ func (MariaDB) AnalyzeQuery() string {
 
 func (MariaDB) PodLabels() []kubernetes.LabelQueryable {
 	return []kubernetes.LabelQueryable{
-		kubernetes.LabelQuery{Name: "app", Value: "mariadb"},
 		kubernetes.LabelQueryAnd{
 			{Name: "app.kubernetes.io/name", Value: "mariadb"},
 			{Name: "app.kubernetes.io/component", Value: "primary"},
 		},
+		kubernetes.LabelQuery{Name: "app", Value: "mariadb"},
 	}
 }
 

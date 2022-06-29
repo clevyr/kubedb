@@ -53,7 +53,6 @@ func (Postgres) AnalyzeQuery() string {
 
 func (Postgres) PodLabels() []kubernetes.LabelQueryable {
 	return []kubernetes.LabelQueryable{
-		kubernetes.LabelQuery{Name: "app", Value: "postgresql"},
 		kubernetes.LabelQueryAnd{
 			{Name: "app.kubernetes.io/name", Value: "postgresql"},
 			{Name: "app.kubernetes.io/component", Value: "primary"},
@@ -62,6 +61,7 @@ func (Postgres) PodLabels() []kubernetes.LabelQueryable {
 			{Name: "app.kubernetes.io/name", Value: "postgresql-ha"},
 			{Name: "app.kubernetes.io/component", Value: "postgresql"},
 		},
+		kubernetes.LabelQuery{Name: "app", Value: "postgresql"},
 	}
 }
 

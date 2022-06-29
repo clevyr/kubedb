@@ -271,11 +271,11 @@ func TestMongoDB_PodLabels(t *testing.T) {
 		want []kubernetes.LabelQueryable
 	}{
 		{"default", []kubernetes.LabelQueryable{
-			kubernetes.LabelQuery{Name: "app", Value: "mongodb"},
 			kubernetes.LabelQueryAnd{
 				{Name: "app.kubernetes.io/name", Value: "mongodb"},
 				{Name: "app.kubernetes.io/component", Value: "mongodb"},
 			},
+			kubernetes.LabelQuery{Name: "app", Value: "mongodb"},
 		}},
 	}
 	for _, tt := range tests {

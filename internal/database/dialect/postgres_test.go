@@ -325,7 +325,6 @@ func TestPostgres_PodLabels(t *testing.T) {
 		want []kubernetes.LabelQueryable
 	}{
 		{"default", []kubernetes.LabelQueryable{
-			kubernetes.LabelQuery{Name: "app", Value: "postgresql"},
 			kubernetes.LabelQueryAnd{
 				{Name: "app.kubernetes.io/name", Value: "postgresql"},
 				{Name: "app.kubernetes.io/component", Value: "primary"},
@@ -334,6 +333,7 @@ func TestPostgres_PodLabels(t *testing.T) {
 				{Name: "app.kubernetes.io/name", Value: "postgresql-ha"},
 				{Name: "app.kubernetes.io/component", Value: "postgresql"},
 			},
+			kubernetes.LabelQuery{Name: "app", Value: "postgresql"},
 		}},
 	}
 	for _, tt := range tests {
