@@ -106,13 +106,15 @@ func (MariaDB) RestoreCommand(conf config.Restore, inputFormat sqlformat.Format)
 	)
 }
 
-var mariadbFormats = map[sqlformat.Format]string{
-	sqlformat.Plain: ".sql",
-	sqlformat.Gzip:  ".sql.gz",
+func (MariaDB) Formats() map[sqlformat.Format]string {
+	return map[sqlformat.Format]string{
+		sqlformat.Plain: ".sql",
+		sqlformat.Gzip:  ".sql.gz",
+	}
 }
 
-func (MariaDB) FormatFromFilename(filename string) sqlformat.Format {
-	for format, ext := range mariadbFormats {
+func (db MariaDB) FormatFromFilename(filename string) sqlformat.Format {
+	for format, ext := range db.Formats() {
 		if strings.HasSuffix(filename, ext) {
 			return format
 		}
@@ -120,8 +122,8 @@ func (MariaDB) FormatFromFilename(filename string) sqlformat.Format {
 	return sqlformat.Unknown
 }
 
-func (MariaDB) DumpExtension(format sqlformat.Format) string {
-	ext, ok := mariadbFormats[format]
+func (db MariaDB) DumpExtension(format sqlformat.Format) string {
+	ext, ok := db.Formats()[format]
 	if ok {
 		return ext
 	}

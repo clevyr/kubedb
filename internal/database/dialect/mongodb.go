@@ -121,13 +121,15 @@ func (MongoDB) RestoreCommand(conf config.Restore, inputFormat sqlformat.Format)
 	return cmd
 }
 
-var mongodbFormats = map[sqlformat.Format]string{
-	sqlformat.Plain: ".archive",
-	sqlformat.Gzip:  ".archive.gz",
+func (MongoDB) Formats() map[sqlformat.Format]string {
+	return map[sqlformat.Format]string{
+		sqlformat.Plain: ".archive",
+		sqlformat.Gzip:  ".archive.gz",
+	}
 }
 
-func (MongoDB) FormatFromFilename(filename string) sqlformat.Format {
-	for format, ext := range mongodbFormats {
+func (db MongoDB) FormatFromFilename(filename string) sqlformat.Format {
+	for format, ext := range db.Formats() {
 		if strings.HasSuffix(filename, ext) {
 			return format
 		}
@@ -135,8 +137,8 @@ func (MongoDB) FormatFromFilename(filename string) sqlformat.Format {
 	return sqlformat.Unknown
 }
 
-func (MongoDB) DumpExtension(format sqlformat.Format) string {
-	ext, ok := mongodbFormats[format]
+func (db MongoDB) DumpExtension(format sqlformat.Format) string {
+	ext, ok := db.Formats()[format]
 	if ok {
 		return ext
 	}

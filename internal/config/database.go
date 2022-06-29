@@ -28,6 +28,7 @@ type Databaser interface {
 	DumpCommand(conf Dump) *command.Builder
 	RestoreCommand(conf Restore, inputFormat sqlformat.Format) *command.Builder
 
+	Formats() map[sqlformat.Format]string
 	FormatFromFilename(filename string) sqlformat.Format
 	DumpExtension(format sqlformat.Format) string
 }

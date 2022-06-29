@@ -60,7 +60,17 @@ func validArgs(cmd *cobra.Command, args []string, toComplete string) ([]string, 
 	if len(args) != 0 {
 		return nil, cobra.ShellCompDirectiveNoFileComp
 	}
-	return []string{"sql", "sql.gz", "dmp", "archive", "archive.gz"}, cobra.ShellCompDirectiveFilterFileExt
+
+	err := preRun(cmd, args)
+	if err != nil {
+		return []string{"sql", "sql.gz", "dmp", "archive", "archive.gz"}, cobra.ShellCompDirectiveFilterFileExt
+	}
+
+	var exts []string
+	for _, ext := range conf.Dialect.Formats() {
+		exts = append(exts, ext[1:])
+	}
+	return exts, cobra.ShellCompDirectiveFilterFileExt
 }
 
 func preRun(cmd *cobra.Command, args []string) (err error) {

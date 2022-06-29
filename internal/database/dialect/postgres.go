@@ -180,14 +180,16 @@ func (Postgres) RestoreCommand(conf config.Restore, inputFormat sqlformat.Format
 	return cmd
 }
 
-var postgresFormats = map[sqlformat.Format]string{
-	sqlformat.Plain:  ".sql",
-	sqlformat.Gzip:   ".sql.gz",
-	sqlformat.Custom: ".dmp",
+func (Postgres) Formats() map[sqlformat.Format]string {
+	return map[sqlformat.Format]string{
+		sqlformat.Plain:  ".sql",
+		sqlformat.Gzip:   ".sql.gz",
+		sqlformat.Custom: ".dmp",
+	}
 }
 
-func (Postgres) FormatFromFilename(filename string) sqlformat.Format {
-	for format, ext := range postgresFormats {
+func (db Postgres) FormatFromFilename(filename string) sqlformat.Format {
+	for format, ext := range db.Formats() {
 		if strings.HasSuffix(filename, ext) {
 			return format
 		}
@@ -195,8 +197,8 @@ func (Postgres) FormatFromFilename(filename string) sqlformat.Format {
 	return sqlformat.Unknown
 }
 
-func (Postgres) DumpExtension(format sqlformat.Format) string {
-	ext, ok := postgresFormats[format]
+func (db Postgres) DumpExtension(format sqlformat.Format) string {
+	ext, ok := db.Formats()[format]
 	if ok {
 		return ext
 	}
