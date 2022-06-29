@@ -110,8 +110,10 @@ func run(cmd *cobra.Command, args []string) (err error) {
 			{"Port", conf.LocalPort},
 			{"Username", conf.Username},
 			{"Password", conf.Password},
-			{"Database", conf.Database},
 		})
+		if conf.Database != "" {
+			t.AppendRow(table.Row{"Database", conf.Database})
+		}
 		t.SetStyle(table.StyleLight)
 		t.Render()
 		fmt.Println(`Tip: If you are connecting from a Docker container, try setting the hostname to "host.docker.internal"`)
