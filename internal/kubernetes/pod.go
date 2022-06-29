@@ -38,9 +38,9 @@ func (client KubeClient) Exec(pod v1.Pod, cmd string, stdin io.Reader, stdout, s
 		SubResource("exec").
 		VersionedParams(&v1.PodExecOptions{
 			Command: []string{"sh", "-c", cmd},
-			Stdin:   true,
-			Stdout:  true,
-			Stderr:  true,
+			Stdin:   stdin != nil,
+			Stdout:  stdout != nil,
+			Stderr:  stderr != nil,
 			TTY:     tty,
 		}, scheme.ParameterCodec)
 	exec, err := remotecommand.NewSPDYExecutor(client.ClientConfig, "POST", req.URL())
