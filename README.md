@@ -1,10 +1,10 @@
-# Kubedb
+# KubeDB
 
-Kubedb is a command to interact with databases running in Kubernetes.
+KubeDB is a command to interact with databases running in Kubernetes.
 It supports dumping, restoring, and dropping into a database shell.
 Optional flags are available to set running database parameters
 (see each command's help entry for more details).
-If no flags are given, kubedb will inspect the pod configuration and attempt
+If no flags are given, KubeDB will inspect the pod configuration and attempt
 to configure itself via the Kubernetes EnvVar API.
 
 ## Installation
@@ -39,7 +39,7 @@ to configure itself via the Kubernetes EnvVar API.
    sudo apt update
    ```
 
-4. Install kubedb
+4. Install KubeDB
    ```shell
    sudo apt install kubedb
    ```
@@ -64,13 +64,13 @@ to configure itself via the Kubernetes EnvVar API.
    gpgcheck=0
    ```
 
-3. Install kubedb
+3. Install KubeDB
    ```shell
    sudo yum install kubedb
    ```
 </details>
 
-Kubedb requires an existing Kubeconfig. See below for details. 
+KubeDB requires an existing Kubeconfig. See below for details.
 
 ## Usage
 
@@ -103,4 +103,4 @@ Kubedb requires an existing Kubeconfig. See below for details.
    ```
 
    All of your current namespaces should show up in your shell.
-   Many of the kubedb flags support tab completion.
+   Many of the KubeDB flags support tab completion.
