@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"github.com/clevyr/kubedb/cmd"
 	"github.com/spf13/cobra/doc"
 	flag "github.com/spf13/pflag"
@@ -17,26 +18,20 @@ func main() {
 	var err error
 
 	output = filepath.Join(".", filepath.Join("/", output))
-	log.Println(`generating docs in "` + output + `"`)
 
-	log.Println("removing existing directory")
 	err = os.RemoveAll(output)
 	if err != nil {
-		log.Fatal(err)
+		log.Fatal(fmt.Errorf("failed to remove existing dia: %w", err))
 	}
 
-	log.Println("making directory")
 	err = os.MkdirAll(output, 0755)
 	if err != nil {
-		log.Fatal(err)
+		log.Fatal(fmt.Errorf("failed to mkdir: %w", err))
 	}
 
-	log.Println("generating markdown")
 	rootCmd := cmd.Command
 	err = doc.GenMarkdownTree(rootCmd, output)
 	if err != nil {
-		log.Fatal(err)
+		log.Fatal(fmt.Errorf("failed to generate markdown: %w", err))
 	}
-
-	log.Println("finished")
 }
