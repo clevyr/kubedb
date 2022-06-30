@@ -26,22 +26,22 @@ to configure itself via the Kubernetes EnvVar API.
 
 1. If you don't have it already, install the `ca-certificates` package
    ```shell
-   apt install ca-certificates
+   sudo apt install ca-certificates
    ```
 
-2. Add Clevyr's apt repository to `/etc/apt/sources.list.d/clevyr.list`
+2. Add Clevyr's apt repository
    ```
-   deb [trusted=yes] https://apt.clevyr.com /
+   echo 'deb [trusted=yes] https://apt.clevyr.com /' | sudo tee /etc/apt/sources.list.d/clevyr.list
    ```
 
 3. Update apt repositories
    ```shell
-   apt update
+   sudo apt update
    ```
 
-4. Install yampl
+4. Install kubedb
    ```shell
-   apt install kubedb
+   sudo apt install kubedb
    ```
 </details>
 
@@ -52,7 +52,7 @@ to configure itself via the Kubernetes EnvVar API.
 
 1. If you don't have it already, install the `ca-certificates` package
    ```shell
-   yum install ca-certificates
+   sudo yum install ca-certificates
    ```
 
 2. Add Clevyr's rpm repository to `/etc/yum.repos.d/clevyr.repo`
@@ -64,9 +64,9 @@ to configure itself via the Kubernetes EnvVar API.
    gpgcheck=0
    ```
 
-3. Install yampl
+3. Install kubedb
    ```shell
-   yum install kubedb
+   sudo yum install kubedb
    ```
 </details>
 
