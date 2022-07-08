@@ -71,9 +71,13 @@ func (client KubeClient) FilterPodList(pods *v1.PodList, queries []LabelQueryabl
 		var p []v1.Pod
 		p, err = query.FindPods(pods)
 		if errors.Is(err, ErrPodNotFound) {
-			log.Trace(err)
+			log.WithField("query", query).Trace(err)
 			continue
 		}
+		log.WithFields(log.Fields{
+			"query": query,
+			"count": len(p),
+		}).Trace("query returned podlist")
 		foundPods = append(foundPods, p...)
 	}
 

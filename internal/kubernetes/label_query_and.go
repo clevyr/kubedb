@@ -1,7 +1,6 @@
 package kubernetes
 
 import (
-	"fmt"
 	v1 "k8s.io/api/core/v1"
 )
 
@@ -24,7 +23,7 @@ func (queries LabelQueryAnd) FindPods(list *v1.PodList) (pods []v1.Pod, err erro
 	}
 
 	if len(pods) == 0 {
-		err = fmt.Errorf("%w: %v", ErrPodNotFound, queries)
+		err = ErrPodNotFound
 	}
 	return pods, err
 }
