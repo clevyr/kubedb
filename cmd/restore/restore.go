@@ -1,7 +1,6 @@
 package restore
 
 import (
-	"compress/gzip"
 	"errors"
 	"fmt"
 	"github.com/AlecAivazis/survey/v2"
@@ -11,6 +10,7 @@ import (
 	"github.com/clevyr/kubedb/internal/database/sqlformat"
 	"github.com/clevyr/kubedb/internal/progressbar"
 	"github.com/clevyr/kubedb/internal/util"
+	gzip "github.com/klauspost/pgzip"
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 	"io"

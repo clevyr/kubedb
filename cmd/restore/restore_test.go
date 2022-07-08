@@ -2,11 +2,11 @@ package restore
 
 import (
 	"bytes"
-	"compress/gzip"
 	"github.com/clevyr/kubedb/internal/command"
 	"github.com/clevyr/kubedb/internal/config"
 	"github.com/clevyr/kubedb/internal/database/dialect"
 	"github.com/clevyr/kubedb/internal/database/sqlformat"
+	gzip "github.com/klauspost/pgzip"
 	"io"
 	"reflect"
 	"strings"
