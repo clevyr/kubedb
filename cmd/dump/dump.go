@@ -230,5 +230,6 @@ func buildCommand(db config.Databaser, conf config.Dump) *command.Builder {
 	if conf.Format != sqlformat.Custom {
 		cmd.Push(command.Pipe, "gzip", "--force")
 	}
+	log.WithField("cmd", cmd).Trace("finished building command")
 	return cmd
 }

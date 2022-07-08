@@ -64,5 +64,6 @@ func buildCommand(db config.Databaser, conf config.Exec, args []string) *command
 	for _, arg := range args {
 		cmd.Push(arg)
 	}
+	log.WithField("cmd", cmd).Trace("finished building command")
 	return cmd
 }

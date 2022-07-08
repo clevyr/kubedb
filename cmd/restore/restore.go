@@ -204,8 +204,10 @@ func run(cmd *cobra.Command, args []string) (err error) {
 }
 
 func buildCommand(conf config.Restore, inputFormat sqlformat.Format) *command.Builder {
-	return conf.Dialect.RestoreCommand(conf, inputFormat).
+	cmd := conf.Dialect.RestoreCommand(conf, inputFormat).
 		Unshift("gunzip", "--force", command.Pipe)
+	log.WithField("cmd", cmd).Trace("finished building command")
+	return cmd
 }
 
 func gzipCopy(w io.Writer, r io.Reader) (err error) {
