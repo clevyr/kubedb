@@ -10,19 +10,20 @@ import (
 )
 
 func New(max int64, label string) *progressbar.ProgressBar {
-	if !terminal.IsTTY() {
-		return progressbar.NewOptions64(
-			max,
-			progressbar.OptionSetDescription(label),
-			progressbar.OptionSetWriter(os.Stderr),
-			progressbar.OptionShowBytes(true),
-			progressbar.OptionSetWidth(10),
-			progressbar.OptionThrottle(2*time.Second),
-			progressbar.OptionShowCount(),
-			progressbar.OptionSpinnerType(14),
-		)
+	if terminal.IsTTY() {
+		return progressbar.DefaultBytes(max, label)
 	}
-	return progressbar.DefaultBytes(max, label)
+
+	return progressbar.NewOptions64(
+		max,
+		progressbar.OptionSetDescription(label),
+		progressbar.OptionSetWriter(os.Stderr),
+		progressbar.OptionShowBytes(true),
+		progressbar.OptionSetWidth(10),
+		progressbar.OptionThrottle(2*time.Second),
+		progressbar.OptionShowCount(),
+		progressbar.OptionSpinnerType(14),
+	)
 }
 
 func NewBarSafeLogger(w io.Writer, bar *progressbar.ProgressBar) *BarSafeLogger {
