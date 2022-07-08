@@ -46,7 +46,7 @@ func DefaultSetup(cmd *cobra.Command, conf *config.Global) (err error) {
 		if err != nil {
 			return err
 		}
-		log.WithField("dialect", conf.Dialect.Name()).Debug("detected database")
+		log.WithField("dialect", conf.Dialect.Name()).Debug("detected dialect")
 	} else {
 		// Configure via flag
 		conf.Dialect, err = database.New(dialectFlag)
