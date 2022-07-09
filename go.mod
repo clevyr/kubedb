@@ -92,3 +92,5 @@ require (
 	sigs.k8s.io/structured-merge-diff/v4 v4.2.1 // indirect
 	sigs.k8s.io/yaml v1.3.0 // indirect
 )
+
+replace github.com/schollz/progressbar/v3 => github.com/gabe565/progressbar/v3 v3.8.7-0.20220709065055-f1781be740de
