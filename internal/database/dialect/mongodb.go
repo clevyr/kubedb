@@ -71,6 +71,7 @@ func (MongoDB) ExecCommand(conf config.Exec) *command.Builder {
 		"--host=127.0.0.1",
 		"--username="+conf.Username,
 		"--password="+conf.Password,
+		"--authenticationDatabase=admin",
 	)
 	if conf.DisableHeaders {
 		cmd.Push("--quiet")
@@ -91,6 +92,7 @@ func (MongoDB) DumpCommand(conf config.Dump) *command.Builder {
 		"--host=127.0.0.1",
 		"--username="+conf.Username,
 		"--password="+conf.Password,
+		"--authenticationDatabase=admin",
 	)
 	if conf.Database != "" {
 		cmd.Push("--db=" + conf.Database)
@@ -114,6 +116,7 @@ func (MongoDB) RestoreCommand(conf config.Restore, inputFormat sqlformat.Format)
 		"--host=127.0.0.1",
 		"--username="+conf.Username,
 		"--password="+conf.Password,
+		"--authenticationDatabase=admin",
 	)
 	if conf.Database != "" {
 		if conf.Clean {

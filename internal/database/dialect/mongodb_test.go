@@ -111,27 +111,27 @@ func TestMongoDB_DumpCommand(t *testing.T) {
 		{
 			"default",
 			args{config.Dump{Global: config.Global{Database: "d", Username: "u", Password: "p"}}},
-			command.NewBuilder("mongodump", "--archive", "--host=127.0.0.1", "--username=u", "--password=p", "--db=d"),
+			command.NewBuilder("mongodump", "--archive", "--host=127.0.0.1", "--username=u", "--password=p", "--authenticationDatabase=admin", "--db=d"),
 		},
 		{
 			"clean",
 			args{config.Dump{Clean: true, Global: config.Global{Database: "d", Username: "u", Password: "p"}}},
-			command.NewBuilder("mongodump", "--archive", "--host=127.0.0.1", "--username=u", "--password=p", "--db=d"),
+			command.NewBuilder("mongodump", "--archive", "--host=127.0.0.1", "--username=u", "--password=p", "--authenticationDatabase=admin", "--db=d"),
 		},
 		{
 			"tables",
 			args{config.Dump{Tables: []string{"table1"}, Global: config.Global{Database: "d", Username: "u", Password: "p"}}},
-			command.NewBuilder("mongodump", "--archive", "--host=127.0.0.1", "--username=u", "--password=p", "--db=d", "--collection=table1"),
+			command.NewBuilder("mongodump", "--archive", "--host=127.0.0.1", "--username=u", "--password=p", "--authenticationDatabase=admin", "--db=d", "--collection=table1"),
 		},
 		{
 			"exclude-table",
 			args{config.Dump{ExcludeTable: []string{"table1", "table2"}, Global: config.Global{Database: "d", Username: "u", Password: "p"}}},
-			command.NewBuilder("mongodump", "--archive", "--host=127.0.0.1", "--username=u", "--password=p", "--db=d", "--excludeCollection=table1", "--excludeCollection=table2"),
+			command.NewBuilder("mongodump", "--archive", "--host=127.0.0.1", "--username=u", "--password=p", "--authenticationDatabase=admin", "--db=d", "--excludeCollection=table1", "--excludeCollection=table2"),
 		},
 		{
 			"quiet",
 			args{config.Dump{Global: config.Global{Database: "d", Username: "u", Password: "p", Quiet: true}}},
-			command.NewBuilder("mongodump", "--archive", "--host=127.0.0.1", "--username=u", "--password=p", "--db=d", "--quiet"),
+			command.NewBuilder("mongodump", "--archive", "--host=127.0.0.1", "--username=u", "--password=p", "--authenticationDatabase=admin", "--db=d", "--quiet"),
 		},
 	}
 	for _, tt := range tests {
@@ -156,17 +156,17 @@ func TestMongoDB_ExecCommand(t *testing.T) {
 		{
 			"default",
 			args{config.Exec{Global: config.Global{Database: "d", Username: "u", Password: "p"}}},
-			command.NewBuilder("mongosh", "--host=127.0.0.1", "--username=u", "--password=p", "d"),
+			command.NewBuilder("mongosh", "--host=127.0.0.1", "--username=u", "--password=p", "--authenticationDatabase=admin", "d"),
 		},
 		{
 			"disable-headers",
 			args{config.Exec{DisableHeaders: true, Global: config.Global{Database: "d", Username: "u", Password: "p"}}},
-			command.NewBuilder("mongosh", "--host=127.0.0.1", "--username=u", "--password=p", "--quiet", "d"),
+			command.NewBuilder("mongosh", "--host=127.0.0.1", "--username=u", "--password=p", "--authenticationDatabase=admin", "--quiet", "d"),
 		},
 		{
 			"command",
 			args{config.Exec{Command: "show databases", Global: config.Global{Database: "d", Username: "u", Password: "p"}}},
-			command.NewBuilder("mongosh", "--host=127.0.0.1", "--username=u", "--password=p", "--eval=show databases", "d"),
+			command.NewBuilder("mongosh", "--host=127.0.0.1", "--username=u", "--password=p", "--authenticationDatabase=admin", "--eval=show databases", "d"),
 		},
 	}
 	for _, tt := range tests {
@@ -311,27 +311,27 @@ func TestMongoDB_RestoreCommand(t *testing.T) {
 		{
 			"gzip",
 			args{config.Restore{Global: config.Global{Database: "d", Username: "u", Password: "p"}}, sqlformat.Gzip},
-			command.NewBuilder("mongorestore", "--archive", "--host=127.0.0.1", "--username=u", "--password=p", "--db=d"),
+			command.NewBuilder("mongorestore", "--archive", "--host=127.0.0.1", "--username=u", "--password=p", "--authenticationDatabase=admin", "--db=d"),
 		},
 		{
 			"plain",
 			args{config.Restore{Global: config.Global{Database: "d", Username: "u", Password: "p"}}, sqlformat.Plain},
-			command.NewBuilder("mongorestore", "--archive", "--host=127.0.0.1", "--username=u", "--password=p", "--db=d"),
+			command.NewBuilder("mongorestore", "--archive", "--host=127.0.0.1", "--username=u", "--password=p", "--authenticationDatabase=admin", "--db=d"),
 		},
 		{
 			"custom",
 			args{config.Restore{Global: config.Global{Database: "d", Username: "u", Password: "p"}}, sqlformat.Custom},
-			command.NewBuilder("mongorestore", "--archive", "--host=127.0.0.1", "--username=u", "--password=p", "--db=d"),
+			command.NewBuilder("mongorestore", "--archive", "--host=127.0.0.1", "--username=u", "--password=p", "--authenticationDatabase=admin", "--db=d"),
 		},
 		{
 			"clean",
 			args{config.Restore{Clean: true, Global: config.Global{Database: "d", Username: "u", Password: "p"}}, sqlformat.Gzip},
-			command.NewBuilder("mongorestore", "--archive", "--host=127.0.0.1", "--username=u", "--password=p", "--drop", "--db=d"),
+			command.NewBuilder("mongorestore", "--archive", "--host=127.0.0.1", "--username=u", "--password=p", "--authenticationDatabase=admin", "--drop", "--db=d"),
 		},
 		{
 			"quiet",
 			args{config.Restore{Global: config.Global{Database: "d", Username: "u", Password: "p", Quiet: true}}, sqlformat.Gzip},
-			command.NewBuilder("mongorestore", "--archive", "--host=127.0.0.1", "--username=u", "--password=p", "--db=d", "--quiet"),
+			command.NewBuilder("mongorestore", "--archive", "--host=127.0.0.1", "--username=u", "--password=p", "--authenticationDatabase=admin", "--db=d", "--quiet"),
 		},
 	}
 	for _, tt := range tests {
