@@ -42,10 +42,11 @@ func run(cmd *cobra.Command, args []string) (err error) {
 		sizeQueue = t.MonitorSize(t.GetSize())
 	}
 
+	podCmd := buildCommand(conf.Dialect, conf, args)
 	return t.Safe(func() error {
 		return conf.Client.Exec(
 			conf.Pod,
-			buildCommand(conf.Dialect, conf, args).String(),
+			podCmd.String(),
 			t.In,
 			t.Out,
 			os.Stderr,
@@ -55,14 +56,14 @@ func run(cmd *cobra.Command, args []string) (err error) {
 	})
 }
 
-func buildCommand(db config.Databaser, conf config.Exec, args []string) *command.Builder {
+func buildCommand(db config.Databaser, conf config.Exec, args []string) (cmd *command.Builder) {
 	if len(args) == 0 {
-		return db.ExecCommand(conf)
-	}
-
-	cmd := command.NewBuilder("exec")
-	for _, arg := range args {
-		cmd.Push(arg)
+		cmd = db.ExecCommand(conf)
+	} else {
+		cmd = command.NewBuilder("exec")
+		for _, arg := range args {
+			cmd.Push(arg)
+		}
 	}
 	log.WithField("cmd", cmd).Trace("finished building command")
 	return cmd
