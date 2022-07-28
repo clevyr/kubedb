@@ -1,7 +1,7 @@
 package config
 
 type PortForward struct {
-	Global
+	Global    `mapstructure:",squash"`
 	Addresses []string
 	LocalPort uint16
 }

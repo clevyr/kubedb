@@ -28,7 +28,7 @@ func TestFilename_Generate(t *testing.T) {
 			}
 			got, err := vars.Generate()
 			if (err != nil) != tt.wantErr {
-				t.Errorf("Generate() error = %v, wantErr %v", err, tt.wantErr)
+				t.Errorf("Generate() err = %v, wantErr %v", err, tt.wantErr)
 				return
 			}
 			if got != tt.want {
@@ -88,7 +88,7 @@ func Test_generate(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			got, err := generate(tt.args.vars, tt.args.tmpl)
 			if (err != nil) != tt.wantErr {
-				t.Errorf("generate() error = %v, wantErr %v", err, tt.wantErr)
+				t.Errorf("generate() err = %v, wantErr %v", err, tt.wantErr)
 				return
 			}
 			if got != tt.want {

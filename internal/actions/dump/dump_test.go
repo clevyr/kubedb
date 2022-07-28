@@ -14,8 +14,7 @@ func Test_buildCommand(t *testing.T) {
 	mysql_pwd := command.NewEnv("MYSQL_PWD", "")
 
 	type args struct {
-		db   config.Databaser
-		conf config.Dump
+		conf Dump
 	}
 	tests := []struct {
 		name string
@@ -24,28 +23,28 @@ func Test_buildCommand(t *testing.T) {
 	}{
 		{
 			"postgres-gzip",
-			args{dialect.Postgres{}, config.Dump{Global: config.Global{Database: "d", Username: "u"}}},
+			args{Dump{Dump: config.Dump{Global: config.Global{Dialect: dialect.Postgres{}, Database: "d", Username: "u"}}}},
 			command.NewBuilder(pgpassword, "pg_dump", "--host=127.0.0.1", "--username=u", "--dbname=d", "--verbose", command.Pipe, "gzip", "--force"),
 		},
 		{
 			"postgres-plain",
-			args{dialect.Postgres{}, config.Dump{Files: config.Files{Format: sqlformat.Plain}, Global: config.Global{Database: "d", Username: "u"}}},
+			args{Dump{Dump: config.Dump{Files: config.Files{Format: sqlformat.Plain}, Global: config.Global{Dialect: dialect.Postgres{}, Database: "d", Username: "u"}}}},
 			command.NewBuilder(pgpassword, "pg_dump", "--host=127.0.0.1", "--username=u", "--dbname=d", "--verbose", command.Pipe, "gzip", "--force"),
 		},
 		{
 			"postgres-custom",
-			args{dialect.Postgres{}, config.Dump{Files: config.Files{Format: sqlformat.Custom}, Global: config.Global{Database: "d", Username: "u"}}},
+			args{Dump{Dump: config.Dump{Files: config.Files{Format: sqlformat.Custom}, Global: config.Global{Dialect: dialect.Postgres{}, Database: "d", Username: "u"}}}},
 			command.NewBuilder(pgpassword, "pg_dump", "--host=127.0.0.1", "--username=u", "--dbname=d", "--format=c", "--verbose"),
 		},
 		{
 			"mariadb-gzip",
-			args{dialect.MariaDB{}, config.Dump{Files: config.Files{Format: sqlformat.Gzip}, Global: config.Global{Database: "d", Username: "u"}}},
+			args{Dump{Dump: config.Dump{Files: config.Files{Format: sqlformat.Gzip}, Global: config.Global{Dialect: dialect.MariaDB{}, Database: "d", Username: "u"}}}},
 			command.NewBuilder(mysql_pwd, "mysqldump", "--host=127.0.0.1", "--user=u", "d", "--verbose", command.Pipe, "gzip", "--force"),
 		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if got := buildCommand(tt.args.db, tt.args.conf); !reflect.DeepEqual(got, tt.want) {
+			if got := tt.args.conf.buildCommand(); !reflect.DeepEqual(got, tt.want) {
 				t.Errorf("buildCommand() = %v, want %v", got, tt.want)
 			}
 		})

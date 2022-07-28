@@ -27,16 +27,20 @@ func (client KubeClient) Secrets() v1.SecretInterface {
 	return client.ClientSet.CoreV1().Secrets(client.Namespace)
 }
 
-func NewClient(kubeconfigPath, context, namespace string) (config KubeClient, err error) {
+func NewConfigLoader(kubeconfigPath, context string) clientcmd.ClientConfig {
 	var overrides *clientcmd.ConfigOverrides
 	if context != "" {
 		overrides = &clientcmd.ConfigOverrides{CurrentContext: context}
 	}
 
-	configLoader := clientcmd.NewNonInteractiveDeferredLoadingClientConfig(
+	return clientcmd.NewNonInteractiveDeferredLoadingClientConfig(
 		&clientcmd.ClientConfigLoadingRules{ExplicitPath: kubeconfigPath},
 		overrides,
 	)
+}
+
+func NewClient(kubeconfigPath, context, namespace string) (config KubeClient, err error) {
+	configLoader := NewConfigLoader(kubeconfigPath, context)
 
 	config.ClientConfig, err = configLoader.ClientConfig()
 	if err != nil {

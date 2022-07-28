@@ -1,7 +1,7 @@
 package config
 
 type Dump struct {
-	Global
+	Global `mapstructure:",squash"`
 	Files
 	Directory        string
 	IfExists         bool
@@ -10,4 +10,5 @@ type Dump struct {
 	Tables           []string
 	ExcludeTable     []string
 	ExcludeTableData []string
+	GitHubActions    bool
 }

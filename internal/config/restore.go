@@ -1,7 +1,7 @@
 package config
 
 type Restore struct {
-	Global
+	Global `mapstructure:",squash"`
 	Files
 	SingleTransaction bool
 	Clean             bool

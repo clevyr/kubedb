@@ -17,11 +17,12 @@ import (
 func DefaultSetup(cmd *cobra.Command, conf *config.Global) (err error) {
 	cmd.SilenceUsage = true
 
-	conf.Client, err = kubernetes.NewClientFromCmd(cmd)
+	conf.Client, err = kubernetes.NewClient(conf.Kubeconfig, conf.Context, conf.Namespace)
 	if err != nil {
 		return err
 	}
 	log.WithField("namespace", conf.Client.Namespace).Debug("created kube client")
+	conf.Namespace = conf.Client.Namespace
 
 	access := config.NewNamespaceRegexp(cmd.Annotations["access"])
 	if !access.Match(conf.Client.Namespace) {

@@ -3,6 +3,7 @@ package flags
 import (
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
+	"github.com/spf13/viper"
 )
 
 func Quiet(cmd *cobra.Command, p *bool) {
@@ -27,6 +28,9 @@ func LogLevel(cmd *cobra.Command) {
 	if err != nil {
 		panic(err)
 	}
+	if err := viper.BindPFlag("log-level", cmd.PersistentFlags().Lookup("log-level")); err != nil {
+		panic(err)
+	}
 }
 
 func LogFormat(cmd *cobra.Command) {
@@ -37,6 +41,9 @@ func LogFormat(cmd *cobra.Command) {
 			return []string{"text", "json"}, cobra.ShellCompDirectiveNoFileComp
 		})
 	if err != nil {
+		panic(err)
+	}
+	if err := viper.BindPFlag("log-format", cmd.PersistentFlags().Lookup("log-format")); err != nil {
 		panic(err)
 	}
 }

@@ -6,9 +6,10 @@ import (
 )
 
 type Global struct {
+	Kubernetes
 	Client   kubernetes.KubeClient
-	Dialect  Databaser
-	Pod      v1.Pod
+	Dialect  Databaser `mapstructure:"-"`
+	Pod      v1.Pod    `mapstructure:"-"`
 	Database string
 	Username string
 	Password string

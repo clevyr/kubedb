@@ -86,7 +86,7 @@ func Test_gzipCopy(t *testing.T) {
 			w := &bytes.Buffer{}
 			err := gzipCopy(w, tt.args.r)
 			if (err != nil) != tt.wantErr {
-				t.Errorf("gzipCopy() error = %v, wantErr %v", err, tt.wantErr)
+				t.Errorf("gzipCopy() err = %v, wantErr %v", err, tt.wantErr)
 				return
 			}
 			if gotW := w.String(); gotW != tt.wantW {

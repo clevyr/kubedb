@@ -1,7 +1,7 @@
 package config
 
 type Exec struct {
-	Global
+	Global         `mapstructure:",squash"`
 	DisableHeaders bool
 	Command        string
 }

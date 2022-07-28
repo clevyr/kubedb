@@ -4,21 +4,14 @@ import (
 	"errors"
 	"fmt"
 	"github.com/AlecAivazis/survey/v2"
-	"github.com/clevyr/kubedb/internal/command"
-	"github.com/clevyr/kubedb/internal/config"
+	"github.com/clevyr/kubedb/internal/actions/restore"
 	"github.com/clevyr/kubedb/internal/config/flags"
-	"github.com/clevyr/kubedb/internal/database/sqlformat"
-	"github.com/clevyr/kubedb/internal/progressbar"
 	"github.com/clevyr/kubedb/internal/util"
-	gzip "github.com/klauspost/pgzip"
-	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
-	"io"
+	"github.com/spf13/viper"
 	_ "k8s.io/client-go/plugin/pkg/client/auth"
 	"k8s.io/kubectl/pkg/util/term"
 	"os"
-	"strings"
-	"time"
 )
 
 var Command = &cobra.Command{
@@ -39,17 +32,15 @@ Supported Input Filetypes:
 	RunE:    run,
 }
 
-var (
-	conf config.Restore
-)
+var action restore.Restore
 
 func init() {
-	flags.Format(Command, &conf.Format)
-	flags.SingleTransaction(Command, &conf.SingleTransaction)
-	flags.Clean(Command, &conf.Clean)
-	flags.NoOwner(Command, &conf.NoOwner)
-	flags.Force(Command, &conf.Force)
-	flags.Quiet(Command, &conf.Quiet)
+	flags.Format(Command, &action.Format)
+	flags.SingleTransaction(Command, &action.SingleTransaction)
+	flags.Clean(Command, &action.Clean)
+	flags.NoOwner(Command, &action.NoOwner)
+	flags.Force(Command, &action.Force)
+	flags.Quiet(Command, &action.Quiet)
 }
 
 func validArgs(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
@@ -63,57 +54,39 @@ func validArgs(cmd *cobra.Command, args []string, toComplete string) ([]string, 
 	}
 
 	var exts []string
-	for _, ext := range conf.Dialect.Formats() {
+	for _, ext := range action.Dialect.Formats() {
 		exts = append(exts, ext[1:])
 	}
 	return exts, cobra.ShellCompDirectiveFilterFileExt
 }
 
 func preRun(cmd *cobra.Command, args []string) (err error) {
-	if len(args) > 0 {
-		conf.Filename = args[0]
+	if err := viper.Unmarshal(&action); err != nil {
+		return err
 	}
 
-	if err := util.DefaultSetup(cmd, &conf.Global); err != nil {
+	if len(args) > 0 {
+		action.Filename = args[0]
+	}
+
+	if err := util.DefaultSetup(cmd, &action.Global); err != nil {
 		return err
 	}
 
 	if !cmd.Flags().Lookup("format").Changed {
-		conf.Format = conf.Dialect.FormatFromFilename(conf.Filename)
+		action.Format = action.Dialect.FormatFromFilename(action.Filename)
 	}
 
 	return nil
 }
 
 func run(cmd *cobra.Command, args []string) (err error) {
-	var f io.ReadCloser
-	switch conf.Filename {
-	case "-":
-		f = os.Stdin
-	default:
-		f, err = os.Open(conf.Filename)
-		if err != nil {
-			return err
-		}
-		defer func(f io.ReadCloser) {
-			_ = f.Close()
-		}(f)
-	}
-
-	pr, pw := io.Pipe()
-
-	log.WithFields(log.Fields{
-		"file":      conf.Filename,
-		"namespace": conf.Client.Namespace,
-		"pod":       conf.Pod.Name,
-	}).Info("ready to restore database")
-
-	if !conf.Force {
+	if !action.Force {
 		tty := term.TTY{In: os.Stdin}.IsTerminalIn()
 		if tty {
 			var response bool
-			err = survey.AskOne(&survey.Confirm{
-				Message: "Restore to " + conf.Pod.Name + " in " + conf.Client.Namespace + "?",
+			err := survey.AskOne(&survey.Confirm{
+				Message: "Restore to " + action.Pod.Name + " in " + action.Client.Namespace + "?",
 			}, &response)
 			if err != nil {
 				return err
@@ -127,125 +100,5 @@ func run(cmd *cobra.Command, args []string) (err error) {
 		}
 	}
 
-	startTime := time.Now()
-
-	bar := progressbar.New(-1, "uploading")
-	errLog := progressbar.NewBarSafeLogger(os.Stderr, bar)
-	outLog := progressbar.NewBarSafeLogger(os.Stdout, bar)
-	log.SetOutput(errLog)
-
-	ch := make(chan error, 1)
-	go runInDatabasePod(pr, outLog, errLog, ch, conf.Format)
-
-	w := io.MultiWriter(pw, bar)
-
-	if conf.Clean && conf.Format != sqlformat.Custom {
-		dropQuery := conf.Dialect.DropDatabaseQuery(conf.Database)
-		if dropQuery != "" {
-			log.Info("cleaning existing data")
-			err = gzipCopy(w, strings.NewReader(dropQuery))
-			if err != nil {
-				return err
-			}
-		}
-	}
-
-	log.Info("restoring database")
-	switch conf.Format {
-	case sqlformat.Gzip, sqlformat.Custom, sqlformat.Unknown:
-		_, err = io.Copy(w, f)
-		if err != nil {
-			return err
-		}
-	case sqlformat.Plain:
-		err = gzipCopy(w, f)
-		if err != nil {
-			return err
-		}
-	}
-
-	analyzeQuery := conf.Dialect.AnalyzeQuery()
-	if analyzeQuery != "" {
-		if conf.Format == sqlformat.Custom {
-			_ = pw.Close()
-
-			err = <-ch
-			if err != nil {
-				return err
-			}
-
-			pr, pw = io.Pipe()
-			w = io.MultiWriter(pw, bar)
-			go runInDatabasePod(pr, outLog, errLog, ch, sqlformat.Gzip)
-		}
-
-		log.Info("running analyze query")
-		err = gzipCopy(w, strings.NewReader(analyzeQuery))
-		if err != nil {
-			return err
-		}
-	}
-
-	_ = bar.Finish()
-	log.SetOutput(os.Stderr)
-
-	_ = pw.Close()
-
-	err = <-ch
-	if err != nil {
-		return err
-	}
-
-	log.WithFields(log.Fields{
-		"file": conf.Filename,
-		"in":   time.Since(startTime).Truncate(10 * time.Millisecond),
-	}).Info("restore complete")
-	return nil
-}
-
-func buildCommand(conf config.Restore, inputFormat sqlformat.Format) *command.Builder {
-	cmd := conf.Dialect.RestoreCommand(conf, inputFormat).
-		Unshift("gunzip", "--force", command.Pipe)
-	log.WithField("cmd", cmd).Trace("finished building command")
-	return cmd
-}
-
-func gzipCopy(w io.Writer, r io.Reader) (err error) {
-	gzw := gzip.NewWriter(w)
-
-	_, err = io.Copy(gzw, r)
-	if err != nil {
-		return err
-	}
-
-	err = gzw.Close()
-	if err != nil {
-		return err
-	}
-
-	return nil
-}
-
-func runInDatabasePod(r *io.PipeReader, stdout, stderr io.Writer, ch chan error, inputFormat sqlformat.Format) {
-	var err error
-	defer func(pr *io.PipeReader) {
-		_ = pr.Close()
-	}(r)
-
-	err = conf.Client.Exec(
-		conf.Pod,
-		buildCommand(conf, inputFormat).String(),
-		r,
-		stdout,
-		stderr,
-		false,
-		nil,
-	)
-	if err != nil {
-		_ = r.CloseWithError(err)
-		ch <- err
-		return
-	}
-
-	ch <- nil
+	return action.Run()
 }

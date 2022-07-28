@@ -1,6 +1,9 @@
 package flags
 
-import "github.com/spf13/cobra"
+import (
+	"github.com/spf13/cobra"
+	"github.com/spf13/viper"
+)
 
 func Directory(cmd *cobra.Command, p *string) {
 	cmd.Flags().StringVarP(p, "directory", "C", ".", "directory to dump to")
@@ -10,6 +13,10 @@ func Directory(cmd *cobra.Command, p *string) {
 			return nil, cobra.ShellCompDirectiveFilterDirs
 		})
 	if err != nil {
+		panic(err)
+	}
+
+	if err := viper.BindPFlag("directory", cmd.Flags().Lookup("directory")); err != nil {
 		panic(err)
 	}
 }

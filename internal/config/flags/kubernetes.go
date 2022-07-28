@@ -5,12 +5,16 @@ import (
 	"github.com/clevyr/kubedb/internal/config"
 	"github.com/clevyr/kubedb/internal/kubernetes"
 	"github.com/spf13/cobra"
+	"github.com/spf13/viper"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"path/filepath"
 )
 
 func Kubeconfig(cmd *cobra.Command) {
 	cmd.PersistentFlags().String("kubeconfig", filepath.Join("$HOME", ".kube", "config"), "absolute path to the kubeconfig file")
+	if err := viper.BindPFlag("kubernetes.kubeconfig", cmd.PersistentFlags().Lookup("kubeconfig")); err != nil {
+		panic(err)
+	}
 }
 
 func Context(cmd *cobra.Command) {
@@ -33,6 +37,9 @@ func Context(cmd *cobra.Command) {
 			return names, cobra.ShellCompDirectiveNoFileComp
 		})
 	if err != nil {
+		panic(err)
+	}
+	if err := viper.BindPFlag("kubernetes.context", cmd.PersistentFlags().Lookup("context")); err != nil {
 		panic(err)
 	}
 }
@@ -62,6 +69,9 @@ func Namespace(cmd *cobra.Command) {
 	if err != nil {
 		panic(err)
 	}
+	if err := viper.BindPFlag("kubernetes.namespace", cmd.PersistentFlags().Lookup("namespace")); err != nil {
+		panic(err)
+	}
 }
 
 func Pod(cmd *cobra.Command) {
@@ -84,6 +94,9 @@ func Pod(cmd *cobra.Command) {
 			return names, cobra.ShellCompDirectiveNoFileComp
 		})
 	if err != nil {
+		panic(err)
+	}
+	if err := viper.BindPFlag("kubernetes.pod", cmd.PersistentFlags().Lookup("pod")); err != nil {
 		panic(err)
 	}
 }

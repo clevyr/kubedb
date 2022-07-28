@@ -6,6 +6,7 @@ import (
 	"github.com/clevyr/kubedb/internal/database/sqlformat"
 	"github.com/clevyr/kubedb/internal/util"
 	"github.com/spf13/cobra"
+	"github.com/spf13/viper"
 	"os"
 	"strings"
 )
@@ -30,6 +31,10 @@ func Dialect(cmd *cobra.Command) {
 	if err != nil {
 		panic(err)
 	}
+
+	if err := viper.BindPFlag("dialect", cmd.PersistentFlags().Lookup("dialect")); err != nil {
+		panic(err)
+	}
 }
 
 func Format(cmd *cobra.Command, p *sqlformat.Format) {
@@ -47,6 +52,10 @@ func Format(cmd *cobra.Command, p *sqlformat.Format) {
 	if err != nil {
 		panic(err)
 	}
+
+	if err := viper.BindPFlag("format", cmd.Flags().Lookup("format")); err != nil {
+		panic(err)
+	}
 }
 
 func Database(cmd *cobra.Command) {
@@ -55,36 +64,61 @@ func Database(cmd *cobra.Command) {
 	if err != nil {
 		panic(err)
 	}
+
+	if err := viper.BindPFlag("dbname", cmd.PersistentFlags().Lookup("dbname")); err != nil {
+		panic(err)
+	}
 }
 
 func Username(cmd *cobra.Command) {
 	cmd.PersistentFlags().StringP("username", "U", "", "database username")
+	if err := viper.BindPFlag("username", cmd.PersistentFlags().Lookup("username")); err != nil {
+		panic(err)
+	}
 }
 
 func Password(cmd *cobra.Command) {
 	cmd.PersistentFlags().StringP("password", "p", "", "database password")
+	if err := viper.BindPFlag("password", cmd.PersistentFlags().Lookup("password")); err != nil {
+		panic(err)
+	}
 }
 
 func SingleTransaction(cmd *cobra.Command, p *bool) {
 	cmd.Flags().BoolVarP(p, "single-transaction", "1", true, "restore as a single transaction")
+	if err := viper.BindPFlag("single-transaction", cmd.Flags().Lookup("single-transaction")); err != nil {
+		panic(err)
+	}
 }
 
 func Clean(cmd *cobra.Command, p *bool) {
 	cmd.Flags().BoolVarP(p, "clean", "c", true, "clean (drop) database objects before recreating")
+	if err := viper.BindPFlag("clean", cmd.Flags().Lookup("clean")); err != nil {
+		panic(err)
+	}
 }
 
 func IfExists(cmd *cobra.Command, p *bool) {
 	cmd.Flags().BoolVar(p, "if-exists", true, "use IF EXISTS when dropping objects")
+	if err := viper.BindPFlag("if-exists", cmd.Flags().Lookup("if-exists")); err != nil {
+		panic(err)
+	}
 }
 
 func NoOwner(cmd *cobra.Command, p *bool) {
 	cmd.Flags().BoolVarP(p, "no-owner", "O", true, "skip restoration of object ownership in plain-text format")
+	if err := viper.BindPFlag("no-owner", cmd.Flags().Lookup("no-owner")); err != nil {
+		panic(err)
+	}
 }
 
 func Tables(cmd *cobra.Command, p *[]string) {
 	cmd.Flags().StringSliceVarP(p, "table", "t", []string{}, "dump the specified table(s) only")
 	err := cmd.RegisterFlagCompletionFunc("table", listTables)
 	if err != nil {
+		panic(err)
+	}
+	if err := viper.BindPFlag("table", cmd.Flags().Lookup("table")); err != nil {
 		panic(err)
 	}
 }
@@ -95,12 +129,18 @@ func ExcludeTable(cmd *cobra.Command, p *[]string) {
 	if err != nil {
 		panic(err)
 	}
+	if err := viper.BindPFlag("exclude-table", cmd.Flags().Lookup("exclude-table")); err != nil {
+		panic(err)
+	}
 }
 
 func ExcludeTableData(cmd *cobra.Command, p *[]string) {
 	cmd.Flags().StringSliceVarP(p, "exclude-table-data", "D", []string{}, "do NOT dump data for the specified table(s)")
 	err := cmd.RegisterFlagCompletionFunc("exclude-table-data", listTables)
 	if err != nil {
+		panic(err)
+	}
+	if err := viper.BindPFlag("exclude-table-data", cmd.Flags().Lookup("exclude-table-data")); err != nil {
 		panic(err)
 	}
 }
