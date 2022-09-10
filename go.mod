@@ -3,7 +3,7 @@ module github.com/clevyr/kubedb
 go 1.19
 
 require (
-	github.com/AlecAivazis/survey/v2 v2.3.5
+	github.com/AlecAivazis/survey/v2 v2.3.6
 	github.com/jedib0t/go-pretty/v6 v6.3.8
 	github.com/klauspost/pgzip v1.2.5
 	github.com/schollz/progressbar/v3 v3.8.6
