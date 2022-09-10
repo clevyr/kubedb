@@ -7,11 +7,11 @@ require (
 	github.com/jedib0t/go-pretty/v6 v6.3.3
 	github.com/klauspost/pgzip v1.2.5
 	github.com/schollz/progressbar/v3 v3.8.6
-	github.com/sirupsen/logrus v1.8.1
+	github.com/sirupsen/logrus v1.9.0
 	github.com/spf13/cobra v1.5.0
 	github.com/spf13/pflag v1.0.5
 	github.com/spf13/viper v1.12.0
-	golang.org/x/sys v0.0.0-20220627191245-f75cf1eec38b
+	golang.org/x/sys v0.0.0-20220715151400-c0bba94af5f8
 	gopkg.in/alessio/shellescape.v1 v1.0.0-20170105083845-52074bc9df61
 	k8s.io/api v0.24.2
 	k8s.io/apimachinery v0.24.2
