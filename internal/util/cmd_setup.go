@@ -7,6 +7,7 @@ import (
 	"github.com/clevyr/kubedb/internal/config"
 	"github.com/clevyr/kubedb/internal/database"
 	"github.com/clevyr/kubedb/internal/kubernetes"
+	"github.com/clevyr/kubedb/internal/log_hooks"
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 	v1 "k8s.io/api/core/v1"
@@ -139,6 +140,7 @@ func DefaultSetup(cmd *cobra.Command, conf *config.Global) (err error) {
 			return err
 		}
 	}
+	log.AddHook(log_hooks.Redact(conf.Password))
 
 	return nil
 }
