@@ -9,6 +9,7 @@ import (
 	"github.com/clevyr/kubedb/internal/progressbar"
 	gzip "github.com/klauspost/pgzip"
 	log "github.com/sirupsen/logrus"
+	"github.com/spf13/viper"
 	"io"
 	"k8s.io/client-go/tools/remotecommand"
 	"k8s.io/kubectl/pkg/util/term"
@@ -60,7 +61,7 @@ func (action Dump) Run() (err error) {
 		"file":      action.Filename,
 	}).Info("exporting database")
 
-	if action.GitHubActions {
+	if viper.GetBool("github-actions") {
 		fmt.Println("::set-output name=filename::" + action.Filename)
 	}
 
@@ -143,6 +144,7 @@ func (action Dump) Run() (err error) {
 		"file": action.Filename,
 		"in":   time.Since(startTime).Truncate(10 * time.Millisecond),
 	}).Info("dump complete")
+
 	return nil
 }
 
