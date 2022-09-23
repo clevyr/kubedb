@@ -13,8 +13,8 @@ require (
 	github.com/spf13/viper v1.13.0
 	golang.org/x/sys v0.0.0-20220919091848-fb04ddd9f9c8
 	gopkg.in/alessio/shellescape.v1 v1.0.0-20170105083845-52074bc9df61
-	k8s.io/api v0.25.1
-	k8s.io/apimachinery v0.25.1
+	k8s.io/api v0.25.2
+	k8s.io/apimachinery v0.25.2
 	k8s.io/client-go v0.25.1
 	k8s.io/kubectl v0.25.1
 )
