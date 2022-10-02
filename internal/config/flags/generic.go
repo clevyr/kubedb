@@ -14,7 +14,9 @@ func Force(cmd *cobra.Command, p *bool) {
 
 func GitHubActions(cmd *cobra.Command) {
 	cmd.PersistentFlags().Bool("github-actions", false, "Enables GitHub Actions log output")
-	_ = cmd.PersistentFlags().MarkHidden("github-actions")
+	if err := cmd.PersistentFlags().MarkHidden("github-actions"); err != nil {
+		panic(err)
+	}
 	if err := viper.BindPFlag("github-actions", cmd.PersistentFlags().Lookup("github-actions")); err != nil {
 		panic(err)
 	}
