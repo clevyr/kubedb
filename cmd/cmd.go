@@ -82,6 +82,7 @@ func init() {
 	flags.Database(Command)
 	flags.Username(Command)
 	flags.Password(Command)
+	flags.Redact(Command)
 
 	Command.AddCommand(
 		exec.Command,

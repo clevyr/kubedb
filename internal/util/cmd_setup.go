@@ -10,6 +10,7 @@ import (
 	"github.com/clevyr/kubedb/internal/log_hooks"
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
+	"github.com/spf13/viper"
 	v1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"strings"
@@ -140,7 +141,9 @@ func DefaultSetup(cmd *cobra.Command, conf *config.Global) (err error) {
 			return err
 		}
 	}
-	log.AddHook(log_hooks.Redact(conf.Password))
+	if viper.GetBool("redact") {
+		log.AddHook(log_hooks.Redact(conf.Password))
+	}
 
 	return nil
 }

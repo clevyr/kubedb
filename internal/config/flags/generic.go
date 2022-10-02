@@ -19,3 +19,14 @@ func GitHubActions(cmd *cobra.Command) {
 		panic(err)
 	}
 }
+
+func Redact(cmd *cobra.Command) {
+	cmd.PersistentFlags().Bool("redact", true, "Redact password from logs")
+	if err := cmd.PersistentFlags().MarkHidden("redact"); err != nil {
+		panic(err)
+	}
+	if err := viper.BindPFlag("redact", cmd.PersistentFlags().Lookup("redact")); err != nil {
+		panic(err)
+	}
+
+}
