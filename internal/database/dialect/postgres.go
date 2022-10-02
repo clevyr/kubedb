@@ -103,7 +103,10 @@ func (Postgres) FilterPods(client kubernetes.KubeClient, pods []v1.Pod) ([]v1.Po
 	return pods, nil
 }
 
-func (Postgres) PasswordEnvNames() []string {
+func (db Postgres) PasswordEnvNames(c config.Global) []string {
+	if c.Username == db.DefaultUser() {
+		return []string{"POSTGRES_POSTGRES_PASSWORD", "POSTGRES_PASSWORD", "PGPOOL_POSTGRES_PASSWORD"}
+	}
 	return []string{"POSTGRES_PASSWORD", "PGPOOL_POSTGRES_PASSWORD"}
 }
 

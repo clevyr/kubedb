@@ -135,7 +135,7 @@ func DefaultSetup(cmd *cobra.Command, conf *config.Global) (err error) {
 		panic(err)
 	}
 	if conf.Password == "" {
-		conf.Password, err = conf.Client.GetValueFromEnv(conf.Pod, conf.Dialect.PasswordEnvNames())
+		conf.Password, err = conf.Client.GetValueFromEnv(conf.Pod, conf.Dialect.PasswordEnvNames(*conf))
 		if err != nil {
 			return err
 		}

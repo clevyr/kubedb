@@ -20,7 +20,7 @@ func (MongoDB) DefaultPort() uint16 {
 }
 
 func (MongoDB) DatabaseEnvNames() []string {
-	return []string{}
+	return []string{"MONGODB_EXTRA_DATABASES"}
 }
 
 func (MongoDB) ListDatabasesQuery() string {
@@ -32,7 +32,7 @@ func (MongoDB) ListTablesQuery() string {
 }
 
 func (MongoDB) UserEnvNames() []string {
-	return []string{"MONGODB_ROOT_USER"}
+	return []string{"MONGODB_EXTRA_USERNAMES", "MONGODB_ROOT_USER"}
 }
 
 func (MongoDB) DefaultUser() string {
@@ -61,17 +61,27 @@ func (MongoDB) FilterPods(client kubernetes.KubeClient, pods []v1.Pod) ([]v1.Pod
 	return pods, nil
 }
 
-func (MongoDB) PasswordEnvNames() []string {
-	return []string{"MONGODB_ROOT_PASSWORD"}
+func (db MongoDB) PasswordEnvNames(c config.Global) []string {
+	if c.Username == db.DefaultUser() {
+		return []string{"MONGODB_ROOT_PASSWORD"}
+	}
+	return []string{"MONGODB_EXTRA_PASSWORDS"}
 }
 
-func (MongoDB) ExecCommand(conf config.Exec) *command.Builder {
+func (db MongoDB) AuthenticationDatabase(c config.Global) string {
+	if c.Username == db.DefaultUser() {
+		return "admin"
+	}
+	return c.Database
+}
+
+func (db MongoDB) ExecCommand(conf config.Exec) *command.Builder {
 	cmd := command.NewBuilder(
 		"mongosh",
 		"--host=127.0.0.1",
 		"--username="+conf.Username,
 		"--password="+conf.Password,
-		"--authenticationDatabase=admin",
+		"--authenticationDatabase="+db.AuthenticationDatabase(conf.Global),
 	)
 	if conf.DisableHeaders {
 		cmd.Push("--quiet")
@@ -85,14 +95,14 @@ func (MongoDB) ExecCommand(conf config.Exec) *command.Builder {
 	return cmd
 }
 
-func (MongoDB) DumpCommand(conf config.Dump) *command.Builder {
+func (db MongoDB) DumpCommand(conf config.Dump) *command.Builder {
 	cmd := command.NewBuilder(
 		"mongodump",
 		"--archive",
 		"--host=127.0.0.1",
 		"--username="+conf.Username,
 		"--password="+conf.Password,
-		"--authenticationDatabase=admin",
+		"--authenticationDatabase="+db.AuthenticationDatabase(conf.Global),
 	)
 	if conf.Database != "" {
 		cmd.Push("--db=" + conf.Database)
@@ -109,14 +119,14 @@ func (MongoDB) DumpCommand(conf config.Dump) *command.Builder {
 	return cmd
 }
 
-func (MongoDB) RestoreCommand(conf config.Restore, inputFormat sqlformat.Format) *command.Builder {
+func (db MongoDB) RestoreCommand(conf config.Restore, inputFormat sqlformat.Format) *command.Builder {
 	cmd := command.NewBuilder(
 		"mongorestore",
 		"--archive",
 		"--host=127.0.0.1",
 		"--username="+conf.Username,
 		"--password="+conf.Password,
-		"--authenticationDatabase=admin",
+		"--authenticationDatabase="+db.AuthenticationDatabase(conf.Global),
 	)
 	if conf.Database != "" {
 		if conf.Clean {

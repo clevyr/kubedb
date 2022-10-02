@@ -61,7 +61,10 @@ func (MariaDB) FilterPods(client kubernetes.KubeClient, pods []v1.Pod) ([]v1.Pod
 	return pods, nil
 }
 
-func (MariaDB) PasswordEnvNames() []string {
+func (db MariaDB) PasswordEnvNames(c config.Global) []string {
+	if c.Username == db.DefaultUser() {
+		return []string{"MARIADB_ROOT_PASSWORD"}
+	}
 	return []string{"MARIADB_PASSWORD"}
 }
 

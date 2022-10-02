@@ -22,7 +22,7 @@ type Databaser interface {
 	AnalyzeQuery() string
 	PodLabels() []kubernetes.LabelQueryable
 	FilterPods(client kubernetes.KubeClient, pods []v1.Pod) ([]v1.Pod, error)
-	PasswordEnvNames() []string
+	PasswordEnvNames(conf Global) []string
 
 	ExecCommand(conf Exec) *command.Builder
 	DumpCommand(conf Dump) *command.Builder

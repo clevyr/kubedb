@@ -254,16 +254,21 @@ func TestMariaDB_Name(t *testing.T) {
 }
 
 func TestMariaDB_PasswordEnvNames(t *testing.T) {
+	type args struct {
+		c config.Global
+	}
 	tests := []struct {
 		name string
+		args args
 		want []string
 	}{
-		{"default", []string{"MARIADB_PASSWORD"}},
+		{"default", args{}, []string{"MARIADB_PASSWORD"}},
+		{"root", args{config.Global{Username: "root"}}, []string{"MARIADB_ROOT_PASSWORD"}},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			ma := MariaDB{}
-			if got := ma.PasswordEnvNames(); !reflect.DeepEqual(got, tt.want) {
+			db := MariaDB{}
+			if got := db.PasswordEnvNames(tt.args.c); !reflect.DeepEqual(got, tt.want) {
 				t.Errorf("PasswordEnvNames() = %v, want %v", got, tt.want)
 			}
 		})

@@ -308,16 +308,21 @@ func TestPostgres_Name(t *testing.T) {
 }
 
 func TestPostgres_PasswordEnvNames(t *testing.T) {
+	type args struct {
+		c config.Global
+	}
 	tests := []struct {
 		name string
+		args args
 		want []string
 	}{
-		{"default", []string{"POSTGRES_PASSWORD", "PGPOOL_POSTGRES_PASSWORD"}},
+		{"default", args{}, []string{"POSTGRES_PASSWORD", "PGPOOL_POSTGRES_PASSWORD"}},
+		{"postgres", args{config.Global{Username: "postgres"}}, []string{"POSTGRES_POSTGRES_PASSWORD", "POSTGRES_PASSWORD", "PGPOOL_POSTGRES_PASSWORD"}},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			po := Postgres{}
-			if got := po.PasswordEnvNames(); !reflect.DeepEqual(got, tt.want) {
+			db := Postgres{}
+			if got := db.PasswordEnvNames(tt.args.c); !reflect.DeepEqual(got, tt.want) {
 				t.Errorf("PasswordEnvNames() = %v, want %v", got, tt.want)
 			}
 		})
