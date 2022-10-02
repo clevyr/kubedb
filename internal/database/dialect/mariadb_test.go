@@ -66,7 +66,7 @@ func TestMariaDB_DefaultUser(t *testing.T) {
 		name string
 		want string
 	}{
-		{"default", "mariadb"},
+		{"default", "root"},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {

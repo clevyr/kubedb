@@ -36,7 +36,7 @@ func (MariaDB) UserEnvNames() []string {
 }
 
 func (MariaDB) DefaultUser() string {
-	return "mariadb"
+	return "root"
 }
 
 func (MariaDB) DropDatabaseQuery(database string) string {
