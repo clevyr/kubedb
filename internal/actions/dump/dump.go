@@ -2,10 +2,10 @@ package dump
 
 import (
 	"errors"
-	"fmt"
 	"github.com/clevyr/kubedb/internal/command"
 	"github.com/clevyr/kubedb/internal/config"
 	"github.com/clevyr/kubedb/internal/database/sqlformat"
+	"github.com/clevyr/kubedb/internal/github"
 	"github.com/clevyr/kubedb/internal/progressbar"
 	gzip "github.com/klauspost/pgzip"
 	log "github.com/sirupsen/logrus"
@@ -62,7 +62,9 @@ func (action Dump) Run() (err error) {
 	}).Info("exporting database")
 
 	if viper.GetBool("github-actions") {
-		fmt.Println("::set-output name=filename::" + action.Filename)
+		if err := github.SetOutput("filename", action.Filename); err != nil {
+			return err
+		}
 	}
 
 	var startTime = time.Now()
