@@ -4,7 +4,7 @@ go 1.19
 
 require (
 	github.com/AlecAivazis/survey/v2 v2.3.6
-	github.com/jedib0t/go-pretty/v6 v6.3.9
+	github.com/jedib0t/go-pretty/v6 v6.4.0
 	github.com/klauspost/pgzip v1.2.5
 	github.com/schollz/progressbar/v3 v3.11.0
 	github.com/sirupsen/logrus v1.9.0
