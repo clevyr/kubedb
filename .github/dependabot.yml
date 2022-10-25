@@ -8,3 +8,7 @@ updates:
     directory: "/"
     schedule:
       interval: "daily"
+    ignore:
+      # The following are updated with k8s.io/client-go
+      - dependency-name: "k8s.io/api"
+      - dependency-name: "k8s.io/apimachinery"
