@@ -18,6 +18,7 @@ kubedb dump [filename] [flags]
 
 ```
   -c, --clean                        clean (drop) database objects before recreating (default true)
+  -C, --directory string             directory to dump to (default ".")
   -T, --exclude-table strings        do NOT dump the specified table(s)
   -D, --exclude-table-data strings   do NOT dump data for the specified table(s)
   -F, --format string                output file format ([g]zip, [c]ustom, [p]lain) (default "gzip")
@@ -34,7 +35,6 @@ kubedb dump [filename] [flags]
       --context string      name of the kubeconfig context to use
   -d, --dbname string       database name to connect to
       --dialect string      database dialect. detected if not set. (postgres, mariadb, mongodb)
-  -C, --directory string    dir to hold the generated config (default "./docs")
       --kubeconfig string   absolute path to the kubeconfig file (default "$HOME/.kube/config")
       --log-format string   log formatter (text, json) (default "text")
       --log-level string    log level (trace, debug, info, warning, error, fatal, panic) (default "info")
