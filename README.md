@@ -1,5 +1,7 @@
 # KubeDB
 
+[![Build](https://github.com/clevyr/kubedb/actions/workflows/build.yml/badge.svg)](https://github.com/clevyr/kubedb/actions/workflows/build.yml)
+
 KubeDB is a command to interact with databases running in Kubernetes.
 It supports dumping, restoring, and dropping into a database shell.
 Optional flags are available to set running database parameters
