@@ -49,11 +49,19 @@ jobs:
         with:
           cache: true
           go-version-file: go.mod
+      - name: Set build variables
+        id: vars
+        run: |
+          args='release --rm-dist'
+          if [[ "$GITHUB_REF" != refs/tags/* ]]; then
+            args+=' --snapshot'
+          fi
+          echo "args=$args" >> $GITHUB_OUTPUT
       - name: Run GoReleaser
         uses: goreleaser/goreleaser-action@v3
         with:
           version: latest
-          args: release --rm-dist
+          args: ${{ steps.vars.outputs.args }}
         env:
           GITHUB_TOKEN: ${{ secrets.GORELEASER_GITHUB_TOKEN }}
           FURY_TOKEN: ${{ secrets.FURY_TOKEN }}
