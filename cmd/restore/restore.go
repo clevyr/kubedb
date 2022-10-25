@@ -27,6 +27,7 @@ Supported Input Filetypes:
 
 	Args:              cobra.ExactArgs(1),
 	ValidArgsFunction: validArgs,
+	GroupID:           "rw",
 
 	PreRunE: preRun,
 	RunE:    run,

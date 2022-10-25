@@ -15,6 +15,7 @@ var Command = &cobra.Command{
 	Short:             "set up a local port forward",
 	Args:              cobra.MaximumNArgs(1),
 	ValidArgsFunction: validArgs,
+	GroupID:           "rw",
 	RunE:              run,
 	PreRunE:           preRun,
 }

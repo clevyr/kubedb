@@ -84,6 +84,17 @@ func init() {
 	flags.Password(Command)
 	flags.Redact(Command)
 
+	Command.AddGroup(
+		&cobra.Group{
+			ID:    "ro",
+			Title: "Read Commands",
+		},
+		&cobra.Group{
+			ID:    "rw",
+			Title: "Write Commands",
+		},
+	)
+
 	Command.AddCommand(
 		exec.Command,
 		dump.Command,

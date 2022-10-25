@@ -24,6 +24,7 @@ the generated filename might look like "` + dump.HelpFilename() + `"`,
 
 	Args:              cobra.MaximumNArgs(1),
 	ValidArgsFunction: validArgs,
+	GroupID:           "ro",
 
 	PreRunE: preRun,
 	RunE:    run,
