@@ -24,7 +24,7 @@ func FindEnvVar(pod v1.Pod, envName string) (*v1.EnvVar, error) {
 var ErrNoEnvNames = errors.New("dialect does not contain any env names")
 var ErrSecretDoesNotHaveKey = errors.New("secret does not have key")
 
-func (client KubeClient) GetValueFromEnv(pod v1.Pod, envNames []string) (string, error) {
+func (client KubeClient) GetValueFromEnv(ctx context.Context, pod v1.Pod, envNames []string) (string, error) {
 	if len(envNames) == 0 {
 		return "", ErrNoEnvNames
 	}
@@ -43,7 +43,7 @@ func (client KubeClient) GetValueFromEnv(pod v1.Pod, envNames []string) (string,
 
 	if envVar.ValueFrom != nil && envVar.ValueFrom.SecretKeyRef != nil {
 		secretKeyRef := envVar.ValueFrom.SecretKeyRef
-		secret, err := client.Secrets().Get(context.Background(), secretKeyRef.Name, v1meta.GetOptions{})
+		secret, err := client.Secrets().Get(ctx, secretKeyRef.Name, v1meta.GetOptions{})
 		if err != nil {
 			return "", err
 		}

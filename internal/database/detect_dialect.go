@@ -1,6 +1,7 @@
 package database
 
 import (
+	"context"
 	"errors"
 	"github.com/clevyr/kubedb/internal/config"
 	"github.com/clevyr/kubedb/internal/database/dialect"
@@ -10,14 +11,14 @@ import (
 
 var ErrDatabaseNotFound = errors.New("could not detect a database")
 
-func DetectDialect(client kubernetes.KubeClient) (config.Databaser, []v1.Pod, error) {
+func DetectDialect(ctx context.Context, client kubernetes.KubeClient) (config.Databaser, []v1.Pod, error) {
 	dialects := []config.Databaser{
 		dialect.Postgres{},
 		dialect.MariaDB{},
 		dialect.MongoDB{},
 	}
 
-	pods, err := client.GetNamespacedPods()
+	pods, err := client.GetNamespacedPods(ctx)
 	if err != nil {
 		return nil, []v1.Pod{}, err
 	}

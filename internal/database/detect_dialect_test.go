@@ -1,6 +1,7 @@
 package database
 
 import (
+	"context"
 	"github.com/clevyr/kubedb/internal/config"
 	"github.com/clevyr/kubedb/internal/database/dialect"
 	"github.com/clevyr/kubedb/internal/kubernetes"
@@ -87,7 +88,7 @@ func TestDetectDialect(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got, got1, err := DetectDialect(tt.args.client)
+			got, got1, err := DetectDialect(context.Background(), tt.args.client)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("DetectDialect() error = %v, wantErr %v", err, tt.wantErr)
 				return

@@ -1,7 +1,6 @@
 package util
 
 import (
-	"context"
 	"errors"
 	"github.com/AlecAivazis/survey/v2"
 	"github.com/clevyr/kubedb/internal/config"
@@ -45,7 +44,7 @@ func DefaultSetup(cmd *cobra.Command, conf *config.Global) (err error) {
 	var pods []v1.Pod
 	if dialectFlag == "" {
 		// Configure via detection
-		conf.Dialect, pods, err = database.DetectDialect(conf.Client)
+		conf.Dialect, pods, err = database.DetectDialect(cmd.Context(), conf.Client)
 		if err != nil {
 			return err
 		}
@@ -64,7 +63,7 @@ func DefaultSetup(cmd *cobra.Command, conf *config.Global) (err error) {
 		}
 
 		if podFlag == "" {
-			pods, err = conf.Client.GetPodsFiltered(conf.Dialect.PodLabels())
+			pods, err = conf.Client.GetPodsFiltered(cmd.Context(), conf.Dialect.PodLabels())
 			if err != nil {
 				return err
 			}
@@ -73,7 +72,7 @@ func DefaultSetup(cmd *cobra.Command, conf *config.Global) (err error) {
 			if slashIdx != 0 && slashIdx+1 < len(podFlag) {
 				podFlag = podFlag[slashIdx+1:]
 			}
-			pod, err := conf.Client.Pods().Get(context.Background(), podFlag, metav1.GetOptions{})
+			pod, err := conf.Client.Pods().Get(cmd.Context(), podFlag, metav1.GetOptions{})
 			if err != nil {
 				return err
 			}
@@ -109,7 +108,7 @@ func DefaultSetup(cmd *cobra.Command, conf *config.Global) (err error) {
 		panic(err)
 	}
 	if conf.Database == "" {
-		conf.Database, err = conf.Client.GetValueFromEnv(conf.Pod, conf.Dialect.DatabaseEnvNames())
+		conf.Database, err = conf.Client.GetValueFromEnv(cmd.Context(), conf.Pod, conf.Dialect.DatabaseEnvNames())
 		if err != nil {
 			log.Debug("could not detect database from pod env")
 		} else {
@@ -122,7 +121,7 @@ func DefaultSetup(cmd *cobra.Command, conf *config.Global) (err error) {
 		panic(err)
 	}
 	if conf.Username == "" {
-		conf.Username, err = conf.Client.GetValueFromEnv(conf.Pod, conf.Dialect.UserEnvNames())
+		conf.Username, err = conf.Client.GetValueFromEnv(cmd.Context(), conf.Pod, conf.Dialect.UserEnvNames())
 		if err != nil {
 			conf.Username = conf.Dialect.DefaultUser()
 			log.WithField("user", conf.Username).Debug("could not detect user from pod env, using default")
@@ -136,7 +135,7 @@ func DefaultSetup(cmd *cobra.Command, conf *config.Global) (err error) {
 		panic(err)
 	}
 	if conf.Password == "" {
-		conf.Password, err = conf.Client.GetValueFromEnv(conf.Pod, conf.Dialect.PasswordEnvNames(*conf))
+		conf.Password, err = conf.Client.GetValueFromEnv(cmd.Context(), conf.Pod, conf.Dialect.PasswordEnvNames(*conf))
 		if err != nil {
 			return err
 		}

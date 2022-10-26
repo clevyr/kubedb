@@ -1,7 +1,6 @@
 package flags
 
 import (
-	"context"
 	"github.com/clevyr/kubedb/internal/config"
 	"github.com/clevyr/kubedb/internal/kubernetes"
 	"github.com/spf13/cobra"
@@ -53,7 +52,7 @@ func Namespace(cmd *cobra.Command) {
 			if err != nil {
 				return nil, cobra.ShellCompDirectiveNoFileComp
 			}
-			namespaces, err := client.Namespaces().List(context.Background(), metav1.ListOptions{})
+			namespaces, err := client.Namespaces().List(cmd.Context(), metav1.ListOptions{})
 			if err != nil {
 				return nil, cobra.ShellCompDirectiveNoFileComp
 			}
@@ -83,7 +82,7 @@ func Pod(cmd *cobra.Command) {
 			if err != nil {
 				return nil, cobra.ShellCompDirectiveNoFileComp
 			}
-			pods, err := client.GetNamespacedPods()
+			pods, err := client.GetNamespacedPods(cmd.Context())
 			if err != nil {
 				return nil, cobra.ShellCompDirectiveNoFileComp
 			}
