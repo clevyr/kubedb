@@ -7,6 +7,7 @@ import (
 	"github.com/clevyr/kubedb/internal/progressbar"
 	gzip "github.com/klauspost/pgzip"
 	log "github.com/sirupsen/logrus"
+	"golang.org/x/sync/errgroup"
 	"io"
 	"os"
 	"strings"
@@ -32,8 +33,6 @@ func (action Restore) Run() (err error) {
 		}(f)
 	}
 
-	pr, pw := io.Pipe()
-
 	log.WithFields(log.Fields{
 		"file":      action.Filename,
 		"namespace": action.Client.Namespace,
@@ -47,67 +46,92 @@ func (action Restore) Run() (err error) {
 	outLog := progressbar.NewBarSafeLogger(os.Stdout, bar)
 	log.SetOutput(errLog)
 
-	ch := make(chan error, 1)
-	go action.runInDatabasePod(pr, outLog, errLog, ch, action.Format)
+	errGroup := errgroup.Group{}
 
-	w := io.MultiWriter(pw, bar)
+	pr, pw := io.Pipe()
+	errGroup.Go(func() error {
+		// Connect to pod and begin piping from io.PipeReader
+		defer func(pr io.ReadCloser) {
+			_ = pr.Close()
+		}(pr)
+		return action.runInDatabasePod(pr, outLog, errLog, action.Format)
+	})
 
-	if action.Clean && action.Format != sqlformat.Custom {
-		dropQuery := action.Dialect.DropDatabaseQuery(action.Database)
-		if dropQuery != "" {
-			log.Info("cleaning existing data")
-			err = gzipCopy(w, strings.NewReader(dropQuery))
-			if err != nil {
-				return err
-			}
-		}
-	}
-
-	log.Info("restoring database")
-	switch action.Format {
-	case sqlformat.Gzip, sqlformat.Custom, sqlformat.Unknown:
-		_, err = io.Copy(w, f)
-		if err != nil {
-			return err
-		}
-	case sqlformat.Plain:
-		err = gzipCopy(w, f)
-		if err != nil {
-			return err
-		}
-	}
-
-	analyzeQuery := action.Dialect.AnalyzeQuery()
-	if analyzeQuery != "" {
-		if action.Format == sqlformat.Custom {
+	errGroup.Go(func() error {
+		defer func(pw io.WriteCloser) {
 			_ = pw.Close()
+		}(pw)
 
-			err = <-ch
+		w := io.MultiWriter(pw, bar)
+
+		// Clean database
+		if action.Clean && action.Format != sqlformat.Custom {
+			dropQuery := action.Dialect.DropDatabaseQuery(action.Database)
+			if dropQuery != "" {
+				log.Info("cleaning existing data")
+				err = gzipCopy(w, strings.NewReader(dropQuery))
+				if err != nil {
+					return err
+				}
+			}
+		}
+
+		// Main restore
+		log.Info("restoring database")
+		switch action.Format {
+		case sqlformat.Gzip, sqlformat.Custom, sqlformat.Unknown:
+			_, err = io.Copy(w, f)
 			if err != nil {
 				return err
 			}
-
-			pr, pw = io.Pipe()
-			w = io.MultiWriter(pw, bar)
-			go action.runInDatabasePod(pr, outLog, errLog, ch, sqlformat.Gzip)
+		case sqlformat.Plain:
+			err = gzipCopy(w, f)
+			if err != nil {
+				return err
+			}
 		}
 
-		log.Info("running analyze query")
-		err = gzipCopy(w, strings.NewReader(analyzeQuery))
-		if err != nil {
+		// Analyze query
+		analyzeQuery := action.Dialect.AnalyzeQuery()
+		if analyzeQuery != "" {
+			if action.Format == sqlformat.Custom {
+				if err := pw.Close(); err != nil {
+					return err
+				}
+
+				pr, pw = io.Pipe()
+				defer func(pw io.WriteCloser) {
+					_ = pw.Close()
+				}(pw)
+				w = io.MultiWriter(pw, bar)
+				errGroup.Go(func() error {
+					defer func(pr io.ReadCloser) {
+						_ = pr.Close()
+					}(pr)
+					return action.runInDatabasePod(pr, outLog, errLog, sqlformat.Gzip)
+				})
+			}
+
+			log.Info("running analyze query")
+			err = gzipCopy(w, strings.NewReader(analyzeQuery))
+			if err != nil {
+				return err
+			}
+		}
+
+		if err := pw.Close(); err != nil {
 			return err
 		}
+
+		return nil
+	})
+
+	if err := errGroup.Wait(); err != nil {
+		return err
 	}
 
 	_ = bar.Finish()
 	log.SetOutput(os.Stderr)
-
-	_ = pw.Close()
-
-	err = <-ch
-	if err != nil {
-		return err
-	}
 
 	log.WithFields(log.Fields{
 		"file": action.Filename,
@@ -139,13 +163,12 @@ func gzipCopy(w io.Writer, r io.Reader) (err error) {
 	return nil
 }
 
-func (action Restore) runInDatabasePod(r *io.PipeReader, stdout, stderr io.Writer, ch chan error, inputFormat sqlformat.Format) {
-	var err error
-	defer func(pr *io.PipeReader) {
-		_ = pr.Close()
+func (action Restore) runInDatabasePod(r *io.PipeReader, stdout, stderr io.Writer, inputFormat sqlformat.Format) error {
+	defer func(r *io.PipeReader) {
+		_ = r.Close()
 	}(r)
 
-	err = action.Client.Exec(
+	if err := action.Client.Exec(
 		action.Pod,
 		buildCommand(action.Restore, inputFormat).String(),
 		r,
@@ -153,12 +176,9 @@ func (action Restore) runInDatabasePod(r *io.PipeReader, stdout, stderr io.Write
 		stderr,
 		false,
 		nil,
-	)
-	if err != nil {
-		_ = r.CloseWithError(err)
-		ch <- err
-		return
+	); err != nil {
+		return err
 	}
 
-	ch <- nil
+	return nil
 }

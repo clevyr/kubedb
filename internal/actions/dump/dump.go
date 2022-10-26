@@ -10,6 +10,7 @@ import (
 	gzip "github.com/klauspost/pgzip"
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/viper"
+	"golang.org/x/sync/errgroup"
 	"io"
 	"k8s.io/client-go/tools/remotecommand"
 	"k8s.io/kubectl/pkg/util/term"
@@ -73,60 +74,67 @@ func (action Dump) Run() (err error) {
 	plogger := progressbar.NewBarSafeLogger(os.Stderr, bar)
 	log.SetOutput(plogger)
 
-	pr, pw := io.Pipe()
-	ch := make(chan error, 1)
-	go func() {
-		var err error
-		defer func() {
-			ch <- err
-		}()
+	errGroup := errgroup.Group{}
 
-		pr := io.Reader(pr)
+	pr, pw := io.Pipe()
+	// Begin database export
+	errGroup.Go(func() error {
+		defer func(pw io.WriteCloser) {
+			_ = pw.Close()
+		}(pw)
+
+		t := term.TTY{
+			In:  os.Stdin,
+			Out: pw,
+		}
+		t.Raw = t.IsTerminalIn()
+		var sizeQueue remotecommand.TerminalSizeQueue
+		if t.Raw {
+			sizeQueue = t.MonitorSize(t.GetSize())
+		}
+
+		if err := action.Client.Exec(
+			action.Pod,
+			action.buildCommand().String(),
+			t.In,
+			t.Out,
+			plogger,
+			false,
+			sizeQueue,
+		); err != nil {
+			return err
+		}
+
+		if err = pw.Close(); err != nil {
+			return err
+		}
+
+		return nil
+	})
+
+	// Begin copying export to local file
+	errGroup.Go(func() error {
+		defer func(pr io.ReadCloser) {
+			_ = pr.Close()
+		}(pr)
+
+		r := io.Reader(pr)
 
 		if action.Format == sqlformat.Plain {
-			pr, err = gzip.NewReader(pr)
+			r, err = gzip.NewReader(r)
 			if err != nil {
-				return
+				return err
 			}
 		}
 
-		_, err = io.Copy(io.MultiWriter(f, bar), pr)
-		if err != nil {
-			return
+		if _, err := io.Copy(io.MultiWriter(f, bar), r); err != nil {
+			return err
 		}
-	}()
 
-	t := term.TTY{
-		In:  os.Stdin,
-		Out: pw,
-	}
-	t.Raw = t.IsTerminalIn()
-	var sizeQueue remotecommand.TerminalSizeQueue
-	if t.Raw {
-		sizeQueue = t.MonitorSize(t.GetSize())
-	}
+		return nil
+	})
 
-	err = action.Client.Exec(
-		action.Pod,
-		action.buildCommand().String(),
-		t.In,
-		t.Out,
-		plogger,
-		false,
-		sizeQueue,
-	)
-	if err != nil {
-		_ = pw.CloseWithError(err)
-		return err
-	}
-
-	err = pw.Close()
-	if err != nil {
-		return err
-	}
-
-	err = <-ch
-	if err != nil {
+	if err := errGroup.Wait(); err != nil {
 		return err
 	}
 
