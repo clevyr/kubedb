@@ -12,8 +12,6 @@ import (
 	"github.com/spf13/viper"
 	"golang.org/x/sync/errgroup"
 	"io"
-	"k8s.io/client-go/tools/remotecommand"
-	"k8s.io/kubectl/pkg/util/term"
 	"os"
 	"path/filepath"
 	"time"
@@ -83,24 +81,14 @@ func (action Dump) Run() (err error) {
 			_ = pw.Close()
 		}(pw)
 
-		t := term.TTY{
-			In:  os.Stdin,
-			Out: pw,
-		}
-		t.Raw = t.IsTerminalIn()
-		var sizeQueue remotecommand.TerminalSizeQueue
-		if t.Raw {
-			sizeQueue = t.MonitorSize(t.GetSize())
-		}
-
 		if err := action.Client.Exec(
 			action.Pod,
 			action.buildCommand().String(),
-			t.In,
-			t.Out,
+			os.Stdin,
+			pw,
 			plogger,
 			false,
-			sizeQueue,
+			nil,
 		); err != nil {
 			return err
 		}
