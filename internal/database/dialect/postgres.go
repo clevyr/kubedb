@@ -1,6 +1,7 @@
 package dialect
 
 import (
+	"context"
 	"encoding/csv"
 	"github.com/clevyr/kubedb/internal/command"
 	"github.com/clevyr/kubedb/internal/config"
@@ -65,7 +66,7 @@ func (Postgres) PodLabels() []kubernetes.LabelQueryable {
 	}
 }
 
-func (Postgres) FilterPods(client kubernetes.KubeClient, pods []v1.Pod) ([]v1.Pod, error) {
+func (Postgres) FilterPods(ctx context.Context, client kubernetes.KubeClient, pods []v1.Pod) ([]v1.Pod, error) {
 	if len(pods) > 0 && pods[0].Labels["app.kubernetes.io/name"] == "postgresql-ha" {
 		// HA chart. Need to detect primary.
 		log.Debug("querying for primary instance")
@@ -77,7 +78,7 @@ func (Postgres) FilterPods(client kubernetes.KubeClient, pods []v1.Pod) ([]v1.Po
 		)
 
 		var buf strings.Builder
-		err := client.Exec(pods[0], cmd.String(), strings.NewReader(""), &buf, os.Stderr, false, nil)
+		err := client.Exec(ctx, pods[0], cmd.String(), strings.NewReader(""), &buf, os.Stderr, false, nil)
 		if err != nil {
 			return pods, err
 		}

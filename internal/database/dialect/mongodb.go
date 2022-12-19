@@ -1,6 +1,7 @@
 package dialect
 
 import (
+	"context"
 	"github.com/clevyr/kubedb/internal/command"
 	"github.com/clevyr/kubedb/internal/config"
 	"github.com/clevyr/kubedb/internal/database/sqlformat"
@@ -57,7 +58,7 @@ func (MongoDB) PodLabels() []kubernetes.LabelQueryable {
 	}
 }
 
-func (MongoDB) FilterPods(client kubernetes.KubeClient, pods []v1.Pod) ([]v1.Pod, error) {
+func (MongoDB) FilterPods(ctx context.Context, client kubernetes.KubeClient, pods []v1.Pod) ([]v1.Pod, error) {
 	return pods, nil
 }
 

@@ -29,7 +29,7 @@ func (client KubeClient) GetNamespacedPods(ctx context.Context) (*v1.PodList, er
 	return pods, nil
 }
 
-func (client KubeClient) Exec(pod v1.Pod, cmd string, stdin io.Reader, stdout, stderr io.Writer, tty bool, terminalSizeQueue remotecommand.TerminalSizeQueue) error {
+func (client KubeClient) Exec(ctx context.Context, pod v1.Pod, cmd string, stdin io.Reader, stdout, stderr io.Writer, tty bool, terminalSizeQueue remotecommand.TerminalSizeQueue) error {
 	req := client.ClientSet.CoreV1().RESTClient().Post().
 		Resource("pods").
 		Namespace(client.Namespace).
@@ -47,7 +47,7 @@ func (client KubeClient) Exec(pod v1.Pod, cmd string, stdin io.Reader, stdout, s
 		return err
 	}
 
-	err = exec.Stream(remotecommand.StreamOptions{
+	err = exec.StreamWithContext(ctx, remotecommand.StreamOptions{
 		Stdin:             stdin,
 		Stdout:            stdout,
 		Stderr:            stderr,

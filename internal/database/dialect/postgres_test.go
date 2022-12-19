@@ -1,6 +1,7 @@
 package dialect
 
 import (
+	"context"
 	"github.com/clevyr/kubedb/internal/command"
 	"github.com/clevyr/kubedb/internal/config"
 	"github.com/clevyr/kubedb/internal/database/sqlformat"
@@ -244,7 +245,7 @@ func TestPostgres_FilterPods(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			po := Postgres{}
-			got, err := po.FilterPods(tt.args.client, tt.args.pods)
+			got, err := po.FilterPods(context.TODO(), tt.args.client, tt.args.pods)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("FilterPods() error = %v, wantErr %v", err, tt.wantErr)
 				return
