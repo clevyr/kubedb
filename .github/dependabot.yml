@@ -3,11 +3,11 @@ updates:
   - package-ecosystem: "github-actions"
     directory: "/"
     schedule:
-      interval: "daily"
+      interval: "weekly"
   - package-ecosystem: "gomod"
     directory: "/"
     schedule:
-      interval: "daily"
+      interval: "monthly"
     ignore:
       # The following are updated with k8s.io/client-go
       - dependency-name: "k8s.io/api"
