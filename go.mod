@@ -6,13 +6,13 @@ require (
 	github.com/AlecAivazis/survey/v2 v2.3.6
 	github.com/jedib0t/go-pretty/v6 v6.4.3
 	github.com/klauspost/pgzip v1.2.5
-	github.com/schollz/progressbar/v3 v3.12.1
+	github.com/schollz/progressbar/v3 v3.12.2
 	github.com/sirupsen/logrus v1.9.0
 	github.com/spf13/cobra v1.6.1
 	github.com/spf13/pflag v1.0.5
 	github.com/spf13/viper v1.14.0
 	golang.org/x/sync v0.1.0
-	golang.org/x/sys v0.1.0
+	golang.org/x/sys v0.3.0
 	gopkg.in/alessio/shellescape.v1 v1.0.0-20170105083845-52074bc9df61
 	k8s.io/api v0.25.4
 	k8s.io/apimachinery v0.25.4
@@ -69,7 +69,7 @@ require (
 	github.com/pelletier/go-toml v1.9.5 // indirect
 	github.com/pelletier/go-toml/v2 v2.0.5 // indirect
 	github.com/pkg/errors v0.9.1 // indirect
-	github.com/rivo/uniseg v0.4.2 // indirect
+	github.com/rivo/uniseg v0.4.3 // indirect
 	github.com/russross/blackfriday/v2 v2.1.0 // indirect
 	github.com/spf13/afero v1.9.2 // indirect
 	github.com/spf13/cast v1.5.0 // indirect
@@ -78,7 +78,7 @@ require (
 	golang.org/x/crypto v0.0.0-20220919173607-35f4265a4bc0 // indirect
 	golang.org/x/net v0.0.0-20221014081412-f15817d10f9b // indirect
 	golang.org/x/oauth2 v0.0.0-20221014153046-6fdb5e3db783 // indirect
-	golang.org/x/term v0.1.0 // indirect
+	golang.org/x/term v0.3.0 // indirect
 	golang.org/x/text v0.4.0 // indirect
 	golang.org/x/time v0.0.0-20220609170525-579cf78fd858 // indirect
 	google.golang.org/appengine v1.6.7 // indirect
