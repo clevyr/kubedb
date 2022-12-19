@@ -168,7 +168,7 @@ func listDatabases(cmd *cobra.Command, args []string, toComplete string) ([]stri
 func queryInDatabase(cmd *cobra.Command, args []string, conf config.Exec) ([]string, cobra.ShellCompDirective) {
 	var buf strings.Builder
 	sqlCmd := conf.Dialect.ExecCommand(conf)
-	err := conf.Client.Exec(conf.Pod, sqlCmd.String(), nil, &buf, os.Stderr, false, nil)
+	err := conf.Client.Exec(cmd.Context(), conf.Pod, sqlCmd.String(), nil, &buf, os.Stderr, false, nil)
 	if err != nil {
 		return nil, cobra.ShellCompDirectiveNoFileComp
 	}

@@ -1,6 +1,7 @@
 package exec
 
 import (
+	"context"
 	"github.com/clevyr/kubedb/internal/command"
 	"github.com/clevyr/kubedb/internal/config"
 	log "github.com/sirupsen/logrus"
@@ -14,7 +15,7 @@ type Exec struct {
 	Args        []string
 }
 
-func (action Exec) Run() error {
+func (action Exec) Run(ctx context.Context) error {
 	log.WithFields(log.Fields{
 		"namespace": action.Client.Namespace,
 		"pod":       action.Pod.Name,
@@ -33,6 +34,7 @@ func (action Exec) Run() error {
 	podCmd := action.buildCommand(action.Args)
 	return t.Safe(func() error {
 		return action.Client.Exec(
+			ctx,
 			action.Pod,
 			podCmd.String(),
 			t.In,

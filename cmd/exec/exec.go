@@ -28,5 +28,5 @@ func preRun(cmd *cobra.Command, args []string) error {
 }
 
 func run(cmd *cobra.Command, args []string) (err error) {
-	return action.Run()
+	return action.Run(cmd.Context())
 }

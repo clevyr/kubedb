@@ -101,5 +101,5 @@ func run(cmd *cobra.Command, args []string) (err error) {
 		}
 	}
 
-	return action.Run()
+	return action.Run(cmd.Context())
 }

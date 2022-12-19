@@ -1,6 +1,7 @@
 package config
 
 import (
+	"context"
 	"github.com/clevyr/kubedb/internal/command"
 	"github.com/clevyr/kubedb/internal/database/sqlformat"
 	"github.com/clevyr/kubedb/internal/kubernetes"
@@ -21,7 +22,7 @@ type Databaser interface {
 	DropDatabaseQuery(database string) string
 	AnalyzeQuery() string
 	PodLabels() []kubernetes.LabelQueryable
-	FilterPods(client kubernetes.KubeClient, pods []v1.Pod) ([]v1.Pod, error)
+	FilterPods(ctx context.Context, client kubernetes.KubeClient, pods []v1.Pod) ([]v1.Pod, error)
 	PasswordEnvNames(conf Global) []string
 
 	ExecCommand(conf Exec) *command.Builder

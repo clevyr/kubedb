@@ -1,6 +1,7 @@
 package port_forward
 
 import (
+	"context"
 	"fmt"
 	"github.com/clevyr/kubedb/internal/config"
 	log2 "github.com/clevyr/kubedb/internal/log"
@@ -20,7 +21,7 @@ type PortForward struct {
 	config.PortForward `mapstructure:",squash"`
 }
 
-func (a PortForward) Run() error {
+func (a PortForward) Run(ctx context.Context) error {
 	log.WithFields(log.Fields{
 		"namespace": a.Client.Namespace,
 		"pod":       a.Pod.Name,

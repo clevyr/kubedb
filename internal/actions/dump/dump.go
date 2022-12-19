@@ -1,6 +1,7 @@
 package dump
 
 import (
+	"context"
 	"errors"
 	"github.com/clevyr/kubedb/internal/command"
 	"github.com/clevyr/kubedb/internal/config"
@@ -21,7 +22,7 @@ type Dump struct {
 	config.Dump `mapstructure:",squash"`
 }
 
-func (action Dump) Run() (err error) {
+func (action Dump) Run(ctx context.Context) (err error) {
 	if action.Filename == "" {
 		action.Filename, err = Filename{
 			Namespace: action.Client.Namespace,
@@ -72,7 +73,7 @@ func (action Dump) Run() (err error) {
 	plogger := progressbar.NewBarSafeLogger(os.Stderr, bar)
 	log.SetOutput(plogger)
 
-	errGroup := errgroup.Group{}
+	errGroup, ctx := errgroup.WithContext(ctx)
 
 	pr, pw := io.Pipe()
 	// Begin database export
@@ -82,6 +83,7 @@ func (action Dump) Run() (err error) {
 		}(pw)
 
 		if err := action.Client.Exec(
+			ctx,
 			action.Pod,
 			action.buildCommand().String(),
 			os.Stdin,

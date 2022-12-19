@@ -1,6 +1,7 @@
 package restore
 
 import (
+	"context"
 	"github.com/clevyr/kubedb/internal/command"
 	"github.com/clevyr/kubedb/internal/config"
 	"github.com/clevyr/kubedb/internal/database/sqlformat"
@@ -18,7 +19,7 @@ type Restore struct {
 	config.Restore `mapstructure:",squash"`
 }
 
-func (action Restore) Run() (err error) {
+func (action Restore) Run(ctx context.Context) (err error) {
 	var f io.ReadCloser
 	switch action.Filename {
 	case "-":
@@ -46,7 +47,7 @@ func (action Restore) Run() (err error) {
 	outLog := progressbar.NewBarSafeLogger(os.Stdout, bar)
 	log.SetOutput(errLog)
 
-	errGroup := errgroup.Group{}
+	errGroup, ctx := errgroup.WithContext(ctx)
 
 	pr, pw := io.Pipe()
 	errGroup.Go(func() error {
@@ -54,7 +55,7 @@ func (action Restore) Run() (err error) {
 		defer func(pr io.ReadCloser) {
 			_ = pr.Close()
 		}(pr)
-		return action.runInDatabasePod(pr, outLog, errLog, action.Format)
+		return action.runInDatabasePod(ctx, pr, outLog, errLog, action.Format)
 	})
 
 	errGroup.Go(func() error {
@@ -108,7 +109,7 @@ func (action Restore) Run() (err error) {
 					defer func(pr io.ReadCloser) {
 						_ = pr.Close()
 					}(pr)
-					return action.runInDatabasePod(pr, outLog, errLog, sqlformat.Gzip)
+					return action.runInDatabasePod(ctx, pr, outLog, errLog, sqlformat.Gzip)
 				})
 			}
 
@@ -163,12 +164,13 @@ func gzipCopy(w io.Writer, r io.Reader) (err error) {
 	return nil
 }
 
-func (action Restore) runInDatabasePod(r *io.PipeReader, stdout, stderr io.Writer, inputFormat sqlformat.Format) error {
+func (action Restore) runInDatabasePod(ctx context.Context, r *io.PipeReader, stdout, stderr io.Writer, inputFormat sqlformat.Format) error {
 	defer func(r *io.PipeReader) {
 		_ = r.Close()
 	}(r)
 
 	if err := action.Client.Exec(
+		ctx,
 		action.Pod,
 		buildCommand(action.Restore, inputFormat).String(),
 		r,
