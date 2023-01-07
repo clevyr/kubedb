@@ -2,7 +2,7 @@ package command
 
 import (
 	"fmt"
-	"gopkg.in/alessio/shellescape.v1"
+	"github.com/alessio/shellescape"
 	"strings"
 )
 

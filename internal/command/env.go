@@ -1,6 +1,6 @@
 package command
 
-import "gopkg.in/alessio/shellescape.v1"
+import "github.com/alessio/shellescape"
 
 func NewEnv(k, v string) Env {
 	return Env{
