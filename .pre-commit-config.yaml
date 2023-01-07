@@ -1,12 +1,19 @@
 repos:
-  - repo: https://github.com/dnephin/pre-commit-golang
-    rev: v0.5.0
+  - repo: https://github.com/TekWizely/pre-commit-golang
+    rev: v1.0.0-rc.1
     hooks:
+      - id: go-mod-tidy-repo
       - id: go-fmt
+        args: [-w]
       - id: go-vet
       - id: golangci-lint
-      - id: go-mod-tidy
-      - id: go-generate
-        name: go-generate-docs
+        args: [--fix]
+
+  - repo: local
+    hooks:
+      - id: usage-docs
+        name: usage-docs
+        entry: go run ./internal/cmd/docs
+        language: system
+        files: ^(cmd|internal/(cmd/docs|config/flags))
         pass_filenames: false
-        args: [./docs.go]
