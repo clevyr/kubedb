@@ -5,8 +5,8 @@ repos:
       - id: go-mod-tidy-repo
       - id: go-fmt
         args: [-w]
-      - id: go-vet
-      - id: golangci-lint
+      - id: go-vet-mod
+      - id: golangci-lint-mod
         args: [--fix]
 
   - repo: local
