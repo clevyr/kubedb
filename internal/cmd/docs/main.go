@@ -4,20 +4,13 @@ import (
 	"fmt"
 	"github.com/clevyr/kubedb/cmd"
 	"github.com/spf13/cobra/doc"
-	flag "github.com/spf13/pflag"
 	"log"
 	"os"
-	"path/filepath"
 )
 
 func main() {
-	var output string
-	flag.StringVarP(&output, "directory", "C", "./docs", "dir to hold the generated config")
-	flag.Parse()
-
 	var err error
-
-	output = filepath.Join(".", filepath.Join("/", output))
+	output := "./docs"
 
 	err = os.RemoveAll(output)
 	if err != nil {
