@@ -22,6 +22,11 @@
     {
       "matchManagers": ["github-actions"],
       "automerge": true
+    },
+    {
+      "matchPackageNames": ["k8s.io/client-go"],
+      "matchUpdateTypes": ["major"],
+      "enabled": false
     }
   ],
   "postUpdateOptions": ["gomodTidy"]
