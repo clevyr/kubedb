@@ -6,13 +6,13 @@ require (
 	github.com/AlecAivazis/survey/v2 v2.3.6
 	github.com/jedib0t/go-pretty/v6 v6.4.3
 	github.com/klauspost/pgzip v1.2.5
+	github.com/mattn/go-isatty v0.0.16
 	github.com/schollz/progressbar/v3 v3.12.2
 	github.com/sirupsen/logrus v1.9.0
 	github.com/spf13/cobra v1.6.1
 	github.com/spf13/pflag v1.0.5
 	github.com/spf13/viper v1.14.0
 	golang.org/x/sync v0.1.0
-	golang.org/x/sys v0.3.0
 	gopkg.in/alessio/shellescape.v1 v1.0.0-20170105083845-52074bc9df61
 	k8s.io/api v0.26.0
 	k8s.io/apimachinery v0.26.0
@@ -47,7 +47,6 @@ require (
 	github.com/magiconair/properties v1.8.6 // indirect
 	github.com/mailru/easyjson v0.7.7 // indirect
 	github.com/mattn/go-colorable v0.1.12 // indirect
-	github.com/mattn/go-isatty v0.0.16 // indirect
 	github.com/mattn/go-runewidth v0.0.14 // indirect
 	github.com/mgutz/ansi v0.0.0-20200706080929-d51e80ef957d // indirect
 	github.com/mitchellh/colorstring v0.0.0-20190213212951-d06e56a500db // indirect
@@ -69,6 +68,7 @@ require (
 	github.com/subosito/gotenv v1.4.1 // indirect
 	golang.org/x/net v0.3.1-0.20221206200815-1e63c2f08a10 // indirect
 	golang.org/x/oauth2 v0.0.0-20221014153046-6fdb5e3db783 // indirect
+	golang.org/x/sys v0.3.0 // indirect
 	golang.org/x/term v0.3.0 // indirect
 	golang.org/x/text v0.5.0 // indirect
 	golang.org/x/time v0.0.0-20220609170525-579cf78fd858 // indirect

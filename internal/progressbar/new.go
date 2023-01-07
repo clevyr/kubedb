@@ -2,7 +2,7 @@ package progressbar
 
 import (
 	"bytes"
-	"github.com/clevyr/kubedb/internal/terminal"
+	"github.com/mattn/go-isatty"
 	"github.com/schollz/progressbar/v3"
 	"io"
 	"os"
@@ -10,7 +10,7 @@ import (
 )
 
 func New(max int64, label string) *progressbar.ProgressBar {
-	if terminal.IsTTY() {
+	if isatty.IsTerminal(os.Stdout.Fd()) || isatty.IsCygwinTerminal(os.Stdout.Fd()) {
 		return progressbar.DefaultBytes(max, label)
 	}
 
