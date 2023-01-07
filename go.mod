@@ -12,7 +12,7 @@ require (
 	github.com/spf13/cobra v1.6.1
 	github.com/spf13/viper v1.14.0
 	golang.org/x/sync v0.1.0
-	gopkg.in/alessio/shellescape.v1 v1.0.0-20170105083845-52074bc9df61
+	gopkg.in/alessio/shellescape.v1 v1.4.1
 	k8s.io/api v0.26.0
 	k8s.io/apimachinery v0.26.0
 	k8s.io/client-go v0.26.0
