@@ -10,6 +10,9 @@
     "{{updateType}}"
   ],
   "automergeType": "branch",
+  "pre-commit": {
+    "enabled": true
+  },
   "commitMessagePrefix": ":arrow_up:",
   "packageRules": [
     {
