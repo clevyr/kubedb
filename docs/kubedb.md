@@ -43,4 +43,5 @@ Dynamic Env Var Variables:
 * [kubedb exec](kubedb_exec.md)	 - connect to an interactive shell
 * [kubedb port-forward](kubedb_port-forward.md)	 - set up a local port forward
 * [kubedb restore](kubedb_restore.md)	 - restore a database from a sql file
+* [kubedb ui](kubedb_ui.md)	 - launch a terminal UI
 

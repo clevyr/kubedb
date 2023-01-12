@@ -6,6 +6,7 @@ import (
 	"github.com/clevyr/kubedb/cmd/exec"
 	"github.com/clevyr/kubedb/cmd/port_forward"
 	"github.com/clevyr/kubedb/cmd/restore"
+	"github.com/clevyr/kubedb/cmd/ui"
 	"github.com/clevyr/kubedb/internal/config/flags"
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
@@ -100,6 +101,7 @@ func init() {
 		dump.Command,
 		restore.Command,
 		port_forward.Command,
+		ui.Command,
 	)
 }
 
