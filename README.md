@@ -90,14 +90,19 @@ KubeDB requires an existing Kubeconfig. See below for details.
    brew install google-cloud-sdk
    gcloud init
    ```
+2. Install the `gke-cloud-auth-plugin` per the GCP install doc or run:
 
-2. Then to generate a Kubeconfig, run:
+    ```shell
+    gcloud components install gke-gcloud-auth-plugin
+    ```
+
+3. Then to generate a Kubeconfig, run:
 
    ```shell
    gcloud container clusters get-credentials --project=PROJECT CLUSTER_NAME
    ```
    
-3. If you don’t encounter any errors then you should be connected and ready to work with databases!
+4. If you don’t encounter any errors then you should be connected and ready to work with databases!
    To verify, type in the following command and press the tab key twice:
 
    ```shell
