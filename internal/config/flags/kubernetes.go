@@ -6,11 +6,19 @@ import (
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"os"
 	"path/filepath"
 )
 
+const KubeconfigEnv = "KUBECONFIG"
+
 func Kubeconfig(cmd *cobra.Command) {
-	cmd.PersistentFlags().String("kubeconfig", filepath.Join("$HOME", ".kube", "config"), "absolute path to the kubeconfig file")
+	kubeconfigEnv := os.Getenv(KubeconfigEnv)
+	if kubeconfigEnv == "" {
+		kubeconfigEnv = filepath.Join("$HOME", ".kube", "config")
+	}
+
+	cmd.PersistentFlags().String("kubeconfig", kubeconfigEnv, "absolute path to the kubeconfig file")
 	if err := viper.BindPFlag("kubernetes.kubeconfig", cmd.PersistentFlags().Lookup("kubeconfig")); err != nil {
 		panic(err)
 	}
