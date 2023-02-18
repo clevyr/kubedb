@@ -3,9 +3,10 @@
   "extends": [
     "config:base",
     ":disableRateLimiting",
-    ":automergeBranch",
+    ":automergePr",
     ":enablePreCommit"
   ],
+  "platformAutomerge": true,
   "labels": [
     "dependencies",
     "{{datasource}}",
