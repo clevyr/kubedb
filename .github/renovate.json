@@ -27,6 +27,11 @@
       "automerge": true
     },
     {
+      "matchManagers": ["dockerfile"],
+      "matchPackageNames": ["alpine"],
+      "automerge": true
+    },
+    {
       "matchPackageNames": ["k8s.io/client-go"],
       "matchUpdateTypes": ["major"],
       "enabled": false
