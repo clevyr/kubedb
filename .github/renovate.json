@@ -1,18 +1,16 @@
 {
   "$schema": "https://docs.renovatebot.com/renovate-schema.json",
   "extends": [
-    "config:base"
+    "config:base",
+    ":disableRateLimiting",
+    ":automergeBranch",
+    ":enablePreCommit"
   ],
-  "ignorePresets": [":prHourlyLimit2"],
   "labels": [
     "dependencies",
     "{{datasource}}",
     "{{updateType}}"
   ],
-  "automergeType": "branch",
-  "pre-commit": {
-    "enabled": true
-  },
   "commitMessagePrefix": ":arrow_up:",
   "packageRules": [
     {
