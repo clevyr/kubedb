@@ -44,6 +44,40 @@ brews:
       (bash_completion/"{{ .ProjectName }}").write output
       output = Utils.safe_popen_read("#{bin}/{{ .ProjectName }}", "completion", "zsh")
       (zsh_completion/"_{{ .ProjectName }}").write output
+dockers:
+  - &dockers
+    image_templates:
+      - ghcr.io/clevyr/{{ .ProjectName }}:{{ .Version }}-amd64
+    use: buildx
+    dockerfile: Dockerfile.goreleaser
+    build_flag_templates:
+      - "--platform=linux/amd64"
+  - <<: *dockers
+    image_templates:
+      - ghcr.io/clevyr/{{ .ProjectName }}:{{ .Version }}-armv7
+    goarch: arm
+    goarm: 7
+    build_flag_templates:
+      - "--platform=linux/arm/v7"
+  - <<: *dockers
+    image_templates:
+      - ghcr.io/clevyr/{{ .ProjectName }}:{{ .Version }}-arm64v8
+    goarch: arm64
+    build_flag_templates:
+      - "--platform=linux/arm64/v8"
+docker_manifests:
+  - &docker_manifests
+    name_template: ghcr.io/clevyr/{{ .ProjectName }}:latest
+    image_templates:
+      - ghcr.io/clevyr/{{ .ProjectName }}:{{ .Version }}-amd64
+      - ghcr.io/clevyr/{{ .ProjectName }}:{{ .Version }}-armv7
+      - ghcr.io/clevyr/{{ .ProjectName }}:{{ .Version }}-arm64v8
+  - <<: *docker_manifests
+    name_template: ghcr.io/clevyr/{{ .ProjectName }}:{{ .Version }}
+  - <<: *docker_manifests
+    name_template: ghcr.io/clevyr/{{ .ProjectName }}:{{ .Major }}
+  - <<: *docker_manifests
+    name_template: ghcr.io/clevyr/{{ .ProjectName }}:{{ .Major }}.{{ .Minor }}
 nfpms:
   - id: packages
     formats:

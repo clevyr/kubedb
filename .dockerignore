@@ -1,11 +1,13 @@
-*.md
 .dockerignore
 .git/
+.github/
 .gitignore
+.goreleaser.yml
 .idea/
-Dockerfile
+Dockerfile*
+README.md
 dist/
 docker-compose.yml
+docs/
 kubedb
-out/
 vendor/

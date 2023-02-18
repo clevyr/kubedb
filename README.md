@@ -21,6 +21,30 @@ to configure itself via the Kubernetes EnvVar API.
   ```
 </details>
 
+### Docker
+
+<details>
+  <summary>Click to expand</summary>
+
+KubeDB has a Docker image available at `ghcr.io/clevyr/kubedb`
+
+```shell
+docker pull ghcr.io/clevyr/kubedb
+```
+
+To use this image, you will need to volume bind a couple of directories into the Docker container:
+
+1. **Kubeconfig:** Typically, this will be at `~/.kube/config`, and the container expects it to be at `/.kube/config`.
+   - Example: `-v "$HOME/.kube/config:/.kube/config"`
+2. **Data dir:** A directory to hold the generated dump or that has a sql file to restore. The container expects this to be at `/data`.
+   - Example: `-v "$PWD:/data"`
+
+#### Example:
+```shell
+docker run --rm -it -v "$HOME/.kube:/.kube" -v "$PWD:/data" ghcr.io/clevyr/kubedb dump
+```
+</details>
+
 ### APT Repository (Ubuntu, Debian)
 
 <details>

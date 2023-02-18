@@ -1,0 +1,8 @@
+FROM alpine:3.17
+LABEL org.opencontainers.image.source="https://github.com/clevyr/kubedb"
+WORKDIR /data
+
+COPY kubedb /usr/local/bin
+
+ENV KUBECONFIG /.kube/config
+CMD ["kubedb"]
