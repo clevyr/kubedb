@@ -1,5 +1,7 @@
 # KubeDB
 
+<img src="./assets/icon.svg" alt="KubeDB Icon" width="92" align="right">
+
 [![Build](https://github.com/clevyr/kubedb/actions/workflows/build.yml/badge.svg)](https://github.com/clevyr/kubedb/actions/workflows/build.yml)
 
 KubeDB is a command to interact with databases running in Kubernetes.
