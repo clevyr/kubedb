@@ -6,6 +6,7 @@ import (
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/client-go/tools/clientcmd"
 	"os"
 	"path/filepath"
 )
@@ -33,7 +34,11 @@ func Context(cmd *cobra.Command) {
 			if err != nil {
 				panic(err)
 			}
-			conf, err := kubernetes.RawConfig(kubeconfig)
+			configLoader := clientcmd.NewNonInteractiveDeferredLoadingClientConfig(
+				&clientcmd.ClientConfigLoadingRules{Precedence: filepath.SplitList(kubeconfig)},
+				nil,
+			)
+			conf, err := configLoader.RawConfig()
 			if err != nil {
 				return nil, cobra.ShellCompDirectiveNoFileComp
 			}
