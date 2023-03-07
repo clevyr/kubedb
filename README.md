@@ -3,6 +3,7 @@
 <img src="./assets/icon.svg" alt="KubeDB Icon" width="92" align="right">
 
 [![Build](https://github.com/clevyr/kubedb/actions/workflows/build.yml/badge.svg)](https://github.com/clevyr/kubedb/actions/workflows/build.yml)
+[![Go Report Card](https://goreportcard.com/badge/github.com/clevyr/kubedb)](https://goreportcard.com/report/github.com/clevyr/kubedb)
 
 KubeDB is a command to interact with databases running in Kubernetes.
 It supports dumping, restoring, and dropping into a database shell.
