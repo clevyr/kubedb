@@ -28,7 +28,7 @@ to configure itself via the Kubernetes EnvVar API.
 <details>
   <summary>Click to expand</summary>
 
-KubeDB has a Docker image available at `ghcr.io/clevyr/kubedb`
+KubeDB has a Docker image available at [`ghcr.io/clevyr/kubedb`](https://ghcr.io/clevyr/kubedb)
 
 ```shell
 docker pull ghcr.io/clevyr/kubedb
