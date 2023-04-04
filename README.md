@@ -2,6 +2,7 @@
 
 <img src="./assets/icon.svg" alt="KubeDB Icon" width="92" align="right">
 
+[![GitHub release (latest by date)](https://img.shields.io/github/v/release/clevyr/kubedb)](https://github.com/clevyr/kubedb/releases)
 [![Build](https://github.com/clevyr/kubedb/actions/workflows/build.yml/badge.svg)](https://github.com/clevyr/kubedb/actions/workflows/build.yml)
 [![Go Report Card](https://goreportcard.com/badge/github.com/clevyr/kubedb)](https://goreportcard.com/report/github.com/clevyr/kubedb)
 
