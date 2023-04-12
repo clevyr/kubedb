@@ -30,5 +30,4 @@ func Redact(cmd *cobra.Command) {
 	if err := viper.BindPFlag("redact", cmd.PersistentFlags().Lookup("redact")); err != nil {
 		panic(err)
 	}
-
 }

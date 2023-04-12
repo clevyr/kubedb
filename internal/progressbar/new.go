@@ -2,11 +2,12 @@ package progressbar
 
 import (
 	"bytes"
-	"github.com/mattn/go-isatty"
-	"github.com/schollz/progressbar/v3"
 	"io"
 	"os"
 	"time"
+
+	"github.com/mattn/go-isatty"
+	"github.com/schollz/progressbar/v3"
 )
 
 func New(max int64, label string) *progressbar.ProgressBar {

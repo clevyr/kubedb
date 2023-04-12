@@ -2,8 +2,9 @@ package log_hooks
 
 import (
 	"fmt"
-	log "github.com/sirupsen/logrus"
 	"strings"
+
+	log "github.com/sirupsen/logrus"
 )
 
 // Redact will redact a secret from log output

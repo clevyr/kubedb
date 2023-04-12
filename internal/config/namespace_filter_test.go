@@ -1,11 +1,12 @@
 package config
 
 import (
-	"github.com/spf13/viper"
 	"reflect"
 	"regexp"
 	"strconv"
 	"testing"
+
+	"github.com/spf13/viper"
 )
 
 func TestNamespaceRegexp_Match(t *testing.T) {

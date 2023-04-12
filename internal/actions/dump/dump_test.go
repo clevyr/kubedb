@@ -1,12 +1,13 @@
 package dump
 
 import (
+	"reflect"
+	"testing"
+
 	"github.com/clevyr/kubedb/internal/command"
 	"github.com/clevyr/kubedb/internal/config"
 	"github.com/clevyr/kubedb/internal/database/dialect"
 	"github.com/clevyr/kubedb/internal/database/sqlformat"
-	"reflect"
-	"testing"
 )
 
 func Test_buildCommand(t *testing.T) {

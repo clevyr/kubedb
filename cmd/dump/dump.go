@@ -1,6 +1,9 @@
 package dump
 
 import (
+	"os"
+	"strconv"
+
 	"github.com/clevyr/kubedb/internal/actions/dump"
 	"github.com/clevyr/kubedb/internal/config"
 	"github.com/clevyr/kubedb/internal/config/flags"
@@ -8,8 +11,6 @@ import (
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 	_ "k8s.io/client-go/plugin/pkg/client/auth"
-	"os"
-	"strconv"
 )
 
 var Command = &cobra.Command{

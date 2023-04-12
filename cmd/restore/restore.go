@@ -3,6 +3,8 @@ package restore
 import (
 	"errors"
 	"fmt"
+	"os"
+
 	"github.com/AlecAivazis/survey/v2"
 	"github.com/clevyr/kubedb/internal/actions/restore"
 	"github.com/clevyr/kubedb/internal/config/flags"
@@ -11,7 +13,6 @@ import (
 	"github.com/spf13/viper"
 	_ "k8s.io/client-go/plugin/pkg/client/auth"
 	"k8s.io/kubectl/pkg/util/term"
-	"os"
 )
 
 var Command = &cobra.Command{

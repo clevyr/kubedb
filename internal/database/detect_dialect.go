@@ -3,6 +3,7 @@ package database
 import (
 	"context"
 	"errors"
+
 	"github.com/clevyr/kubedb/internal/config"
 	"github.com/clevyr/kubedb/internal/database/dialect"
 	"github.com/clevyr/kubedb/internal/kubernetes"

@@ -1,12 +1,13 @@
 package kubernetes
 
 import (
+	"path/filepath"
+
 	"github.com/spf13/cobra"
 	"k8s.io/client-go/kubernetes"
 	v1 "k8s.io/client-go/kubernetes/typed/core/v1"
 	"k8s.io/client-go/rest"
 	"k8s.io/client-go/tools/clientcmd"
-	"path/filepath"
 )
 
 type KubeClient struct {

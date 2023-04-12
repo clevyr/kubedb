@@ -2,6 +2,11 @@ package restore
 
 import (
 	"context"
+	"io"
+	"os"
+	"strings"
+	"time"
+
 	"github.com/clevyr/kubedb/internal/command"
 	"github.com/clevyr/kubedb/internal/config"
 	"github.com/clevyr/kubedb/internal/database/sqlformat"
@@ -9,10 +14,6 @@ import (
 	gzip "github.com/klauspost/pgzip"
 	log "github.com/sirupsen/logrus"
 	"golang.org/x/sync/errgroup"
-	"io"
-	"os"
-	"strings"
-	"time"
 )
 
 type Restore struct {

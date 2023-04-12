@@ -2,15 +2,16 @@ package restore
 
 import (
 	"bytes"
+	"io"
+	"reflect"
+	"strings"
+	"testing"
+
 	"github.com/clevyr/kubedb/internal/command"
 	"github.com/clevyr/kubedb/internal/config"
 	"github.com/clevyr/kubedb/internal/database/dialect"
 	"github.com/clevyr/kubedb/internal/database/sqlformat"
 	gzip "github.com/klauspost/pgzip"
-	"io"
-	"reflect"
-	"strings"
-	"testing"
 )
 
 func Test_buildCommand(t *testing.T) {

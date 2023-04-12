@@ -2,6 +2,9 @@ package cmd
 
 import (
 	"fmt"
+	"os"
+	"strings"
+
 	"github.com/clevyr/kubedb/cmd/dump"
 	"github.com/clevyr/kubedb/cmd/exec"
 	"github.com/clevyr/kubedb/cmd/port_forward"
@@ -10,8 +13,6 @@ import (
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
-	"os"
-	"strings"
 )
 
 var (

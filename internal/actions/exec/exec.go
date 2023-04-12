@@ -2,12 +2,13 @@ package exec
 
 import (
 	"context"
+	"os"
+
 	"github.com/clevyr/kubedb/internal/command"
 	"github.com/clevyr/kubedb/internal/config"
 	log "github.com/sirupsen/logrus"
 	"k8s.io/client-go/tools/remotecommand"
 	"k8s.io/kubectl/pkg/util/term"
-	"os"
 )
 
 type Exec struct {

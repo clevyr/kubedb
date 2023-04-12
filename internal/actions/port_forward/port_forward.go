@@ -3,18 +3,19 @@ package port_forward
 import (
 	"context"
 	"fmt"
-	"github.com/clevyr/kubedb/internal/config"
-	log2 "github.com/clevyr/kubedb/internal/log"
-	"github.com/jedib0t/go-pretty/v6/table"
-	log "github.com/sirupsen/logrus"
-	"k8s.io/client-go/tools/portforward"
-	"k8s.io/client-go/transport/spdy"
 	"net/http"
 	"net/url"
 	"os"
 	"os/signal"
 	"strings"
 	"syscall"
+
+	"github.com/clevyr/kubedb/internal/config"
+	log2 "github.com/clevyr/kubedb/internal/log"
+	"github.com/jedib0t/go-pretty/v6/table"
+	log "github.com/sirupsen/logrus"
+	"k8s.io/client-go/tools/portforward"
+	"k8s.io/client-go/transport/spdy"
 )
 
 type PortForward struct {

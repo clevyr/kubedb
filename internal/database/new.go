@@ -3,6 +3,7 @@ package database
 import (
 	"errors"
 	"fmt"
+
 	"github.com/clevyr/kubedb/internal/config"
 	"github.com/clevyr/kubedb/internal/database/dialect"
 )

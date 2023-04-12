@@ -7,7 +7,7 @@ import (
 
 func SetOutput(name, value string) error {
 	if filename := os.Getenv("GITHUB_OUTPUT"); filename != "" {
-		f, err := os.OpenFile(filename, os.O_APPEND|os.O_WRONLY, 0755)
+		f, err := os.OpenFile(filename, os.O_APPEND|os.O_WRONLY, 0o755)
 		if err != nil {
 			return err
 		}

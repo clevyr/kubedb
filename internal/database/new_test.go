@@ -1,10 +1,11 @@
 package database
 
 import (
-	"github.com/clevyr/kubedb/internal/config"
-	"github.com/clevyr/kubedb/internal/database/dialect"
 	"reflect"
 	"testing"
+
+	"github.com/clevyr/kubedb/internal/config"
+	"github.com/clevyr/kubedb/internal/database/dialect"
 )
 
 func TestNew(t *testing.T) {

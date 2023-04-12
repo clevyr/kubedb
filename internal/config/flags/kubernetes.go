@@ -1,14 +1,15 @@
 package flags
 
 import (
+	"os"
+	"path/filepath"
+
 	"github.com/clevyr/kubedb/internal/config"
 	"github.com/clevyr/kubedb/internal/kubernetes"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/tools/clientcmd"
-	"os"
-	"path/filepath"
 )
 
 const KubeconfigEnv = "KUBECONFIG"

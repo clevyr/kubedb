@@ -3,15 +3,17 @@ package dialect
 import (
 	"context"
 	"encoding/csv"
+	"io"
+	"os"
+	"strings"
+
 	"github.com/clevyr/kubedb/internal/command"
 	"github.com/clevyr/kubedb/internal/config"
 	"github.com/clevyr/kubedb/internal/database/sqlformat"
 	"github.com/clevyr/kubedb/internal/kubernetes"
 	log "github.com/sirupsen/logrus"
-	"io"
+
 	v1 "k8s.io/api/core/v1"
-	"os"
-	"strings"
 )
 
 type Postgres struct{}

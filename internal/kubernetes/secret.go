@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+
 	v1 "k8s.io/api/core/v1"
 	v1meta "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
@@ -21,8 +22,10 @@ func FindEnvVar(pod v1.Pod, envName string) (*v1.EnvVar, error) {
 	return nil, fmt.Errorf("%v: %s", ErrEnvVarNotFound, envName)
 }
 
-var ErrNoEnvNames = errors.New("dialect does not contain any env names")
-var ErrSecretDoesNotHaveKey = errors.New("secret does not have key")
+var (
+	ErrNoEnvNames           = errors.New("dialect does not contain any env names")
+	ErrSecretDoesNotHaveKey = errors.New("secret does not have key")
+)
 
 func (client KubeClient) GetValueFromEnv(ctx context.Context, pod v1.Pod, envNames []string) (string, error) {
 	if len(envNames) == 0 {

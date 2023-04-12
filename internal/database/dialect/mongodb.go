@@ -2,12 +2,13 @@ package dialect
 
 import (
 	"context"
+	"strings"
+
 	"github.com/clevyr/kubedb/internal/command"
 	"github.com/clevyr/kubedb/internal/config"
 	"github.com/clevyr/kubedb/internal/database/sqlformat"
 	"github.com/clevyr/kubedb/internal/kubernetes"
 	v1 "k8s.io/api/core/v1"
-	"strings"
 )
 
 type MongoDB struct{}

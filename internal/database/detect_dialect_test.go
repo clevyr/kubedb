@@ -2,14 +2,15 @@ package database
 
 import (
 	"context"
+	"reflect"
+	"testing"
+
 	"github.com/clevyr/kubedb/internal/config"
 	"github.com/clevyr/kubedb/internal/database/dialect"
 	"github.com/clevyr/kubedb/internal/kubernetes"
 	v1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	kubernetesfake "k8s.io/client-go/kubernetes/fake"
-	"reflect"
-	"testing"
 )
 
 func TestDetectDialect(t *testing.T) {

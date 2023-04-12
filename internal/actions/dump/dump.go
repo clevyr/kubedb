@@ -3,6 +3,11 @@ package dump
 import (
 	"context"
 	"errors"
+	"io"
+	"os"
+	"path/filepath"
+	"time"
+
 	"github.com/clevyr/kubedb/internal/command"
 	"github.com/clevyr/kubedb/internal/config"
 	"github.com/clevyr/kubedb/internal/database/sqlformat"
@@ -12,10 +17,6 @@ import (
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/viper"
 	"golang.org/x/sync/errgroup"
-	"io"
-	"os"
-	"path/filepath"
-	"time"
 )
 
 type Dump struct {
@@ -67,7 +68,7 @@ func (action Dump) Run(ctx context.Context) (err error) {
 		}
 	}
 
-	var startTime = time.Now()
+	startTime := time.Now()
 
 	bar := progressbar.New(-1, "downloading")
 	plogger := progressbar.NewBarSafeLogger(os.Stderr, bar)

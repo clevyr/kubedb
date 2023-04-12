@@ -1,9 +1,10 @@
 package config
 
 import (
-	"github.com/spf13/viper"
 	"regexp"
 	"strconv"
+
+	"github.com/spf13/viper"
 )
 
 var (

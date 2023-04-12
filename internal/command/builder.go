@@ -2,8 +2,9 @@ package command
 
 import (
 	"fmt"
-	"github.com/alessio/shellescape"
 	"strings"
+
+	"github.com/alessio/shellescape"
 )
 
 func NewBuilder(p ...any) *Builder {

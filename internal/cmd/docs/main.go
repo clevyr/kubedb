@@ -2,10 +2,11 @@ package main
 
 import (
 	"fmt"
-	"github.com/clevyr/kubedb/cmd"
-	"github.com/spf13/cobra/doc"
 	"log"
 	"os"
+
+	"github.com/clevyr/kubedb/cmd"
+	"github.com/spf13/cobra/doc"
 )
 
 func main() {
@@ -17,7 +18,7 @@ func main() {
 		log.Fatal(fmt.Errorf("failed to remove existing dia: %w", err))
 	}
 
-	err = os.MkdirAll(output, 0755)
+	err = os.MkdirAll(output, 0o755)
 	if err != nil {
 		log.Fatal(fmt.Errorf("failed to mkdir: %w", err))
 	}

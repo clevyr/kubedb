@@ -2,6 +2,8 @@ package util
 
 import (
 	"errors"
+	"strings"
+
 	"github.com/AlecAivazis/survey/v2"
 	"github.com/clevyr/kubedb/internal/config"
 	"github.com/clevyr/kubedb/internal/database"
@@ -12,7 +14,6 @@ import (
 	"github.com/spf13/viper"
 	v1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"strings"
 )
 
 func DefaultSetup(cmd *cobra.Command, conf *config.Global) (err error) {
