@@ -3,7 +3,7 @@ repos:
     rev: v1.0.0-rc.1
     hooks:
       - id: go-mod-tidy-repo
-      - id: go-fmt
+      - id: go-fumpt
         args: [-w]
       - id: go-vet-mod
       - id: golangci-lint-mod
