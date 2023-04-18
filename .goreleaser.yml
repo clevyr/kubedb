@@ -3,6 +3,8 @@ builds:
       - -s -w -X github.com/clevyr/kubedb/cmd.Version={{.Version}} -X github.com/clevyr/kubedb/cmd.Commit={{.Commit}}
     env:
       - CGO_ENABLED=0
+    flags:
+      - -trimpath
     goarch:
       - amd64
       - arm
