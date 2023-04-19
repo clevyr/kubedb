@@ -1,7 +1,5 @@
 builds:
-  - ldflags:
-      - -s -w -X github.com/clevyr/kubedb/cmd.Version={{.Version}} -X github.com/clevyr/kubedb/cmd.Commit={{.Commit}}
-    env:
+  - env:
       - CGO_ENABLED=0
     flags:
       - -trimpath

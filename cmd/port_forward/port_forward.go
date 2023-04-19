@@ -11,20 +11,22 @@ import (
 	_ "k8s.io/client-go/plugin/pkg/client/auth"
 )
 
-var Command = &cobra.Command{
-	Use:               "port-forward [local_port]",
-	Short:             "set up a local port forward",
-	Args:              cobra.MaximumNArgs(1),
-	ValidArgsFunction: validArgs,
-	GroupID:           "rw",
-	RunE:              run,
-	PreRunE:           preRun,
-}
-
 var action port_forward.PortForward
 
-func init() {
-	flags.Address(Command, &action.Addresses)
+func NewCommand() *cobra.Command {
+	cmd := &cobra.Command{
+		Use:               "port-forward [local_port]",
+		Short:             "set up a local port forward",
+		Args:              cobra.MaximumNArgs(1),
+		ValidArgsFunction: validArgs,
+		GroupID:           "rw",
+		RunE:              run,
+		PreRunE:           preRun,
+	}
+
+	flags.Address(cmd, &action.Addresses)
+
+	return cmd
 }
 
 func validArgs(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {

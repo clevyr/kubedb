@@ -6,8 +6,14 @@ import (
 	"github.com/clevyr/kubedb/cmd"
 )
 
+var (
+	version = "next"
+	commit  = ""
+)
+
 func main() {
-	if err := cmd.Execute(); err != nil {
+	rootCmd := cmd.NewCommand(version, commit)
+	if err := rootCmd.Execute(); err != nil {
 		os.Exit(1)
 	}
 }

@@ -15,34 +15,36 @@ import (
 	"k8s.io/kubectl/pkg/util/term"
 )
 
-var Command = &cobra.Command{
-	Use:     "restore filename",
-	Aliases: []string{"r", "import"},
-	Short:   "restore a database from a sql file",
-	Long: `The "restore" command restores a given sql file to a running database pod.
+var action restore.Restore
+
+func NewCommand() *cobra.Command {
+	cmd := &cobra.Command{
+		Use:     "restore filename",
+		Aliases: []string{"r", "import"},
+		Short:   "restore a database from a sql file",
+		Long: `The "restore" command restores a given sql file to a running database pod.
 
 Supported Input Filetypes:
   - Raw sql file. Typically with the ".sql" extension
   - Gzipped sql file. Typically with the ".sql.gz" extension
   - Postgres custom dump file. Typically with the ".dmp" extension (Only if the target database is Postgres)`,
 
-	Args:              cobra.ExactArgs(1),
-	ValidArgsFunction: validArgs,
-	GroupID:           "rw",
+		Args:              cobra.ExactArgs(1),
+		ValidArgsFunction: validArgs,
+		GroupID:           "rw",
 
-	PreRunE: preRun,
-	RunE:    run,
-}
+		PreRunE: preRun,
+		RunE:    run,
+	}
 
-var action restore.Restore
+	flags.Format(cmd, &action.Format)
+	flags.SingleTransaction(cmd, &action.SingleTransaction)
+	flags.Clean(cmd, &action.Clean)
+	flags.NoOwner(cmd, &action.NoOwner)
+	flags.Force(cmd, &action.Force)
+	flags.Quiet(cmd, &action.Quiet)
 
-func init() {
-	flags.Format(Command, &action.Format)
-	flags.SingleTransaction(Command, &action.SingleTransaction)
-	flags.Clean(Command, &action.Clean)
-	flags.NoOwner(Command, &action.NoOwner)
-	flags.Force(Command, &action.Force)
-	flags.Quiet(Command, &action.Quiet)
+	return cmd
 }
 
 func validArgs(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {

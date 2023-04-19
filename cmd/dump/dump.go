@@ -13,40 +13,42 @@ import (
 	_ "k8s.io/client-go/plugin/pkg/client/auth"
 )
 
-var Command = &cobra.Command{
-	Use:     "dump [filename]",
-	Aliases: []string{"d", "export"},
-	Short:   "dump a database to a sql file",
-	Long: `The "dump" command dumps a running database to a sql file.
+var action dump.Dump
+
+func NewCommand() *cobra.Command {
+	cmd := &cobra.Command{
+		Use:     "dump [filename]",
+		Aliases: []string{"d", "export"},
+		Short:   "dump a database to a sql file",
+		Long: `The "dump" command dumps a running database to a sql file.
 
 If no filename is provided, the filename will be generated.
 For example, if a dump is performed in the namespace "clevyr" with no extra flags,
 the generated filename might look like "` + dump.HelpFilename() + `"`,
 
-	Args:              cobra.MaximumNArgs(1),
-	ValidArgsFunction: validArgs,
-	GroupID:           "ro",
+		Args:              cobra.MaximumNArgs(1),
+		ValidArgsFunction: validArgs,
+		GroupID:           "ro",
 
-	PreRunE: preRun,
-	RunE:    run,
+		PreRunE: preRun,
+		RunE:    run,
 
-	Annotations: map[string]string{
-		"access": strconv.Itoa(config.ReadOnly),
-	},
-}
+		Annotations: map[string]string{
+			"access": strconv.Itoa(config.ReadOnly),
+		},
+	}
 
-var action dump.Dump
+	flags.Directory(cmd, &action.Directory)
+	flags.Format(cmd, &action.Format)
+	flags.IfExists(cmd, &action.IfExists)
+	flags.Clean(cmd, &action.Clean)
+	flags.NoOwner(cmd, &action.NoOwner)
+	flags.Tables(cmd, &action.Tables)
+	flags.ExcludeTable(cmd, &action.ExcludeTable)
+	flags.ExcludeTableData(cmd, &action.ExcludeTableData)
+	flags.Quiet(cmd, &action.Quiet)
 
-func init() {
-	flags.Directory(Command, &action.Directory)
-	flags.Format(Command, &action.Format)
-	flags.IfExists(Command, &action.IfExists)
-	flags.Clean(Command, &action.Clean)
-	flags.NoOwner(Command, &action.NoOwner)
-	flags.Tables(Command, &action.Tables)
-	flags.ExcludeTable(Command, &action.ExcludeTable)
-	flags.ExcludeTableData(Command, &action.ExcludeTableData)
-	flags.Quiet(Command, &action.Quiet)
+	return cmd
 }
 
 func validArgs(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {

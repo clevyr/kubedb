@@ -15,17 +15,13 @@ import (
 	"github.com/spf13/viper"
 )
 
-var (
-	Version = "next"
-	Commit  = ""
-)
-
-var Command = &cobra.Command{
-	Use:               "kubedb",
-	Short:             "interact with a database inside of Kubernetes",
-	Version:           buildVersion(),
-	DisableAutoGenTag: true,
-	Long: `kubedb is a command to interact with a database running in a Kubernetes cluster.
+func NewCommand(version, commit string) *cobra.Command {
+	cmd := &cobra.Command{
+		Use:               "kubedb",
+		Short:             "interact with a database inside of Kubernetes",
+		Version:           buildVersion(version, commit),
+		DisableAutoGenTag: true,
+		Long: `kubedb is a command to interact with a database running in a Kubernetes cluster.
 
 Multiple database types (referred to as the "dialect") are supported.
 If the dialect is not configured via flag, it will be detected dynamically.
@@ -42,7 +38,41 @@ Dynamic Env Var Variables:
   - Password
 `,
 
-	PersistentPreRunE: preRun,
+		PersistentPreRunE: preRun,
+	}
+
+	flags.Kubeconfig(cmd)
+	flags.Context(cmd)
+	flags.Namespace(cmd)
+	flags.Dialect(cmd)
+	flags.Pod(cmd)
+	flags.LogLevel(cmd)
+	flags.LogFormat(cmd)
+	flags.GitHubActions(cmd)
+	flags.Database(cmd)
+	flags.Username(cmd)
+	flags.Password(cmd)
+	flags.Redact(cmd)
+
+	cmd.AddGroup(
+		&cobra.Group{
+			ID:    "ro",
+			Title: "Read Commands",
+		},
+		&cobra.Group{
+			ID:    "rw",
+			Title: "Write Commands",
+		},
+	)
+
+	cmd.AddCommand(
+		exec.NewCommand(),
+		dump.NewCommand(),
+		restore.NewCommand(),
+		port_forward.NewCommand(),
+	)
+
+	return cmd
 }
 
 func preRun(cmd *cobra.Command, args []string) error {
@@ -62,57 +92,22 @@ func preRun(cmd *cobra.Command, args []string) error {
 		}
 	}
 
+	if err := initConfig(); err != nil {
+		return err
+	}
+	initLog(cmd)
 	return nil
 }
 
-func Execute() error {
-	return Command.Execute()
-}
-
-func init() {
-	cobra.OnInitialize(initLog, initConfig)
-
-	flags.Kubeconfig(Command)
-	flags.Context(Command)
-	flags.Namespace(Command)
-	flags.Dialect(Command)
-	flags.Pod(Command)
-	flags.LogLevel(Command)
-	flags.LogFormat(Command)
-	flags.GitHubActions(Command)
-	flags.Database(Command)
-	flags.Username(Command)
-	flags.Password(Command)
-	flags.Redact(Command)
-
-	Command.AddGroup(
-		&cobra.Group{
-			ID:    "ro",
-			Title: "Read Commands",
-		},
-		&cobra.Group{
-			ID:    "rw",
-			Title: "Write Commands",
-		},
-	)
-
-	Command.AddCommand(
-		exec.Command,
-		dump.Command,
-		restore.Command,
-		port_forward.Command,
-	)
-}
-
-func initLog() {
-	logLevel, err := Command.PersistentFlags().GetString("log-level")
+func initLog(cmd *cobra.Command) {
+	logLevel, err := cmd.Flags().GetString("log-level")
 	if err != nil {
 		panic(err)
 	}
 	parsedLevel, err := log.ParseLevel(logLevel)
 	if err != nil {
 		log.WithField("log-level", logLevel).Warn("invalid log level. defaulting to info.")
-		err = Command.PersistentFlags().Set("log-level", "info")
+		err = cmd.Flags().Set("log-level", "info")
 		if err != nil {
 			panic(err)
 		}
@@ -120,7 +115,7 @@ func initLog() {
 	}
 	log.SetLevel(parsedLevel)
 
-	logFormat, err := Command.PersistentFlags().GetString("log-format")
+	logFormat, err := cmd.Flags().GetString("log-format")
 	if err != nil {
 		panic(err)
 	}
@@ -131,14 +126,14 @@ func initLog() {
 		log.SetFormatter(&log.JSONFormatter{})
 	default:
 		log.WithField("log-format", logFormat).Warn("invalid log formatter. defaulting to text.")
-		err = Command.PersistentFlags().Set("log-format", "text")
+		err = cmd.Flags().Set("log-format", "text")
 		if err != nil {
 			panic(err)
 		}
 	}
 }
 
-func initConfig() {
+func initConfig() error {
 	viper.SetConfigName("kubedb")
 	viper.SetConfigType("yaml")
 	viper.AddConfigPath("$HOME/.config/")
@@ -154,15 +149,15 @@ func initConfig() {
 			// Config file not found; ignore error
 		} else {
 			// Config file was found but another error was produced
-			panic(fmt.Errorf("Fatal error reading config file: %w \n", err))
+			return fmt.Errorf("Fatal error reading config file: %w", err)
 		}
 	}
+	return nil
 }
 
-func buildVersion() string {
-	result := Version
-	if Commit != "" {
-		result += " (" + Commit + ")"
+func buildVersion(version, commit string) string {
+	if commit != "" {
+		version += " (" + commit + ")"
 	}
-	return result
+	return version
 }
