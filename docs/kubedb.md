@@ -35,6 +35,7 @@ Dynamic Env Var Variables:
   -p, --password string     database password
       --pod string          force a specific pod. if this flag is set, dialect is required.
   -U, --username string     database username
+  -v, --version             version for kubedb
 ```
 
 ### SEE ALSO

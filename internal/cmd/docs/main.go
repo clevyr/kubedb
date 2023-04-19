@@ -28,7 +28,9 @@ func main() {
 		log.Fatal(err)
 	}
 
-	rootCmd := cmd.NewCommand("", "")
+	rootCmd := cmd.NewCommand("latest", "")
+	rootCmd.InitDefaultVersionFlag()
+
 	err = doc.GenMarkdownTree(rootCmd, output)
 	if err != nil {
 		log.Fatal(fmt.Errorf("failed to generate markdown: %w", err))
