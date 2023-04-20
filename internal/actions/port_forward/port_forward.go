@@ -59,7 +59,7 @@ func (a PortForward) Run(ctx context.Context) error {
 		}).Info("port forward is ready")
 		t := table.NewWriter()
 		t.SetOutputMirror(os.Stdout)
-		t.SetTitle("%s Connection Parameters", a.Pod.Namespace)
+		t.SetTitle(a.Namespace + " database")
 		t.AppendRows([]table.Row{
 			{"Type", a.Dialect.Name()},
 			{"Hostname", "localhost"},
