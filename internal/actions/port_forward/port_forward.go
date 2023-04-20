@@ -72,7 +72,7 @@ func (a PortForward) Run(ctx context.Context) error {
 		}
 		t.SetStyle(table.StyleLight)
 		t.Render()
-		fmt.Println(`Tip: If you are connecting from a Docker container, try setting the hostname to "host.docker.internal"`)
+		fmt.Println(`Tip: If you're connecting from a Docker container, set the hostname to "host.docker.internal"`)
 	}()
 
 	errCh := make(chan error, 1)
