@@ -1,8 +1,9 @@
 package command
 
 import (
-	"reflect"
 	"testing"
+
+	"github.com/stretchr/testify/assert"
 )
 
 func TestBuilder_Push(t *testing.T) {
@@ -26,9 +27,8 @@ func TestBuilder_Push(t *testing.T) {
 			j := &Builder{
 				cmd: tt.fields.cmd,
 			}
-			if got := j.Push(tt.args.p...); !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("Push() = %v, want %v", got, tt.want)
-			}
+			got := j.Push(tt.args.p...)
+			assert.Equal(t, tt.want, got)
 		})
 	}
 }
@@ -52,16 +52,20 @@ func TestBuilder_String(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			defer func() {
-				if err := recover(); (err != nil) != tt.wantPanic {
-					t.Errorf("String() panic = %v, wantPanic %v", err, tt.wantPanic)
+				err, ok := recover().(error)
+				if tt.wantPanic {
+					assert.True(t, ok)
+					assert.Error(t, err)
+				} else {
+					assert.False(t, ok)
+					assert.NoError(t, err)
 				}
 			}()
 			j := Builder{
 				cmd: tt.fields.cmd,
 			}
-			if got := j.String(); got != tt.want {
-				t.Errorf("String() = %v, want %v", got, tt.want)
-			}
+			got := j.String()
+			assert.Equal(t, tt.want, got)
 		})
 	}
 }
@@ -87,9 +91,8 @@ func TestBuilder_Unshift(t *testing.T) {
 			j := &Builder{
 				cmd: tt.fields.cmd,
 			}
-			if got := j.Unshift(tt.args.p...); !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("Unshift() = %v, want %v", got, tt.want)
-			}
+			got := j.Unshift(tt.args.p...)
+			assert.Equal(t, tt.want, got)
 		})
 	}
 }
@@ -108,9 +111,8 @@ func TestNewBuilder(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if got := NewBuilder(tt.args.p...); !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("NewBuilder() = %v, want %v", got, tt.want)
-			}
+			got := NewBuilder(tt.args.p...)
+			assert.Equal(t, tt.want, got)
 		})
 	}
 }

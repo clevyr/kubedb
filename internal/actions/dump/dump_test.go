@@ -1,13 +1,13 @@
 package dump
 
 import (
-	"reflect"
 	"testing"
 
 	"github.com/clevyr/kubedb/internal/command"
 	"github.com/clevyr/kubedb/internal/config"
 	"github.com/clevyr/kubedb/internal/database/dialect"
 	"github.com/clevyr/kubedb/internal/database/sqlformat"
+	"github.com/stretchr/testify/assert"
 )
 
 func Test_buildCommand(t *testing.T) {
@@ -45,9 +45,8 @@ func Test_buildCommand(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if got := tt.args.conf.buildCommand(); !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("buildCommand() = %v, want %v", got, tt.want)
-			}
+			got := tt.args.conf.buildCommand()
+			assert.Equal(t, tt.want, got)
 		})
 	}
 }

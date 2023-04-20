@@ -3,7 +3,6 @@ package restore
 import (
 	"bytes"
 	"io"
-	"reflect"
 	"strings"
 	"testing"
 
@@ -12,6 +11,7 @@ import (
 	"github.com/clevyr/kubedb/internal/database/dialect"
 	"github.com/clevyr/kubedb/internal/database/sqlformat"
 	gzip "github.com/klauspost/pgzip"
+	"github.com/stretchr/testify/assert"
 )
 
 func Test_buildCommand(t *testing.T) {
@@ -53,9 +53,8 @@ func Test_buildCommand(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if got := buildCommand(tt.args.conf, tt.args.inputFormat); !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("buildCommand() = %v, want %v", got, tt.want)
-			}
+			got := buildCommand(tt.args.conf, tt.args.inputFormat)
+			assert.Equal(t, tt.want, got)
 		})
 	}
 }
@@ -86,13 +85,12 @@ func Test_gzipCopy(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			w := &bytes.Buffer{}
 			err := gzipCopy(w, tt.args.r)
-			if (err != nil) != tt.wantErr {
-				t.Errorf("gzipCopy() err = %v, wantErr %v", err, tt.wantErr)
-				return
+			if tt.wantErr {
+				assert.Error(t, err)
+			} else {
+				assert.NoError(t, err)
 			}
-			if gotW := w.String(); gotW != tt.wantW {
-				t.Errorf("gzipCopy() gotW = %v, want %v", gotW, tt.wantW)
-			}
+			assert.Equal(t, tt.wantW, w.String())
 		})
 	}
 }

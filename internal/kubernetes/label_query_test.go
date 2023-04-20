@@ -1,9 +1,9 @@
 package kubernetes
 
 import (
-	"reflect"
 	"testing"
 
+	"github.com/stretchr/testify/assert"
 	v1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
@@ -44,13 +44,12 @@ func TestLabelQuery_FindPods(t *testing.T) {
 				Value: tt.fields.Value,
 			}
 			gotPods, err := query.FindPods(tt.args.list)
-			if (err != nil) != tt.wantErr {
-				t.Errorf("FindPods() error = %v, wantErr %v", err, tt.wantErr)
-				return
+			if tt.wantErr {
+				assert.Error(t, err)
+			} else {
+				assert.NoError(t, err)
 			}
-			if !reflect.DeepEqual(gotPods, tt.wantPods) {
-				t.Errorf("FindPods() gotPods = %v, want %v", gotPods, tt.wantPods)
-			}
+			assert.Equal(t, tt.wantPods, gotPods)
 		})
 	}
 }
@@ -78,9 +77,8 @@ func TestLabelQuery_Matches(t *testing.T) {
 				Name:  tt.fields.Name,
 				Value: tt.fields.Value,
 			}
-			if got := query.Matches(tt.args.pod); got != tt.want {
-				t.Errorf("Matches() = %v, want %v", got, tt.want)
-			}
+			got := query.Matches(tt.args.pod)
+			assert.Equal(t, tt.want, got)
 		})
 	}
 }

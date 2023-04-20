@@ -2,6 +2,8 @@ package sqlformat
 
 import (
 	"testing"
+
+	"github.com/stretchr/testify/assert"
 )
 
 func TestFormat_Set(t *testing.T) {
@@ -26,8 +28,11 @@ func TestFormat_Set(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if err := tt.i.Set(tt.args.s); (err != nil) != tt.wantErr {
-				t.Errorf("Set() error = %v, wantErr %v", err, tt.wantErr)
+			err := tt.i.Set(tt.args.s)
+			if tt.wantErr {
+				assert.Error(t, err)
+			} else {
+				assert.NoError(t, err)
 			}
 		})
 	}
@@ -43,9 +48,8 @@ func TestFormat_Type(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if got := tt.i.Type(); got != tt.want {
-				t.Errorf("Type() = %v, want %v", got, tt.want)
-			}
+			got := tt.i.Type()
+			assert.Equal(t, tt.want, got)
 		})
 	}
 }

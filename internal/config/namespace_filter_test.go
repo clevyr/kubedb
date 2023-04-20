@@ -1,12 +1,12 @@
 package config
 
 import (
-	"reflect"
 	"regexp"
 	"strconv"
 	"testing"
 
 	"github.com/spf13/viper"
+	"github.com/stretchr/testify/assert"
 )
 
 func TestNamespaceRegexp_Match(t *testing.T) {
@@ -45,9 +45,8 @@ func TestNamespaceRegexp_Match(t *testing.T) {
 				re: tt.fields.re,
 			}
 			viper.Set("namespace.filter", tt.enabled)
-			if got := level.Match(tt.args.namespace); got != tt.want {
-				t.Errorf("Match() = %v, want %v", got, tt.want)
-			}
+			got := level.Match(tt.args.namespace)
+			assert.Equal(t, tt.want, got)
 		})
 	}
 }
@@ -66,9 +65,8 @@ func TestNewNamespaceRegexp(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if got := NewNamespaceRegexp(tt.args.accessLevel); !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("NewNamespaceRegexp() = %v, want %v", got, tt.want)
-			}
+			got := NewNamespaceRegexp(tt.args.accessLevel)
+			assert.Equal(t, tt.want, got)
 		})
 	}
 }

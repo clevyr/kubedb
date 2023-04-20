@@ -2,13 +2,13 @@ package dialect
 
 import (
 	"context"
-	"reflect"
 	"testing"
 
 	"github.com/clevyr/kubedb/internal/command"
 	"github.com/clevyr/kubedb/internal/config"
 	"github.com/clevyr/kubedb/internal/database/sqlformat"
 	"github.com/clevyr/kubedb/internal/kubernetes"
+	"github.com/stretchr/testify/assert"
 	v1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
@@ -23,9 +23,8 @@ func TestPostgres_AnalyzeQuery(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			po := Postgres{}
-			if got := po.AnalyzeQuery(); got != tt.want {
-				t.Errorf("AnalyzeQuery() = %v, want %v", got, tt.want)
-			}
+			got := po.AnalyzeQuery()
+			assert.Equal(t, tt.want, got)
 		})
 	}
 }
@@ -40,9 +39,8 @@ func TestPostgres_DatabaseEnvNames(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			po := Postgres{}
-			if got := po.DatabaseEnvNames(); !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("DatabaseEnvNames() = %v, want %v", got, tt.want)
-			}
+			got := po.DatabaseEnvNames()
+			assert.Equal(t, got, tt.want)
 		})
 	}
 }
@@ -57,9 +55,8 @@ func TestPostgres_DefaultPort(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			po := Postgres{}
-			if got := po.DefaultPort(); got != tt.want {
-				t.Errorf("DefaultPort() = %v, want %v", got, tt.want)
-			}
+			got := po.DefaultPort()
+			assert.Equal(t, tt.want, got)
 		})
 	}
 }
@@ -74,9 +71,8 @@ func TestPostgres_DefaultUser(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			po := Postgres{}
-			if got := po.DefaultUser(); got != tt.want {
-				t.Errorf("DefaultUser() = %v, want %v", got, tt.want)
-			}
+			got := po.DefaultUser()
+			assert.Equal(t, tt.want, got)
 		})
 	}
 }
@@ -95,9 +91,8 @@ func TestPostgres_DropDatabaseQuery(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			po := Postgres{}
-			if got := po.DropDatabaseQuery(tt.args.database); got != tt.want {
-				t.Errorf("DropDatabaseQuery() = %v, want %v", got, tt.want)
-			}
+			got := po.DropDatabaseQuery(tt.args.database)
+			assert.Equal(t, tt.want, got)
 		})
 	}
 }
@@ -155,9 +150,8 @@ func TestPostgres_DumpCommand(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			po := Postgres{}
-			if got := po.DumpCommand(tt.args.conf); !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("DumpCommand() = %v, want %v", got, tt.want)
-			}
+			got := po.DumpCommand(tt.args.conf)
+			assert.Equal(t, got, tt.want)
 		})
 	}
 }
@@ -190,9 +184,8 @@ func TestPostgres_ExecCommand(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			po := Postgres{}
-			if got := po.ExecCommand(tt.args.conf); !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("ExecCommand() = %v, want %v", got, tt.want)
-			}
+			got := po.ExecCommand(tt.args.conf)
+			assert.Equal(t, got, tt.want)
 		})
 	}
 }
@@ -247,13 +240,13 @@ func TestPostgres_FilterPods(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			po := Postgres{}
 			got, err := po.FilterPods(context.TODO(), tt.args.client, tt.args.pods)
-			if (err != nil) != tt.wantErr {
-				t.Errorf("FilterPods() error = %v, wantErr %v", err, tt.wantErr)
-				return
+			if tt.wantErr {
+				assert.Error(t, err)
+			} else {
+				assert.NoError(t, err)
 			}
-			if !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("FilterPods() got = %v, want %v", got, tt.want)
-			}
+
+			assert.Equal(t, got, tt.want)
 		})
 	}
 }
@@ -268,9 +261,8 @@ func TestPostgres_ListDatabasesQuery(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			po := Postgres{}
-			if got := po.ListDatabasesQuery(); got != tt.want {
-				t.Errorf("ListDatabasesQuery() = %v, want %v", got, tt.want)
-			}
+			got := po.ListDatabasesQuery()
+			assert.Equal(t, tt.want, got)
 		})
 	}
 }
@@ -285,9 +277,8 @@ func TestPostgres_ListTablesQuery(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			po := Postgres{}
-			if got := po.ListTablesQuery(); got != tt.want {
-				t.Errorf("ListTablesQuery() = %v, want %v", got, tt.want)
-			}
+			got := po.ListTablesQuery()
+			assert.Equal(t, tt.want, got)
 		})
 	}
 }
@@ -302,9 +293,8 @@ func TestPostgres_Name(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			po := Postgres{}
-			if got := po.Name(); got != tt.want {
-				t.Errorf("Name() = %v, want %v", got, tt.want)
-			}
+			got := po.Name()
+			assert.Equal(t, tt.want, got)
 		})
 	}
 }
@@ -324,9 +314,8 @@ func TestPostgres_PasswordEnvNames(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			db := Postgres{}
-			if got := db.PasswordEnvNames(tt.args.c); !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("PasswordEnvNames() = %v, want %v", got, tt.want)
-			}
+			got := db.PasswordEnvNames(tt.args.c)
+			assert.Equal(t, got, tt.want)
 		})
 	}
 }
@@ -351,9 +340,8 @@ func TestPostgres_PodLabels(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			po := Postgres{}
-			if got := po.PodLabels(); !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("PodLabels() = %v, want %v", got, tt.want)
-			}
+			got := po.PodLabels()
+			assert.Equal(t, got, tt.want)
 		})
 	}
 }
@@ -404,9 +392,8 @@ func TestPostgres_RestoreCommand(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			po := Postgres{}
-			if got := po.RestoreCommand(tt.args.conf, tt.args.inputFormat); !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("RestoreCommand() = %v, want %v", got, tt.want)
-			}
+			got := po.RestoreCommand(tt.args.conf, tt.args.inputFormat)
+			assert.Equal(t, got, tt.want)
 		})
 	}
 }
@@ -421,9 +408,8 @@ func TestPostgres_UserEnvNames(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			po := Postgres{}
-			if got := po.UserEnvNames(); !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("UserEnvNames() = %v, want %v", got, tt.want)
-			}
+			got := po.UserEnvNames()
+			assert.Equal(t, got, tt.want)
 		})
 	}
 }
@@ -446,9 +432,8 @@ func Test_quoteParam(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if got := quoteParam(tt.args.param); got != tt.want {
-				t.Errorf("quoteParam() = %v, want %v", got, tt.want)
-			}
+			got := quoteParam(tt.args.param)
+			assert.Equal(t, tt.want, got)
 		})
 	}
 }
@@ -470,9 +455,8 @@ func TestPostgres_DumpExtension(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			po := Postgres{}
-			if got := po.DumpExtension(tt.args.format); got != tt.want {
-				t.Errorf("DumpFileExt() = %v, want %v", got, tt.want)
-			}
+			got := po.DumpExtension(tt.args.format)
+			assert.Equal(t, tt.want, got)
 		})
 	}
 }
@@ -494,9 +478,8 @@ func TestPostgres_FormatFromFilename(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			ma := Postgres{}
-			if got := ma.FormatFromFilename(tt.args.filename); got != tt.want {
-				t.Errorf("FormatFromFilename() = %v, want %v", got, tt.want)
-			}
+			got := ma.FormatFromFilename(tt.args.filename)
+			assert.Equal(t, tt.want, got)
 		})
 	}
 }

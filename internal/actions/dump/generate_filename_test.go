@@ -3,6 +3,8 @@ package dump
 import (
 	"testing"
 	"time"
+
+	"github.com/stretchr/testify/assert"
 )
 
 func TestFilename_Generate(t *testing.T) {
@@ -27,13 +29,12 @@ func TestFilename_Generate(t *testing.T) {
 				Date:      tt.fields.Date,
 			}
 			got, err := vars.Generate()
-			if (err != nil) != tt.wantErr {
-				t.Errorf("Generate() err = %v, wantErr %v", err, tt.wantErr)
-				return
+			if tt.wantErr {
+				assert.Error(t, err)
+			} else {
+				assert.NoError(t, err)
 			}
-			if got != tt.want {
-				t.Errorf("Generate() got = %v, want %v", got, tt.want)
-			}
+			assert.Equal(t, tt.want, got)
 		})
 	}
 }
@@ -47,9 +48,8 @@ func TestHelpFilename(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if got := HelpFilename(); got != tt.want {
-				t.Errorf("HelpFilename() = %v, want %v", got, tt.want)
-			}
+			got := HelpFilename()
+			assert.Equal(t, tt.want, got)
 		})
 	}
 }
@@ -87,13 +87,12 @@ func Test_generate(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			got, err := generate(tt.args.vars, tt.args.tmpl)
-			if (err != nil) != tt.wantErr {
-				t.Errorf("generate() err = %v, wantErr %v", err, tt.wantErr)
-				return
+			if tt.wantErr {
+				assert.Error(t, err)
+			} else {
+				assert.NoError(t, err)
 			}
-			if got != tt.want {
-				t.Errorf("generate() got = %v, want %v", got, tt.want)
-			}
+			assert.Equal(t, tt.want, got)
 		})
 	}
 }

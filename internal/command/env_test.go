@@ -1,8 +1,9 @@
 package command
 
 import (
-	"reflect"
 	"testing"
+
+	"github.com/stretchr/testify/assert"
 )
 
 func TestEnv_String(t *testing.T) {
@@ -24,9 +25,8 @@ func TestEnv_String(t *testing.T) {
 				Key:   tt.fields.Key,
 				Value: tt.fields.Value,
 			}
-			if got := e.String(); got != tt.want {
-				t.Errorf("String() = %v, want %v", got, tt.want)
-			}
+			got := e.String()
+			assert.Equal(t, tt.want, got)
 		})
 	}
 }
@@ -45,9 +45,8 @@ func TestNewEnv(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if got := NewEnv(tt.args.k, tt.args.v); !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("NewEnv() = %v, want %v", got, tt.want)
-			}
+			got := NewEnv(tt.args.k, tt.args.v)
+			assert.Equal(t, tt.want, got)
 		})
 	}
 }

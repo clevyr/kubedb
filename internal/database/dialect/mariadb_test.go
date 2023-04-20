@@ -2,13 +2,13 @@ package dialect
 
 import (
 	"context"
-	"reflect"
 	"testing"
 
 	"github.com/clevyr/kubedb/internal/command"
 	"github.com/clevyr/kubedb/internal/config"
 	"github.com/clevyr/kubedb/internal/database/sqlformat"
 	"github.com/clevyr/kubedb/internal/kubernetes"
+	"github.com/stretchr/testify/assert"
 	v1 "k8s.io/api/core/v1"
 )
 
@@ -22,9 +22,8 @@ func TestMariaDB_AnalyzeQuery(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			ma := MariaDB{}
-			if got := ma.AnalyzeQuery(); got != tt.want {
-				t.Errorf("AnalyzeQuery() = %v, want %v", got, tt.want)
-			}
+			got := ma.AnalyzeQuery()
+			assert.Equal(t, tt.want, got)
 		})
 	}
 }
@@ -39,9 +38,8 @@ func TestMariaDB_DatabaseEnvNames(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			ma := MariaDB{}
-			if got := ma.DatabaseEnvNames(); !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("DatabaseEnvNames() = %v, want %v", got, tt.want)
-			}
+			got := ma.DatabaseEnvNames()
+			assert.Equal(t, got, tt.want)
 		})
 	}
 }
@@ -56,9 +54,8 @@ func TestMariaDB_DefaultPort(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			ma := MariaDB{}
-			if got := ma.DefaultPort(); got != tt.want {
-				t.Errorf("DefaultPort() = %v, want %v", got, tt.want)
-			}
+			got := ma.DefaultPort()
+			assert.Equal(t, tt.want, got)
 		})
 	}
 }
@@ -73,9 +70,8 @@ func TestMariaDB_DefaultUser(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			ma := MariaDB{}
-			if got := ma.DefaultUser(); got != tt.want {
-				t.Errorf("DefaultUser() = %v, want %v", got, tt.want)
-			}
+			got := ma.DefaultUser()
+			assert.Equal(t, tt.want, got)
 		})
 	}
 }
@@ -94,9 +90,8 @@ func TestMariaDB_DropDatabaseQuery(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			ma := MariaDB{}
-			if got := ma.DropDatabaseQuery(tt.args.database); got != tt.want {
-				t.Errorf("DropDatabaseQuery() = %v, want %v", got, tt.want)
-			}
+			got := ma.DropDatabaseQuery(tt.args.database)
+			assert.Equal(t, tt.want, got)
 		})
 	}
 }
@@ -134,9 +129,8 @@ func TestMariaDB_DumpCommand(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			ma := MariaDB{}
-			if got := ma.DumpCommand(tt.args.conf); !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("DumpCommand() = %v, want %v", got, tt.want)
-			}
+			got := ma.DumpCommand(tt.args.conf)
+			assert.Equal(t, got, tt.want)
 		})
 	}
 }
@@ -169,9 +163,8 @@ func TestMariaDB_ExecCommand(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			ma := MariaDB{}
-			if got := ma.ExecCommand(tt.args.conf); !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("ExecCommand() = %v, want %v", got, tt.want)
-			}
+			got := ma.ExecCommand(tt.args.conf)
+			assert.Equal(t, got, tt.want)
 		})
 	}
 }
@@ -193,13 +186,13 @@ func TestMariaDB_FilterPods(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			ma := MariaDB{}
 			got, err := ma.FilterPods(context.TODO(), tt.args.client, tt.args.pods)
-			if (err != nil) != tt.wantErr {
-				t.Errorf("FilterPods() error = %v, wantErr %v", err, tt.wantErr)
-				return
+			if tt.wantErr {
+				assert.Error(t, err)
+			} else {
+				assert.NoError(t, err)
 			}
-			if !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("FilterPods() got = %v, want %v", got, tt.want)
-			}
+
+			assert.Equal(t, got, tt.want)
 		})
 	}
 }
@@ -214,9 +207,8 @@ func TestMariaDB_ListDatabasesQuery(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			ma := MariaDB{}
-			if got := ma.ListDatabasesQuery(); got != tt.want {
-				t.Errorf("ListDatabasesQuery() = %v, want %v", got, tt.want)
-			}
+			got := ma.ListDatabasesQuery()
+			assert.Equal(t, tt.want, got)
 		})
 	}
 }
@@ -231,9 +223,8 @@ func TestMariaDB_ListTablesQuery(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			ma := MariaDB{}
-			if got := ma.ListTablesQuery(); got != tt.want {
-				t.Errorf("ListTablesQuery() = %v, want %v", got, tt.want)
-			}
+			got := ma.ListTablesQuery()
+			assert.Equal(t, tt.want, got)
 		})
 	}
 }
@@ -248,9 +239,8 @@ func TestMariaDB_Name(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			ma := MariaDB{}
-			if got := ma.Name(); got != tt.want {
-				t.Errorf("Name() = %v, want %v", got, tt.want)
-			}
+			got := ma.Name()
+			assert.Equal(t, tt.want, got)
 		})
 	}
 }
@@ -270,9 +260,8 @@ func TestMariaDB_PasswordEnvNames(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			db := MariaDB{}
-			if got := db.PasswordEnvNames(tt.args.c); !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("PasswordEnvNames() = %v, want %v", got, tt.want)
-			}
+			got := db.PasswordEnvNames(tt.args.c)
+			assert.Equal(t, got, tt.want)
 		})
 	}
 }
@@ -293,9 +282,8 @@ func TestMariaDB_PodLabels(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			ma := MariaDB{}
-			if got := ma.PodLabels(); !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("PodLabels() = %v, want %v", got, tt.want)
-			}
+			got := ma.PodLabels()
+			assert.Equal(t, got, tt.want)
 		})
 	}
 }
@@ -329,9 +317,8 @@ func TestMariaDB_RestoreCommand(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			ma := MariaDB{}
-			if got := ma.RestoreCommand(tt.args.conf, tt.args.inputFormat); !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("RestoreCommand() = %v, want %v", got, tt.want)
-			}
+			got := ma.RestoreCommand(tt.args.conf, tt.args.inputFormat)
+			assert.Equal(t, got, tt.want)
 		})
 	}
 }
@@ -346,9 +333,8 @@ func TestMariaDB_UserEnvNames(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			ma := MariaDB{}
-			if got := ma.UserEnvNames(); !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("UserEnvNames() = %v, want %v", got, tt.want)
-			}
+			got := ma.UserEnvNames()
+			assert.Equal(t, got, tt.want)
 		})
 	}
 }
@@ -370,9 +356,8 @@ func TestMariaDB_DumpExtension(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			po := MariaDB{}
-			if got := po.DumpExtension(tt.args.format); got != tt.want {
-				t.Errorf("DumpFileExt() = %v, want %v", got, tt.want)
-			}
+			got := po.DumpExtension(tt.args.format)
+			assert.Equal(t, tt.want, got)
 		})
 	}
 }
@@ -393,9 +378,8 @@ func TestMariaDB_FormatFromFilename(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			ma := MariaDB{}
-			if got := ma.FormatFromFilename(tt.args.filename); got != tt.want {
-				t.Errorf("FormatFromFilename() = %v, want %v", got, tt.want)
-			}
+			got := ma.FormatFromFilename(tt.args.filename)
+			assert.Equal(t, tt.want, got)
 		})
 	}
 }
