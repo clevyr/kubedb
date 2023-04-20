@@ -44,7 +44,7 @@ func (l *BarSafeLogger) Write(p []byte) (int, error) {
 		return l.out.Write(p)
 	}
 
-	buf := bytes.NewBuffer([]byte("\x1b[1K\r"))
+	buf := bytes.NewBuffer([]byte("\r\x1B[K"))
 	buf.Write(p)
 	buf.WriteString(l.bar.String())
 	if b, err := l.out.Write(buf.Bytes()); err != nil {
