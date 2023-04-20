@@ -2,8 +2,11 @@ package github
 
 import (
 	"fmt"
+	"io"
 	"os"
 )
+
+var output io.Writer = os.Stdout
 
 func SetOutput(name, value string) error {
 	if filename := os.Getenv("GITHUB_OUTPUT"); filename != "" {
@@ -16,7 +19,9 @@ func SetOutput(name, value string) error {
 		}
 		return f.Close()
 	} else {
-		fmt.Println("::set-output name=" + name + "::" + value)
+		if _, err := fmt.Fprint(output, "::set-output name="+name+"::"+value); err != nil {
+			return err
+		}
 	}
 	return nil
 }
