@@ -57,8 +57,9 @@ func validArgs(cmd *cobra.Command, args []string, toComplete string) ([]string, 
 		return []string{"sql", "sql.gz", "dmp", "archive", "archive.gz"}, cobra.ShellCompDirectiveFilterFileExt
 	}
 
-	var exts []string
-	for _, ext := range action.Dialect.Formats() {
+	formats := action.Dialect.Formats()
+	exts := make([]string, 0, len(formats))
+	for _, ext := range formats {
 		exts = append(exts, ext[1:])
 	}
 	return exts, cobra.ShellCompDirectiveFilterFileExt
