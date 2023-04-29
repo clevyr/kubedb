@@ -96,11 +96,7 @@ func (action Dump) Run(ctx context.Context) (err error) {
 			return err
 		}
 
-		if err = pw.Close(); err != nil {
-			return err
-		}
-
-		return nil
+		return pw.Close()
 	})
 
 	// Begin copying export to local file
@@ -118,11 +114,8 @@ func (action Dump) Run(ctx context.Context) (err error) {
 			}
 		}
 
-		if _, err := io.Copy(io.MultiWriter(f, bar), r); err != nil {
-			return err
-		}
-
-		return nil
+		_, err := io.Copy(io.MultiWriter(f, bar), r)
+		return err
 	})
 
 	if err := errGroup.Wait(); err != nil {
