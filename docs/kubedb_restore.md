@@ -24,6 +24,7 @@ kubedb restore filename [flags]
   -h, --help                 help for restore
   -O, --no-owner             Skip restoration of object ownership in plain-text format (default true)
   -q, --quiet                Silence remote log output
+      --remote-gzip          Compress data over the wire. Results in lower bandwidth usage, but higher database load. May improve speed on fast connections. (default true)
   -1, --single-transaction   Restore as a single transaction (default true)
 ```
 

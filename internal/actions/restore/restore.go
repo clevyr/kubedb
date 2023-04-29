@@ -71,7 +71,11 @@ func (action Restore) Run(ctx context.Context) (err error) {
 			dropQuery := action.Dialect.DropDatabaseQuery(action.Database)
 			if dropQuery != "" {
 				log.Info("cleaning existing data")
-				err = gzipCopy(w, strings.NewReader(dropQuery))
+				if action.RemoteGzip {
+					err = gzipCopy(w, strings.NewReader(dropQuery))
+				} else {
+					_, err = io.Copy(w, strings.NewReader(dropQuery))
+				}
 				if err != nil {
 					return err
 				}
@@ -82,12 +86,26 @@ func (action Restore) Run(ctx context.Context) (err error) {
 		log.Info("restoring database")
 		switch action.Format {
 		case sqlformat.Gzip, sqlformat.Custom, sqlformat.Unknown:
+			if !action.RemoteGzip {
+				f, err = gzip.NewReader(f)
+				if err != nil {
+					return err
+				}
+				defer func(f io.ReadCloser) {
+					_ = f.Close()
+				}(f)
+			}
+
 			_, err = io.Copy(w, f)
 			if err != nil {
 				return err
 			}
 		case sqlformat.Plain:
-			err = gzipCopy(w, f)
+			if action.RemoteGzip {
+				err = gzipCopy(w, f)
+			} else {
+				_, err = io.Copy(w, f)
+			}
 			if err != nil {
 				return err
 			}
@@ -115,7 +133,11 @@ func (action Restore) Run(ctx context.Context) (err error) {
 			}
 
 			log.Info("running analyze query")
-			err = gzipCopy(w, strings.NewReader(analyzeQuery))
+			if action.RemoteGzip {
+				err = gzipCopy(w, strings.NewReader(analyzeQuery))
+			} else {
+				_, err = io.Copy(w, strings.NewReader(analyzeQuery))
+			}
 			if err != nil {
 				return err
 			}

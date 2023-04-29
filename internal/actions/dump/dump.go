@@ -99,6 +99,24 @@ func (action Dump) Run(ctx context.Context) (err error) {
 		return pw.Close()
 	})
 
+	if !action.RemoteGzip {
+		gzPipeReader, gzPipeWriter := io.Pipe()
+		plainReader := pr
+		errGroup.Go(func() error {
+			defer func() {
+				_ = gzPipeWriter.Close()
+			}()
+
+			gzw := gzip.NewWriter(gzPipeWriter)
+			if _, err := io.Copy(gzw, plainReader); err != nil {
+				return err
+			}
+
+			return gzw.Close()
+		})
+		pr = gzPipeReader
+	}
+
 	// Begin copying export to local file
 	errGroup.Go(func() error {
 		defer func(pr io.ReadCloser) {
@@ -107,10 +125,12 @@ func (action Dump) Run(ctx context.Context) (err error) {
 
 		r := io.Reader(pr)
 
-		if action.Format == sqlformat.Plain {
-			r, err = gzip.NewReader(r)
-			if err != nil {
-				return err
+		if action.RemoteGzip {
+			if action.Format == sqlformat.Plain {
+				r, err = gzip.NewReader(r)
+				if err != nil {
+					return err
+				}
 			}
 		}
 
@@ -144,7 +164,7 @@ func (action Dump) Run(ctx context.Context) (err error) {
 
 func (action Dump) buildCommand() *command.Builder {
 	cmd := action.Dialect.DumpCommand(action.Dump)
-	if action.Format != sqlformat.Custom {
+	if action.RemoteGzip && action.Format != sqlformat.Custom {
 		cmd.Push(command.Pipe, "gzip", "--force")
 	}
 	log.WithField("cmd", cmd).Trace("finished building command")

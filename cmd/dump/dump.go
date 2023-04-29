@@ -47,6 +47,7 @@ the generated filename might look like "` + dump.HelpFilename() + `"`,
 	flags.ExcludeTable(cmd, &action.ExcludeTable)
 	flags.ExcludeTableData(cmd, &action.ExcludeTableData)
 	flags.Quiet(cmd, &action.Quiet)
+	flags.RemoteGzip(cmd, &action.RemoteGzip)
 
 	return cmd
 }

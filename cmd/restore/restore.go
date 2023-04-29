@@ -43,6 +43,7 @@ Supported Input Filetypes:
 	flags.NoOwner(cmd, &action.NoOwner)
 	flags.Force(cmd, &action.Force)
 	flags.Quiet(cmd, &action.Quiet)
+	flags.RemoteGzip(cmd, &action.RemoteGzip)
 
 	return cmd
 }

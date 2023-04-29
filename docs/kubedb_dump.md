@@ -26,6 +26,7 @@ kubedb dump [filename] [flags]
       --if-exists                    Use IF EXISTS when dropping objects (default true)
   -O, --no-owner                     Skip restoration of object ownership in plain-text format (default true)
   -q, --quiet                        Silence remote log output
+      --remote-gzip                  Compress data over the wire. Results in lower bandwidth usage, but higher database load. May improve speed on fast connections. (default true)
   -t, --table strings                Dump the specified table(s) only
 ```
 

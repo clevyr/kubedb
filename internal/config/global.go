@@ -7,11 +7,12 @@ import (
 
 type Global struct {
 	Kubernetes
-	Client   kubernetes.KubeClient
-	Dialect  Databaser `mapstructure:"-"`
-	Pod      v1.Pod    `mapstructure:"-"`
-	Database string
-	Username string
-	Password string
-	Quiet    bool
+	Client     kubernetes.KubeClient
+	Dialect    Databaser `mapstructure:"-"`
+	Pod        v1.Pod    `mapstructure:"-"`
+	Database   string
+	Username   string
+	Password   string
+	Quiet      bool
+	RemoteGzip bool `mapstructure:"remote-gzip"`
 }
