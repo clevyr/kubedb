@@ -92,6 +92,7 @@ func preRun(cmd *cobra.Command, args []string) error {
 		}
 	}
 
+	initLog(cmd)
 	if err := initConfig(); err != nil {
 		return err
 	}
@@ -147,11 +148,14 @@ func initConfig() error {
 	if err := viper.ReadInConfig(); err != nil {
 		if _, ok := err.(viper.ConfigFileNotFoundError); ok {
 			// Config file not found; ignore error
+			log.Debug("Could not find config file")
 		} else {
 			// Config file was found but another error was produced
 			return fmt.Errorf("Fatal error reading config file: %w", err)
 		}
 	}
+
+	log.WithField("path", viper.ConfigFileUsed()).Debug("Loaded config file")
 	return nil
 }
 
