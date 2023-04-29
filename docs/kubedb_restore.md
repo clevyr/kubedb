@@ -1,6 +1,6 @@
 ## kubedb restore
 
-restore a database from a sql file
+Restore a database from a sql file
 
 ### Synopsis
 
@@ -18,28 +18,28 @@ kubedb restore filename [flags]
 ### Options
 
 ```
-  -c, --clean                clean (drop) database objects before recreating (default true)
-  -f, --force                do not prompt before restore
-  -F, --format string        output file format ([g]zip, [c]ustom, [p]lain) (default "gzip")
+  -c, --clean                Clean (drop) database objects before recreating (default true)
+  -f, --force                Do not prompt before restore
+  -F, --format string        Output file format ([g]zip, [c]ustom, [p]lain) (default "gzip")
   -h, --help                 help for restore
-  -O, --no-owner             skip restoration of object ownership in plain-text format (default true)
+  -O, --no-owner             Skip restoration of object ownership in plain-text format (default true)
   -q, --quiet                Silence remote log output
-  -1, --single-transaction   restore as a single transaction (default true)
+  -1, --single-transaction   Restore as a single transaction (default true)
 ```
 
 ### Options inherited from parent commands
 
 ```
-      --context string      name of the kubeconfig context to use
-  -d, --dbname string       database name to connect to
-      --dialect string      database dialect. detected if not set. (postgres, mariadb, mongodb)
-      --kubeconfig string   absolute path to the kubeconfig file (default "$HOME/.kube/config")
-      --log-format string   log formatter (text, json) (default "text")
-      --log-level string    log level (trace, debug, info, warning, error, fatal, panic) (default "info")
-  -n, --namespace string    the namespace scope for this CLI request
-  -p, --password string     database password
-      --pod string          force a specific pod. if this flag is set, dialect is required.
-  -U, --username string     database username
+      --context string      The name of the kubeconfig context to use
+  -d, --dbname string       Database name to connect to
+      --dialect string      Database dialect. Detected if not set. (postgres, mariadb, mongodb)
+      --kubeconfig string   Path to the kubeconfig file (default "$HOME/.kube/config")
+      --log-format string   Log formatter (text, json) (default "text")
+      --log-level string    Log level (trace, debug, info, warning, error, fatal, panic) (default "info")
+  -n, --namespace string    The Kubernetes namespace scope
+  -p, --password string     Database password
+      --pod string          Force a specific pod. If this flag is set, dialect is required.
+  -U, --username string     Database username
 ```
 
 ### SEE ALSO

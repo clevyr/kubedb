@@ -14,7 +14,7 @@ func NewCommand() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:     "exec",
 		Aliases: []string{"e", "shell"},
-		Short:   "connect to an interactive shell",
+		Short:   "Connect to an interactive shell",
 		GroupID: "rw",
 		RunE:    run,
 		PreRunE: preRun,

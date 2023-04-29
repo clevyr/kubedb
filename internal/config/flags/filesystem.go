@@ -6,7 +6,7 @@ import (
 )
 
 func Directory(cmd *cobra.Command, p *string) {
-	cmd.Flags().StringVarP(p, "directory", "C", ".", "directory to dump to")
+	cmd.Flags().StringVarP(p, "directory", "C", ".", "Directory to dump to")
 	err := cmd.RegisterFlagCompletionFunc(
 		"directory",
 		func(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {

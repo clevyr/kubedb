@@ -1,6 +1,6 @@
 ## kubedb port-forward
 
-set up a local port forward
+Set up a local port forward
 
 ```
 kubedb port-forward [local_port] [flags]
@@ -9,23 +9,23 @@ kubedb port-forward [local_port] [flags]
 ### Options
 
 ```
-      --address strings   addresses to listen on (comma separated) (default [127.0.0.1,::1])
+      --address strings   Addresses to listen on (comma separated) (default [127.0.0.1,::1])
   -h, --help              help for port-forward
 ```
 
 ### Options inherited from parent commands
 
 ```
-      --context string      name of the kubeconfig context to use
-  -d, --dbname string       database name to connect to
-      --dialect string      database dialect. detected if not set. (postgres, mariadb, mongodb)
-      --kubeconfig string   absolute path to the kubeconfig file (default "$HOME/.kube/config")
-      --log-format string   log formatter (text, json) (default "text")
-      --log-level string    log level (trace, debug, info, warning, error, fatal, panic) (default "info")
-  -n, --namespace string    the namespace scope for this CLI request
-  -p, --password string     database password
-      --pod string          force a specific pod. if this flag is set, dialect is required.
-  -U, --username string     database username
+      --context string      The name of the kubeconfig context to use
+  -d, --dbname string       Database name to connect to
+      --dialect string      Database dialect. Detected if not set. (postgres, mariadb, mongodb)
+      --kubeconfig string   Path to the kubeconfig file (default "$HOME/.kube/config")
+      --log-format string   Log formatter (text, json) (default "text")
+      --log-level string    Log level (trace, debug, info, warning, error, fatal, panic) (default "info")
+  -n, --namespace string    The Kubernetes namespace scope
+  -p, --password string     Database password
+      --pod string          Force a specific pod. If this flag is set, dialect is required.
+  -U, --username string     Database username
 ```
 
 ### SEE ALSO

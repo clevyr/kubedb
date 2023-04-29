@@ -11,7 +11,7 @@ func Quiet(cmd *cobra.Command, p *bool) {
 }
 
 func LogLevel(cmd *cobra.Command) {
-	cmd.PersistentFlags().String("log-level", "info", "log level (trace, debug, info, warning, error, fatal, panic)")
+	cmd.PersistentFlags().String("log-level", "info", "Log level (trace, debug, info, warning, error, fatal, panic)")
 	err := cmd.RegisterFlagCompletionFunc(
 		"log-level",
 		func(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
@@ -34,7 +34,7 @@ func LogLevel(cmd *cobra.Command) {
 }
 
 func LogFormat(cmd *cobra.Command) {
-	cmd.PersistentFlags().String("log-format", "text", "log formatter (text, json)")
+	cmd.PersistentFlags().String("log-format", "text", "Log formatter (text, json)")
 	err := cmd.RegisterFlagCompletionFunc(
 		"log-format",
 		func(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {

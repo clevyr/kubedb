@@ -21,7 +21,7 @@ func NewCommand() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:     "restore filename",
 		Aliases: []string{"r", "import"},
-		Short:   "restore a database from a sql file",
+		Short:   "Restore a database from a sql file",
 		Long: `The "restore" command restores a given sql file to a running database pod.
 
 Supported Input Filetypes:

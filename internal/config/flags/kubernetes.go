@@ -20,14 +20,14 @@ func Kubeconfig(cmd *cobra.Command) {
 		kubeconfigEnv = filepath.Join("$HOME", ".kube", "config")
 	}
 
-	cmd.PersistentFlags().String("kubeconfig", kubeconfigEnv, "absolute path to the kubeconfig file")
+	cmd.PersistentFlags().String("kubeconfig", kubeconfigEnv, "Path to the kubeconfig file")
 	if err := viper.BindPFlag("kubernetes.kubeconfig", cmd.PersistentFlags().Lookup("kubeconfig")); err != nil {
 		panic(err)
 	}
 }
 
 func Context(cmd *cobra.Command) {
-	cmd.PersistentFlags().String("context", "", "name of the kubeconfig context to use")
+	cmd.PersistentFlags().String("context", "", "The name of the kubeconfig context to use")
 	err := cmd.RegisterFlagCompletionFunc(
 		"context",
 		func(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
@@ -58,7 +58,7 @@ func Context(cmd *cobra.Command) {
 }
 
 func Namespace(cmd *cobra.Command) {
-	cmd.PersistentFlags().StringP("namespace", "n", "", "the namespace scope for this CLI request")
+	cmd.PersistentFlags().StringP("namespace", "n", "", "The Kubernetes namespace scope")
 	err := cmd.RegisterFlagCompletionFunc(
 		"namespace",
 		func(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
@@ -88,7 +88,7 @@ func Namespace(cmd *cobra.Command) {
 }
 
 func Pod(cmd *cobra.Command) {
-	cmd.PersistentFlags().String("pod", "", "force a specific pod. if this flag is set, dialect is required.")
+	cmd.PersistentFlags().String("pod", "", "Force a specific pod. If this flag is set, dialect is required.")
 	err := cmd.RegisterFlagCompletionFunc(
 		"pod",
 		func(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {

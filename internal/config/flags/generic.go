@@ -6,7 +6,7 @@ import (
 )
 
 func Force(cmd *cobra.Command, p *bool) {
-	cmd.Flags().BoolVarP(p, "force", "f", false, "do not prompt before restore")
+	cmd.Flags().BoolVarP(p, "force", "f", false, "Do not prompt before restore")
 	if err := viper.BindPFlag("force", cmd.Flags().Lookup("force")); err != nil {
 		panic(err)
 	}

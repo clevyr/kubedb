@@ -24,24 +24,24 @@ Dynamic Env Var Variables:
 ### Options
 
 ```
-      --context string      name of the kubeconfig context to use
-  -d, --dbname string       database name to connect to
-      --dialect string      database dialect. detected if not set. (postgres, mariadb, mongodb)
+      --context string      The name of the kubeconfig context to use
+  -d, --dbname string       Database name to connect to
+      --dialect string      Database dialect. Detected if not set. (postgres, mariadb, mongodb)
   -h, --help                help for kubedb
-      --kubeconfig string   absolute path to the kubeconfig file (default "$HOME/.kube/config")
-      --log-format string   log formatter (text, json) (default "text")
-      --log-level string    log level (trace, debug, info, warning, error, fatal, panic) (default "info")
-  -n, --namespace string    the namespace scope for this CLI request
-  -p, --password string     database password
-      --pod string          force a specific pod. if this flag is set, dialect is required.
-  -U, --username string     database username
+      --kubeconfig string   Path to the kubeconfig file (default "$HOME/.kube/config")
+      --log-format string   Log formatter (text, json) (default "text")
+      --log-level string    Log level (trace, debug, info, warning, error, fatal, panic) (default "info")
+  -n, --namespace string    The Kubernetes namespace scope
+  -p, --password string     Database password
+      --pod string          Force a specific pod. If this flag is set, dialect is required.
+  -U, --username string     Database username
   -v, --version             version for kubedb
 ```
 
 ### SEE ALSO
 
-* [kubedb dump](kubedb_dump.md)	 - dump a database to a sql file
-* [kubedb exec](kubedb_exec.md)	 - connect to an interactive shell
-* [kubedb port-forward](kubedb_port-forward.md)	 - set up a local port forward
-* [kubedb restore](kubedb_restore.md)	 - restore a database from a sql file
+* [kubedb dump](kubedb_dump.md)	 - Dump a database to a sql file
+* [kubedb exec](kubedb_exec.md)	 - Connect to an interactive shell
+* [kubedb port-forward](kubedb_port-forward.md)	 - Set up a local port forward
+* [kubedb restore](kubedb_restore.md)	 - Restore a database from a sql file
 
