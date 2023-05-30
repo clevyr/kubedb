@@ -7,7 +7,7 @@ require (
 	github.com/alessio/shellescape v1.4.1
 	github.com/jedib0t/go-pretty/v6 v6.4.6
 	github.com/klauspost/pgzip v1.2.6
-	github.com/mattn/go-isatty v0.0.18
+	github.com/mattn/go-isatty v0.0.19
 	github.com/schollz/progressbar/v3 v3.13.1
 	github.com/sirupsen/logrus v1.9.0
 	github.com/spf13/cobra v1.7.0
