@@ -1,31 +1,10 @@
 {
   "$schema": "https://docs.renovatebot.com/renovate-schema.json",
   "extends": [
-    "config:base",
-    ":disableRateLimiting",
-    ":automergePr",
-    ":enablePreCommit"
+    "local>clevyr/renovate-config",
+    "local>clevyr/renovate-config:golang"
   ],
-  "platformAutomerge": true,
-  "labels": [
-    "dependencies",
-    "{{datasource}}",
-    "{{updateType}}"
-  ],
-  "commitMessagePrefix": ":arrow_up:",
   "packageRules": [
-    {
-      "matchUpdateTypes": ["lockFileMaintenance", "pin"],
-      "commitMessagePrefix": ":pushpin:"
-    },
-    {
-      "matchUpdateTypes": ["rollback"],
-      "commitMessagePrefix": ":arrow_down:"
-    },
-    {
-      "matchManagers": ["github-actions"],
-      "automerge": true
-    },
     {
       "matchManagers": ["dockerfile"],
       "matchPackageNames": ["alpine"],
@@ -35,15 +14,6 @@
       "matchPackageNames": ["k8s.io/client-go"],
       "matchUpdateTypes": ["major"],
       "enabled": false
-    },
-    {
-      "matchDatasources": ["golang-version"],
-      "rangeStrategy": "bump",
-      "commitMessageTopic": "{{depName}}"
     }
-  ],
-  "postUpdateOptions": [
-    "gomodTidy",
-    "gomodUpdateImportPaths"
   ]
 }
