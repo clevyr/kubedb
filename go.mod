@@ -9,7 +9,7 @@ require (
 	github.com/klauspost/pgzip v1.2.6
 	github.com/mattn/go-isatty v0.0.18
 	github.com/schollz/progressbar/v3 v3.13.1
-	github.com/sirupsen/logrus v1.9.0
+	github.com/sirupsen/logrus v1.9.3
 	github.com/spf13/cobra v1.7.0
 	github.com/spf13/viper v1.15.0
 	github.com/stretchr/testify v1.8.2
