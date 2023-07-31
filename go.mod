@@ -4,7 +4,7 @@ go 1.20
 
 require (
 	github.com/AlecAivazis/survey/v2 v2.3.7
-	github.com/alessio/shellescape v1.4.1
+	github.com/alessio/shellescape v1.4.2
 	github.com/jedib0t/go-pretty/v6 v6.4.6
 	github.com/klauspost/pgzip v1.2.6
 	github.com/mattn/go-isatty v0.0.19
