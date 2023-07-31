@@ -12,6 +12,7 @@ If the dialect is not configured via flag, it will be detected dynamically.
 Supported Database Dialects:
   - PostgreSQL
   - MariaDB
+  - MongoDB
 
 If not configured via flag, some configuration variables will be loaded from the target pod's env vars.
 
