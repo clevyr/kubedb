@@ -34,7 +34,7 @@ func TestPostgres_DatabaseEnvNames(t *testing.T) {
 		name string
 		want []string
 	}{
-		{"default", []string{"POSTGRES_DB"}},
+		{"default", []string{"POSTGRES_DATABASE", "POSTGRES_DB"}},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {

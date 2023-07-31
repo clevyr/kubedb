@@ -27,7 +27,7 @@ func (Postgres) DefaultPort() uint16 {
 }
 
 func (Postgres) DatabaseEnvNames() []string {
-	return []string{"POSTGRES_DB"}
+	return []string{"POSTGRES_DATABASE", "POSTGRES_DB"}
 }
 
 func (Postgres) ListDatabasesQuery() string {
