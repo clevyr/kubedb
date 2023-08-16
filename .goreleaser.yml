@@ -85,10 +85,23 @@ nfpms:
     homepage: https://github.com/clevyr/kubedb
     description: Painlessly work with Kubernetes databases
     license: GPL-3.0
+    maintainer: Gabe Cook <gabe@clevyr.com>
     formats:
       - deb
       - rpm
-    maintainer: Gabe Cook <gabe@clevyr.com>
+    contents:
+      - src: ./completions/{{ .ProjectName }}.bash
+        dst: /usr/share/bash-completion/completions/{{ .ProjectName }}
+        file_info:
+          mode: 0644
+      - src: ./completions/{{ .ProjectName }}.fish
+        dst: /usr/share/fish/vendor_completions.d/{{ .ProjectName }}.fish
+        file_info:
+          mode: 0644
+      - src: ./completions/{{ .ProjectName }}.zsh
+        dst: /usr/share/zsh/vendor-completions/_{{ .ProjectName }}
+        file_info:
+          mode: 0644
 publishers:
   - name: fury.io
     ids:
