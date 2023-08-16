@@ -23,7 +23,8 @@ changelog:
   sort: asc
   filters:
     exclude:
-      - "^:pencil:"
+      - "^docs"
+      - "^test"
 brews:
   - homepage: https://github.com/clevyr/kubedb
     description: Painlessly work with Kubernetes databases
