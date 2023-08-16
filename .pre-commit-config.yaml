@@ -13,7 +13,7 @@ repos:
     hooks:
       - id: usage-docs
         name: usage-docs
-        entry: go run ./internal/cmd/docs
+        entry: go run ./internal/generate/docs
         language: system
-        files: ^(cmd|internal/(cmd/docs|config/flags))
+        files: ^(cmd|internal/(generate/docs|config/flags))
         pass_filenames: false

@@ -1,3 +1,6 @@
+before:
+  hooks:
+    - go run ./internal/generate/completions
 builds:
   - env:
       - CGO_ENABLED=0
@@ -15,6 +18,10 @@ archives:
     format_overrides:
       - goos: windows
         format: zip
+    files:
+      - LICENSE
+      - README.md
+      - completions/*
 checksum:
   name_template: "checksums.txt"
 snapshot:
@@ -35,10 +42,9 @@ brews:
     folder: Formula
     install: |
       bin.install "{{ .ProjectName }}"
-      output = Utils.safe_popen_read("#{bin}/{{ .ProjectName }}", "completion", "bash")
-      (bash_completion/"{{ .ProjectName }}").write output
-      output = Utils.safe_popen_read("#{bin}/{{ .ProjectName }}", "completion", "zsh")
-      (zsh_completion/"_{{ .ProjectName }}").write output
+      bash_completion.install "completions/{{ .ProjectName }}.bash" => "{{ .ProjectName }}"
+      zsh_completion.install "completions/{{ .ProjectName }}.zsh" => "_{{ .ProjectName }}"
+      fish_completion.install "completions/{{ .ProjectName }}.fish"
 dockers:
   - &dockers
     image_templates:
