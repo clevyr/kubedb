@@ -25,7 +25,10 @@ changelog:
     exclude:
       - "^:pencil:"
 brews:
-  - repository:
+  - homepage: https://github.com/clevyr/kubedb
+    description: Painlessly work with Kubernetes databases
+    license: GPL-3.0
+    repository:
       owner: clevyr
       name: homebrew-tap
     folder: Formula
@@ -71,6 +74,10 @@ docker_manifests:
     name_template: ghcr.io/clevyr/{{ .ProjectName }}:{{ .Major }}.{{ .Minor }}
 nfpms:
   - id: packages
+    vendor: Clevyr
+    homepage: https://github.com/clevyr/kubedb
+    description: Painlessly work with Kubernetes databases
+    license: GPL-3.0
     formats:
       - deb
       - rpm
