@@ -108,3 +108,25 @@ publishers:
       - packages
     dir: "{{ dir .ArtifactPath }}"
     cmd: curl -sf -Fpackage=@{{ .ArtifactName }} https://{{ .Env.FURY_TOKEN }}@push.fury.io/clevyr/
+aurs:
+  - name: "{{ .ProjectName }}-bin"
+    homepage: https://github.com/clevyr/kubedb
+    description: Painlessly work with Kubernetes databases
+    maintainers:
+      - Gabe Cook <gabe565@gmail.com>
+    license: GPL-3.0
+    private_key: '{{ .Env.AUR_SSH_KEY }}'
+    git_url: ssh://aur@aur.archlinux.org/{{ .ProjectName }}-bin.git
+    skip_upload: auto
+    package: |-
+      # bin
+      install -Dm755 "./{{ .ProjectName }}" "${pkgdir}/usr/bin/{{ .ProjectName }}"
+      # license
+      install -Dm644 "./LICENSE" "${pkgdir}/usr/share/licenses/{{ .ProjectName }}/LICENSE"
+      # completion
+      install -Dm644 "./completions/{{ .ProjectName }}.bash" "${pkgdir}/usr/share/bash-completion/completions/{{ .ProjectName }}"
+      install -Dm644 "./completions/{{ .ProjectName }}.zsh" "${pkgdir}/usr/share/zsh/site-functions/_{{ .ProjectName }}"
+      install -Dm644 "./completions/{{ .ProjectName }}.fish" "${pkgdir}/usr/share/fish/vendor_completions.d/{{ .ProjectName }}.fish"
+    commit_author:
+      name: goreleaserbot
+      email: bot@goreleaser.com

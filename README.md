@@ -100,6 +100,14 @@ docker run --rm -it -v "$HOME/.kube:/.kube" -v "$PWD:/data" ghcr.io/clevyr/kubed
    ```
 </details>
 
+### AUR (Arch Linux)
+
+<details>
+  <summary>Click to expand</summary>
+
+Install [kubedb-bin](https://aur.archlinux.org/packages/kubedb-bin) with your [AUR helper](https://wiki.archlinux.org/index.php/AUR_helpers) of choice.
+</details>
+
 KubeDB requires an existing Kubeconfig. See below for details.
 
 ## Usage
