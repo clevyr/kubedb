@@ -5,3 +5,4 @@ kubedb
 out
 vendor
 /completions/
+/manpages/
