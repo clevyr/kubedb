@@ -29,7 +29,6 @@ func main() {
 	}
 
 	rootCmd := cmd.NewCommand("latest", "")
-	rootCmd.InitDefaultVersionFlag()
 
 	err = doc.GenMarkdownTree(rootCmd, output)
 	if err != nil {

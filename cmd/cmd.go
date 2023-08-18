@@ -54,6 +54,7 @@ Dynamic Env Var Variables:
 	flags.Username(cmd)
 	flags.Password(cmd)
 	flags.Redact(cmd)
+	cmd.InitDefaultVersionFlag()
 
 	cmd.AddGroup(
 		&cobra.Group{
