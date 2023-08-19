@@ -150,7 +150,7 @@ func listTables(cmd *cobra.Command, args []string, toComplete string) ([]string,
 	conf := config.Exec{DisableHeaders: true}
 	err := util.DefaultSetup(cmd, &conf.Global)
 	if err != nil {
-		return nil, cobra.ShellCompDirectiveNoFileComp
+		return nil, cobra.ShellCompDirectiveError
 	}
 	conf.Command = conf.Dialect.ListTablesQuery()
 	return queryInDatabase(cmd, args, conf)
@@ -160,7 +160,7 @@ func listDatabases(cmd *cobra.Command, args []string, toComplete string) ([]stri
 	conf := config.Exec{DisableHeaders: true}
 	err := util.DefaultSetup(cmd, &conf.Global)
 	if err != nil {
-		return nil, cobra.ShellCompDirectiveNoFileComp
+		return nil, cobra.ShellCompDirectiveError
 	}
 	conf.Command = conf.Dialect.ListDatabasesQuery()
 	return queryInDatabase(cmd, args, conf)
@@ -171,7 +171,7 @@ func queryInDatabase(cmd *cobra.Command, args []string, conf config.Exec) ([]str
 	sqlCmd := conf.Dialect.ExecCommand(conf)
 	err := conf.Client.Exec(cmd.Context(), conf.Pod, sqlCmd.String(), nil, &buf, os.Stderr, false, nil)
 	if err != nil {
-		return nil, cobra.ShellCompDirectiveNoFileComp
+		return nil, cobra.ShellCompDirectiveError
 	}
 
 	names := strings.Split(buf.String(), "\n")

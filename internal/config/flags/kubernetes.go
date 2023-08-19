@@ -41,7 +41,7 @@ func Context(cmd *cobra.Command) {
 			)
 			conf, err := configLoader.RawConfig()
 			if err != nil {
-				return nil, cobra.ShellCompDirectiveNoFileComp
+				return nil, cobra.ShellCompDirectiveError
 			}
 			names := make([]string, 0, len(conf.Contexts))
 			for name := range conf.Contexts {
@@ -64,11 +64,11 @@ func Namespace(cmd *cobra.Command) {
 		func(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
 			client, err := kubernetes.NewClientFromCmd(cmd)
 			if err != nil {
-				return nil, cobra.ShellCompDirectiveNoFileComp
+				return nil, cobra.ShellCompDirectiveError
 			}
 			namespaces, err := client.Namespaces().List(cmd.Context(), metav1.ListOptions{})
 			if err != nil {
-				return nil, cobra.ShellCompDirectiveNoFileComp
+				return nil, cobra.ShellCompDirectiveError
 			}
 			names := make([]string, 0, len(namespaces.Items))
 			access := config.NewNamespaceRegexp(cmd.Annotations["access"])
@@ -94,11 +94,11 @@ func Pod(cmd *cobra.Command) {
 		func(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
 			client, err := kubernetes.NewClientFromCmd(cmd)
 			if err != nil {
-				return nil, cobra.ShellCompDirectiveNoFileComp
+				return nil, cobra.ShellCompDirectiveError
 			}
 			pods, err := client.GetNamespacedPods(cmd.Context())
 			if err != nil {
-				return nil, cobra.ShellCompDirectiveNoFileComp
+				return nil, cobra.ShellCompDirectiveError
 			}
 			names := make([]string, 0, len(pods.Items))
 			for _, pod := range pods.Items {
