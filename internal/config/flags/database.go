@@ -148,6 +148,10 @@ func ExcludeTableData(cmd *cobra.Command, p *[]string) {
 
 func listTables(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
 	conf := config.Exec{DisableHeaders: true}
+	if err := viper.Unmarshal(&conf); err != nil {
+		return nil, cobra.ShellCompDirectiveError
+	}
+
 	err := util.DefaultSetup(cmd, &conf.Global)
 	if err != nil {
 		return nil, cobra.ShellCompDirectiveError
@@ -158,6 +162,10 @@ func listTables(cmd *cobra.Command, args []string, toComplete string) ([]string,
 
 func listDatabases(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
 	conf := config.Exec{DisableHeaders: true}
+	if err := viper.Unmarshal(&conf); err != nil {
+		return nil, cobra.ShellCompDirectiveError
+	}
+
 	err := util.DefaultSetup(cmd, &conf.Global)
 	if err != nil {
 		return nil, cobra.ShellCompDirectiveError
