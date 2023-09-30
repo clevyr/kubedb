@@ -146,6 +146,13 @@ func ExcludeTableData(cmd *cobra.Command, p *[]string) {
 	}
 }
 
+func Analyze(cmd *cobra.Command, p *bool) {
+	cmd.Flags().BoolVar(p, "analyze", true, "Run an analyze query after restore")
+	if err := viper.BindPFlag("analyze", cmd.Flags().Lookup("analyze")); err != nil {
+		panic(err)
+	}
+}
+
 func listTables(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
 	conf := config.Exec{DisableHeaders: true}
 	if err := viper.Unmarshal(&conf); err != nil {

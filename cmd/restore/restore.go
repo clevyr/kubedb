@@ -44,6 +44,7 @@ Supported Input Filetypes:
 	flags.Force(cmd, &action.Force)
 	flags.Quiet(cmd, &action.Quiet)
 	flags.RemoteGzip(cmd, &action.RemoteGzip)
+	flags.Analyze(cmd, &action.Analyze)
 
 	return cmd
 }

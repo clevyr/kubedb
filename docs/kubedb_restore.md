@@ -18,6 +18,7 @@ kubedb restore filename [flags]
 ### Options
 
 ```
+      --analyze              Run an analyze query after restore (default true)
   -c, --clean                Clean (drop) database objects before recreating (default true)
   -f, --force                Do not prompt before restore
   -F, --format string        Output file format ([g]zip, [c]ustom, [p]lain) (default "gzip")

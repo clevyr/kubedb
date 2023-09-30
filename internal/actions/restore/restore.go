@@ -18,6 +18,8 @@ import (
 
 type Restore struct {
 	config.Restore `mapstructure:",squash"`
+
+	Analyze bool
 }
 
 func (action Restore) Run(ctx context.Context) (err error) {
@@ -113,7 +115,7 @@ func (action Restore) Run(ctx context.Context) (err error) {
 
 		// Analyze query
 		analyzeQuery := action.Dialect.AnalyzeQuery()
-		if analyzeQuery != "" {
+		if analyzeQuery != "" && action.Analyze {
 			if action.Format == sqlformat.Custom {
 				if err := pw.Close(); err != nil {
 					return err
