@@ -134,7 +134,6 @@ func (action Restore) Run(ctx context.Context) (err error) {
 				})
 			}
 
-			log.Info("running analyze query")
 			if action.RemoteGzip {
 				err = gzipCopy(w, strings.NewReader(analyzeQuery))
 			} else {
