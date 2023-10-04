@@ -18,7 +18,7 @@ import (
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/util/wait"
-	"k8s.io/utils/pointer"
+	"k8s.io/utils/ptr"
 )
 
 type SetupOptions struct {
@@ -194,7 +194,7 @@ func createJob(cmd *cobra.Command, conf *config.Global, actionName string) error
 			},
 		},
 		Spec: batchv1.JobSpec{
-			ActiveDeadlineSeconds: pointer.Int64(int64(24 * time.Hour.Seconds())),
+			ActiveDeadlineSeconds: ptr.To(int64(24 * time.Hour.Seconds())),
 			Template: corev1.PodTemplateSpec{
 				ObjectMeta: metav1.ObjectMeta{
 					Annotations: map[string]string{
@@ -205,7 +205,7 @@ func createJob(cmd *cobra.Command, conf *config.Global, actionName string) error
 				},
 				Spec: corev1.PodSpec{
 					RestartPolicy:                 corev1.RestartPolicyOnFailure,
-					TerminationGracePeriodSeconds: pointer.Int64(0),
+					TerminationGracePeriodSeconds: ptr.To(int64(0)),
 					Containers: []corev1.Container{
 						{
 							Name:            "kubedb",
