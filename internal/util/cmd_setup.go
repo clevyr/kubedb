@@ -207,6 +207,21 @@ func createJob(cmd *cobra.Command, conf *config.Global, actionName string) error
 				Spec: corev1.PodSpec{
 					RestartPolicy:                 corev1.RestartPolicyOnFailure,
 					TerminationGracePeriodSeconds: ptr.To(int64(0)),
+					Affinity: &corev1.Affinity{
+						PodAffinity: &corev1.PodAffinity{
+							PreferredDuringSchedulingIgnoredDuringExecution: []corev1.WeightedPodAffinityTerm{
+								{
+									Weight: 100,
+									PodAffinityTerm: corev1.PodAffinityTerm{
+										TopologyKey: "kubernetes.io/hostname",
+										LabelSelector: &metav1.LabelSelector{
+											MatchLabels: conf.Pod.ObjectMeta.Labels,
+										},
+									},
+								},
+							},
+						},
+					},
 					Containers: []corev1.Container{
 						{
 							Name:            "kubedb",
