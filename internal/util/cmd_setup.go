@@ -226,7 +226,7 @@ func createJob(cmd *cobra.Command, conf *config.Global, actionName string) error
 						{
 							Name:            "kubedb",
 							Image:           image,
-							ImagePullPolicy: corev1.PullAlways,
+							ImagePullPolicy: corev1.PullIfNotPresent,
 							Command:         []string{"sleep"},
 							Args:            []string{"infinity"},
 							TTY:             true,
