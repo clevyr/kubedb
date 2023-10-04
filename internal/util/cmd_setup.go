@@ -214,8 +214,6 @@ func createJob(cmd *cobra.Command, conf *config.Global, actionName string) error
 							ImagePullPolicy: corev1.PullAlways,
 							Command:         []string{"sleep"},
 							Args:            []string{"infinity"},
-							TTY:             true,
-							Stdin:           true,
 						},
 					},
 				},
