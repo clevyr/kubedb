@@ -3,6 +3,7 @@ package util
 import (
 	"context"
 	"errors"
+	"maps"
 	"strings"
 	"time"
 
@@ -179,20 +180,23 @@ func createJob(cmd *cobra.Command, conf *config.Global, actionName string) error
 		name += actionName + "-"
 	}
 
-	podLabels := viper.GetStringMapString("kubernetes.job-pod-labels")
-	podLabels["app.kubernetes.io/name"] = "kubedb"
-	podLabels["app.kubernetes.io/instance"] = "kubedb"
-	podLabels["app.kubernetes.io/component"] = actionName
+	standardLabels := map[string]string{
+		"app.kubernetes.io/name":      "kubedb",
+		"app.kubernetes.io/instance":  "kubedb",
+		"app.kubernetes.io/component": actionName,
+	}
+
+	podLabels := map[string]string{
+		"sidecar.istio.io/inject": "false",
+	}
+	maps.Copy(podLabels, standardLabels)
+	maps.Copy(podLabels, viper.GetStringMapString("kubernetes.job-pod-labels"))
 
 	job := batchv1.Job{
 		ObjectMeta: metav1.ObjectMeta{
 			GenerateName: name,
 			Namespace:    conf.Namespace,
-			Labels: map[string]string{
-				"app.kubernetes.io/name":      "kubedb",
-				"app.kubernetes.io/instance":  "kubedb",
-				"app.kubernetes.io/component": actionName,
-			},
+			Labels:       standardLabels,
 		},
 		Spec: batchv1.JobSpec{
 			ActiveDeadlineSeconds: ptr.To(int64(24 * time.Hour.Seconds())),
@@ -200,8 +204,7 @@ func createJob(cmd *cobra.Command, conf *config.Global, actionName string) error
 			Template: corev1.PodTemplateSpec{
 				ObjectMeta: metav1.ObjectMeta{
 					Annotations: map[string]string{
-						"sidecar.istio.io/inject": "false",
-						"linkerd.io/inject":       "disabled",
+						"linkerd.io/inject": "disabled",
 					},
 					Labels: podLabels,
 				},
