@@ -1,8 +1,10 @@
 package util
 
 import (
+	"context"
 	"errors"
 	"strings"
+	"time"
 
 	"github.com/AlecAivazis/survey/v2"
 	"github.com/clevyr/kubedb/internal/config"
@@ -12,11 +14,19 @@ import (
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
-	v1 "k8s.io/api/core/v1"
+	batchv1 "k8s.io/api/batch/v1"
+	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/util/wait"
+	"k8s.io/utils/pointer"
 )
 
-func DefaultSetup(cmd *cobra.Command, conf *config.Global) (err error) {
+type SetupOptions struct {
+	Name       string
+	DisableJob bool
+}
+
+func DefaultSetup(cmd *cobra.Command, conf *config.Global, opts SetupOptions) (err error) {
 	cmd.SilenceUsage = true
 
 	conf.Client, err = kubernetes.NewClient(conf.Kubeconfig, conf.Context, conf.Namespace)
@@ -42,7 +52,7 @@ func DefaultSetup(cmd *cobra.Command, conf *config.Global) (err error) {
 		}
 	}
 
-	var pods []v1.Pod
+	var pods []corev1.Pod
 	if dialectFlag == "" {
 		// Configure via detection
 		conf.Dialect, pods, err = database.DetectDialect(cmd.Context(), conf.Client)
@@ -77,7 +87,7 @@ func DefaultSetup(cmd *cobra.Command, conf *config.Global) (err error) {
 			if err != nil {
 				return err
 			}
-			pods = []v1.Pod{*pod}
+			pods = []corev1.Pod{*pod}
 		}
 	}
 
@@ -145,5 +155,121 @@ func DefaultSetup(cmd *cobra.Command, conf *config.Global) (err error) {
 		log.AddHook(log_hooks.Redact(conf.Password))
 	}
 
+	if opts.DisableJob || viper.GetBool("kubernetes.no-job") {
+		conf.Host = "127.0.0.1"
+	} else {
+		if err := createJob(cmd, conf, opts.Name); err != nil {
+			return err
+		}
+
+		if err := waitForPod(cmd, conf); err != nil {
+			Teardown(cmd, conf)
+			return err
+		}
+	}
+
 	return nil
+}
+
+func createJob(cmd *cobra.Command, conf *config.Global, actionName string) error {
+	image := conf.Pod.Spec.Containers[0].Image
+
+	name := "kubedb-"
+	if actionName != "" {
+		name += actionName + "-"
+	}
+
+	podLabels := viper.GetStringMapString("kubernetes.job-pod-labels")
+	podLabels["app.kubernetes.io/name"] = "kubedb"
+	podLabels["app.kubernetes.io/instance"] = "kubedb"
+
+	job := batchv1.Job{
+		ObjectMeta: metav1.ObjectMeta{
+			GenerateName: name,
+			Namespace:    conf.Namespace,
+			Labels: map[string]string{
+				"app.kubernetes.io/name":      "kubedb",
+				"app.kubernetes.io/instance":  "kubedb",
+				"app.kubernetes.io/component": actionName,
+			},
+		},
+		Spec: batchv1.JobSpec{
+			ActiveDeadlineSeconds: pointer.Int64(int64(24 * time.Hour.Seconds())),
+			Template: corev1.PodTemplateSpec{
+				ObjectMeta: metav1.ObjectMeta{
+					Annotations: map[string]string{
+						"sidecar.istio.io/inject": "false",
+						"linkerd.io/inject":       "disabled",
+					},
+					Labels: podLabels,
+				},
+				Spec: corev1.PodSpec{
+					RestartPolicy:                 corev1.RestartPolicyOnFailure,
+					TerminationGracePeriodSeconds: pointer.Int64(0),
+					Containers: []corev1.Container{
+						{
+							Name:            "kubedb",
+							Image:           image,
+							ImagePullPolicy: corev1.PullAlways,
+							Command:         []string{"sleep"},
+							Args:            []string{"infinity"},
+							TTY:             true,
+							Stdin:           true,
+						},
+					},
+				},
+			},
+		},
+	}
+
+	log.Debug("creating job")
+
+	ctx, cancel := context.WithTimeout(cmd.Context(), time.Minute)
+	defer cancel()
+
+	var err error
+	if conf.Job, err = conf.Client.ClientSet.BatchV1().Jobs(conf.Namespace).Create(
+		ctx, &job, metav1.CreateOptions{},
+	); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func waitForPod(cmd *cobra.Command, conf *config.Global) error {
+	log.WithField("name", conf.Job.ObjectMeta.Name).Info("waiting for job...")
+
+	ctx, cancel := context.WithTimeout(cmd.Context(), 5*time.Minute)
+	defer cancel()
+
+	return wait.PollUntilContextCancel(
+		ctx, time.Second, true, func(ctx context.Context) (done bool, err error) {
+			list, err := conf.Client.ClientSet.CoreV1().Pods(conf.Namespace).List(
+				cmd.Context(), metav1.ListOptions{
+					LabelSelector: "batch.kubernetes.io/controller-uid=" + string(conf.Job.ObjectMeta.UID),
+				},
+			)
+			if err != nil {
+				return false, err
+			}
+
+			if len(list.Items) == 0 {
+				return false, nil
+			}
+
+			switch list.Items[0].Status.Phase {
+			case corev1.PodRunning:
+				conf.Host = conf.Pod.Status.PodIP
+				conf.Pod = list.Items[0]
+				return true, nil
+			case corev1.PodFailed:
+				return false, errors.New("pod failed")
+			case corev1.PodSucceeded:
+				return false, errors.New("pod exited early")
+			default:
+				return false, nil
+			}
+		},
+	)
 }

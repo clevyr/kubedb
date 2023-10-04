@@ -19,6 +19,7 @@ func NewCommand() *cobra.Command {
 		RunE:    run,
 		PreRunE: preRun,
 	}
+
 	return cmd
 }
 
@@ -27,9 +28,16 @@ func preRun(cmd *cobra.Command, args []string) error {
 		return err
 	}
 
-	return util.DefaultSetup(cmd, &action.Global)
+	if err := util.DefaultSetup(cmd, &action.Global, util.SetupOptions{Name: "exec"}); err != nil {
+		return err
+	}
+
+	return nil
 }
 
 func run(cmd *cobra.Command, args []string) (err error) {
+	defer func() {
+		util.Teardown(cmd, &action.Global)
+	}()
 	return action.Run(cmd.Context())
 }

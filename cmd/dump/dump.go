@@ -87,7 +87,7 @@ func preRun(cmd *cobra.Command, args []string) (err error) {
 		cmd.SilenceUsage = false
 	}
 
-	if err := util.DefaultSetup(cmd, &action.Global); err != nil {
+	if err := util.DefaultSetup(cmd, &action.Global, util.SetupOptions{Name: "dump"}); err != nil {
 		return err
 	}
 
@@ -99,5 +99,8 @@ func preRun(cmd *cobra.Command, args []string) (err error) {
 }
 
 func run(cmd *cobra.Command, args []string) (err error) {
+	defer func() {
+		util.Teardown(cmd, &action.Global)
+	}()
 	return action.Run(cmd.Context())
 }

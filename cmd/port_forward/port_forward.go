@@ -49,7 +49,7 @@ func preRun(cmd *cobra.Command, args []string) error {
 		return err
 	}
 
-	err := util.DefaultSetup(cmd, &action.Global)
+	err := util.DefaultSetup(cmd, &action.Global, util.SetupOptions{DisableJob: true})
 	if err != nil {
 		return err
 	}
@@ -59,6 +59,7 @@ func preRun(cmd *cobra.Command, args []string) error {
 	} else {
 		port, err := strconv.ParseUint(args[0], 10, 16)
 		if err != nil {
+			util.Teardown(cmd, &action.Global)
 			return err
 		}
 		action.LocalPort = uint16(port)
@@ -67,5 +68,8 @@ func preRun(cmd *cobra.Command, args []string) error {
 }
 
 func run(cmd *cobra.Command, args []string) (err error) {
+	defer func() {
+		util.Teardown(cmd, &action.Global)
+	}()
 	return action.Run(cmd.Context())
 }

@@ -108,43 +108,43 @@ func TestPostgres_DumpCommand(t *testing.T) {
 	}{
 		{
 			"default",
-			args{config.Dump{Global: config.Global{Database: "d", Username: "u"}}},
-			command.NewBuilder(command.NewEnv("PGPASSWORD", ""), "pg_dump", "--host=127.0.0.1", "--username=u", "--dbname=d", "--verbose"),
+			args{config.Dump{Global: config.Global{Host: "1.1.1.1", Database: "d", Username: "u"}}},
+			command.NewBuilder(command.NewEnv("PGPASSWORD", ""), "pg_dump", "--host=1.1.1.1", "--username=u", "--dbname=d", "--verbose"),
 		},
 		{
 			"clean",
-			args{config.Dump{Clean: true, Global: config.Global{Database: "d", Username: "u"}}},
-			command.NewBuilder(command.NewEnv("PGPASSWORD", ""), "pg_dump", "--host=127.0.0.1", "--username=u", "--dbname=d", "--clean", "--verbose"),
+			args{config.Dump{Clean: true, Global: config.Global{Host: "1.1.1.1", Database: "d", Username: "u"}}},
+			command.NewBuilder(command.NewEnv("PGPASSWORD", ""), "pg_dump", "--host=1.1.1.1", "--username=u", "--dbname=d", "--clean", "--verbose"),
 		},
 		{
 			"no-owner",
-			args{config.Dump{NoOwner: true, Global: config.Global{Database: "d", Username: "u"}}},
-			command.NewBuilder(command.NewEnv("PGPASSWORD", ""), "pg_dump", "--host=127.0.0.1", "--username=u", "--dbname=d", "--no-owner", "--verbose"),
+			args{config.Dump{NoOwner: true, Global: config.Global{Host: "1.1.1.1", Database: "d", Username: "u"}}},
+			command.NewBuilder(command.NewEnv("PGPASSWORD", ""), "pg_dump", "--host=1.1.1.1", "--username=u", "--dbname=d", "--no-owner", "--verbose"),
 		},
 		{
 			"if-exists",
-			args{config.Dump{IfExists: true, Global: config.Global{Database: "d", Username: "u"}}},
-			command.NewBuilder(command.NewEnv("PGPASSWORD", ""), "pg_dump", "--host=127.0.0.1", "--username=u", "--dbname=d", "--if-exists", "--verbose"),
+			args{config.Dump{IfExists: true, Global: config.Global{Host: "1.1.1.1", Database: "d", Username: "u"}}},
+			command.NewBuilder(command.NewEnv("PGPASSWORD", ""), "pg_dump", "--host=1.1.1.1", "--username=u", "--dbname=d", "--if-exists", "--verbose"),
 		},
 		{
 			"tables",
-			args{config.Dump{Tables: []string{"table1", "table2"}, Global: config.Global{Database: "d", Username: "u"}}},
-			command.NewBuilder(command.NewEnv("PGPASSWORD", ""), "pg_dump", "--host=127.0.0.1", "--username=u", "--dbname=d", `--table="table1"`, `--table="table2"`, "--verbose"),
+			args{config.Dump{Tables: []string{"table1", "table2"}, Global: config.Global{Host: "1.1.1.1", Database: "d", Username: "u"}}},
+			command.NewBuilder(command.NewEnv("PGPASSWORD", ""), "pg_dump", "--host=1.1.1.1", "--username=u", "--dbname=d", `--table="table1"`, `--table="table2"`, "--verbose"),
 		},
 		{
 			"exclude-table",
-			args{config.Dump{ExcludeTable: []string{"table1", "table2"}, Global: config.Global{Database: "d", Username: "u"}}},
-			command.NewBuilder(command.NewEnv("PGPASSWORD", ""), "pg_dump", "--host=127.0.0.1", "--username=u", "--dbname=d", `--exclude-table="table1"`, `--exclude-table="table2"`, "--verbose"),
+			args{config.Dump{ExcludeTable: []string{"table1", "table2"}, Global: config.Global{Host: "1.1.1.1", Database: "d", Username: "u"}}},
+			command.NewBuilder(command.NewEnv("PGPASSWORD", ""), "pg_dump", "--host=1.1.1.1", "--username=u", "--dbname=d", `--exclude-table="table1"`, `--exclude-table="table2"`, "--verbose"),
 		},
 		{
 			"exclude-table-data",
-			args{config.Dump{ExcludeTableData: []string{"table1", "table2"}, Global: config.Global{Database: "d", Username: "u"}}},
-			command.NewBuilder(command.NewEnv("PGPASSWORD", ""), "pg_dump", "--host=127.0.0.1", "--username=u", "--dbname=d", `--exclude-table-data="table1"`, `--exclude-table-data="table2"`, "--verbose"),
+			args{config.Dump{ExcludeTableData: []string{"table1", "table2"}, Global: config.Global{Host: "1.1.1.1", Database: "d", Username: "u"}}},
+			command.NewBuilder(command.NewEnv("PGPASSWORD", ""), "pg_dump", "--host=1.1.1.1", "--username=u", "--dbname=d", `--exclude-table-data="table1"`, `--exclude-table-data="table2"`, "--verbose"),
 		},
 		{
 			"custom",
-			args{config.Dump{Files: config.Files{Format: sqlformat.Custom}, Global: config.Global{Database: "d", Username: "u"}}},
-			command.NewBuilder(command.NewEnv("PGPASSWORD", ""), "pg_dump", "--host=127.0.0.1", "--username=u", "--dbname=d", "--format=c", "--verbose"),
+			args{config.Dump{Files: config.Files{Format: sqlformat.Custom}, Global: config.Global{Host: "1.1.1.1", Database: "d", Username: "u"}}},
+			command.NewBuilder(command.NewEnv("PGPASSWORD", ""), "pg_dump", "--host=1.1.1.1", "--username=u", "--dbname=d", "--format=c", "--verbose"),
 		},
 	}
 	for _, tt := range tests {
@@ -167,18 +167,18 @@ func TestPostgres_ExecCommand(t *testing.T) {
 	}{
 		{
 			"default",
-			args{config.Exec{Global: config.Global{Database: "d", Username: "u"}}},
-			command.NewBuilder(command.NewEnv("PGPASSWORD", ""), "psql", "--host=127.0.0.1", "--username=u", "--dbname=d"),
+			args{config.Exec{Global: config.Global{Host: "1.1.1.1", Database: "d", Username: "u"}}},
+			command.NewBuilder(command.NewEnv("PGPASSWORD", ""), "psql", "--host=1.1.1.1", "--username=u", "--dbname=d"),
 		},
 		{
 			"disable-headers",
-			args{config.Exec{DisableHeaders: true, Global: config.Global{Database: "d", Username: "u"}}},
-			command.NewBuilder(command.NewEnv("PGPASSWORD", ""), "psql", "--host=127.0.0.1", "--username=u", "--dbname=d", "--tuples-only"),
+			args{config.Exec{DisableHeaders: true, Global: config.Global{Host: "1.1.1.1", Database: "d", Username: "u"}}},
+			command.NewBuilder(command.NewEnv("PGPASSWORD", ""), "psql", "--host=1.1.1.1", "--username=u", "--dbname=d", "--tuples-only"),
 		},
 		{
 			"command",
-			args{config.Exec{Command: "select true", Global: config.Global{Database: "d", Username: "u"}}},
-			command.NewBuilder(command.NewEnv("PGPASSWORD", ""), "psql", "--host=127.0.0.1", "--username=u", "--dbname=d", "--command=select true"),
+			args{config.Exec{Command: "select true", Global: config.Global{Host: "1.1.1.1", Database: "d", Username: "u"}}},
+			command.NewBuilder(command.NewEnv("PGPASSWORD", ""), "psql", "--host=1.1.1.1", "--username=u", "--dbname=d", "--command=select true"),
 		},
 	}
 	for _, tt := range tests {
@@ -309,7 +309,7 @@ func TestPostgres_PasswordEnvNames(t *testing.T) {
 		want []string
 	}{
 		{"default", args{}, []string{"POSTGRES_PASSWORD", "PGPOOL_POSTGRES_PASSWORD"}},
-		{"postgres", args{config.Global{Username: "postgres"}}, []string{"POSTGRES_POSTGRES_PASSWORD", "POSTGRES_PASSWORD", "PGPOOL_POSTGRES_PASSWORD"}},
+		{"postgres", args{config.Global{Host: "1.1.1.1", Username: "postgres"}}, []string{"POSTGRES_POSTGRES_PASSWORD", "POSTGRES_PASSWORD", "PGPOOL_POSTGRES_PASSWORD"}},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -360,33 +360,33 @@ func TestPostgres_RestoreCommand(t *testing.T) {
 	}{
 		{
 			"gzip",
-			args{config.Restore{Global: config.Global{Database: "d", Username: "u"}}, sqlformat.Gzip},
-			command.NewBuilder(pgpassword, "psql", "--host=127.0.0.1", "--username=u", "--dbname=d"),
+			args{config.Restore{Global: config.Global{Host: "1.1.1.1", Database: "d", Username: "u"}}, sqlformat.Gzip},
+			command.NewBuilder(pgpassword, "psql", "--host=1.1.1.1", "--username=u", "--dbname=d"),
 		},
 		{
 			"plain",
-			args{config.Restore{Global: config.Global{Database: "d", Username: "u"}}, sqlformat.Plain},
-			command.NewBuilder(pgpassword, "psql", "--host=127.0.0.1", "--username=u", "--dbname=d"),
+			args{config.Restore{Global: config.Global{Host: "1.1.1.1", Database: "d", Username: "u"}}, sqlformat.Plain},
+			command.NewBuilder(pgpassword, "psql", "--host=1.1.1.1", "--username=u", "--dbname=d"),
 		},
 		{
 			"custom",
-			args{config.Restore{Global: config.Global{Database: "d", Username: "u"}}, sqlformat.Custom},
-			command.NewBuilder(pgpassword, "pg_restore", "--format=custom", "--clean", "--exit-on-error", "--verbose", "--host=127.0.0.1", "--username=u", "--dbname=d"),
+			args{config.Restore{Global: config.Global{Host: "1.1.1.1", Database: "d", Username: "u"}}, sqlformat.Custom},
+			command.NewBuilder(pgpassword, "pg_restore", "--format=custom", "--clean", "--exit-on-error", "--verbose", "--host=1.1.1.1", "--username=u", "--dbname=d"),
 		},
 		{
 			"custom-no-owner",
-			args{config.Restore{NoOwner: true, Global: config.Global{Database: "d", Username: "u"}}, sqlformat.Custom},
-			command.NewBuilder(pgpassword, "pg_restore", "--format=custom", "--clean", "--exit-on-error", "--no-owner", "--verbose", "--host=127.0.0.1", "--username=u", "--dbname=d"),
+			args{config.Restore{NoOwner: true, Global: config.Global{Host: "1.1.1.1", Database: "d", Username: "u"}}, sqlformat.Custom},
+			command.NewBuilder(pgpassword, "pg_restore", "--format=custom", "--clean", "--exit-on-error", "--no-owner", "--verbose", "--host=1.1.1.1", "--username=u", "--dbname=d"),
 		},
 		{
 			"single-transaction",
-			args{config.Restore{SingleTransaction: true, Global: config.Global{Database: "d", Username: "u"}}, sqlformat.Custom},
-			command.NewBuilder(pgpassword, "pg_restore", "--format=custom", "--clean", "--exit-on-error", "--verbose", "--host=127.0.0.1", "--username=u", "--dbname=d", "--single-transaction"),
+			args{config.Restore{SingleTransaction: true, Global: config.Global{Host: "1.1.1.1", Database: "d", Username: "u"}}, sqlformat.Custom},
+			command.NewBuilder(pgpassword, "pg_restore", "--format=custom", "--clean", "--exit-on-error", "--verbose", "--host=1.1.1.1", "--username=u", "--dbname=d", "--single-transaction"),
 		},
 		{
 			"sql-quiet",
-			args{config.Restore{Global: config.Global{Database: "d", Username: "u", Quiet: true}}, sqlformat.Gzip},
-			command.NewBuilder(pgpassword, command.NewEnv("PGOPTIONS", "-c client_min_messages=WARNING"), "psql", "--quiet", "--output=/dev/null", "--host=127.0.0.1", "--username=u", "--dbname=d"),
+			args{config.Restore{Global: config.Global{Host: "1.1.1.1", Database: "d", Username: "u", Quiet: true}}, sqlformat.Gzip},
+			command.NewBuilder(pgpassword, command.NewEnv("PGOPTIONS", "-c client_min_messages=WARNING"), "psql", "--quiet", "--output=/dev/null", "--host=1.1.1.1", "--username=u", "--dbname=d"),
 		},
 	}
 	for _, tt := range tests {

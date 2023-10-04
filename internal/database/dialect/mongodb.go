@@ -80,7 +80,7 @@ func (db MongoDB) AuthenticationDatabase(c config.Global) string {
 func (db MongoDB) ExecCommand(conf config.Exec) *command.Builder {
 	cmd := command.NewBuilder(
 		"mongosh",
-		"--host=127.0.0.1",
+		"--host="+conf.Host,
 		"--username="+conf.Username,
 		"--password="+conf.Password,
 		"--authenticationDatabase="+db.AuthenticationDatabase(conf.Global),
@@ -101,7 +101,7 @@ func (db MongoDB) DumpCommand(conf config.Dump) *command.Builder {
 	cmd := command.NewBuilder(
 		"mongodump",
 		"--archive",
-		"--host=127.0.0.1",
+		"--host="+conf.Host,
 		"--username="+conf.Username,
 		"--password="+conf.Password,
 		"--authenticationDatabase="+db.AuthenticationDatabase(conf.Global),
@@ -125,7 +125,7 @@ func (db MongoDB) RestoreCommand(conf config.Restore, inputFormat sqlformat.Form
 	cmd := command.NewBuilder(
 		"mongorestore",
 		"--archive",
-		"--host=127.0.0.1",
+		"--host="+conf.Host,
 		"--username="+conf.Username,
 		"--password="+conf.Password,
 		"--authenticationDatabase="+db.AuthenticationDatabase(conf.Global),

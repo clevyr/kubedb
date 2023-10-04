@@ -29,26 +29,26 @@ func Test_buildCommand(t *testing.T) {
 		{
 			"postgres-gzip",
 			args{
-				config.Restore{Global: config.Global{Dialect: dialect.Postgres{}, Database: "d", Username: "u"}},
+				config.Restore{Global: config.Global{Dialect: dialect.Postgres{}, Host: "1.1.1.1", Database: "d", Username: "u"}},
 				sqlformat.Gzip,
 			},
-			command.NewBuilder("gunzip", "--force", command.Pipe, pgpassword, "psql", "--host=127.0.0.1", "--username=u", "--dbname=d"),
+			command.NewBuilder("gunzip", "--force", command.Pipe, pgpassword, "psql", "--host=1.1.1.1", "--username=u", "--dbname=d"),
 		},
 		{
 			"postgres-plain",
 			args{
-				config.Restore{Global: config.Global{Dialect: dialect.Postgres{}, Database: "d", Username: "u"}},
+				config.Restore{Global: config.Global{Dialect: dialect.Postgres{}, Host: "1.1.1.1", Database: "d", Username: "u"}},
 				sqlformat.Gzip,
 			},
-			command.NewBuilder("gunzip", "--force", command.Pipe, pgpassword, "psql", "--host=127.0.0.1", "--username=u", "--dbname=d"),
+			command.NewBuilder("gunzip", "--force", command.Pipe, pgpassword, "psql", "--host=1.1.1.1", "--username=u", "--dbname=d"),
 		},
 		{
 			"postgres-custom",
 			args{
-				config.Restore{Global: config.Global{Dialect: dialect.Postgres{}, Database: "d", Username: "u"}},
+				config.Restore{Global: config.Global{Dialect: dialect.Postgres{}, Host: "1.1.1.1", Database: "d", Username: "u"}},
 				sqlformat.Gzip,
 			},
-			command.NewBuilder("gunzip", "--force", command.Pipe, pgpassword, "psql", "--host=127.0.0.1", "--username=u", "--dbname=d"),
+			command.NewBuilder("gunzip", "--force", command.Pipe, pgpassword, "psql", "--host=1.1.1.1", "--username=u", "--dbname=d"),
 		},
 	}
 	for _, tt := range tests {

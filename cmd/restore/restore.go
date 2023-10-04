@@ -76,7 +76,7 @@ func preRun(cmd *cobra.Command, args []string) (err error) {
 		action.Filename = args[0]
 	}
 
-	if err := util.DefaultSetup(cmd, &action.Global); err != nil {
+	if err := util.DefaultSetup(cmd, &action.Global, util.SetupOptions{Name: "restore"}); err != nil {
 		return err
 	}
 
@@ -88,6 +88,10 @@ func preRun(cmd *cobra.Command, args []string) (err error) {
 }
 
 func run(cmd *cobra.Command, args []string) (err error) {
+	defer func() {
+		util.Teardown(cmd, &action.Global)
+	}()
+
 	if !action.Force {
 		tty := term.TTY{In: os.Stdin}.IsTerminalIn()
 		if tty {

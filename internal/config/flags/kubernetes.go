@@ -113,3 +113,17 @@ func Pod(cmd *cobra.Command) {
 		panic(err)
 	}
 }
+
+func JobPodLabels(cmd *cobra.Command) {
+	cmd.PersistentFlags().StringToString("job-pod-labels", map[string]string{}, "Pod labels to add to the job")
+	if err := viper.BindPFlag("kubernetes.job-pod-labels", cmd.PersistentFlags().Lookup("job-pod-labels")); err != nil {
+		panic(err)
+	}
+}
+
+func NoJob(cmd *cobra.Command) {
+	cmd.PersistentFlags().Bool("no-job", false, "Database commands will be run in the database pod instead of a dedicated job")
+	if err := viper.BindPFlag("kubernetes.no-job", cmd.PersistentFlags().Lookup("no-job")); err != nil {
+		panic(err)
+	}
+}

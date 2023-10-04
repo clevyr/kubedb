@@ -73,7 +73,7 @@ func (db MariaDB) PasswordEnvNames(c config.Global) []string {
 func (MariaDB) ExecCommand(conf config.Exec) *command.Builder {
 	cmd := command.NewBuilder(
 		command.NewEnv("MYSQL_PWD", conf.Password),
-		"mysql", "--host=127.0.0.1", "--user="+conf.Username,
+		"mysql", "--host="+conf.Host, "--user="+conf.Username,
 	)
 	if conf.Database != "" {
 		cmd.Push("--database=" + conf.Database)
@@ -90,7 +90,7 @@ func (MariaDB) ExecCommand(conf config.Exec) *command.Builder {
 func (MariaDB) DumpCommand(conf config.Dump) *command.Builder {
 	cmd := command.NewBuilder(
 		command.NewEnv("MYSQL_PWD", conf.Password),
-		"mysqldump", "--host=127.0.0.1", "--user="+conf.Username, conf.Database,
+		"mysqldump", "--host="+conf.Host, "--user="+conf.Username, conf.Database,
 	)
 	if conf.Clean {
 		cmd.Push("--add-drop-table")
@@ -110,7 +110,7 @@ func (MariaDB) DumpCommand(conf config.Dump) *command.Builder {
 func (MariaDB) RestoreCommand(conf config.Restore, inputFormat sqlformat.Format) *command.Builder {
 	return command.NewBuilder(
 		command.NewEnv("MYSQL_PWD", conf.Password),
-		"mysql", "--host=127.0.0.1", "--user="+conf.Username, "--database="+conf.Database,
+		"mysql", "--host="+conf.Host, "--user="+conf.Username, "--database="+conf.Database,
 	)
 }
 

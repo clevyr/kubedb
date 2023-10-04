@@ -3,7 +3,9 @@ package cmd
 import (
 	"fmt"
 	"os"
+	"os/signal"
 	"strings"
+	"syscall"
 
 	"github.com/clevyr/kubedb/cmd/dump"
 	"github.com/clevyr/kubedb/cmd/exec"
@@ -47,6 +49,8 @@ Dynamic Env Var Variables:
 	flags.Namespace(cmd)
 	flags.Dialect(cmd)
 	flags.Pod(cmd)
+	flags.JobPodLabels(cmd)
+	flags.NoJob(cmd)
 	flags.LogLevel(cmd)
 	flags.LogFormat(cmd)
 	flags.GitHubActions(cmd)
@@ -78,6 +82,10 @@ Dynamic Env Var Variables:
 }
 
 func preRun(cmd *cobra.Command, args []string) error {
+	ctx, cancel := signal.NotifyContext(cmd.Context(), os.Interrupt, os.Kill, syscall.SIGTERM)
+	cmd.PersistentPostRun = func(cmd *cobra.Command, args []string) { cancel() }
+	cmd.SetContext(ctx)
+
 	kubeconfig, err := cmd.Flags().GetString("kubeconfig")
 	if err != nil {
 		panic(err)

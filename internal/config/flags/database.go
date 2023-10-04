@@ -159,7 +159,7 @@ func listTables(cmd *cobra.Command, args []string, toComplete string) ([]string,
 		return nil, cobra.ShellCompDirectiveError
 	}
 
-	err := util.DefaultSetup(cmd, &conf.Global)
+	err := util.DefaultSetup(cmd, &conf.Global, util.SetupOptions{DisableJob: true})
 	if err != nil {
 		return nil, cobra.ShellCompDirectiveError
 	}
@@ -173,7 +173,7 @@ func listDatabases(cmd *cobra.Command, args []string, toComplete string) ([]stri
 		return nil, cobra.ShellCompDirectiveError
 	}
 
-	err := util.DefaultSetup(cmd, &conf.Global)
+	err := util.DefaultSetup(cmd, &conf.Global, util.SetupOptions{DisableJob: true})
 	if err != nil {
 		return nil, cobra.ShellCompDirectiveError
 	}

@@ -116,7 +116,7 @@ func (db Postgres) PasswordEnvNames(c config.Global) []string {
 func (Postgres) ExecCommand(conf config.Exec) *command.Builder {
 	cmd := command.NewBuilder(
 		command.NewEnv("PGPASSWORD", conf.Password),
-		"psql", "--host=127.0.0.1", "--username="+conf.Username,
+		"psql", "--host="+conf.Host, "--username="+conf.Username,
 	)
 	if conf.Database != "" {
 		cmd.Push("--dbname=" + conf.Database)
@@ -139,7 +139,7 @@ func quoteParam(param string) string {
 func (Postgres) DumpCommand(conf config.Dump) *command.Builder {
 	cmd := command.NewBuilder(
 		command.NewEnv("PGPASSWORD", conf.Password),
-		"pg_dump", "--host=127.0.0.1", "--username="+conf.Username, "--dbname="+conf.Database,
+		"pg_dump", "--host="+conf.Host, "--username="+conf.Username, "--dbname="+conf.Database,
 	)
 	if conf.Clean {
 		cmd.Push("--clean")
@@ -190,7 +190,7 @@ func (Postgres) RestoreCommand(conf config.Restore, inputFormat sqlformat.Format
 			cmd.Push("--verbose")
 		}
 	}
-	cmd.Push("--host=127.0.0.1", "--username="+conf.Username, "--dbname="+conf.Database)
+	cmd.Push("--host="+conf.Host, "--username="+conf.Username, "--dbname="+conf.Database)
 	if conf.SingleTransaction {
 		cmd.Push("--single-transaction")
 	}
