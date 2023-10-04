@@ -182,6 +182,7 @@ func createJob(cmd *cobra.Command, conf *config.Global, actionName string) error
 	podLabels := viper.GetStringMapString("kubernetes.job-pod-labels")
 	podLabels["app.kubernetes.io/name"] = "kubedb"
 	podLabels["app.kubernetes.io/instance"] = "kubedb"
+	podLabels["app.kubernetes.io/component"] = actionName
 
 	job := batchv1.Job{
 		ObjectMeta: metav1.ObjectMeta{
