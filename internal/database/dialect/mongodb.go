@@ -79,7 +79,7 @@ func (db MongoDB) AuthenticationDatabase(c config.Global) string {
 
 func (db MongoDB) ExecCommand(conf config.Exec) *command.Builder {
 	cmd := command.NewBuilder(
-		command.Raw(`"$(which mongosh || which mongo)"`),
+		"exec", command.Raw(`"$(which mongosh || which mongo)"`),
 		"--host="+conf.Host,
 		"--username="+conf.Username,
 		"--password="+conf.Password,

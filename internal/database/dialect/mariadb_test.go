@@ -147,17 +147,17 @@ func TestMariaDB_ExecCommand(t *testing.T) {
 		{
 			"default",
 			args{config.Exec{Global: config.Global{Host: "1.1.1.1", Database: "d", Username: "u"}}},
-			command.NewBuilder(command.Env{Key: "MYSQL_PWD"}, "mysql", "--host=1.1.1.1", "--user=u", "--database=d"),
+			command.NewBuilder(command.Env{Key: "MYSQL_PWD"}, "exec", "mysql", "--host=1.1.1.1", "--user=u", "--database=d"),
 		},
 		{
 			"disable-headers",
 			args{config.Exec{DisableHeaders: true, Global: config.Global{Host: "1.1.1.1", Database: "d", Username: "u"}}},
-			command.NewBuilder(command.Env{Key: "MYSQL_PWD"}, "mysql", "--host=1.1.1.1", "--user=u", "--database=d", "--skip-column-names"),
+			command.NewBuilder(command.Env{Key: "MYSQL_PWD"}, "exec", "mysql", "--host=1.1.1.1", "--user=u", "--database=d", "--skip-column-names"),
 		},
 		{
 			"command",
 			args{config.Exec{Command: "show databases", Global: config.Global{Host: "1.1.1.1", Database: "d", Username: "u"}}},
-			command.NewBuilder(command.Env{Key: "MYSQL_PWD"}, "mysql", "--host=1.1.1.1", "--user=u", "--database=d", "--execute=show databases"),
+			command.NewBuilder(command.Env{Key: "MYSQL_PWD"}, "exec", "mysql", "--host=1.1.1.1", "--user=u", "--database=d", "--execute=show databases"),
 		},
 	}
 	for _, tt := range tests {

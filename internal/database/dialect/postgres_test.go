@@ -168,17 +168,17 @@ func TestPostgres_ExecCommand(t *testing.T) {
 		{
 			"default",
 			args{config.Exec{Global: config.Global{Host: "1.1.1.1", Database: "d", Username: "u"}}},
-			command.NewBuilder(command.NewEnv("PGPASSWORD", ""), "psql", "--host=1.1.1.1", "--username=u", "--dbname=d"),
+			command.NewBuilder(command.NewEnv("PGPASSWORD", ""), "exec", "psql", "--host=1.1.1.1", "--username=u", "--dbname=d"),
 		},
 		{
 			"disable-headers",
 			args{config.Exec{DisableHeaders: true, Global: config.Global{Host: "1.1.1.1", Database: "d", Username: "u"}}},
-			command.NewBuilder(command.NewEnv("PGPASSWORD", ""), "psql", "--host=1.1.1.1", "--username=u", "--dbname=d", "--tuples-only"),
+			command.NewBuilder(command.NewEnv("PGPASSWORD", ""), "exec", "psql", "--host=1.1.1.1", "--username=u", "--dbname=d", "--tuples-only"),
 		},
 		{
 			"command",
 			args{config.Exec{Command: "select true", Global: config.Global{Host: "1.1.1.1", Database: "d", Username: "u"}}},
-			command.NewBuilder(command.NewEnv("PGPASSWORD", ""), "psql", "--host=1.1.1.1", "--username=u", "--dbname=d", "--command=select true"),
+			command.NewBuilder(command.NewEnv("PGPASSWORD", ""), "exec", "psql", "--host=1.1.1.1", "--username=u", "--dbname=d", "--command=select true"),
 		},
 	}
 	for _, tt := range tests {
