@@ -152,17 +152,17 @@ func TestMongoDB_ExecCommand(t *testing.T) {
 		{
 			"default",
 			args{config.Exec{Global: config.Global{Host: "1.1.1.1", Database: "d", Username: "u", Password: "p"}}},
-			command.NewBuilder("mongosh", "--host=1.1.1.1", "--username=u", "--password=p", "--authenticationDatabase=d", "d"),
+			command.NewBuilder(command.Raw(`"$(which mongosh || which mongo)"`), "--host=1.1.1.1", "--username=u", "--password=p", "--authenticationDatabase=d", "d"),
 		},
 		{
 			"disable-headers",
 			args{config.Exec{DisableHeaders: true, Global: config.Global{Host: "1.1.1.1", Database: "d", Username: "u", Password: "p"}}},
-			command.NewBuilder("mongosh", "--host=1.1.1.1", "--username=u", "--password=p", "--authenticationDatabase=d", "--quiet", "d"),
+			command.NewBuilder(command.Raw(`"$(which mongosh || which mongo)"`), "--host=1.1.1.1", "--username=u", "--password=p", "--authenticationDatabase=d", "--quiet", "d"),
 		},
 		{
 			"command",
 			args{config.Exec{Command: "show databases", Global: config.Global{Host: "1.1.1.1", Database: "d", Username: "u", Password: "p"}}},
-			command.NewBuilder("mongosh", "--host=1.1.1.1", "--username=u", "--password=p", "--authenticationDatabase=d", "--eval=show databases", "d"),
+			command.NewBuilder(command.Raw(`"$(which mongosh || which mongo)"`), "--host=1.1.1.1", "--username=u", "--password=p", "--authenticationDatabase=d", "--eval=show databases", "d"),
 		},
 	}
 	for _, tt := range tests {
