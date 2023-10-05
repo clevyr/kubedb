@@ -260,7 +260,7 @@ func createJob(cmd *cobra.Command, conf *config.Global, actionName string) error
 		},
 	}
 
-	log.Debug("creating job")
+	log.WithField("namespace", conf.Namespace).Debug("creating job")
 
 	ctx, cancel := context.WithTimeout(cmd.Context(), time.Minute)
 	defer cancel()
@@ -276,7 +276,10 @@ func createJob(cmd *cobra.Command, conf *config.Global, actionName string) error
 }
 
 func waitForPod(cmd *cobra.Command, conf *config.Global) error {
-	log.WithField("name", conf.Job.ObjectMeta.Name).Info("waiting for job...")
+	log.WithFields(log.Fields{
+		"namespace": conf.Namespace,
+		"name":      "job.batch/" + conf.Job.ObjectMeta.Name,
+	}).Info("waiting for job...")
 
 	ctx, cancel := context.WithTimeout(cmd.Context(), 5*time.Minute)
 	defer cancel()
