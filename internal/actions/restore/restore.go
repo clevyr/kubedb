@@ -202,6 +202,7 @@ func (action Restore) runInDatabasePod(ctx context.Context, r *io.PipeReader, st
 		stderr,
 		false,
 		nil,
+		0,
 	); err != nil {
 		return err
 	}

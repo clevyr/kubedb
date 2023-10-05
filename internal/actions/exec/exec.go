@@ -3,6 +3,7 @@ package exec
 import (
 	"context"
 	"os"
+	"time"
 
 	"github.com/clevyr/kubedb/internal/command"
 	"github.com/clevyr/kubedb/internal/config"
@@ -43,6 +44,7 @@ func (action Exec) Run(ctx context.Context) error {
 			os.Stderr,
 			t.IsTerminalIn(),
 			sizeQueue,
+			5*time.Second,
 		)
 	})
 }

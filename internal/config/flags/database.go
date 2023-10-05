@@ -3,6 +3,7 @@ package flags
 import (
 	"os"
 	"strings"
+	"time"
 
 	"github.com/clevyr/kubedb/internal/config"
 	"github.com/clevyr/kubedb/internal/database/dialect"
@@ -184,7 +185,7 @@ func listDatabases(cmd *cobra.Command, args []string, toComplete string) ([]stri
 func queryInDatabase(cmd *cobra.Command, args []string, conf config.Exec) ([]string, cobra.ShellCompDirective) {
 	var buf strings.Builder
 	sqlCmd := conf.Dialect.ExecCommand(conf)
-	err := conf.Client.Exec(cmd.Context(), conf.Pod, sqlCmd.String(), nil, &buf, os.Stderr, false, nil)
+	err := conf.Client.Exec(cmd.Context(), conf.Pod, sqlCmd.String(), nil, &buf, os.Stderr, false, nil, 5*time.Second)
 	if err != nil {
 		return nil, cobra.ShellCompDirectiveError
 	}

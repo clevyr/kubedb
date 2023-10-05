@@ -5,12 +5,15 @@ import (
 	"errors"
 	"fmt"
 	"io"
+	"net/http"
+	"time"
 
 	log "github.com/sirupsen/logrus"
-
 	v1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/util/httpstream/spdy"
 	"k8s.io/client-go/kubernetes/scheme"
+	"k8s.io/client-go/rest"
 	"k8s.io/client-go/tools/remotecommand"
 )
 
@@ -31,7 +34,7 @@ func (client KubeClient) GetNamespacedPods(ctx context.Context) (*v1.PodList, er
 	return pods, nil
 }
 
-func (client KubeClient) Exec(ctx context.Context, pod v1.Pod, cmd string, stdin io.Reader, stdout, stderr io.Writer, tty bool, terminalSizeQueue remotecommand.TerminalSizeQueue) error {
+func (client KubeClient) Exec(ctx context.Context, pod v1.Pod, cmd string, stdin io.Reader, stdout, stderr io.Writer, tty bool, terminalSizeQueue remotecommand.TerminalSizeQueue, pingPeriod time.Duration) error {
 	req := client.ClientSet.CoreV1().RESTClient().Post().
 		Resource("pods").
 		Namespace(client.Namespace).
@@ -44,7 +47,28 @@ func (client KubeClient) Exec(ctx context.Context, pod v1.Pod, cmd string, stdin
 			Stderr:  stderr != nil,
 			TTY:     tty,
 		}, scheme.ParameterCodec)
-	exec, err := remotecommand.NewSPDYExecutor(client.ClientConfig, "POST", req.URL())
+
+	tlsConfig, err := rest.TLSConfigFor(client.ClientConfig)
+	if err != nil {
+		return err
+	}
+	proxy := http.ProxyFromEnvironment
+	if client.ClientConfig.Proxy != nil {
+		proxy = client.ClientConfig.Proxy
+	}
+	upgradeRoundTripper := spdy.NewRoundTripperWithConfig(spdy.RoundTripperConfig{
+		TLS:     tlsConfig,
+		Proxier: proxy,
+		// Needs to be 0 for dump/restore to prevent unexpected EOF.
+		// See https://github.com/kubernetes/kubernetes/issues/60140#issuecomment-1411477275
+		PingPeriod: pingPeriod,
+	})
+	wrapper, err := rest.HTTPWrappersForConfig(client.ClientConfig, upgradeRoundTripper)
+	if err != nil {
+		return err
+	}
+
+	exec, err := remotecommand.NewSPDYExecutorForTransports(wrapper, upgradeRoundTripper, "POST", req.URL())
 	if err != nil {
 		return err
 	}

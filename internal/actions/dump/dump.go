@@ -92,6 +92,7 @@ func (action Dump) Run(ctx context.Context) (err error) {
 			plogger,
 			false,
 			nil,
+			0,
 		); err != nil {
 			return err
 		}

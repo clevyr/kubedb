@@ -6,6 +6,7 @@ import (
 	"io"
 	"os"
 	"strings"
+	"time"
 
 	"github.com/clevyr/kubedb/internal/command"
 	"github.com/clevyr/kubedb/internal/config"
@@ -80,7 +81,7 @@ func (Postgres) FilterPods(ctx context.Context, client kubernetes.KubeClient, po
 		)
 
 		var buf strings.Builder
-		err := client.Exec(ctx, pods[0], cmd.String(), strings.NewReader(""), &buf, os.Stderr, false, nil)
+		err := client.Exec(ctx, pods[0], cmd.String(), strings.NewReader(""), &buf, os.Stderr, false, nil, 5*time.Second)
 		if err != nil {
 			return pods, err
 		}
