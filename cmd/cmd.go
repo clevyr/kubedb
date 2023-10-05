@@ -42,6 +42,9 @@ Dynamic Env Var Variables:
 `,
 
 		PersistentPreRunE: preRun,
+		Annotations: map[string]string{
+			"version": version,
+		},
 	}
 
 	flags.Kubeconfig(cmd)

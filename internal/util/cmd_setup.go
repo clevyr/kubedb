@@ -184,6 +184,7 @@ func createJob(cmd *cobra.Command, conf *config.Global, actionName string) error
 		"app.kubernetes.io/name":      "kubedb",
 		"app.kubernetes.io/instance":  "kubedb",
 		"app.kubernetes.io/component": actionName,
+		"app.kubernetes.io/version":   cmd.Root().Annotations["version"],
 	}
 
 	podLabels := map[string]string{
