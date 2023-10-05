@@ -25,7 +25,7 @@ type PortForward struct {
 func (a PortForward) Run(ctx context.Context) error {
 	log.WithFields(log.Fields{
 		"namespace": a.Client.Namespace,
-		"pod":       a.Pod.Name,
+		"name":      "pod/" + a.Pod.Name,
 	}).Info("setting up port forward")
 
 	path := fmt.Sprintf(

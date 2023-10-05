@@ -40,7 +40,7 @@ func (action Restore) Run(ctx context.Context) (err error) {
 	log.WithFields(log.Fields{
 		"file":      action.Filename,
 		"namespace": action.Client.Namespace,
-		"pod":       action.Pod.Name,
+		"name":      "pod/" + action.Pod.Name,
 	}).Info("ready to restore database")
 
 	startTime := time.Now()
