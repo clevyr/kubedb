@@ -223,6 +223,24 @@ func createJob(cmd *cobra.Command, conf *config.Global, actionName string) error
 										},
 									},
 								},
+								{
+									Weight: 90,
+									PodAffinityTerm: corev1.PodAffinityTerm{
+										TopologyKey: "topology.kubernetes.io/zone",
+										LabelSelector: &metav1.LabelSelector{
+											MatchLabels: conf.Pod.ObjectMeta.Labels,
+										},
+									},
+								},
+								{
+									Weight: 80,
+									PodAffinityTerm: corev1.PodAffinityTerm{
+										TopologyKey: "topology.kubernetes.io/region",
+										LabelSelector: &metav1.LabelSelector{
+											MatchLabels: conf.Pod.ObjectMeta.Labels,
+										},
+									},
+								},
 							},
 						},
 					},
