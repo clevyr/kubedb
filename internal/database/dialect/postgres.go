@@ -116,7 +116,7 @@ func (db Postgres) PasswordEnvNames(c config.Global) []string {
 func (Postgres) ExecCommand(conf config.Exec) *command.Builder {
 	cmd := command.NewBuilder(
 		command.NewEnv("PGPASSWORD", conf.Password),
-		"psql", "--host="+conf.Host, "--username="+conf.Username,
+		"exec", "psql", "--host="+conf.Host, "--username="+conf.Username,
 	)
 	if conf.Database != "" {
 		cmd.Push("--dbname=" + conf.Database)

@@ -73,7 +73,7 @@ func (db MariaDB) PasswordEnvNames(c config.Global) []string {
 func (MariaDB) ExecCommand(conf config.Exec) *command.Builder {
 	cmd := command.NewBuilder(
 		command.NewEnv("MYSQL_PWD", conf.Password),
-		"mysql", "--host="+conf.Host, "--user="+conf.Username,
+		"exec", "mysql", "--host="+conf.Host, "--user="+conf.Username,
 	)
 	if conf.Database != "" {
 		cmd.Push("--database=" + conf.Database)
