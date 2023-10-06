@@ -48,6 +48,8 @@ func NewClient(kubeconfig, context, namespace string) (config KubeClient, err er
 		return config, err
 	}
 
+	config.ClientConfig.UserAgent = rest.DefaultKubernetesUserAgent()
+
 	if namespace == "" {
 		config.Namespace, _, err = configLoader.Namespace()
 		if err != nil {
