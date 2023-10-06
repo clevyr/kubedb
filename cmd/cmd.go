@@ -173,7 +173,7 @@ func initConfig() error {
 func buildVersion() string {
 	result := util.GetVersion()
 	if commit := util.GetCommit(); commit != "" {
-		result += " (" + commit + ")"
+		result += " (" + commit[:8] + ")"
 	}
 	return result
 }
