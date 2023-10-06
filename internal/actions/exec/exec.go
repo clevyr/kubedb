@@ -14,7 +14,6 @@ import (
 
 type Exec struct {
 	config.Exec `mapstructure:",squash"`
-	Args        []string
 }
 
 func (action Exec) Run(ctx context.Context) error {
@@ -33,12 +32,11 @@ func (action Exec) Run(ctx context.Context) error {
 		sizeQueue = t.MonitorSize(t.GetSize())
 	}
 
-	podCmd := action.buildCommand(action.Args)
 	return t.Safe(func() error {
 		return action.Client.Exec(
 			ctx,
 			action.Pod,
-			podCmd.String(),
+			action.buildCommand().String(),
 			t.In,
 			t.Out,
 			os.Stderr,
@@ -49,15 +47,8 @@ func (action Exec) Run(ctx context.Context) error {
 	})
 }
 
-func (action Exec) buildCommand(args []string) (cmd *command.Builder) {
-	if len(args) == 0 {
-		cmd = action.Dialect.ExecCommand(action.Exec)
-	} else {
-		cmd = command.NewBuilder("exec")
-		for _, arg := range args {
-			cmd.Push(arg)
-		}
-	}
+func (action Exec) buildCommand() *command.Builder {
+	cmd := action.Dialect.ExecCommand(action.Exec)
 	log.WithField("cmd", cmd).Trace("finished building command")
 	return cmd
 }

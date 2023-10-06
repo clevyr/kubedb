@@ -9,7 +9,8 @@ kubedb exec [flags]
 ### Options
 
 ```
-  -h, --help   help for exec
+  -c, --command string   Run a single command and exit
+  -h, --help             help for exec
 ```
 
 ### Options inherited from parent commands

@@ -20,6 +20,7 @@ func NewCommand() *cobra.Command {
 		PreRunE: preRun,
 	}
 
+	cmd.Flags().StringVarP(&action.Command, "command", "c", "", "Run a single command and exit")
 	return cmd
 }
 
