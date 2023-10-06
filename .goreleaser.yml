@@ -8,6 +8,12 @@ builds:
       - CGO_ENABLED=0
     flags:
       - -trimpath
+    ldflags:
+      - -s -w
+      - -X k8s.io/client-go/pkg/version.gitVersion=v{{ .Version }}-{{ .Branch }}+{{ .FullCommit }}
+      - -X k8s.io/client-go/pkg/version.gitCommit={{ .FullCommit }}
+      - -X k8s.io/client-go/pkg/version.gitTreeState={{ if .IsGitDirty }}dirty{{ else }}clean{{ end }}
+      - -X k8s.io/client-go/pkg/version.buildDate={{ .CommitDate }}
     goarch:
       - amd64
       - arm

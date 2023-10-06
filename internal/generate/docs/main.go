@@ -28,7 +28,7 @@ func main() {
 		log.Fatal(err)
 	}
 
-	rootCmd := cmd.NewCommand("latest", "")
+	rootCmd := cmd.NewCommand()
 
 	err = doc.GenMarkdownTree(rootCmd, output)
 	if err != nil {

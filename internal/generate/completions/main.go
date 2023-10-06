@@ -12,7 +12,7 @@ import (
 var Shells = []string{"bash", "zsh", "fish"}
 
 func main() {
-	rootCmd := cmd.NewCommand("latest", "")
+	rootCmd := cmd.NewCommand()
 	var buf bytes.Buffer
 	rootCmd.SetOut(&buf)
 

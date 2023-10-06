@@ -12,16 +12,17 @@ import (
 	"github.com/clevyr/kubedb/cmd/port_forward"
 	"github.com/clevyr/kubedb/cmd/restore"
 	"github.com/clevyr/kubedb/internal/config/flags"
+	"github.com/clevyr/kubedb/internal/util"
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 )
 
-func NewCommand(version, commit string) *cobra.Command {
+func NewCommand() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:               "kubedb",
 		Short:             "interact with a database inside of Kubernetes",
-		Version:           buildVersion(version, commit),
+		Version:           buildVersion(),
 		DisableAutoGenTag: true,
 		Long: `kubedb is a command to interact with a database running in a Kubernetes cluster.
 
@@ -42,9 +43,6 @@ Dynamic Env Var Variables:
 `,
 
 		PersistentPreRunE: preRun,
-		Annotations: map[string]string{
-			"version": version,
-		},
 	}
 
 	flags.Kubeconfig(cmd)
@@ -172,9 +170,10 @@ func initConfig() error {
 	return nil
 }
 
-func buildVersion(version, commit string) string {
-	if commit != "" {
-		version += " (" + commit + ")"
+func buildVersion() string {
+	result := util.GetVersion()
+	if commit := util.GetCommit(); commit != "" {
+		result += " (" + commit + ")"
 	}
-	return version
+	return result
 }
