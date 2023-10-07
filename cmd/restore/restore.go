@@ -49,10 +49,14 @@ Supported Input Filetypes:
 	return cmd
 }
 
+var setupOptions = util.SetupOptions{Name: "restore"}
+
 func validArgs(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
 	if len(args) != 0 {
 		return nil, cobra.ShellCompDirectiveNoFileComp
 	}
+
+	setupOptions.DisableJob = true
 
 	err := preRun(cmd, args)
 	if err != nil {
@@ -76,7 +80,7 @@ func preRun(cmd *cobra.Command, args []string) (err error) {
 		action.Filename = args[0]
 	}
 
-	if err := util.DefaultSetup(cmd, &action.Global, util.SetupOptions{Name: "restore"}); err != nil {
+	if err := util.DefaultSetup(cmd, &action.Global, setupOptions); err != nil {
 		return err
 	}
 

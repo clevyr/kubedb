@@ -52,11 +52,14 @@ the generated filename might look like "` + dump.HelpFilename() + `"`,
 	return cmd
 }
 
+var setupOptions = util.SetupOptions{Name: "dump"}
+
 func validArgs(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
 	if len(args) != 0 {
 		return nil, cobra.ShellCompDirectiveNoFileComp
 	}
 
+	setupOptions.DisableJob = true
 	err := preRun(cmd, args)
 	if err != nil {
 		return []string{"sql", "sql.gz", "dmp", "archive", "archive.gz"}, cobra.ShellCompDirectiveFilterFileExt
@@ -87,7 +90,7 @@ func preRun(cmd *cobra.Command, args []string) (err error) {
 		cmd.SilenceUsage = false
 	}
 
-	if err := util.DefaultSetup(cmd, &action.Global, util.SetupOptions{Name: "dump"}); err != nil {
+	if err := util.DefaultSetup(cmd, &action.Global, setupOptions); err != nil {
 		return err
 	}
 
