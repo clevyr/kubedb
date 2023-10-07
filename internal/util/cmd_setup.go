@@ -164,7 +164,7 @@ func DefaultSetup(cmd *cobra.Command, conf *config.Global, opts SetupOptions) (e
 			return err
 		}
 
-		if err := waitForPod(cmd, conf); err != nil {
+		if err := watchJobPod(cmd, conf); err != nil {
 			Teardown(cmd, conf)
 			return err
 		}
@@ -278,7 +278,7 @@ func createJob(cmd *cobra.Command, conf *config.Global, actionName string) error
 	return nil
 }
 
-func waitForPod(cmd *cobra.Command, conf *config.Global) error {
+func watchJobPod(cmd *cobra.Command, conf *config.Global) error {
 	log.WithFields(log.Fields{
 		"namespace": conf.Namespace,
 		"name":      "job.batch/" + conf.Job.ObjectMeta.Name,
@@ -287,13 +287,45 @@ func waitForPod(cmd *cobra.Command, conf *config.Global) error {
 	ctx, cancel := context.WithTimeout(cmd.Context(), 5*time.Minute)
 	defer cancel()
 
+	watch, err := conf.Client.ClientSet.CoreV1().Pods(conf.Namespace).Watch(ctx, metav1.ListOptions{
+		LabelSelector: "batch.kubernetes.io/controller-uid=" + string(conf.Job.ObjectMeta.UID),
+	})
+	if err != nil {
+		return pollJobPod(ctx, conf)
+	}
+	defer func() {
+		watch.Stop()
+	}()
+
+	for {
+		select {
+		case <-ctx.Done():
+			return ctx.Err()
+		case event := <-watch.ResultChan():
+			if pod, ok := event.Object.(*corev1.Pod); ok {
+				switch pod.Status.Phase {
+				case corev1.PodRunning:
+					conf.Host = conf.DbPod.Status.PodIP
+					pod.DeepCopyInto(&conf.JobPod)
+					return nil
+				case corev1.PodFailed:
+					return errors.New("pod failed")
+				case corev1.PodSucceeded:
+					return errors.New("pod exited early")
+				}
+			} else {
+				return errors.New("unexpected runtime object type")
+			}
+		}
+	}
+}
+
+func pollJobPod(ctx context.Context, conf *config.Global) error {
 	return wait.PollUntilContextCancel(
 		ctx, time.Second, true, func(ctx context.Context) (done bool, err error) {
-			list, err := conf.Client.ClientSet.CoreV1().Pods(conf.Namespace).List(
-				cmd.Context(), metav1.ListOptions{
-					LabelSelector: "batch.kubernetes.io/controller-uid=" + string(conf.Job.ObjectMeta.UID),
-				},
-			)
+			list, err := conf.Client.ClientSet.CoreV1().Pods(conf.Namespace).List(ctx, metav1.ListOptions{
+				LabelSelector: "batch.kubernetes.io/controller-uid=" + string(conf.Job.ObjectMeta.UID),
+			})
 			if err != nil {
 				return false, err
 			}
