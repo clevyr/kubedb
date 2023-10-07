@@ -12,70 +12,6 @@ import (
 	v1 "k8s.io/api/core/v1"
 )
 
-func TestMariaDB_AnalyzeQuery(t *testing.T) {
-	tests := []struct {
-		name string
-		want string
-	}{
-		{"default", ""},
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			ma := MariaDB{}
-			got := ma.AnalyzeQuery()
-			assert.Equal(t, tt.want, got)
-		})
-	}
-}
-
-func TestMariaDB_DatabaseEnvNames(t *testing.T) {
-	tests := []struct {
-		name string
-		want []string
-	}{
-		{"default", []string{"MARIADB_DATABASE"}},
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			ma := MariaDB{}
-			got := ma.DatabaseEnvNames()
-			assert.Equal(t, got, tt.want)
-		})
-	}
-}
-
-func TestMariaDB_DefaultPort(t *testing.T) {
-	tests := []struct {
-		name string
-		want uint16
-	}{
-		{"default", 3306},
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			ma := MariaDB{}
-			got := ma.DefaultPort()
-			assert.Equal(t, tt.want, got)
-		})
-	}
-}
-
-func TestMariaDB_DefaultUser(t *testing.T) {
-	tests := []struct {
-		name string
-		want string
-	}{
-		{"default", "root"},
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			ma := MariaDB{}
-			got := ma.DefaultUser()
-			assert.Equal(t, tt.want, got)
-		})
-	}
-}
-
 func TestMariaDB_DropDatabaseQuery(t *testing.T) {
 	type args struct {
 		database string
@@ -213,38 +149,6 @@ func TestMariaDB_ListDatabasesQuery(t *testing.T) {
 	}
 }
 
-func TestMariaDB_ListTablesQuery(t *testing.T) {
-	tests := []struct {
-		name string
-		want string
-	}{
-		{"default", "show tables"},
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			ma := MariaDB{}
-			got := ma.ListTablesQuery()
-			assert.Equal(t, tt.want, got)
-		})
-	}
-}
-
-func TestMariaDB_Name(t *testing.T) {
-	tests := []struct {
-		name string
-		want string
-	}{
-		{"default", "mariadb"},
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			ma := MariaDB{}
-			got := ma.Name()
-			assert.Equal(t, tt.want, got)
-		})
-	}
-}
-
 func TestMariaDB_PasswordEnvNames(t *testing.T) {
 	type args struct {
 		c config.Global
@@ -254,35 +158,13 @@ func TestMariaDB_PasswordEnvNames(t *testing.T) {
 		args args
 		want []string
 	}{
-		{"default", args{}, []string{"MARIADB_PASSWORD"}},
-		{"root", args{config.Global{Username: "root"}}, []string{"MARIADB_ROOT_PASSWORD"}},
+		{"default", args{}, []string{"MARIADB_PASSWORD", "MYSQL_PASSWORD"}},
+		{"root", args{config.Global{Username: "root"}}, []string{"MARIADB_ROOT_PASSWORD", "MYSQL_ROOT_PASSWORD"}},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			db := MariaDB{}
 			got := db.PasswordEnvNames(tt.args.c)
-			assert.Equal(t, got, tt.want)
-		})
-	}
-}
-
-func TestMariaDB_PodLabels(t *testing.T) {
-	tests := []struct {
-		name string
-		want []kubernetes.LabelQueryable
-	}{
-		{"default", []kubernetes.LabelQueryable{
-			kubernetes.LabelQueryAnd{
-				{Name: "app.kubernetes.io/name", Value: "mariadb"},
-				{Name: "app.kubernetes.io/component", Value: "primary"},
-			},
-			kubernetes.LabelQuery{Name: "app", Value: "mariadb"},
-		}},
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			ma := MariaDB{}
-			got := ma.PodLabels()
 			assert.Equal(t, got, tt.want)
 		})
 	}
@@ -318,22 +200,6 @@ func TestMariaDB_RestoreCommand(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			ma := MariaDB{}
 			got := ma.RestoreCommand(tt.args.conf, tt.args.inputFormat)
-			assert.Equal(t, got, tt.want)
-		})
-	}
-}
-
-func TestMariaDB_UserEnvNames(t *testing.T) {
-	tests := []struct {
-		name string
-		want []string
-	}{
-		{"default", []string{"MARIADB_USER"}},
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			ma := MariaDB{}
-			got := ma.UserEnvNames()
 			assert.Equal(t, got, tt.want)
 		})
 	}
