@@ -201,8 +201,9 @@ func createJob(cmd *cobra.Command, conf *config.Global, actionName string) error
 			Labels:       standardLabels,
 		},
 		Spec: batchv1.JobSpec{
-			ActiveDeadlineSeconds: ptr.To(int64(24 * time.Hour.Seconds())),
-			BackoffLimit:          ptr.To(int32(0)),
+			ActiveDeadlineSeconds:   ptr.To(int64(24 * time.Hour.Seconds())),
+			TTLSecondsAfterFinished: ptr.To(int32(time.Hour.Seconds())),
+			BackoffLimit:            ptr.To(int32(0)),
 			Template: corev1.PodTemplateSpec{
 				ObjectMeta: metav1.ObjectMeta{
 					Annotations: map[string]string{
