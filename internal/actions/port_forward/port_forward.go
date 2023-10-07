@@ -25,13 +25,13 @@ type PortForward struct {
 func (a PortForward) Run(ctx context.Context) error {
 	log.WithFields(log.Fields{
 		"namespace": a.Client.Namespace,
-		"name":      "pod/" + a.Pod.Name,
+		"name":      "pod/" + a.DbPod.Name,
 	}).Info("setting up port forward")
 
 	path := fmt.Sprintf(
 		"/api/v1/namespaces/%s/pods/%s/portforward",
 		a.Client.Namespace,
-		a.Pod.Name,
+		a.JobPod.Name,
 	)
 	hostIP := strings.TrimLeft(a.Client.ClientConfig.Host, "htps:/")
 

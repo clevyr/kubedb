@@ -58,7 +58,7 @@ func (action Dump) Run(ctx context.Context) (err error) {
 
 	log.WithFields(log.Fields{
 		"namespace": action.Client.Namespace,
-		"name":      "pod/" + action.Pod.Name,
+		"name":      "pod/" + action.DbPod.Name,
 		"file":      action.Filename,
 	}).Info("exporting database")
 
@@ -85,7 +85,7 @@ func (action Dump) Run(ctx context.Context) (err error) {
 
 		if err := action.Client.Exec(
 			ctx,
-			action.Pod,
+			action.JobPod,
 			action.buildCommand().String(),
 			os.Stdin,
 			pw,

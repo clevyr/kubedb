@@ -11,8 +11,9 @@ type Global struct {
 	Client  kubernetes.KubeClient
 	Dialect Databaser `mapstructure:"-"`
 
-	Job *batchv1.Job
-	Pod v1.Pod `mapstructure:"-"`
+	Job    *batchv1.Job
+	JobPod v1.Pod `mapstructure:"-"`
+	DbPod  v1.Pod `mapstructure:"-"`
 
 	Host       string
 	Database   string

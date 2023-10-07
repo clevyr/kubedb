@@ -97,7 +97,7 @@ func run(cmd *cobra.Command, args []string) (err error) {
 		if tty {
 			var response bool
 			err := survey.AskOne(&survey.Confirm{
-				Message: "Restore to " + action.Pod.Name + " in " + action.Client.Namespace + "?",
+				Message: "Restore to " + action.DbPod.Name + " in " + action.Client.Namespace + "?",
 			}, &response)
 			if err != nil {
 				return err

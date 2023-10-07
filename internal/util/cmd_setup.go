@@ -98,7 +98,7 @@ func DefaultSetup(cmd *cobra.Command, conf *config.Global, opts SetupOptions) (e
 	}
 
 	if len(pods) == 1 {
-		conf.Pod = pods[0]
+		conf.DbPod = pods[0]
 	} else {
 		names := make([]string, 0, len(pods))
 		for _, pod := range pods {
@@ -112,7 +112,7 @@ func DefaultSetup(cmd *cobra.Command, conf *config.Global, opts SetupOptions) (e
 		if err != nil {
 			return err
 		}
-		conf.Pod = pods[idx]
+		conf.DbPod = pods[idx]
 	}
 
 	conf.Database, err = cmd.Flags().GetString("dbname")
@@ -120,7 +120,7 @@ func DefaultSetup(cmd *cobra.Command, conf *config.Global, opts SetupOptions) (e
 		panic(err)
 	}
 	if conf.Database == "" {
-		conf.Database, err = conf.Client.GetValueFromEnv(cmd.Context(), conf.Pod, conf.Dialect.DatabaseEnvNames())
+		conf.Database, err = conf.Client.GetValueFromEnv(cmd.Context(), conf.DbPod, conf.Dialect.DatabaseEnvNames())
 		if err != nil {
 			log.Debug("could not detect database from pod env")
 		} else {
@@ -133,7 +133,7 @@ func DefaultSetup(cmd *cobra.Command, conf *config.Global, opts SetupOptions) (e
 		panic(err)
 	}
 	if conf.Username == "" {
-		conf.Username, err = conf.Client.GetValueFromEnv(cmd.Context(), conf.Pod, conf.Dialect.UserEnvNames())
+		conf.Username, err = conf.Client.GetValueFromEnv(cmd.Context(), conf.DbPod, conf.Dialect.UserEnvNames())
 		if err != nil {
 			conf.Username = conf.Dialect.DefaultUser()
 			log.WithField("user", conf.Username).Debug("could not detect user from pod env, using default")
@@ -147,7 +147,7 @@ func DefaultSetup(cmd *cobra.Command, conf *config.Global, opts SetupOptions) (e
 		panic(err)
 	}
 	if conf.Password == "" {
-		conf.Password, err = conf.Client.GetValueFromEnv(cmd.Context(), conf.Pod, conf.Dialect.PasswordEnvNames(*conf))
+		conf.Password, err = conf.Client.GetValueFromEnv(cmd.Context(), conf.DbPod, conf.Dialect.PasswordEnvNames(*conf))
 		if err != nil {
 			return err
 		}
@@ -158,6 +158,7 @@ func DefaultSetup(cmd *cobra.Command, conf *config.Global, opts SetupOptions) (e
 
 	if opts.DisableJob || viper.GetBool("kubernetes.no-job") {
 		conf.Host = "127.0.0.1"
+		conf.JobPod = conf.DbPod
 	} else {
 		if err := createJob(cmd, conf, opts.Name); err != nil {
 			return err
@@ -173,7 +174,7 @@ func DefaultSetup(cmd *cobra.Command, conf *config.Global, opts SetupOptions) (e
 }
 
 func createJob(cmd *cobra.Command, conf *config.Global, actionName string) error {
-	image := conf.Pod.Spec.Containers[0].Image
+	image := conf.DbPod.Spec.Containers[0].Image
 
 	name := "kubedb-"
 	if actionName != "" {
@@ -220,7 +221,7 @@ func createJob(cmd *cobra.Command, conf *config.Global, actionName string) error
 									PodAffinityTerm: corev1.PodAffinityTerm{
 										TopologyKey: "kubernetes.io/hostname",
 										LabelSelector: &metav1.LabelSelector{
-											MatchLabels: conf.Pod.ObjectMeta.Labels,
+											MatchLabels: conf.DbPod.ObjectMeta.Labels,
 										},
 									},
 								},
@@ -229,7 +230,7 @@ func createJob(cmd *cobra.Command, conf *config.Global, actionName string) error
 									PodAffinityTerm: corev1.PodAffinityTerm{
 										TopologyKey: "topology.kubernetes.io/zone",
 										LabelSelector: &metav1.LabelSelector{
-											MatchLabels: conf.Pod.ObjectMeta.Labels,
+											MatchLabels: conf.DbPod.ObjectMeta.Labels,
 										},
 									},
 								},
@@ -238,7 +239,7 @@ func createJob(cmd *cobra.Command, conf *config.Global, actionName string) error
 									PodAffinityTerm: corev1.PodAffinityTerm{
 										TopologyKey: "topology.kubernetes.io/region",
 										LabelSelector: &metav1.LabelSelector{
-											MatchLabels: conf.Pod.ObjectMeta.Labels,
+											MatchLabels: conf.DbPod.ObjectMeta.Labels,
 										},
 									},
 								},
@@ -302,8 +303,8 @@ func waitForPod(cmd *cobra.Command, conf *config.Global) error {
 
 			switch list.Items[0].Status.Phase {
 			case corev1.PodRunning:
-				conf.Host = conf.Pod.Status.PodIP
-				conf.Pod = list.Items[0]
+				conf.Host = conf.DbPod.Status.PodIP
+				conf.JobPod = list.Items[0]
 				return true, nil
 			case corev1.PodFailed:
 				return false, errors.New("pod failed")

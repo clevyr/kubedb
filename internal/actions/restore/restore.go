@@ -40,7 +40,7 @@ func (action Restore) Run(ctx context.Context) (err error) {
 	log.WithFields(log.Fields{
 		"file":      action.Filename,
 		"namespace": action.Client.Namespace,
-		"name":      "pod/" + action.Pod.Name,
+		"name":      "pod/" + action.DbPod.Name,
 	}).Info("ready to restore database")
 
 	startTime := time.Now()
@@ -195,7 +195,7 @@ func (action Restore) runInDatabasePod(ctx context.Context, r *io.PipeReader, st
 
 	if err := action.Client.Exec(
 		ctx,
-		action.Pod,
+		action.JobPod,
 		buildCommand(action.Restore, inputFormat).String(),
 		r,
 		stdout,
