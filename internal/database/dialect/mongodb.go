@@ -55,7 +55,12 @@ func (MongoDB) PodLabels() []kubernetes.LabelQueryable {
 			{Name: "app.kubernetes.io/name", Value: "mongodb"},
 			{Name: "app.kubernetes.io/component", Value: "mongodb"},
 		},
+		kubernetes.LabelQueryAnd{
+			{Name: "app.kubernetes.io/name", Value: "mongodb-sharded"},
+			{Name: "app.kubernetes.io/component", Value: "mongos"},
+		},
 		kubernetes.LabelQuery{Name: "app", Value: "mongodb"},
+		kubernetes.LabelQuery{Name: "app", Value: "mongodb-replicaset"},
 	}
 }
 
