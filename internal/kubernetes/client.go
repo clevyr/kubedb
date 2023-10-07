@@ -4,6 +4,7 @@ import (
 	"path/filepath"
 
 	"github.com/spf13/cobra"
+	"k8s.io/client-go/discovery"
 	"k8s.io/client-go/kubernetes"
 	v1 "k8s.io/client-go/kubernetes/typed/core/v1"
 	"k8s.io/client-go/rest"
@@ -13,6 +14,7 @@ import (
 type KubeClient struct {
 	ClientSet    kubernetes.Interface
 	ClientConfig *rest.Config
+	Discovery    *discovery.DiscoveryClient
 	Namespace    string
 }
 
@@ -60,6 +62,11 @@ func NewClient(kubeconfig, context, namespace string) (config KubeClient, err er
 	}
 
 	config.ClientSet, err = kubernetes.NewForConfig(config.ClientConfig)
+	if err != nil {
+		return config, err
+	}
+
+	config.Discovery, err = discovery.NewDiscoveryClientForConfig(config.ClientConfig)
 	if err != nil {
 		return config, err
 	}

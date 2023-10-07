@@ -288,7 +288,7 @@ func watchJobPod(cmd *cobra.Command, conf *config.Global) error {
 	defer cancel()
 
 	watch, err := conf.Client.ClientSet.CoreV1().Pods(conf.Namespace).Watch(ctx, metav1.ListOptions{
-		LabelSelector: "batch.kubernetes.io/controller-uid=" + string(conf.Job.ObjectMeta.UID),
+		LabelSelector: jobPodLabelSelector(conf, conf.Job),
 	})
 	if err != nil {
 		return pollJobPod(ctx, conf)
@@ -324,7 +324,7 @@ func pollJobPod(ctx context.Context, conf *config.Global) error {
 	return wait.PollUntilContextCancel(
 		ctx, time.Second, true, func(ctx context.Context) (done bool, err error) {
 			list, err := conf.Client.ClientSet.CoreV1().Pods(conf.Namespace).List(ctx, metav1.ListOptions{
-				LabelSelector: "batch.kubernetes.io/controller-uid=" + string(conf.Job.ObjectMeta.UID),
+				LabelSelector: jobPodLabelSelector(conf, conf.Job),
 			})
 			if err != nil {
 				return false, err
@@ -348,4 +348,17 @@ func pollJobPod(ctx context.Context, conf *config.Global) error {
 			}
 		},
 	)
+}
+
+func jobPodLabelSelector(conf *config.Global, job *batchv1.Job) string {
+	useNewLabel, err := conf.Client.MinServerVersion(1, 27)
+	if err != nil {
+		log.WithError(err).Warn("failed to query server version; assuming v1.27+")
+		useNewLabel = true
+	}
+
+	if useNewLabel {
+		return "batch.kubernetes.io/controller-uid=" + string(job.ObjectMeta.UID)
+	}
+	return "controller-uid=" + string(job.ObjectMeta.UID)
 }
