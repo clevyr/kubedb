@@ -56,6 +56,9 @@ func (MariaDB) PodLabels() []kubernetes.LabelQueryable {
 			{Name: "app.kubernetes.io/component", Value: "primary"},
 		},
 		kubernetes.LabelQueryAnd{
+			{Name: "app.kubernetes.io/name", Value: "mariadb-galera"},
+		},
+		kubernetes.LabelQueryAnd{
 			{Name: "app.kubernetes.io/name", Value: "mysql"},
 			{Name: "app.kubernetes.io/component", Value: "primary"},
 		},
