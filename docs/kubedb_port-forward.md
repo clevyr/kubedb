@@ -3,15 +3,16 @@
 Set up a local port forward
 
 ```
-kubedb port-forward [local_port] [flags]
+kubedb port-forward [flags]
 ```
 
 ### Options
 
 ```
-      --address strings   Local listen address (default [127.0.0.1,::1])
-  -h, --help              help for port-forward
-      --port uint16       Database port (default discovered)
+      --address strings      Local listen address (default [127.0.0.1,::1])
+  -h, --help                 help for port-forward
+      --listen-port uint16   Local listen port (default discovered)
+      --port uint16          Database port (default discovered)
 ```
 
 ### Options inherited from parent commands
