@@ -25,7 +25,7 @@ func (a PortForward) Run(ctx context.Context) error {
 	log.WithFields(log.Fields{
 		"namespace": a.Client.Namespace,
 		"name":      "pod/" + a.DbPod.Name,
-	}).Info("setting up port forward")
+	}).Debug("setting up port forward")
 
 	hostUrl, err := url.Parse(a.Client.ClientConfig.Host)
 	if err != nil {
@@ -54,7 +54,7 @@ func (a PortForward) Run(ctx context.Context) error {
 		log.WithFields(log.Fields{
 			"local":  a.LocalPort,
 			"remote": a.Port,
-		}).Info("port forward is ready")
+		}).Debug("port forward is ready")
 		t := table.NewWriter()
 		t.SetOutputMirror(os.Stdout)
 		t.SetTitle(a.Namespace + " database")
