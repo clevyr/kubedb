@@ -7,4 +7,5 @@ type Restore struct {
 	Clean             bool
 	NoOwner           bool
 	Force             bool
+	Spinner           string
 }

@@ -54,6 +54,7 @@ the generated filename might look like "` + dump.HelpFilename() + `"`,
 	flags.ExcludeTableData(cmd, &action.ExcludeTableData)
 	flags.Quiet(cmd, &action.Quiet)
 	flags.RemoteGzip(cmd)
+	flags.Spinner(cmd, &action.Spinner)
 
 	return cmd
 }
@@ -84,6 +85,8 @@ func preRun(cmd *cobra.Command, args []string) (err error) {
 	flags.BindNoJob(cmd)
 	flags.BindRemoteGzip(cmd)
 	action.RemoteGzip = viper.GetBool("remote-gzip")
+	flags.BindSpinner(cmd)
+	action.Spinner = viper.GetString("spinner.name")
 
 	if len(args) > 0 {
 		action.Filename = args[0]

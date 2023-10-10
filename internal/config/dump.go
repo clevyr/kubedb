@@ -10,4 +10,5 @@ type Dump struct {
 	Tables           []string
 	ExcludeTable     []string
 	ExcludeTableData []string
+	Spinner          string
 }

@@ -7,18 +7,27 @@ import (
 	"os"
 	"time"
 
+	"github.com/clevyr/kubedb/internal/config/flags"
+	"github.com/gabe565/go-spinners"
 	"github.com/mattn/go-isatty"
 	"github.com/schollz/progressbar/v3"
+	log "github.com/sirupsen/logrus"
 )
 
-func New(max int64, label string) *progressbar.ProgressBar {
+func New(max int64, label string, spinnerKey string) *progressbar.ProgressBar {
+	s, ok := spinner.Map[spinnerKey]
+	if !ok {
+		log.WithField("spinner", spinnerKey).Warn("invalid spinner")
+		s = spinner.Map[flags.DefaultSpinner]
+	}
+
 	options := []progressbar.Option{
 		progressbar.OptionSetDescription(label),
 		progressbar.OptionSetWriter(os.Stderr),
 		progressbar.OptionShowBytes(true),
 		progressbar.OptionSetWidth(10),
 		progressbar.OptionShowCount(),
-		progressbar.OptionSpinnerType(14),
+		progressbar.OptionSpinnerCustom(s.Frames),
 		progressbar.OptionFullWidth(),
 	}
 
