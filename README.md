@@ -14,6 +14,11 @@ Optional flags are available to set running database parameters
 If no flags are given, KubeDB will inspect the pod configuration and attempt
 to configure itself via the Kubernetes EnvVar API.
 
+## Supported Databases
+- PostgreSQL
+- MariaDB/MySQL
+- MongoDB
+
 ## Installation
 
 ### Homebrew (macOS, Linux)

@@ -4,7 +4,7 @@ Dump a database to a sql file
 
 ### Synopsis
 
-The "dump" command dumps a running database to a sql file.
+Dump a database to a sql file.
 
 If no filename is provided, the filename will be generated.
 For example, if a dump is performed in the namespace "clevyr" with no extra flags,
@@ -18,37 +18,37 @@ kubedb dump [filename] [flags]
 
 ```
   -c, --clean                           Clean (drop) database objects before recreating (default true)
-  -d, --dbname string                   Database name to connect to
+  -d, --dbname string                   Database name to use (default discovered)
   -C, --directory string                Directory to dump to (default ".")
   -T, --exclude-table strings           Do NOT dump the specified table(s)
   -D, --exclude-table-data strings      Do NOT dump data for the specified table(s)
-  -F, --format string                   Output file format ([g]zip, [c]ustom, [p]lain) (default "gzip")
+  -F, --format string                   Output file format One of (gzip|custom|plain) (default "gzip")
   -h, --help                            help for dump
       --if-exists                       Use IF EXISTS when dropping objects (default true)
       --job-pod-labels stringToString   Pod labels to add to the job (default [])
       --no-job                          Database commands will be run in the database pod instead of a dedicated job
   -O, --no-owner                        Skip restoration of object ownership in plain-text format (default true)
-  -p, --password string                 Database password
-      --port uint16                     Database port
+  -p, --password string                 Database password (default discovered)
+      --port uint16                     Database port (default discovered)
   -q, --quiet                           Silence remote log output
-      --remote-gzip                     Compress data over the wire. Results in lower bandwidth usage, but higher database load. May improve speed on fast connections. (default true)
+      --remote-gzip                     Compress data over the wire. Results in lower bandwidth usage, but higher database load. May improve speed on slow connections. (default true)
   -t, --table strings                   Dump the specified table(s) only
-  -U, --username string                 Database username
+  -U, --username string                 Database username (default discovered)
 ```
 
 ### Options inherited from parent commands
 
 ```
-      --context string      The name of the kubeconfig context to use
-      --dialect string      Database dialect. Detected if not set. (postgres, mariadb, mongodb)
-      --kubeconfig string   Path to the kubeconfig file (default "$HOME/.kube/config")
-      --log-format string   Log formatter (text, json) (default "text")
-      --log-level string    Log level (trace, debug, info, warning, error, fatal, panic) (default "info")
-  -n, --namespace string    The Kubernetes namespace scope
+      --context string      Kubernetes context name
+      --dialect string      Database dialect. One of (postgres|mariadb|mongodb) (default discovered)
+      --kubeconfig string   Paths to the kubeconfig file (default "$HOME/.kube/config")
+      --log-format string   Log formatter. One of (text|json) (default "text")
+      --log-level string    Log level. One of (trace|debug|info|warning|error|fatal|panic) (default "info")
+  -n, --namespace string    Kubernetes namespace
       --pod string          Force a specific pod. If this flag is set, dialect is required.
 ```
 
 ### SEE ALSO
 
-* [kubedb](kubedb.md)	 - interact with a database inside of Kubernetes
+* [kubedb](kubedb.md)	 - Painlessly work with databases in Kubernetes.
 

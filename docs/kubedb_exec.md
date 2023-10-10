@@ -10,28 +10,28 @@ kubedb exec [flags]
 
 ```
   -c, --command string                  Run a single command and exit
-  -d, --dbname string                   Database name to connect to
+  -d, --dbname string                   Database name to use (default discovered)
   -h, --help                            help for exec
       --job-pod-labels stringToString   Pod labels to add to the job (default [])
       --no-job                          Database commands will be run in the database pod instead of a dedicated job
-  -p, --password string                 Database password
-      --port uint16                     Database port
-  -U, --username string                 Database username
+  -p, --password string                 Database password (default discovered)
+      --port uint16                     Database port (default discovered)
+  -U, --username string                 Database username (default discovered)
 ```
 
 ### Options inherited from parent commands
 
 ```
-      --context string      The name of the kubeconfig context to use
-      --dialect string      Database dialect. Detected if not set. (postgres, mariadb, mongodb)
-      --kubeconfig string   Path to the kubeconfig file (default "$HOME/.kube/config")
-      --log-format string   Log formatter (text, json) (default "text")
-      --log-level string    Log level (trace, debug, info, warning, error, fatal, panic) (default "info")
-  -n, --namespace string    The Kubernetes namespace scope
+      --context string      Kubernetes context name
+      --dialect string      Database dialect. One of (postgres|mariadb|mongodb) (default discovered)
+      --kubeconfig string   Paths to the kubeconfig file (default "$HOME/.kube/config")
+      --log-format string   Log formatter. One of (text|json) (default "text")
+      --log-level string    Log level. One of (trace|debug|info|warning|error|fatal|panic) (default "info")
+  -n, --namespace string    Kubernetes namespace
       --pod string          Force a specific pod. If this flag is set, dialect is required.
 ```
 
 ### SEE ALSO
 
-* [kubedb](kubedb.md)	 - interact with a database inside of Kubernetes
+* [kubedb](kubedb.md)	 - Painlessly work with databases in Kubernetes.
 

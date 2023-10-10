@@ -6,7 +6,7 @@ import (
 )
 
 func Address(cmd *cobra.Command) {
-	cmd.PersistentFlags().StringSlice("address", []string{"127.0.0.1", "::1"}, "Addresses to listen on (comma separated)")
+	cmd.PersistentFlags().StringSlice("address", []string{"127.0.0.1", "::1"}, "Local listen address")
 	err := cmd.RegisterFlagCompletionFunc(
 		"address",
 		func(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
@@ -24,7 +24,7 @@ func BindAddress(cmd *cobra.Command) {
 }
 
 func RemoteGzip(cmd *cobra.Command) {
-	cmd.Flags().Bool("remote-gzip", true, "Compress data over the wire. Results in lower bandwidth usage, but higher database load. May improve speed on fast connections.")
+	cmd.Flags().Bool("remote-gzip", true, "Compress data over the wire. Results in lower bandwidth usage, but higher database load. May improve speed on slow connections.")
 	err := cmd.RegisterFlagCompletionFunc(
 		"remote-gzip",
 		func(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {

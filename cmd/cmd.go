@@ -21,27 +21,9 @@ import (
 func NewCommand() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:               "kubedb",
-		Short:             "interact with a database inside of Kubernetes",
+		Short:             "Painlessly work with databases in Kubernetes.",
 		Version:           buildVersion(),
 		DisableAutoGenTag: true,
-		Long: `kubedb is a command to interact with a database running in a Kubernetes cluster.
-
-Multiple database types (referred to as the "dialect") are supported.
-If the dialect is not configured via flag, it will be detected dynamically.
-
-Supported Database Dialects:
-  - PostgreSQL
-  - MariaDB
-  - MongoDB
-
-If not configured via flag, some configuration variables will be loaded from the target pod's env vars.
-
-Dynamic Env Var Variables:
-  - Port
-  - Database
-  - Username (fallback value: "postgres" if PostgreSQL, "mariadb" if MariaDB, "root" if MongoDB)
-  - Password
-`,
 
 		PersistentPreRunE: preRun,
 	}
@@ -59,11 +41,11 @@ Dynamic Env Var Variables:
 	cmd.AddGroup(
 		&cobra.Group{
 			ID:    "ro",
-			Title: "Read Commands",
+			Title: "Read Only Commands:",
 		},
 		&cobra.Group{
 			ID:    "rw",
-			Title: "Write Commands",
+			Title: "Read/Write Commands:",
 		},
 	)
 

@@ -14,7 +14,7 @@ import (
 )
 
 func Dialect(cmd *cobra.Command) {
-	cmd.PersistentFlags().String("dialect", "", "Database dialect. Detected if not set. (postgres, mariadb, mongodb)")
+	cmd.PersistentFlags().String("dialect", "", "Database dialect. One of (postgres|mariadb|mongodb) (default discovered)")
 	err := cmd.RegisterFlagCompletionFunc(
 		"dialect",
 		func(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
@@ -31,7 +31,7 @@ func Dialect(cmd *cobra.Command) {
 
 func Format(cmd *cobra.Command, p *sqlformat.Format) {
 	*p = sqlformat.Gzip
-	cmd.Flags().VarP(p, "format", "F", "Output file format ([g]zip, [c]ustom, [p]lain)")
+	cmd.Flags().VarP(p, "format", "F", `Output file format One of (gzip|custom|plain)`)
 	err := cmd.RegisterFlagCompletionFunc(
 		"format",
 		func(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
@@ -47,11 +47,11 @@ func Format(cmd *cobra.Command, p *sqlformat.Format) {
 }
 
 func Port(cmd *cobra.Command) {
-	cmd.PersistentFlags().Uint16("port", 0, "Database port")
+	cmd.PersistentFlags().Uint16("port", 0, "Database port (default discovered)")
 }
 
 func Database(cmd *cobra.Command) {
-	cmd.Flags().StringP("dbname", "d", "", "Database name to connect to")
+	cmd.Flags().StringP("dbname", "d", "", "Database name to use (default discovered)")
 	err := cmd.RegisterFlagCompletionFunc("dbname", listDatabases)
 	if err != nil {
 		panic(err)
@@ -59,11 +59,11 @@ func Database(cmd *cobra.Command) {
 }
 
 func Username(cmd *cobra.Command) {
-	cmd.Flags().StringP("username", "U", "", "Database username")
+	cmd.Flags().StringP("username", "U", "", "Database username (default discovered)")
 }
 
 func Password(cmd *cobra.Command) {
-	cmd.Flags().StringP("password", "p", "", "Database password")
+	cmd.Flags().StringP("password", "p", "", "Database password (default discovered)")
 }
 
 func SingleTransaction(cmd *cobra.Command, p *bool) {

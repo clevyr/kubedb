@@ -9,24 +9,24 @@ kubedb port-forward [local_port] [flags]
 ### Options
 
 ```
-      --address strings   Addresses to listen on (comma separated) (default [127.0.0.1,::1])
+      --address strings   Local listen address (default [127.0.0.1,::1])
   -h, --help              help for port-forward
-      --port uint16       Database port
+      --port uint16       Database port (default discovered)
 ```
 
 ### Options inherited from parent commands
 
 ```
-      --context string      The name of the kubeconfig context to use
-      --dialect string      Database dialect. Detected if not set. (postgres, mariadb, mongodb)
-      --kubeconfig string   Path to the kubeconfig file (default "$HOME/.kube/config")
-      --log-format string   Log formatter (text, json) (default "text")
-      --log-level string    Log level (trace, debug, info, warning, error, fatal, panic) (default "info")
-  -n, --namespace string    The Kubernetes namespace scope
+      --context string      Kubernetes context name
+      --dialect string      Database dialect. One of (postgres|mariadb|mongodb) (default discovered)
+      --kubeconfig string   Paths to the kubeconfig file (default "$HOME/.kube/config")
+      --log-format string   Log formatter. One of (text|json) (default "text")
+      --log-level string    Log level. One of (trace|debug|info|warning|error|fatal|panic) (default "info")
+  -n, --namespace string    Kubernetes namespace
       --pod string          Force a specific pod. If this flag is set, dialect is required.
 ```
 
 ### SEE ALSO
 
-* [kubedb](kubedb.md)	 - interact with a database inside of Kubernetes
+* [kubedb](kubedb.md)	 - Painlessly work with databases in Kubernetes.
 

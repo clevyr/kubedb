@@ -20,7 +20,7 @@ func NewCommand() *cobra.Command {
 		Use:     "dump [filename]",
 		Aliases: []string{"d", "export"},
 		Short:   "Dump a database to a sql file",
-		Long: `The "dump" command dumps a running database to a sql file.
+		Long: `Dump a database to a sql file.
 
 If no filename is provided, the filename will be generated.
 For example, if a dump is performed in the namespace "clevyr" with no extra flags,

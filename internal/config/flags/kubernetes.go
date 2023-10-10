@@ -20,7 +20,7 @@ func Kubeconfig(cmd *cobra.Command) {
 		kubeconfigEnv = filepath.Join("$HOME", ".kube", "config")
 	}
 
-	cmd.PersistentFlags().String("kubeconfig", kubeconfigEnv, "Path to the kubeconfig file")
+	cmd.PersistentFlags().String("kubeconfig", kubeconfigEnv, "Paths to the kubeconfig file")
 }
 
 func BindKubeconfig(cmd *cobra.Command) {
@@ -30,7 +30,7 @@ func BindKubeconfig(cmd *cobra.Command) {
 }
 
 func Context(cmd *cobra.Command) {
-	cmd.PersistentFlags().String("context", "", "The name of the kubeconfig context to use")
+	cmd.PersistentFlags().String("context", "", "Kubernetes context name")
 	err := cmd.RegisterFlagCompletionFunc(
 		"context",
 		func(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
@@ -55,7 +55,7 @@ func Context(cmd *cobra.Command) {
 }
 
 func Namespace(cmd *cobra.Command) {
-	cmd.PersistentFlags().StringP("namespace", "n", "", "The Kubernetes namespace scope")
+	cmd.PersistentFlags().StringP("namespace", "n", "", "Kubernetes namespace")
 	err := cmd.RegisterFlagCompletionFunc(
 		"namespace",
 		func(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {

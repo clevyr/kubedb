@@ -21,13 +21,13 @@ func NewCommand() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:     "restore filename",
 		Aliases: []string{"r", "import"},
-		Short:   "Restore a database from a sql file",
-		Long: `The "restore" command restores a given sql file to a running database pod.
+		Short:   "Restore a sql file to a database",
+		Long: `Restore a sql file to a database.
 
 Supported Input Filetypes:
-  - Raw sql file. Typically with the ".sql" extension
+  - Raw sql file. Typically with the ` + "`" + `.sql` + "`" + ` extension
   - Gzipped sql file. Typically with the ".sql.gz" extension
-  - Postgres custom dump file. Typically with the ".dmp" extension (Only if the target database is Postgres)`,
+  - For Postgres: custom dump file. Typically with the ".dmp" extension`,
 
 		Args:              cobra.ExactArgs(1),
 		ValidArgsFunction: validArgs,
