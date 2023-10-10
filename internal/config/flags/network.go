@@ -5,8 +5,8 @@ import (
 	"github.com/spf13/viper"
 )
 
-func Address(cmd *cobra.Command, p *[]string) {
-	cmd.PersistentFlags().StringSliceVar(p, "address", []string{"127.0.0.1", "::1"}, "Addresses to listen on (comma separated)")
+func Address(cmd *cobra.Command) {
+	cmd.PersistentFlags().StringSlice("address", []string{"127.0.0.1", "::1"}, "Addresses to listen on (comma separated)")
 	err := cmd.RegisterFlagCompletionFunc(
 		"address",
 		func(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
@@ -15,13 +15,16 @@ func Address(cmd *cobra.Command, p *[]string) {
 	if err != nil {
 		panic(err)
 	}
-	if err := viper.BindPFlag("address", cmd.PersistentFlags().Lookup("address")); err != nil {
+}
+
+func BindAddress(cmd *cobra.Command) {
+	if err := viper.BindPFlag("address", cmd.Flags().Lookup("address")); err != nil {
 		panic(err)
 	}
 }
 
-func RemoteGzip(cmd *cobra.Command, p *bool) {
-	cmd.Flags().BoolVar(p, "remote-gzip", true, "Compress data over the wire. Results in lower bandwidth usage, but higher database load. May improve speed on fast connections.")
+func RemoteGzip(cmd *cobra.Command) {
+	cmd.Flags().Bool("remote-gzip", true, "Compress data over the wire. Results in lower bandwidth usage, but higher database load. May improve speed on fast connections.")
 	err := cmd.RegisterFlagCompletionFunc(
 		"remote-gzip",
 		func(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
@@ -30,7 +33,9 @@ func RemoteGzip(cmd *cobra.Command, p *bool) {
 	if err != nil {
 		panic(err)
 	}
+}
 
+func BindRemoteGzip(cmd *cobra.Command) {
 	if err := viper.BindPFlag("remote-gzip", cmd.Flags().Lookup("remote-gzip")); err != nil {
 		panic(err)
 	}

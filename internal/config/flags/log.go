@@ -28,7 +28,10 @@ func LogLevel(cmd *cobra.Command) {
 	if err != nil {
 		panic(err)
 	}
-	if err := viper.BindPFlag("log-level", cmd.PersistentFlags().Lookup("log-level")); err != nil {
+}
+
+func BindLogLevel(cmd *cobra.Command) {
+	if err := viper.BindPFlag("log-level", cmd.Flags().Lookup("log-level")); err != nil {
 		panic(err)
 	}
 }
@@ -43,7 +46,10 @@ func LogFormat(cmd *cobra.Command) {
 	if err != nil {
 		panic(err)
 	}
-	if err := viper.BindPFlag("log-format", cmd.PersistentFlags().Lookup("log-format")); err != nil {
+}
+
+func BindLogFormat(cmd *cobra.Command) {
+	if err := viper.BindPFlag("log-format", cmd.Flags().Lookup("log-format")); err != nil {
 		panic(err)
 	}
 }

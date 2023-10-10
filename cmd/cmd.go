@@ -83,24 +83,26 @@ Dynamic Env Var Variables:
 }
 
 func preRun(cmd *cobra.Command, args []string) error {
+	flags.BindKubeconfig(cmd)
+	flags.BindGitHubActions(cmd)
+	flags.BindJobPodLabels(cmd)
+	flags.BindNoJob(cmd)
+	flags.BindLogLevel(cmd)
+	flags.BindLogFormat(cmd)
+	flags.BindRedact(cmd)
+
 	ctx, cancel := signal.NotifyContext(cmd.Context(), os.Interrupt, os.Kill, syscall.SIGTERM)
 	cmd.PersistentPostRun = func(cmd *cobra.Command, args []string) { cancel() }
 	cmd.SetContext(ctx)
 
-	kubeconfig, err := cmd.Flags().GetString("kubeconfig")
-	if err != nil {
-		panic(err)
-	}
+	kubeconfig := viper.GetString("kubernetes.kubeconfig")
 	if kubeconfig == "$HOME" || strings.HasPrefix(kubeconfig, "$HOME"+string(os.PathSeparator)) {
 		home, err := os.UserHomeDir()
 		if err != nil {
 			return err
 		}
 		kubeconfig = home + kubeconfig[5:]
-		err = cmd.Flags().Set("kubeconfig", kubeconfig)
-		if err != nil {
-			panic(err)
-		}
+		viper.Set("kubernetes.kubeconfig", kubeconfig)
 	}
 
 	initLog(cmd)
@@ -112,25 +114,16 @@ func preRun(cmd *cobra.Command, args []string) error {
 }
 
 func initLog(cmd *cobra.Command) {
-	logLevel, err := cmd.Flags().GetString("log-level")
-	if err != nil {
-		panic(err)
-	}
+	logLevel := viper.GetString("log-level")
 	parsedLevel, err := log.ParseLevel(logLevel)
 	if err != nil {
 		log.WithField("log-level", logLevel).Warn("invalid log level. defaulting to info.")
-		err = cmd.Flags().Set("log-level", "info")
-		if err != nil {
-			panic(err)
-		}
+		viper.Set("log-level", "info")
 		parsedLevel = log.InfoLevel
 	}
 	log.SetLevel(parsedLevel)
 
-	logFormat, err := cmd.Flags().GetString("log-format")
-	if err != nil {
-		panic(err)
-	}
+	logFormat := viper.GetString("log-format")
 	switch logFormat {
 	case "text", "txt", "t":
 		log.SetFormatter(&log.TextFormatter{})
@@ -138,10 +131,7 @@ func initLog(cmd *cobra.Command) {
 		log.SetFormatter(&log.JSONFormatter{})
 	default:
 		log.WithField("log-format", logFormat).Warn("invalid log formatter. defaulting to text.")
-		err = cmd.Flags().Set("log-format", "text")
-		if err != nil {
-			panic(err)
-		}
+		viper.Set("log-format", "text")
 	}
 }
 

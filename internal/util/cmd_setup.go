@@ -30,6 +30,15 @@ type SetupOptions struct {
 func DefaultSetup(cmd *cobra.Command, conf *config.Global, opts SetupOptions) (err error) {
 	cmd.SilenceUsage = true
 
+	conf.Kubeconfig = viper.GetString("kubernetes.kubeconfig")
+	conf.Context, err = cmd.Flags().GetString("context")
+	if err != nil {
+		panic(err)
+	}
+	conf.Namespace, err = cmd.Flags().GetString("namespace")
+	if err != nil {
+		panic(err)
+	}
 	conf.Client, err = kubernetes.NewClient(conf.Kubeconfig, conf.Context, conf.Namespace)
 	if err != nil {
 		return err

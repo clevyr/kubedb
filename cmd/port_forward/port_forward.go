@@ -24,7 +24,7 @@ func NewCommand() *cobra.Command {
 		PreRunE:           preRun,
 	}
 
-	flags.Address(cmd, &action.Addresses)
+	flags.Address(cmd)
 
 	return cmd
 }
@@ -45,9 +45,8 @@ func validArgs(cmd *cobra.Command, args []string, toComplete string) ([]string, 
 }
 
 func preRun(cmd *cobra.Command, args []string) error {
-	if err := viper.Unmarshal(&action); err != nil {
-		return err
-	}
+	flags.BindAddress(cmd)
+	action.Addresses = viper.GetStringSlice("address")
 
 	err := util.DefaultSetup(cmd, &action.Global, util.SetupOptions{DisableJob: true})
 	if err != nil {

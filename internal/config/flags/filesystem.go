@@ -2,7 +2,6 @@ package flags
 
 import (
 	"github.com/spf13/cobra"
-	"github.com/spf13/viper"
 )
 
 func Directory(cmd *cobra.Command, p *string) {
@@ -13,10 +12,6 @@ func Directory(cmd *cobra.Command, p *string) {
 			return nil, cobra.ShellCompDirectiveFilterDirs
 		})
 	if err != nil {
-		panic(err)
-	}
-
-	if err := viper.BindPFlag("directory", cmd.Flags().Lookup("directory")); err != nil {
 		panic(err)
 	}
 }

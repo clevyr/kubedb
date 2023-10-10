@@ -47,7 +47,7 @@ the generated filename might look like "` + dump.HelpFilename() + `"`,
 	flags.ExcludeTable(cmd, &action.ExcludeTable)
 	flags.ExcludeTableData(cmd, &action.ExcludeTableData)
 	flags.Quiet(cmd, &action.Quiet)
-	flags.RemoteGzip(cmd, &action.RemoteGzip)
+	flags.RemoteGzip(cmd)
 
 	return cmd
 }
@@ -74,9 +74,8 @@ func validArgs(cmd *cobra.Command, args []string, toComplete string) ([]string, 
 }
 
 func preRun(cmd *cobra.Command, args []string) (err error) {
-	if err := viper.Unmarshal(&action); err != nil {
-		return err
-	}
+	flags.BindRemoteGzip(cmd)
+	action.RemoteGzip = viper.GetBool("remote-gzip")
 
 	if len(args) > 0 {
 		action.Filename = args[0]

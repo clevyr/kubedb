@@ -4,6 +4,7 @@ import (
 	"path/filepath"
 
 	"github.com/spf13/cobra"
+	"github.com/spf13/viper"
 	"k8s.io/client-go/discovery"
 	"k8s.io/client-go/kubernetes"
 	v1 "k8s.io/client-go/kubernetes/typed/core/v1"
@@ -75,10 +76,7 @@ func NewClient(kubeconfig, context, namespace string) (config KubeClient, err er
 }
 
 func NewClientFromCmd(cmd *cobra.Command) (KubeClient, error) {
-	kubeconfig, err := cmd.Flags().GetString("kubeconfig")
-	if err != nil {
-		panic(err)
-	}
+	kubeconfig := viper.GetString("kubernetes.kubeconfig")
 
 	context, err := cmd.Flags().GetString("context")
 	if err != nil {

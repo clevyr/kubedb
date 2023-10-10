@@ -4,7 +4,6 @@ import (
 	"github.com/clevyr/kubedb/internal/actions/exec"
 	"github.com/clevyr/kubedb/internal/util"
 	"github.com/spf13/cobra"
-	"github.com/spf13/viper"
 	_ "k8s.io/client-go/plugin/pkg/client/auth"
 )
 
@@ -25,10 +24,6 @@ func NewCommand() *cobra.Command {
 }
 
 func preRun(cmd *cobra.Command, args []string) error {
-	if err := viper.Unmarshal(&action); err != nil {
-		return err
-	}
-
 	if err := util.DefaultSetup(cmd, &action.Global, util.SetupOptions{Name: "exec"}); err != nil {
 		return err
 	}

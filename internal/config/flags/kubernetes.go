@@ -21,7 +21,10 @@ func Kubeconfig(cmd *cobra.Command) {
 	}
 
 	cmd.PersistentFlags().String("kubeconfig", kubeconfigEnv, "Path to the kubeconfig file")
-	if err := viper.BindPFlag("kubernetes.kubeconfig", cmd.PersistentFlags().Lookup("kubeconfig")); err != nil {
+}
+
+func BindKubeconfig(cmd *cobra.Command) {
+	if err := viper.BindPFlag("kubernetes.kubeconfig", cmd.Flags().Lookup("kubeconfig")); err != nil {
 		panic(err)
 	}
 }
@@ -31,10 +34,7 @@ func Context(cmd *cobra.Command) {
 	err := cmd.RegisterFlagCompletionFunc(
 		"context",
 		func(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
-			kubeconfig, err := cmd.Flags().GetString("kubeconfig")
-			if err != nil {
-				panic(err)
-			}
+			kubeconfig := viper.GetString("kubernetes.kubeconfig")
 			configLoader := clientcmd.NewNonInteractiveDeferredLoadingClientConfig(
 				&clientcmd.ClientConfigLoadingRules{Precedence: filepath.SplitList(kubeconfig)},
 				nil,
@@ -50,9 +50,6 @@ func Context(cmd *cobra.Command) {
 			return names, cobra.ShellCompDirectiveNoFileComp
 		})
 	if err != nil {
-		panic(err)
-	}
-	if err := viper.BindPFlag("kubernetes.context", cmd.PersistentFlags().Lookup("context")); err != nil {
 		panic(err)
 	}
 }
@@ -82,9 +79,6 @@ func Namespace(cmd *cobra.Command) {
 	if err != nil {
 		panic(err)
 	}
-	if err := viper.BindPFlag("kubernetes.namespace", cmd.PersistentFlags().Lookup("namespace")); err != nil {
-		panic(err)
-	}
 }
 
 func Pod(cmd *cobra.Command) {
@@ -109,21 +103,24 @@ func Pod(cmd *cobra.Command) {
 	if err != nil {
 		panic(err)
 	}
-	if err := viper.BindPFlag("kubernetes.pod", cmd.PersistentFlags().Lookup("pod")); err != nil {
-		panic(err)
-	}
 }
 
 func JobPodLabels(cmd *cobra.Command) {
 	cmd.PersistentFlags().StringToString("job-pod-labels", map[string]string{}, "Pod labels to add to the job")
-	if err := viper.BindPFlag("kubernetes.job-pod-labels", cmd.PersistentFlags().Lookup("job-pod-labels")); err != nil {
+}
+
+func BindJobPodLabels(cmd *cobra.Command) {
+	if err := viper.BindPFlag("kubernetes.job-pod-labels", cmd.Flags().Lookup("job-pod-labels")); err != nil {
 		panic(err)
 	}
 }
 
 func NoJob(cmd *cobra.Command) {
 	cmd.PersistentFlags().Bool("no-job", false, "Database commands will be run in the database pod instead of a dedicated job")
-	if err := viper.BindPFlag("kubernetes.no-job", cmd.PersistentFlags().Lookup("no-job")); err != nil {
+}
+
+func BindNoJob(cmd *cobra.Command) {
+	if err := viper.BindPFlag("kubernetes.no-job", cmd.Flags().Lookup("no-job")); err != nil {
 		panic(err)
 	}
 }

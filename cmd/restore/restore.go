@@ -43,8 +43,8 @@ Supported Input Filetypes:
 	flags.NoOwner(cmd, &action.NoOwner)
 	flags.Force(cmd, &action.Force)
 	flags.Quiet(cmd, &action.Quiet)
-	flags.RemoteGzip(cmd, &action.RemoteGzip)
-	flags.Analyze(cmd, &action.Analyze)
+	flags.RemoteGzip(cmd)
+	flags.Analyze(cmd)
 
 	return cmd
 }
@@ -72,9 +72,10 @@ func validArgs(cmd *cobra.Command, args []string, toComplete string) ([]string, 
 }
 
 func preRun(cmd *cobra.Command, args []string) (err error) {
-	if err := viper.Unmarshal(&action); err != nil {
-		return err
-	}
+	flags.BindRemoteGzip(cmd)
+	action.RemoteGzip = viper.GetBool("remote-gzip")
+	flags.BindAnalyze(cmd)
+	action.Analyze = viper.GetBool("analyze")
 
 	if len(args) > 0 {
 		action.Filename = args[0]

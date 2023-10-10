@@ -7,9 +7,6 @@ import (
 
 func Force(cmd *cobra.Command, p *bool) {
 	cmd.Flags().BoolVarP(p, "force", "f", false, "Do not prompt before restore")
-	if err := viper.BindPFlag("force", cmd.Flags().Lookup("force")); err != nil {
-		panic(err)
-	}
 }
 
 func GitHubActions(cmd *cobra.Command) {
@@ -17,7 +14,10 @@ func GitHubActions(cmd *cobra.Command) {
 	if err := cmd.PersistentFlags().MarkHidden("github-actions"); err != nil {
 		panic(err)
 	}
-	if err := viper.BindPFlag("github-actions", cmd.PersistentFlags().Lookup("github-actions")); err != nil {
+}
+
+func BindGitHubActions(cmd *cobra.Command) {
+	if err := viper.BindPFlag("github-actions", cmd.Flags().Lookup("github-actions")); err != nil {
 		panic(err)
 	}
 }
@@ -27,7 +27,10 @@ func Redact(cmd *cobra.Command) {
 	if err := cmd.PersistentFlags().MarkHidden("redact"); err != nil {
 		panic(err)
 	}
-	if err := viper.BindPFlag("redact", cmd.PersistentFlags().Lookup("redact")); err != nil {
+}
+
+func BindRedact(cmd *cobra.Command) {
+	if err := viper.BindPFlag("redact", cmd.Flags().Lookup("redact")); err != nil {
 		panic(err)
 	}
 }
