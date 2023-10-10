@@ -7,7 +7,7 @@ import (
 	"net/url"
 	"os"
 	"os/signal"
-	"strings"
+	"path"
 	"syscall"
 
 	"github.com/clevyr/kubedb/internal/config"
@@ -28,19 +28,18 @@ func (a PortForward) Run(ctx context.Context) error {
 		"name":      "pod/" + a.DbPod.Name,
 	}).Info("setting up port forward")
 
-	path := fmt.Sprintf(
-		"/api/v1/namespaces/%s/pods/%s/portforward",
-		a.Client.Namespace,
-		a.JobPod.Name,
-	)
-	hostIP := strings.TrimLeft(a.Client.ClientConfig.Host, "htps:/")
+	hostUrl, err := url.Parse(a.Client.ClientConfig.Host)
+	if err != nil {
+		return err
+	}
+	hostUrl.Path = path.Join("api", "v1", "namespaces", a.Client.Namespace, "pods", a.JobPod.Name, "portforward")
 
 	transport, upgrader, err := spdy.RoundTripperFor(a.Client.ClientConfig)
 	if err != nil {
 		return err
 	}
 
-	dialer := spdy.NewDialer(upgrader, &http.Client{Transport: transport}, http.MethodPost, &url.URL{Scheme: "https", Path: path, Host: hostIP})
+	dialer := spdy.NewDialer(upgrader, &http.Client{Transport: transport}, http.MethodPost, hostUrl)
 	ports := []string{fmt.Sprintf("%d:%d", a.LocalPort, a.Port)}
 	stopCh := make(chan struct{}, 1)
 	readyCh := make(chan struct{}, 1)
