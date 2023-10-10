@@ -61,6 +61,11 @@ func TestMariaDB_DumpCommand(t *testing.T) {
 			args{config.Dump{ExcludeTable: []string{"table1", "table2"}, Global: config.Global{Host: "1.1.1.1", Database: "d", Username: "u"}}},
 			command.NewBuilder(command.NewEnv("MYSQL_PWD", ""), "mysqldump", "--host=1.1.1.1", "--user=u", "d", "--ignore-table=table1", "--ignore-table=table2", "--verbose"),
 		},
+		{
+			"port",
+			args{config.Dump{Global: config.Global{Port: 1234}}},
+			command.NewBuilder(command.NewEnv("MYSQL_PWD", ""), "mysqldump", "--host=", "--user=", "", "--port=1234", "--verbose"),
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -94,6 +99,11 @@ func TestMariaDB_ExecCommand(t *testing.T) {
 			"command",
 			args{config.Exec{Command: "show databases", Global: config.Global{Host: "1.1.1.1", Database: "d", Username: "u"}}},
 			command.NewBuilder(command.Env{Key: "MYSQL_PWD"}, "exec", "mysql", "--host=1.1.1.1", "--user=u", "--database=d", "--execute=show databases"),
+		},
+		{
+			"port",
+			args{config.Exec{Global: config.Global{Port: 1234}}},
+			command.NewBuilder(command.NewEnv("MYSQL_PWD", ""), "exec", "mysql", "--host=", "--user=", "--port=1234"),
 		},
 	}
 	for _, tt := range tests {
@@ -194,6 +204,11 @@ func TestMariaDB_RestoreCommand(t *testing.T) {
 			"custom",
 			args{config.Restore{Global: config.Global{Host: "1.1.1.1", Database: "d", Username: "u"}}, sqlformat.Custom},
 			command.NewBuilder(command.Env{Key: "MYSQL_PWD"}, "mysql", "--host=1.1.1.1", "--user=u", "--database=d"),
+		},
+		{
+			"port",
+			args{config.Restore{Global: config.Global{Port: 1234}}, sqlformat.Plain},
+			command.NewBuilder(command.NewEnv("MYSQL_PWD", ""), "mysql", "--host=", "--user=", "--database=", "--port=1234"),
 		},
 	}
 	for _, tt := range tests {

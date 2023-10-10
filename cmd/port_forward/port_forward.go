@@ -24,6 +24,7 @@ func NewCommand() *cobra.Command {
 		PreRunE:           preRun,
 	}
 
+	flags.Port(cmd)
 	flags.Address(cmd)
 
 	return cmd

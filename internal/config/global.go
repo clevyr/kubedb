@@ -16,6 +16,7 @@ type Global struct {
 	DbPod  v1.Pod `mapstructure:"-"`
 
 	Host       string
+	Port       uint16
 	Database   string
 	Username   string
 	Password   string

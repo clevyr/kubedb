@@ -28,6 +28,7 @@ kubedb restore filename [flags]
       --no-job                          Database commands will be run in the database pod instead of a dedicated job
   -O, --no-owner                        Skip restoration of object ownership in plain-text format (default true)
   -p, --password string                 Database password
+      --port uint16                     Database port
   -q, --quiet                           Silence remote log output
       --remote-gzip                     Compress data over the wire. Results in lower bandwidth usage, but higher database load. May improve speed on fast connections. (default true)
   -1, --single-transaction              Restore as a single transaction (default true)

@@ -5,6 +5,7 @@ import (
 	"encoding/csv"
 	"io"
 	"os"
+	"strconv"
 	"strings"
 	"time"
 
@@ -21,6 +22,10 @@ type Postgres struct{}
 
 func (Postgres) Name() string {
 	return "postgres"
+}
+
+func (Postgres) PortEnvNames() []string {
+	return []string{"POSTGRESQL_PORT_NUMBER"}
 }
 
 func (Postgres) DefaultPort() uint16 {
@@ -119,6 +124,9 @@ func (Postgres) ExecCommand(conf config.Exec) *command.Builder {
 		command.NewEnv("PGPASSWORD", conf.Password),
 		"exec", "psql", "--host="+conf.Host, "--username="+conf.Username,
 	)
+	if conf.Port != 0 {
+		cmd.Push("--port=" + strconv.Itoa(int(conf.Port)))
+	}
 	if conf.Database != "" {
 		cmd.Push("--dbname=" + conf.Database)
 	}
@@ -142,6 +150,9 @@ func (Postgres) DumpCommand(conf config.Dump) *command.Builder {
 		command.NewEnv("PGPASSWORD", conf.Password),
 		"pg_dump", "--host="+conf.Host, "--username="+conf.Username,
 	)
+	if conf.Port != 0 {
+		cmd.Push("--port=" + strconv.Itoa(int(conf.Port)))
+	}
 	if conf.Database != "" {
 		cmd.Push("--dbname=" + conf.Database)
 	}
@@ -195,6 +206,9 @@ func (Postgres) RestoreCommand(conf config.Restore, inputFormat sqlformat.Format
 		}
 	}
 	cmd.Push("--host="+conf.Host, "--username="+conf.Username, "--dbname="+conf.Database)
+	if conf.Port != 0 {
+		cmd.Push("--port=" + strconv.Itoa(int(conf.Port)))
+	}
 	if conf.SingleTransaction {
 		cmd.Push("--single-transaction")
 	}

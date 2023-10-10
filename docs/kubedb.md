@@ -17,6 +17,7 @@ Supported Database Dialects:
 If not configured via flag, some configuration variables will be loaded from the target pod's env vars.
 
 Dynamic Env Var Variables:
+  - Port
   - Database
   - Username (fallback value: "postgres" if PostgreSQL, "mariadb" if MariaDB, "root" if MongoDB)
   - Password

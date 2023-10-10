@@ -13,6 +13,7 @@ type Databaser interface {
 	Name() string
 	DefaultPort() uint16
 
+	PortEnvNames() []string
 	DatabaseEnvNames() []string
 	ListDatabasesQuery() string
 	ListTablesQuery() string

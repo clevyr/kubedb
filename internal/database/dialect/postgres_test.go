@@ -62,6 +62,11 @@ func TestPostgres_DumpCommand(t *testing.T) {
 			args{config.Dump{Files: config.Files{Format: sqlformat.Custom}, Global: config.Global{Host: "1.1.1.1", Database: "d", Username: "u"}}},
 			command.NewBuilder(command.NewEnv("PGPASSWORD", ""), "pg_dump", "--host=1.1.1.1", "--username=u", "--dbname=d", "--format=c", "--verbose"),
 		},
+		{
+			"port",
+			args{config.Dump{Global: config.Global{Port: 1234}}},
+			command.NewBuilder(command.NewEnv("PGPASSWORD", ""), "pg_dump", "--host=", "--username=", "--port=1234", "--verbose"),
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -95,6 +100,11 @@ func TestPostgres_ExecCommand(t *testing.T) {
 			"command",
 			args{config.Exec{Command: "select true", Global: config.Global{Host: "1.1.1.1", Database: "d", Username: "u"}}},
 			command.NewBuilder(command.NewEnv("PGPASSWORD", ""), "exec", "psql", "--host=1.1.1.1", "--username=u", "--dbname=d", "--command=select true"),
+		},
+		{
+			"default",
+			args{config.Exec{Global: config.Global{Port: 1234}}},
+			command.NewBuilder(command.NewEnv("PGPASSWORD", ""), "exec", "psql", "--host=", "--username=", "--port=1234"),
 		},
 	}
 	for _, tt := range tests {
@@ -229,6 +239,11 @@ func TestPostgres_RestoreCommand(t *testing.T) {
 			"sql-quiet",
 			args{config.Restore{Global: config.Global{Host: "1.1.1.1", Database: "d", Username: "u", Quiet: true}}, sqlformat.Gzip},
 			command.NewBuilder(pgpassword, command.NewEnv("PGOPTIONS", "-c client_min_messages=WARNING"), "psql", "--quiet", "--output=/dev/null", "--host=1.1.1.1", "--username=u", "--dbname=d"),
+		},
+		{
+			"port",
+			args{config.Restore{Global: config.Global{Port: 1234}}, sqlformat.Plain},
+			command.NewBuilder(pgpassword, "psql", "--host=", "--username=", "--dbname=", "--port=1234"),
 		},
 	}
 	for _, tt := range tests {

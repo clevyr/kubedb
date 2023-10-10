@@ -40,6 +40,7 @@ Supported Input Filetypes:
 	flags.JobPodLabels(cmd)
 	flags.NoJob(cmd)
 	flags.Format(cmd, &action.Format)
+	flags.Port(cmd)
 	flags.Database(cmd)
 	flags.Username(cmd)
 	flags.Password(cmd)

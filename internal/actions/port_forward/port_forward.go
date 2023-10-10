@@ -41,7 +41,7 @@ func (a PortForward) Run(ctx context.Context) error {
 	}
 
 	dialer := spdy.NewDialer(upgrader, &http.Client{Transport: transport}, http.MethodPost, &url.URL{Scheme: "https", Path: path, Host: hostIP})
-	ports := []string{fmt.Sprintf("%d:%d", a.LocalPort, a.Dialect.DefaultPort())}
+	ports := []string{fmt.Sprintf("%d:%d", a.LocalPort, a.Port)}
 	stopCh := make(chan struct{}, 1)
 	readyCh := make(chan struct{}, 1)
 	outWriter := log2.NewWriter(log.StandardLogger(), log.InfoLevel)
@@ -55,7 +55,7 @@ func (a PortForward) Run(ctx context.Context) error {
 		<-readyCh
 		log.WithFields(log.Fields{
 			"local":  a.LocalPort,
-			"remote": a.Dialect.DefaultPort(),
+			"remote": a.Port,
 		}).Info("port forward is ready")
 		t := table.NewWriter()
 		t.SetOutputMirror(os.Stdout)

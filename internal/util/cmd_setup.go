@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"maps"
+	"strconv"
 	"strings"
 	"time"
 
@@ -123,6 +124,28 @@ func DefaultSetup(cmd *cobra.Command, conf *config.Global, opts SetupOptions) (e
 			return err
 		}
 		conf.DbPod = pods[idx]
+	}
+
+	conf.Port, err = cmd.Flags().GetUint16("port")
+	if err != nil {
+		panic(err)
+	}
+	if conf.Port == 0 {
+		port, err := conf.Client.GetValueFromEnv(cmd.Context(), conf.DbPod, conf.Dialect.PortEnvNames())
+		if err != nil {
+			log.Debug("could not detect port from pod env")
+		} else {
+			port, err := strconv.ParseUint(port, 10, 16)
+			if err != nil {
+				log.WithField("port", port).Debug("failed to parse port from pod env")
+			} else {
+				conf.Port = uint16(port)
+				log.WithField("port", conf.Port).Debug("found port in pod env")
+			}
+		}
+	}
+	if conf.Port == 0 {
+		conf.Port = conf.Dialect.DefaultPort()
 	}
 
 	conf.Database, err = cmd.Flags().GetString("dbname")

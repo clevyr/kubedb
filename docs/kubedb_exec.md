@@ -15,6 +15,7 @@ kubedb exec [flags]
       --job-pod-labels stringToString   Pod labels to add to the job (default [])
       --no-job                          Database commands will be run in the database pod instead of a dedicated job
   -p, --password string                 Database password
+      --port uint16                     Database port
   -U, --username string                 Database username
 ```
 

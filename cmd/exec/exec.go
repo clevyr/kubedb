@@ -22,6 +22,7 @@ func NewCommand() *cobra.Command {
 
 	flags.JobPodLabels(cmd)
 	flags.NoJob(cmd)
+	flags.Port(cmd)
 	flags.Database(cmd)
 	flags.Username(cmd)
 	flags.Password(cmd)

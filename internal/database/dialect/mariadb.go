@@ -2,6 +2,7 @@ package dialect
 
 import (
 	"context"
+	"strconv"
 	"strings"
 
 	"github.com/clevyr/kubedb/internal/command"
@@ -15,6 +16,10 @@ type MariaDB struct{}
 
 func (MariaDB) Name() string {
 	return "mariadb"
+}
+
+func (MariaDB) PortEnvNames() []string {
+	return []string{"MARIADB_PORT_NUMBER", "MYSQL_PORT_NUMBER"}
 }
 
 func (MariaDB) DefaultPort() uint16 {
@@ -83,6 +88,9 @@ func (MariaDB) ExecCommand(conf config.Exec) *command.Builder {
 		command.NewEnv("MYSQL_PWD", conf.Password),
 		"exec", "mysql", "--host="+conf.Host, "--user="+conf.Username,
 	)
+	if conf.Port != 0 {
+		cmd.Push("--port=" + strconv.Itoa(int(conf.Port)))
+	}
 	if conf.Database != "" {
 		cmd.Push("--database=" + conf.Database)
 	}
@@ -100,6 +108,9 @@ func (MariaDB) DumpCommand(conf config.Dump) *command.Builder {
 		command.NewEnv("MYSQL_PWD", conf.Password),
 		"mysqldump", "--host="+conf.Host, "--user="+conf.Username, conf.Database,
 	)
+	if conf.Port != 0 {
+		cmd.Push("--port=" + strconv.Itoa(int(conf.Port)))
+	}
 	if conf.Clean {
 		cmd.Push("--add-drop-table")
 	}
@@ -116,10 +127,14 @@ func (MariaDB) DumpCommand(conf config.Dump) *command.Builder {
 }
 
 func (MariaDB) RestoreCommand(conf config.Restore, inputFormat sqlformat.Format) *command.Builder {
-	return command.NewBuilder(
+	cmd := command.NewBuilder(
 		command.NewEnv("MYSQL_PWD", conf.Password),
 		"mysql", "--host="+conf.Host, "--user="+conf.Username, "--database="+conf.Database,
 	)
+	if conf.Port != 0 {
+		cmd.Push("--port=" + strconv.Itoa(int(conf.Port)))
+	}
+	return cmd
 }
 
 func (MariaDB) Formats() map[sqlformat.Format]string {

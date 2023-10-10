@@ -52,6 +52,10 @@ func Format(cmd *cobra.Command, p *sqlformat.Format) {
 	}
 }
 
+func Port(cmd *cobra.Command) {
+	cmd.PersistentFlags().Uint16("port", 0, "Database port")
+}
+
 func Database(cmd *cobra.Command) {
 	cmd.Flags().StringP("dbname", "d", "", "Database name to connect to")
 	err := cmd.RegisterFlagCompletionFunc("dbname", listDatabases)

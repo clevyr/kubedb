@@ -2,6 +2,7 @@ package dialect
 
 import (
 	"context"
+	"strconv"
 	"strings"
 
 	"github.com/clevyr/kubedb/internal/command"
@@ -15,6 +16,10 @@ type MongoDB struct{}
 
 func (MongoDB) Name() string {
 	return "mongodb"
+}
+
+func (MongoDB) PortEnvNames() []string {
+	return []string{"MONGODB_PORT_NUMBER"}
 }
 
 func (MongoDB) DefaultPort() uint16 {
@@ -90,6 +95,9 @@ func (db MongoDB) ExecCommand(conf config.Exec) *command.Builder {
 		"--password="+conf.Password,
 		"--authenticationDatabase="+db.AuthenticationDatabase(conf.Global),
 	)
+	if conf.Port != 0 {
+		cmd.Push("--port=" + strconv.Itoa(int(conf.Port)))
+	}
 	if conf.DisableHeaders {
 		cmd.Push("--quiet")
 	}
@@ -111,6 +119,9 @@ func (db MongoDB) DumpCommand(conf config.Dump) *command.Builder {
 		"--password="+conf.Password,
 		"--authenticationDatabase="+db.AuthenticationDatabase(conf.Global),
 	)
+	if conf.Port != 0 {
+		cmd.Push("--port=" + strconv.Itoa(int(conf.Port)))
+	}
 	if conf.Database != "" {
 		cmd.Push("--db=" + conf.Database)
 	}
@@ -135,6 +146,9 @@ func (db MongoDB) RestoreCommand(conf config.Restore, inputFormat sqlformat.Form
 		"--password="+conf.Password,
 		"--authenticationDatabase="+db.AuthenticationDatabase(conf.Global),
 	)
+	if conf.Port != 0 {
+		cmd.Push("--port=" + strconv.Itoa(int(conf.Port)))
+	}
 	if conf.Database != "" {
 		if conf.Clean {
 			cmd.Push("--drop")

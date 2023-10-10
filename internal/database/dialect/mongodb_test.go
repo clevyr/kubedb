@@ -46,6 +46,11 @@ func TestMongoDB_DumpCommand(t *testing.T) {
 			args{config.Dump{Global: config.Global{Host: "1.1.1.1", Database: "d", Username: "u", Password: "p", Quiet: true}}},
 			command.NewBuilder("mongodump", "--archive", "--host=1.1.1.1", "--username=u", "--password=p", "--authenticationDatabase=d", "--db=d", "--quiet"),
 		},
+		{
+			"port",
+			args{config.Dump{Global: config.Global{Port: 1234}}},
+			command.NewBuilder("mongodump", "--archive", "--host=", "--username=", "--password=", "--authenticationDatabase=", "--port=1234"),
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -79,6 +84,11 @@ func TestMongoDB_ExecCommand(t *testing.T) {
 			"command",
 			args{config.Exec{Command: "show databases", Global: config.Global{Host: "1.1.1.1", Database: "d", Username: "u", Password: "p"}}},
 			command.NewBuilder("exec", command.Raw(`"$(which mongosh || which mongo)"`), "--host=1.1.1.1", "--username=u", "--password=p", "--authenticationDatabase=d", "--eval=show databases", "d"),
+		},
+		{
+			"port",
+			args{config.Exec{Global: config.Global{Port: 1234}}},
+			command.NewBuilder("exec", command.Raw(`"$(which mongosh || which mongo)"`), "--host=", "--username=", "--password=", "--authenticationDatabase=", "--port=1234"),
 		},
 	}
 	for _, tt := range tests {
@@ -173,6 +183,11 @@ func TestMongoDB_RestoreCommand(t *testing.T) {
 			"quiet",
 			args{config.Restore{Global: config.Global{Host: "1.1.1.1", Database: "d", Username: "u", Password: "p", Quiet: true}}, sqlformat.Gzip},
 			command.NewBuilder("mongorestore", "--archive", "--host=1.1.1.1", "--username=u", "--password=p", "--authenticationDatabase=d", "--db=d", "--quiet"),
+		},
+		{
+			"port",
+			args{config.Restore{Global: config.Global{Port: 1234}}, sqlformat.Gzip},
+			command.NewBuilder("mongorestore", "--archive", "--host=", "--username=", "--password=", "--authenticationDatabase=", "--port=1234"),
 		},
 	}
 	for _, tt := range tests {

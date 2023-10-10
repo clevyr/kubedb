@@ -40,6 +40,7 @@ the generated filename might look like "` + dump.HelpFilename() + `"`,
 
 	flags.JobPodLabels(cmd)
 	flags.NoJob(cmd)
+	flags.Port(cmd)
 	flags.Database(cmd)
 	flags.Username(cmd)
 	flags.Password(cmd)
