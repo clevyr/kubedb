@@ -57,12 +57,6 @@ func DefaultSetup(cmd *cobra.Command, conf *config.Global, opts SetupOptions) (e
 	if err != nil {
 		panic(err)
 	}
-	if dialectFlag == "" {
-		dialectFlag, err = cmd.Flags().GetString("grammar")
-		if err != nil {
-			panic(err)
-		}
-	}
 
 	var pods []corev1.Pod
 	if dialectFlag == "" {
