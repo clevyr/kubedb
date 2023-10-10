@@ -140,8 +140,11 @@ func quoteParam(param string) string {
 func (Postgres) DumpCommand(conf config.Dump) *command.Builder {
 	cmd := command.NewBuilder(
 		command.NewEnv("PGPASSWORD", conf.Password),
-		"pg_dump", "--host="+conf.Host, "--username="+conf.Username, "--dbname="+conf.Database,
+		"pg_dump", "--host="+conf.Host, "--username="+conf.Username,
 	)
+	if conf.Database != "" {
+		cmd.Push("--dbname=" + conf.Database)
+	}
 	if conf.Clean {
 		cmd.Push("--clean")
 	}
