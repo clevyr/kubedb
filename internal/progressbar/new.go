@@ -2,6 +2,7 @@ package progressbar
 
 import (
 	"bytes"
+	"fmt"
 	"io"
 	"os"
 	"time"
@@ -11,20 +12,31 @@ import (
 )
 
 func New(max int64, label string) *progressbar.ProgressBar {
-	if isatty.IsTerminal(os.Stdout.Fd()) || isatty.IsCygwinTerminal(os.Stdout.Fd()) {
-		return progressbar.DefaultBytes(max, label)
-	}
-
-	return progressbar.NewOptions64(
-		max,
+	options := []progressbar.Option{
 		progressbar.OptionSetDescription(label),
 		progressbar.OptionSetWriter(os.Stderr),
 		progressbar.OptionShowBytes(true),
 		progressbar.OptionSetWidth(10),
-		progressbar.OptionThrottle(2*time.Second),
 		progressbar.OptionShowCount(),
 		progressbar.OptionSpinnerType(14),
-	)
+		progressbar.OptionFullWidth(),
+	}
+
+	if isatty.IsTerminal(os.Stdout.Fd()) || isatty.IsCygwinTerminal(os.Stdout.Fd()) {
+		options = append(options,
+			progressbar.OptionThrottle(65*time.Millisecond),
+			progressbar.OptionSetRenderBlankState(true),
+			progressbar.OptionOnCompletion(func() {
+				_, _ = fmt.Fprint(os.Stderr, "\r\x1B[K")
+			}),
+		)
+	} else {
+		options = append(options,
+			progressbar.OptionThrottle(2*time.Second),
+		)
+	}
+
+	return progressbar.NewOptions64(max, options...)
 }
 
 func NewBarSafeLogger(w io.Writer, bar *progressbar.ProgressBar) *BarSafeLogger {
