@@ -5,24 +5,6 @@ import (
 	"github.com/spf13/viper"
 )
 
-func Address(cmd *cobra.Command) {
-	cmd.PersistentFlags().StringSlice("address", []string{"127.0.0.1", "::1"}, "Local listen address")
-	err := cmd.RegisterFlagCompletionFunc(
-		"address",
-		func(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
-			return []string{"127.0.0.1\tprivate", "::1\tprivate", "0.0.0.0\tpublic", "::\tpublic"}, cobra.ShellCompDirectiveNoFileComp
-		})
-	if err != nil {
-		panic(err)
-	}
-}
-
-func BindAddress(cmd *cobra.Command) {
-	if err := viper.BindPFlag("port-forward.address", cmd.Flags().Lookup("address")); err != nil {
-		panic(err)
-	}
-}
-
 func RemoteGzip(cmd *cobra.Command) {
 	cmd.Flags().Bool("remote-gzip", true, "Compress data over the wire. Results in lower bandwidth usage, but higher database load. May improve speed on slow connections.")
 	err := cmd.RegisterFlagCompletionFunc(

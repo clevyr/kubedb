@@ -47,10 +47,10 @@ Supported Input Filetypes:
 	flags.SingleTransaction(cmd, &action.SingleTransaction)
 	flags.Clean(cmd, &action.Clean)
 	flags.NoOwner(cmd, &action.NoOwner)
-	flags.Force(cmd, &action.Force)
 	flags.Quiet(cmd, &action.Quiet)
 	flags.RemoteGzip(cmd)
 	flags.Analyze(cmd)
+	cmd.Flags().BoolVarP(&action.Force, "force", "f", false, "Do not prompt before restore")
 
 	return cmd
 }

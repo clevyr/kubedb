@@ -25,7 +25,15 @@ func NewCommand() *cobra.Command {
 	}
 
 	flags.Port(cmd)
-	flags.Address(cmd)
+	cmd.PersistentFlags().StringSlice("address", []string{"127.0.0.1", "::1"}, "Local listen address")
+	err := cmd.RegisterFlagCompletionFunc(
+		"address",
+		func(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
+			return []string{"127.0.0.1\tprivate", "::1\tprivate", "0.0.0.0\tpublic", "::\tpublic"}, cobra.ShellCompDirectiveNoFileComp
+		})
+	if err != nil {
+		panic(err)
+	}
 
 	return cmd
 }
@@ -46,7 +54,9 @@ func validArgs(cmd *cobra.Command, args []string, toComplete string) ([]string, 
 }
 
 func preRun(cmd *cobra.Command, args []string) error {
-	flags.BindAddress(cmd)
+	if err := viper.BindPFlag("port-forward.address", cmd.Flags().Lookup("address")); err != nil {
+		panic(err)
+	}
 	action.Addresses = viper.GetStringSlice("port-forward.address")
 
 	err := util.DefaultSetup(cmd, &action.Global, util.SetupOptions{DisableJob: true, DisableAuthFlags: true})
