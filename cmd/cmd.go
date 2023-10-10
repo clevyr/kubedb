@@ -50,13 +50,8 @@ Dynamic Env Var Variables:
 	flags.Namespace(cmd)
 	flags.Dialect(cmd)
 	flags.Pod(cmd)
-	flags.JobPodLabels(cmd)
-	flags.NoJob(cmd)
 	flags.LogLevel(cmd)
 	flags.LogFormat(cmd)
-	flags.Database(cmd)
-	flags.Username(cmd)
-	flags.Password(cmd)
 	flags.Redact(cmd)
 	cmd.InitDefaultVersionFlag()
 
@@ -83,8 +78,6 @@ Dynamic Env Var Variables:
 
 func preRun(cmd *cobra.Command, args []string) error {
 	flags.BindKubeconfig(cmd)
-	flags.BindJobPodLabels(cmd)
-	flags.BindNoJob(cmd)
 	flags.BindLogLevel(cmd)
 	flags.BindLogFormat(cmd)
 	flags.BindRedact(cmd)

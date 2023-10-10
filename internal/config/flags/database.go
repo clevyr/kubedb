@@ -53,7 +53,7 @@ func Format(cmd *cobra.Command, p *sqlformat.Format) {
 }
 
 func Database(cmd *cobra.Command) {
-	cmd.PersistentFlags().StringP("dbname", "d", "", "Database name to connect to")
+	cmd.Flags().StringP("dbname", "d", "", "Database name to connect to")
 	err := cmd.RegisterFlagCompletionFunc("dbname", listDatabases)
 	if err != nil {
 		panic(err)
@@ -61,11 +61,11 @@ func Database(cmd *cobra.Command) {
 }
 
 func Username(cmd *cobra.Command) {
-	cmd.PersistentFlags().StringP("username", "U", "", "Database username")
+	cmd.Flags().StringP("username", "U", "", "Database username")
 }
 
 func Password(cmd *cobra.Command) {
-	cmd.PersistentFlags().StringP("password", "p", "", "Database password")
+	cmd.Flags().StringP("password", "p", "", "Database password")
 }
 
 func SingleTransaction(cmd *cobra.Command, p *bool) {

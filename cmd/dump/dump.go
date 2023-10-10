@@ -38,6 +38,11 @@ the generated filename might look like "` + dump.HelpFilename() + `"`,
 		},
 	}
 
+	flags.JobPodLabels(cmd)
+	flags.NoJob(cmd)
+	flags.Database(cmd)
+	flags.Username(cmd)
+	flags.Password(cmd)
 	flags.Directory(cmd, &action.Directory)
 	flags.Format(cmd, &action.Format)
 	flags.IfExists(cmd, &action.IfExists)
@@ -74,6 +79,8 @@ func validArgs(cmd *cobra.Command, args []string, toComplete string) ([]string, 
 }
 
 func preRun(cmd *cobra.Command, args []string) (err error) {
+	flags.BindJobPodLabels(cmd)
+	flags.BindNoJob(cmd)
 	flags.BindRemoteGzip(cmd)
 	action.RemoteGzip = viper.GetBool("remote-gzip")
 

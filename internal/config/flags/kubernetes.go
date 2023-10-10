@@ -106,7 +106,7 @@ func Pod(cmd *cobra.Command) {
 }
 
 func JobPodLabels(cmd *cobra.Command) {
-	cmd.PersistentFlags().StringToString("job-pod-labels", map[string]string{}, "Pod labels to add to the job")
+	cmd.Flags().StringToString("job-pod-labels", map[string]string{}, "Pod labels to add to the job")
 }
 
 func BindJobPodLabels(cmd *cobra.Command) {
@@ -116,7 +116,7 @@ func BindJobPodLabels(cmd *cobra.Command) {
 }
 
 func NoJob(cmd *cobra.Command) {
-	cmd.PersistentFlags().Bool("no-job", false, "Database commands will be run in the database pod instead of a dedicated job")
+	cmd.Flags().Bool("no-job", false, "Database commands will be run in the database pod instead of a dedicated job")
 }
 
 func BindNoJob(cmd *cobra.Command) {

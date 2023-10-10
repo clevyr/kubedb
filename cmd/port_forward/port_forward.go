@@ -48,7 +48,7 @@ func preRun(cmd *cobra.Command, args []string) error {
 	flags.BindAddress(cmd)
 	action.Addresses = viper.GetStringSlice("port-forward.address")
 
-	err := util.DefaultSetup(cmd, &action.Global, util.SetupOptions{DisableJob: true})
+	err := util.DefaultSetup(cmd, &action.Global, util.SetupOptions{DisableJob: true, DisableAuthFlags: true})
 	if err != nil {
 		return err
 	}

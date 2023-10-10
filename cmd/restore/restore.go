@@ -37,7 +37,12 @@ Supported Input Filetypes:
 		RunE:    run,
 	}
 
+	flags.JobPodLabels(cmd)
+	flags.NoJob(cmd)
 	flags.Format(cmd, &action.Format)
+	flags.Database(cmd)
+	flags.Username(cmd)
+	flags.Password(cmd)
 	flags.SingleTransaction(cmd, &action.SingleTransaction)
 	flags.Clean(cmd, &action.Clean)
 	flags.NoOwner(cmd, &action.NoOwner)
@@ -76,6 +81,8 @@ func preRun(cmd *cobra.Command, args []string) (err error) {
 	action.RemoteGzip = viper.GetBool("remote-gzip")
 	flags.BindAnalyze(cmd)
 	action.Analyze = viper.GetBool("restore.analyze")
+	flags.BindJobPodLabels(cmd)
+	flags.BindNoJob(cmd)
 
 	if len(args) > 0 {
 		action.Filename = args[0]

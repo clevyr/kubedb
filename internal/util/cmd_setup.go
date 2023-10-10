@@ -23,8 +23,9 @@ import (
 )
 
 type SetupOptions struct {
-	Name       string
-	DisableJob bool
+	Name             string
+	DisableJob       bool
+	DisableAuthFlags bool
 }
 
 func DefaultSetup(cmd *cobra.Command, conf *config.Global, opts SetupOptions) (err error) {
@@ -125,7 +126,7 @@ func DefaultSetup(cmd *cobra.Command, conf *config.Global, opts SetupOptions) (e
 	}
 
 	conf.Database, err = cmd.Flags().GetString("dbname")
-	if err != nil {
+	if err != nil && !opts.DisableAuthFlags {
 		panic(err)
 	}
 	if conf.Database == "" {
@@ -138,7 +139,7 @@ func DefaultSetup(cmd *cobra.Command, conf *config.Global, opts SetupOptions) (e
 	}
 
 	conf.Username, err = cmd.Flags().GetString("username")
-	if err != nil {
+	if err != nil && !opts.DisableAuthFlags {
 		panic(err)
 	}
 	if conf.Username == "" {
@@ -152,7 +153,7 @@ func DefaultSetup(cmd *cobra.Command, conf *config.Global, opts SetupOptions) (e
 	}
 
 	conf.Password, err = cmd.Flags().GetString("password")
-	if err != nil {
+	if err != nil && !opts.DisableAuthFlags {
 		panic(err)
 	}
 	if conf.Password == "" {
