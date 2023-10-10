@@ -54,7 +54,6 @@ Dynamic Env Var Variables:
 	flags.NoJob(cmd)
 	flags.LogLevel(cmd)
 	flags.LogFormat(cmd)
-	flags.GitHubActions(cmd)
 	flags.Database(cmd)
 	flags.Username(cmd)
 	flags.Password(cmd)
@@ -84,7 +83,6 @@ Dynamic Env Var Variables:
 
 func preRun(cmd *cobra.Command, args []string) error {
 	flags.BindKubeconfig(cmd)
-	flags.BindGitHubActions(cmd)
 	flags.BindJobPodLabels(cmd)
 	flags.BindNoJob(cmd)
 	flags.BindLogLevel(cmd)

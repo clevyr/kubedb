@@ -15,7 +15,6 @@ import (
 	"github.com/clevyr/kubedb/internal/progressbar"
 	gzip "github.com/klauspost/pgzip"
 	log "github.com/sirupsen/logrus"
-	"github.com/spf13/viper"
 	"golang.org/x/sync/errgroup"
 )
 
@@ -62,10 +61,8 @@ func (action Dump) Run(ctx context.Context) (err error) {
 		"file":      action.Filename,
 	}).Info("exporting database")
 
-	if viper.GetBool("log.github-actions") {
-		if err := github.SetOutput("filename", action.Filename); err != nil {
-			return err
-		}
+	if err := github.SetOutput("filename", action.Filename); err != nil {
+		return err
 	}
 
 	startTime := time.Now()
