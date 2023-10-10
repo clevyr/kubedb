@@ -62,7 +62,7 @@ func (action Dump) Run(ctx context.Context) (err error) {
 		"file":      action.Filename,
 	}).Info("exporting database")
 
-	if viper.GetBool("github-actions") {
+	if viper.GetBool("log.github-actions") {
 		if err := github.SetOutput("filename", action.Filename); err != nil {
 			return err
 		}

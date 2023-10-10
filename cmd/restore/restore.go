@@ -75,7 +75,7 @@ func preRun(cmd *cobra.Command, args []string) (err error) {
 	flags.BindRemoteGzip(cmd)
 	action.RemoteGzip = viper.GetBool("remote-gzip")
 	flags.BindAnalyze(cmd)
-	action.Analyze = viper.GetBool("analyze")
+	action.Analyze = viper.GetBool("restore.analyze")
 
 	if len(args) > 0 {
 		action.Filename = args[0]

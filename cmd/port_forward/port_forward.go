@@ -46,7 +46,7 @@ func validArgs(cmd *cobra.Command, args []string, toComplete string) ([]string, 
 
 func preRun(cmd *cobra.Command, args []string) error {
 	flags.BindAddress(cmd)
-	action.Addresses = viper.GetStringSlice("address")
+	action.Addresses = viper.GetStringSlice("port-forward.address")
 
 	err := util.DefaultSetup(cmd, &action.Global, util.SetupOptions{DisableJob: true})
 	if err != nil {

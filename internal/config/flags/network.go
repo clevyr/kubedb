@@ -18,7 +18,7 @@ func Address(cmd *cobra.Command) {
 }
 
 func BindAddress(cmd *cobra.Command) {
-	if err := viper.BindPFlag("address", cmd.Flags().Lookup("address")); err != nil {
+	if err := viper.BindPFlag("port-forward.address", cmd.Flags().Lookup("address")); err != nil {
 		panic(err)
 	}
 }

@@ -17,7 +17,7 @@ func GitHubActions(cmd *cobra.Command) {
 }
 
 func BindGitHubActions(cmd *cobra.Command) {
-	if err := viper.BindPFlag("github-actions", cmd.Flags().Lookup("github-actions")); err != nil {
+	if err := viper.BindPFlag("log.github-actions", cmd.Flags().Lookup("github-actions")); err != nil {
 		panic(err)
 	}
 }
@@ -30,7 +30,7 @@ func Redact(cmd *cobra.Command) {
 }
 
 func BindRedact(cmd *cobra.Command) {
-	if err := viper.BindPFlag("redact", cmd.Flags().Lookup("redact")); err != nil {
+	if err := viper.BindPFlag("log.redact", cmd.Flags().Lookup("redact")); err != nil {
 		panic(err)
 	}
 }

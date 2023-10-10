@@ -113,7 +113,7 @@ func Analyze(cmd *cobra.Command) {
 }
 
 func BindAnalyze(cmd *cobra.Command) {
-	if err := viper.BindPFlag("analyze", cmd.Flags().Lookup("analyze")); err != nil {
+	if err := viper.BindPFlag("restore.analyze", cmd.Flags().Lookup("analyze")); err != nil {
 		panic(err)
 	}
 }

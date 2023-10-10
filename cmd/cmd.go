@@ -114,16 +114,16 @@ func preRun(cmd *cobra.Command, args []string) error {
 }
 
 func initLog(cmd *cobra.Command) {
-	logLevel := viper.GetString("log-level")
+	logLevel := viper.GetString("log.level")
 	parsedLevel, err := log.ParseLevel(logLevel)
 	if err != nil {
 		log.WithField("log-level", logLevel).Warn("invalid log level. defaulting to info.")
-		viper.Set("log-level", "info")
+		viper.Set("log.level", "info")
 		parsedLevel = log.InfoLevel
 	}
 	log.SetLevel(parsedLevel)
 
-	logFormat := viper.GetString("log-format")
+	logFormat := viper.GetString("log.format")
 	switch logFormat {
 	case "text", "txt", "t":
 		log.SetFormatter(&log.TextFormatter{})
@@ -131,7 +131,7 @@ func initLog(cmd *cobra.Command) {
 		log.SetFormatter(&log.JSONFormatter{})
 	default:
 		log.WithField("log-format", logFormat).Warn("invalid log formatter. defaulting to text.")
-		viper.Set("log-format", "text")
+		viper.Set("log.format", "text")
 	}
 }
 

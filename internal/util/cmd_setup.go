@@ -161,7 +161,7 @@ func DefaultSetup(cmd *cobra.Command, conf *config.Global, opts SetupOptions) (e
 			return err
 		}
 	}
-	if viper.GetBool("redact") {
+	if viper.GetBool("log.redact") {
 		log.AddHook(log_hooks.Redact(conf.Password))
 	}
 
