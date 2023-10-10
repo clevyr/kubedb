@@ -6,14 +6,13 @@ import (
 	"net/http"
 	"net/url"
 	"os"
-	"os/signal"
 	"path"
-	"syscall"
 
 	"github.com/clevyr/kubedb/internal/config"
 	log2 "github.com/clevyr/kubedb/internal/log"
 	"github.com/jedib0t/go-pretty/v6/table"
 	log "github.com/sirupsen/logrus"
+	"golang.org/x/sync/errgroup"
 	"k8s.io/client-go/tools/portforward"
 	"k8s.io/client-go/transport/spdy"
 )
@@ -74,21 +73,17 @@ func (a PortForward) Run(ctx context.Context) error {
 		fmt.Println(`Tip: If you're connecting from a Docker container, set the hostname to "host.docker.internal"`)
 	}()
 
-	errCh := make(chan error, 1)
-	go func() {
-		errCh <- fw.ForwardPorts()
-	}()
+	group, ctx := errgroup.WithContext(ctx)
 
-	interruptCh := make(chan os.Signal, 1)
-	signal.Notify(interruptCh, os.Interrupt, syscall.SIGTERM)
-	select {
-	case err = <-errCh:
-		if err != nil {
-			return err
-		}
-	case <-interruptCh:
-		log.Info("received exit signal")
+	group.Go(func() error {
+		<-ctx.Done()
 		close(stopCh)
-	}
-	return nil
+		return nil
+	})
+
+	group.Go(func() error {
+		return fw.ForwardPorts()
+	})
+
+	return group.Wait()
 }
