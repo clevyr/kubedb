@@ -53,3 +53,16 @@ func BindLogFormat(cmd *cobra.Command) {
 		panic(err)
 	}
 }
+
+func Redact(cmd *cobra.Command) {
+	cmd.PersistentFlags().Bool("redact", true, "Redact password from logs")
+	if err := cmd.PersistentFlags().MarkHidden("redact"); err != nil {
+		panic(err)
+	}
+}
+
+func BindRedact(cmd *cobra.Command) {
+	if err := viper.BindPFlag("log.redact", cmd.Flags().Lookup("redact")); err != nil {
+		panic(err)
+	}
+}
