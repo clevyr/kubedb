@@ -1,8 +1,8 @@
 {
   "$schema": "https://docs.renovatebot.com/renovate-schema.json",
   "extends": [
-    "local>clevyr/renovate-config",
-    "local>clevyr/renovate-config:golang"
+    "local>clevyr/renovate-config-public",
+    "local>clevyr/renovate-config-public:golang"
   ],
   "packageRules": [
     {
