@@ -58,6 +58,7 @@ func NewBarSafeLogger(w io.Writer, bar *progressbar.ProgressBar) *BarSafeLogger 
 type BarSafeLogger struct {
 	out io.Writer
 	bar *progressbar.ProgressBar
+	buf bytes.Buffer
 }
 
 func (l *BarSafeLogger) Write(p []byte) (int, error) {
@@ -65,11 +66,11 @@ func (l *BarSafeLogger) Write(p []byte) (int, error) {
 		return l.out.Write(p)
 	}
 
-	buf := bytes.NewBuffer([]byte("\r\x1B[K"))
-	buf.Write(p)
-	buf.WriteString(l.bar.String())
-	if b, err := l.out.Write(buf.Bytes()); err != nil {
-		return b, err
+	l.buf.Write([]byte("\r\x1B[K"))
+	l.buf.Write(p)
+	l.buf.WriteString(l.bar.String())
+	if n, err := io.Copy(l.out, &l.buf); err != nil {
+		return int(n), err
 	}
 	return len(p), nil
 }
