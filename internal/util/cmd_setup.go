@@ -104,9 +104,11 @@ func DefaultSetup(cmd *cobra.Command, conf *config.Global, opts SetupOptions) (e
 		}
 	}
 
-	pods, err = conf.Dialect.FilterPods(cmd.Context(), conf.Client, pods)
-	if err != nil {
-		log.WithError(err).Warn("could not query primary instance")
+	if podFlag == "" {
+		pods, err = conf.Dialect.FilterPods(cmd.Context(), conf.Client, pods)
+		if err != nil {
+			log.WithError(err).Warn("could not query primary instance")
+		}
 	}
 
 	if len(pods) == 1 {
