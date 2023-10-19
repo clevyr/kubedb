@@ -13,18 +13,12 @@ import (
 var ErrDatabaseNotFound = errors.New("could not detect a database")
 
 func DetectDialect(ctx context.Context, client kubernetes.KubeClient) (config.Databaser, []v1.Pod, error) {
-	dialects := []config.Databaser{
-		dialect.Postgres{},
-		dialect.MariaDB{},
-		dialect.MongoDB{},
-	}
-
 	pods, err := client.GetNamespacedPods(ctx)
 	if err != nil {
 		return nil, []v1.Pod{}, err
 	}
 
-	for _, g := range dialects {
+	for _, g := range dialect.All() {
 		pods, err := client.FilterPodList(pods, g.PodLabels())
 		if err == nil {
 			return g, pods, nil
