@@ -82,7 +82,7 @@ func Namespace(cmd *cobra.Command) {
 }
 
 func Pod(cmd *cobra.Command) {
-	cmd.PersistentFlags().String("pod", "", "Force a specific pod. If this flag is set, dialect is required.")
+	cmd.PersistentFlags().String("pod", "", "Perform detection from a pod instead of searching the namespace")
 	err := cmd.RegisterFlagCompletionFunc(
 		"pod",
 		func(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {

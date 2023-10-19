@@ -12,7 +12,7 @@ Painlessly work with databases in Kubernetes.
       --log-format string   Log formatter. One of (text|json) (default "text")
       --log-level string    Log level. One of (trace|debug|info|warning|error|fatal|panic) (default "info")
   -n, --namespace string    Kubernetes namespace
-      --pod string          Force a specific pod. If this flag is set, dialect is required.
+      --pod string          Perform detection from a pod instead of searching the namespace
   -v, --version             version for kubedb
 ```
 

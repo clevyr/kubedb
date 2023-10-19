@@ -53,19 +53,41 @@ func DefaultSetup(cmd *cobra.Command, conf *config.Global, opts SetupOptions) (e
 		return errors.New("The current action is disabled for namespace " + conf.Client.Namespace)
 	}
 
+	podFlag, err := cmd.Flags().GetString("pod")
+	if err != nil {
+		panic(err)
+	}
+	var pods []corev1.Pod
+	if podFlag != "" {
+		slashIdx := strings.IndexRune(podFlag, '/')
+		if slashIdx != 0 && slashIdx+1 < len(podFlag) {
+			podFlag = podFlag[slashIdx+1:]
+		}
+		pod, err := conf.Client.Pods().Get(cmd.Context(), podFlag, metav1.GetOptions{})
+		if err != nil {
+			return err
+		}
+		pods = []corev1.Pod{*pod}
+	}
+
 	dialectFlag, err := cmd.Flags().GetString("dialect")
 	if err != nil {
 		panic(err)
 	}
-
-	var pods []corev1.Pod
 	if dialectFlag == "" {
 		// Configure via detection
-		conf.Dialect, pods, err = database.DetectDialect(cmd.Context(), conf.Client)
-		if err != nil {
-			return err
+		if len(pods) == 0 {
+			conf.Dialect, pods, err = database.DetectDialect(cmd.Context(), conf.Client)
+			if err != nil {
+				return err
+			}
+			log.WithField("dialect", conf.Dialect.Name()).Debug("detected dialect")
+		} else {
+			conf.Dialect, err = database.DetectDialectFromPod(pods[0])
+			if err != nil {
+				return err
+			}
 		}
-		log.WithField("dialect", conf.Dialect.Name()).Debug("detected dialect")
 	} else {
 		// Configure via flag
 		conf.Dialect, err = database.New(dialectFlag)
@@ -74,26 +96,11 @@ func DefaultSetup(cmd *cobra.Command, conf *config.Global, opts SetupOptions) (e
 		}
 		log.WithField("dialect", conf.Dialect.Name()).Debug("configured database")
 
-		podFlag, err := cmd.Flags().GetString("pod")
-		if err != nil {
-			panic(err)
-		}
-
-		if podFlag == "" {
+		if len(pods) == 0 {
 			pods, err = conf.Client.GetPodsFiltered(cmd.Context(), conf.Dialect.PodLabels())
 			if err != nil {
 				return err
 			}
-		} else {
-			slashIdx := strings.IndexRune(podFlag, '/')
-			if slashIdx != 0 && slashIdx+1 < len(podFlag) {
-				podFlag = podFlag[slashIdx+1:]
-			}
-			pod, err := conf.Client.Pods().Get(cmd.Context(), podFlag, metav1.GetOptions{})
-			if err != nil {
-				return err
-			}
-			pods = []corev1.Pod{*pod}
 		}
 	}
 

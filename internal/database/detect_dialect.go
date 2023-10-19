@@ -26,3 +26,14 @@ func DetectDialect(ctx context.Context, client kubernetes.KubeClient) (config.Da
 	}
 	return nil, []v1.Pod{}, ErrDatabaseNotFound
 }
+
+func DetectDialectFromPod(pod v1.Pod) (config.Databaser, error) {
+	for _, g := range dialect.All() {
+		for _, v := range g.PodLabels() {
+			if v.Matches(pod) {
+				return g, nil
+			}
+		}
+	}
+	return nil, ErrDatabaseNotFound
+}
