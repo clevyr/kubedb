@@ -35,7 +35,7 @@ func (MongoDB) ListDatabasesQuery() string {
 }
 
 func (MongoDB) ListTablesQuery() string {
-	return "show collections"
+	return "db.getCollectionNames().forEach(function(collection){ print(collection) })"
 }
 
 func (MongoDB) UserEnvNames() []string {
