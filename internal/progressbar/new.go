@@ -68,7 +68,9 @@ func (l *BarSafeLogger) Write(p []byte) (int, error) {
 
 	l.buf.Write([]byte("\r\x1B[K"))
 	l.buf.Write(p)
-	l.buf.WriteString(l.bar.String())
+	if p[len(p)-1] == '\n' {
+		l.buf.WriteString(l.bar.String())
+	}
 	if n, err := io.Copy(l.out, &l.buf); err != nil {
 		return int(n), err
 	}
