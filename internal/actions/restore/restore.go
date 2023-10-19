@@ -46,6 +46,7 @@ func (action Restore) Run(ctx context.Context) (err error) {
 	startTime := time.Now()
 
 	bar := progressbar.New(-1, "uploading", action.Spinner)
+	defer bar.Close()
 	errLog := progressbar.NewBarSafeLogger(os.Stderr, bar)
 	outLog := progressbar.NewBarSafeLogger(os.Stdout, bar)
 	log.SetOutput(errLog)

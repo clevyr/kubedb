@@ -68,6 +68,7 @@ func (action Dump) Run(ctx context.Context) (err error) {
 	startTime := time.Now()
 
 	bar := progressbar.New(-1, "downloading", action.Spinner)
+	defer bar.Close()
 	plogger := progressbar.NewBarSafeLogger(os.Stderr, bar)
 	log.SetOutput(plogger)
 
