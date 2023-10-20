@@ -23,8 +23,9 @@ func FindEnvVar(pod v1.Pod, envName string) (*v1.EnvVar, error) {
 }
 
 var (
-	ErrNoEnvNames           = errors.New("dialect does not contain any env names")
-	ErrSecretDoesNotHaveKey = errors.New("secret does not have key")
+	ErrNoEnvNames              = errors.New("dialect does not contain any env names")
+	ErrSecretDoesNotHaveKey    = errors.New("secret does not have key")
+	ErrConfigMapDoesNotHaveKey = errors.New("config map does not have key")
 )
 
 func (client KubeClient) GetValueFromEnv(ctx context.Context, pod v1.Pod, envNames []string) (string, error) {
@@ -44,17 +45,31 @@ func (client KubeClient) GetValueFromEnv(ctx context.Context, pod v1.Pod, envNam
 		return "", err
 	}
 
-	if envVar.ValueFrom != nil && envVar.ValueFrom.SecretKeyRef != nil {
-		secretKeyRef := envVar.ValueFrom.SecretKeyRef
-		secret, err := client.Secrets().Get(ctx, secretKeyRef.Name, v1meta.GetOptions{})
-		if err != nil {
-			return "", err
+	if envVar.ValueFrom != nil {
+		switch {
+		case envVar.ValueFrom.SecretKeyRef != nil:
+			secretKeyRef := envVar.ValueFrom.SecretKeyRef
+			secret, err := client.Secrets().Get(ctx, secretKeyRef.Name, v1meta.GetOptions{})
+			if err != nil {
+				return "", err
+			}
+			data, ok := secret.Data[secretKeyRef.Key]
+			if !ok {
+				return "", fmt.Errorf("%w: %v", ErrSecretDoesNotHaveKey, secretKeyRef)
+			}
+			return string(data), nil
+		case envVar.ValueFrom.ConfigMapKeyRef != nil:
+			configMapRef := envVar.ValueFrom.ConfigMapKeyRef
+			configMap, err := client.ConfigMaps().Get(ctx, configMapRef.Name, v1meta.GetOptions{})
+			if err != nil {
+				return "", err
+			}
+			data, ok := configMap.Data[configMapRef.Key]
+			if !ok {
+				return "", fmt.Errorf("%w: %v", ErrConfigMapDoesNotHaveKey, configMapRef)
+			}
+			return data, nil
 		}
-		data, ok := secret.Data[secretKeyRef.Key]
-		if !ok {
-			return "", fmt.Errorf("%w: %v", ErrSecretDoesNotHaveKey, secretKeyRef)
-		}
-		return string(data), nil
 	}
 	return envVar.Value, nil
 }

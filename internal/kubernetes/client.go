@@ -36,6 +36,10 @@ func (client KubeClient) Jobs() batchv1.JobInterface {
 	return client.ClientSet.BatchV1().Jobs(client.Namespace)
 }
 
+func (client KubeClient) ConfigMaps() v1.ConfigMapInterface {
+	return client.ClientSet.CoreV1().ConfigMaps(client.Namespace)
+}
+
 func NewConfigLoader(kubeconfig, context string) clientcmd.ClientConfig {
 	var overrides *clientcmd.ConfigOverrides
 	if context != "" {
