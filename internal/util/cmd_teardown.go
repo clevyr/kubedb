@@ -18,9 +18,9 @@ func Teardown(cmd *cobra.Command, conf *config.Global) {
 		ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
 		defer cancel()
 
-		if err := conf.Client.ClientSet.BatchV1().Jobs(conf.Namespace).Delete(
-			ctx, conf.Job.ObjectMeta.Name, metav1.DeleteOptions{PropagationPolicy: &policy},
-		); err != nil {
+		if err := conf.Client.Jobs().Delete(ctx, conf.Job.ObjectMeta.Name, metav1.DeleteOptions{
+			PropagationPolicy: &policy,
+		}); err != nil {
 			log.WithField("name", conf.Job.ObjectMeta.Name).WithError(err).Error("failed to delete job")
 		}
 	}

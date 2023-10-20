@@ -7,6 +7,7 @@ import (
 	"github.com/spf13/viper"
 	"k8s.io/client-go/discovery"
 	"k8s.io/client-go/kubernetes"
+	batchv1 "k8s.io/client-go/kubernetes/typed/batch/v1"
 	v1 "k8s.io/client-go/kubernetes/typed/core/v1"
 	"k8s.io/client-go/rest"
 	"k8s.io/client-go/tools/clientcmd"
@@ -29,6 +30,10 @@ func (client KubeClient) Pods() v1.PodInterface {
 
 func (client KubeClient) Secrets() v1.SecretInterface {
 	return client.ClientSet.CoreV1().Secrets(client.Namespace)
+}
+
+func (client KubeClient) Jobs() batchv1.JobInterface {
+	return client.ClientSet.BatchV1().Jobs(client.Namespace)
 }
 
 func NewConfigLoader(kubeconfig, context string) clientcmd.ClientConfig {

@@ -305,9 +305,7 @@ func createJob(cmd *cobra.Command, conf *config.Global, actionName string) error
 	defer cancel()
 
 	var err error
-	if conf.Job, err = conf.Client.ClientSet.BatchV1().Jobs(conf.Namespace).Create(
-		ctx, &job, metav1.CreateOptions{},
-	); err != nil {
+	if conf.Job, err = conf.Client.Jobs().Create(ctx, &job, metav1.CreateOptions{}); err != nil {
 		return err
 	}
 
@@ -323,7 +321,7 @@ func watchJobPod(cmd *cobra.Command, conf *config.Global) error {
 	ctx, cancel := context.WithTimeout(cmd.Context(), 5*time.Minute)
 	defer cancel()
 
-	watch, err := conf.Client.ClientSet.CoreV1().Pods(conf.Namespace).Watch(ctx, metav1.ListOptions{
+	watch, err := conf.Client.Pods().Watch(ctx, metav1.ListOptions{
 		LabelSelector: jobPodLabelSelector(conf, conf.Job),
 	})
 	if err != nil {
@@ -359,7 +357,7 @@ func watchJobPod(cmd *cobra.Command, conf *config.Global) error {
 func pollJobPod(ctx context.Context, conf *config.Global) error {
 	return wait.PollUntilContextCancel(
 		ctx, time.Second, true, func(ctx context.Context) (done bool, err error) {
-			list, err := conf.Client.ClientSet.CoreV1().Pods(conf.Namespace).List(ctx, metav1.ListOptions{
+			list, err := conf.Client.Pods().List(ctx, metav1.ListOptions{
 				LabelSelector: jobPodLabelSelector(conf, conf.Job),
 			})
 			if err != nil {
