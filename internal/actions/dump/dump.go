@@ -98,7 +98,7 @@ func (action Dump) Run(ctx context.Context) (err error) {
 		return pw.Close()
 	})
 
-	if !action.RemoteGzip {
+	if !action.RemoteGzip && action.Format == sqlformat.Gzip {
 		gzPipeReader, gzPipeWriter := io.Pipe()
 		plainReader := pr
 		errGroup.Go(func() error {

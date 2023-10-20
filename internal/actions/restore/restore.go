@@ -88,7 +88,7 @@ func (action Restore) Run(ctx context.Context) (err error) {
 		// Main restore
 		log.Info("restoring database")
 		switch action.Format {
-		case sqlformat.Gzip, sqlformat.Custom, sqlformat.Unknown:
+		case sqlformat.Gzip, sqlformat.Unknown:
 			if !action.RemoteGzip {
 				f, err = gzip.NewReader(f)
 				if err != nil {
@@ -103,7 +103,7 @@ func (action Restore) Run(ctx context.Context) (err error) {
 			if err != nil {
 				return err
 			}
-		case sqlformat.Plain:
+		case sqlformat.Plain, sqlformat.Custom:
 			if action.RemoteGzip {
 				err = gzipCopy(w, f)
 			} else {
@@ -167,8 +167,10 @@ func (action Restore) Run(ctx context.Context) (err error) {
 }
 
 func buildCommand(conf config.Restore, inputFormat sqlformat.Format) *command.Builder {
-	cmd := conf.Dialect.RestoreCommand(conf, inputFormat).
-		Unshift("gunzip", "--force", command.Pipe)
+	cmd := conf.Dialect.RestoreCommand(conf, inputFormat)
+	if conf.RemoteGzip && conf.Format != sqlformat.Custom {
+		cmd.Unshift("gunzip", "--force", command.Pipe)
+	}
 	log.WithField("cmd", cmd).Trace("finished building command")
 	return cmd
 }
