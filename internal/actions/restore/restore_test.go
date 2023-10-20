@@ -50,6 +50,14 @@ func Test_buildCommand(t *testing.T) {
 			},
 			command.NewBuilder("gunzip", "--force", command.Pipe, pgpassword, "psql", "--host=1.1.1.1", "--username=u", "--dbname=d"),
 		},
+		{
+			"postgres-remote-gzip-disabled",
+			args{
+				config.Restore{Global: config.Global{Dialect: dialect.Postgres{}, Host: "1.1.1.1", Database: "d", Username: "u"}},
+				sqlformat.Gzip,
+			},
+			command.NewBuilder(command.Env{Key: "PGPASSWORD", Value: ""}, "psql", "--host=1.1.1.1", "--username=u", "--dbname=d"),
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
