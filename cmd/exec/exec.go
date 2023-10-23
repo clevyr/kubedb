@@ -34,7 +34,11 @@ func preRun(cmd *cobra.Command, args []string) error {
 	flags.BindJobPodLabels(cmd)
 	flags.BindNoJob(cmd)
 
-	if err := util.DefaultSetup(cmd, &action.Global, util.SetupOptions{Name: "exec"}); err != nil {
+	setupOptions := util.SetupOptions{Name: "exec"}
+	if err := util.DefaultSetup(cmd, &action.Global, setupOptions); err != nil {
+		return err
+	}
+	if err := util.CreateJob(cmd, &action.Global, setupOptions); err != nil {
 		return err
 	}
 

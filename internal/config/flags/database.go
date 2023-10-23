@@ -119,7 +119,7 @@ func BindAnalyze(cmd *cobra.Command) {
 func listTables(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
 	conf := config.Exec{DisableHeaders: true}
 
-	err := util.DefaultSetup(cmd, &conf.Global, util.SetupOptions{DisableJob: true})
+	err := util.DefaultSetup(cmd, &conf.Global, util.SetupOptions{})
 	if err != nil {
 		return nil, cobra.ShellCompDirectiveError
 	}
@@ -130,7 +130,7 @@ func listTables(cmd *cobra.Command, args []string, toComplete string) ([]string,
 func listDatabases(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
 	conf := config.Exec{DisableHeaders: true}
 
-	err := util.DefaultSetup(cmd, &conf.Global, util.SetupOptions{DisableJob: true})
+	err := util.DefaultSetup(cmd, &conf.Global, util.SetupOptions{})
 	if err != nil {
 		return nil, cobra.ShellCompDirectiveError
 	}

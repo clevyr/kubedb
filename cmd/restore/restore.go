@@ -2,7 +2,6 @@ package restore
 
 import (
 	"errors"
-	"fmt"
 	"os"
 
 	"github.com/AlecAivazis/survey/v2"
@@ -56,14 +55,13 @@ Supported Input Filetypes:
 	return cmd
 }
 
-var setupOptions = util.SetupOptions{Name: "restore"}
-
 func validArgs(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
 	if len(args) != 0 {
 		return nil, cobra.ShellCompDirectiveNoFileComp
 	}
 
-	setupOptions.DisableJob = true
+	viper.Set("kubernetes.no-job", true)
+	action.Force = true
 
 	err := preRun(cmd, args)
 	if err != nil {
@@ -92,7 +90,30 @@ func preRun(cmd *cobra.Command, args []string) (err error) {
 		action.Filename = args[0]
 	}
 
+	setupOptions := util.SetupOptions{Name: "restore"}
 	if err := util.DefaultSetup(cmd, &action.Global, setupOptions); err != nil {
+		return err
+	}
+
+	if !action.Force {
+		tty := term.TTY{In: os.Stdin}.IsTerminalIn()
+		if tty {
+			var response bool
+			err := survey.AskOne(&survey.Confirm{
+				Message: "Restore to " + action.DbPod.Name + " in " + action.Client.Namespace + "?",
+			}, &response)
+			if err != nil {
+				return err
+			}
+			if !response {
+				return errors.New("restore canceled")
+			}
+		} else {
+			return errors.New("refusing to restore a database non-interactively without the --force flag")
+		}
+	}
+
+	if err := util.CreateJob(cmd, &action.Global, setupOptions); err != nil {
 		return err
 	}
 
@@ -107,25 +128,6 @@ func run(cmd *cobra.Command, args []string) (err error) {
 	defer func() {
 		util.Teardown(cmd, &action.Global)
 	}()
-
-	if !action.Force {
-		tty := term.TTY{In: os.Stdin}.IsTerminalIn()
-		if tty {
-			var response bool
-			err := survey.AskOne(&survey.Confirm{
-				Message: "Restore to " + action.DbPod.Name + " in " + action.Client.Namespace + "?",
-			}, &response)
-			if err != nil {
-				return err
-			}
-			if !response {
-				fmt.Println("restore canceled")
-				return nil
-			}
-		} else {
-			return errors.New("refusing to restore a database non-interactively without the --force flag")
-		}
-	}
 
 	return action.Run(cmd.Context())
 }
