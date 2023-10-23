@@ -302,7 +302,7 @@ func createJob(cmd *cobra.Command, conf *config.Global, actionName string) error
 		},
 	}
 
-	log.WithField("namespace", conf.Namespace).Debug("creating job")
+	log.WithField("namespace", conf.Namespace).Info("creating job")
 
 	ctx, cancel := context.WithTimeout(cmd.Context(), time.Minute)
 	defer cancel()
