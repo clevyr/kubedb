@@ -149,6 +149,7 @@ func (action Restore) Run(ctx context.Context) (err error) {
 			return err
 		}
 
+		bar.Describe("finishing")
 		return nil
 	})
 
