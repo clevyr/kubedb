@@ -45,11 +45,8 @@ func (action Restore) Run(ctx context.Context) (err error) {
 
 	startTime := time.Now()
 
-	bar := progressbar.New(-1, "uploading", action.Spinner)
+	bar, errLog := progressbar.New(os.Stderr, -1, "uploading", action.Spinner)
 	defer bar.Close()
-	errLog := progressbar.NewBarSafeLogger(os.Stderr, bar)
-	outLog := progressbar.NewBarSafeLogger(os.Stdout, bar)
-	log.SetOutput(errLog)
 
 	errGroup, ctx := errgroup.WithContext(ctx)
 
@@ -59,7 +56,7 @@ func (action Restore) Run(ctx context.Context) (err error) {
 		defer func(pr io.ReadCloser) {
 			_ = pr.Close()
 		}(pr)
-		return action.runInDatabasePod(ctx, pr, outLog, errLog, action.Format)
+		return action.runInDatabasePod(ctx, pr, errLog, errLog, action.Format)
 	})
 
 	errGroup.Go(func() error {
@@ -131,7 +128,7 @@ func (action Restore) Run(ctx context.Context) (err error) {
 					defer func(pr io.ReadCloser) {
 						_ = pr.Close()
 					}(pr)
-					return action.runInDatabasePod(ctx, pr, outLog, errLog, sqlformat.Gzip)
+					return action.runInDatabasePod(ctx, pr, errLog, errLog, sqlformat.Gzip)
 				})
 			}
 
@@ -158,7 +155,6 @@ func (action Restore) Run(ctx context.Context) (err error) {
 	}
 
 	_ = bar.Finish()
-	log.SetOutput(os.Stderr)
 
 	log.WithFields(log.Fields{
 		"file": action.Filename,

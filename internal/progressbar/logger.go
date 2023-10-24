@@ -12,8 +12,9 @@ func NewBarSafeLogger(w io.Writer, bar *ProgressBar) *BarSafeLogger {
 }
 
 type BarSafeLogger struct {
-	out io.Writer
-	bar *ProgressBar
+	out     io.Writer
+	bar     *ProgressBar
+	atStart bool
 }
 
 func (l *BarSafeLogger) Write(p []byte) (int, error) {
@@ -24,8 +25,10 @@ func (l *BarSafeLogger) Write(p []byte) (int, error) {
 	l.bar.mu.Lock()
 	defer l.bar.mu.Unlock()
 
-	if _, err := l.out.Write([]byte("\r\x1B[K")); err != nil {
-		return 0, err
+	if !l.atStart {
+		if _, err := l.out.Write([]byte("\r\x1B[K")); err != nil {
+			return 0, err
+		}
 	}
 
 	n, err := l.out.Write(p)
@@ -33,8 +36,13 @@ func (l *BarSafeLogger) Write(p []byte) (int, error) {
 		return n, err
 	}
 
-	if _, err := l.out.Write([]byte(l.bar.String())); err != nil {
-		return n, err
+	if p[len(p)-1] == '\n' {
+		if _, err := l.out.Write([]byte(l.bar.String())); err != nil {
+			return n, err
+		}
+		l.atStart = false
+	} else {
+		l.atStart = true
 	}
 
 	return n, nil

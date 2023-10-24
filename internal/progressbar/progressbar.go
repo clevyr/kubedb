@@ -14,7 +14,7 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
-func New(max int64, label string, spinnerKey string) *ProgressBar {
+func New(w io.Writer, max int64, label string, spinnerKey string) (*ProgressBar, *BarSafeLogger) {
 	s, ok := spinner.Map[spinnerKey]
 	if !ok {
 		log.WithField("spinner", spinnerKey).Warn("invalid spinner")
@@ -61,7 +61,7 @@ func New(max int64, label string, spinnerKey string) *ProgressBar {
 				if bar.IsFinished() {
 					return
 				}
-				if bar.mu.TryLock() {
+				if !bar.logger.atStart && bar.mu.TryLock() {
 					_ = bar.RenderBlank()
 					_, _ = os.Stderr.Write([]byte(bar.String()))
 					bar.mu.Unlock()
@@ -70,7 +70,9 @@ func New(max int64, label string, spinnerKey string) *ProgressBar {
 		}
 	}()
 
-	return bar
+	logger := NewBarSafeLogger(w, bar)
+	log.SetOutput(logger)
+	return bar, logger
 }
 
 type ProgressBar struct {
@@ -78,10 +80,14 @@ type ProgressBar struct {
 	mu         sync.Mutex
 	cancelChan chan struct{}
 	cancelOnce sync.Once
+	logger     BarSafeLogger
 }
 
 func (p *ProgressBar) Finish() error {
-	p.Close()
+	defer func() {
+		p.Close()
+		log.SetOutput(os.Stderr)
+	}()
 	return p.ProgressBar.Finish()
 }
 
