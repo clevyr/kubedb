@@ -1,7 +1,6 @@
 package progressbar
 
 import (
-	"bytes"
 	"io"
 )
 
@@ -15,7 +14,6 @@ func NewBarSafeLogger(w io.Writer, bar *ProgressBar) *BarSafeLogger {
 type BarSafeLogger struct {
 	out io.Writer
 	bar *ProgressBar
-	buf bytes.Buffer
 }
 
 func (l *BarSafeLogger) Write(p []byte) (int, error) {
@@ -23,15 +21,21 @@ func (l *BarSafeLogger) Write(p []byte) (int, error) {
 		return l.out.Write(p)
 	}
 
-	l.buf.Write([]byte("\r\x1B[K"))
-	l.buf.Write(p)
-	if p[len(p)-1] == '\n' {
-		l.buf.WriteString(l.bar.String())
-	}
 	l.bar.mu.Lock()
 	defer l.bar.mu.Unlock()
-	if n, err := io.Copy(l.out, &l.buf); err != nil {
-		return int(n), err
+
+	if _, err := l.out.Write([]byte("\r\x1B[K")); err != nil {
+		return 0, err
 	}
-	return len(p), nil
+
+	n, err := l.out.Write(p)
+	if err != nil {
+		return n, err
+	}
+
+	if _, err := l.out.Write([]byte(l.bar.String())); err != nil {
+		return n, err
+	}
+
+	return n, nil
 }
