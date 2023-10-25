@@ -3,7 +3,7 @@
 Set up a local port forward
 
 ```
-kubedb port-forward [flags]
+kubedb port-forward [local_port] [flags]
 ```
 
 ### Options

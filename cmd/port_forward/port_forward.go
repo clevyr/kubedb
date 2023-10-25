@@ -1,7 +1,6 @@
 package port_forward
 
 import (
-	"fmt"
 	"strconv"
 
 	"github.com/clevyr/kubedb/internal/actions/port_forward"
@@ -16,7 +15,7 @@ var action port_forward.PortForward
 
 func NewCommand() *cobra.Command {
 	cmd := &cobra.Command{
-		Use:     "port-forward",
+		Use:     "port-forward [local_port]",
 		Short:   "Set up a local port forward",
 		Args:    cobra.MaximumNArgs(1),
 		GroupID: "rw",
@@ -70,9 +69,6 @@ func preRun(cmd *cobra.Command, args []string) error {
 	}
 
 	if len(args) != 0 {
-		if _, err := fmt.Fprintln(cmd.OutOrStderr(), "Port arg has been deprecated, please use --listen-port="+args[0]+" instead"); err != nil {
-			return err
-		}
 		if err := cmd.Flags().Set("listen-port", args[0]); err != nil {
 			return err
 		}
