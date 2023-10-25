@@ -10,7 +10,7 @@ import (
 
 var (
 	namespaceFilterReadOnly  = ".*"
-	namespaceFilterReadWrite = "-(dev|stage|test|demo|pr[0-9]+)$"
+	namespaceFilterReadWrite = "-(dev|stage|test|demo|temp[0-9]+|pr[0-9]+)$"
 )
 
 type AccessLevel uint8
