@@ -7,6 +7,7 @@ import (
 	"github.com/clevyr/kubedb/internal/actions/dump"
 	"github.com/clevyr/kubedb/internal/config"
 	"github.com/clevyr/kubedb/internal/config/flags"
+	"github.com/clevyr/kubedb/internal/consts"
 	"github.com/clevyr/kubedb/internal/util"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
@@ -64,7 +65,7 @@ func validArgs(cmd *cobra.Command, args []string, toComplete string) ([]string, 
 		return nil, cobra.ShellCompDirectiveNoFileComp
 	}
 
-	viper.Set("kubernetes.no-job", true)
+	viper.Set(consts.NoJobKey, true)
 
 	err := preRun(cmd, args)
 	if err != nil {
@@ -83,9 +84,9 @@ func preRun(cmd *cobra.Command, args []string) (err error) {
 	flags.BindJobPodLabels(cmd)
 	flags.BindNoJob(cmd)
 	flags.BindRemoteGzip(cmd)
-	action.RemoteGzip = viper.GetBool("remote-gzip")
+	action.RemoteGzip = viper.GetBool(consts.RemoteGzipKey)
 	flags.BindSpinner(cmd)
-	action.Spinner = viper.GetString("spinner.name")
+	action.Spinner = viper.GetString(consts.SpinnerKey)
 
 	if len(args) > 0 {
 		action.Filename = args[0]
@@ -107,7 +108,7 @@ func preRun(cmd *cobra.Command, args []string) (err error) {
 		return err
 	}
 
-	if action.Filename != "" && !cmd.Flags().Lookup("format").Changed {
+	if action.Filename != "" && !cmd.Flags().Lookup(consts.FormatFlag).Changed {
 		action.Format = action.Dialect.FormatFromFilename(action.Filename)
 	}
 

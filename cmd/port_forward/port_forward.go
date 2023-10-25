@@ -5,6 +5,7 @@ import (
 
 	"github.com/clevyr/kubedb/internal/actions/port_forward"
 	"github.com/clevyr/kubedb/internal/config/flags"
+	"github.com/clevyr/kubedb/internal/consts"
 	"github.com/clevyr/kubedb/internal/util"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
@@ -25,18 +26,18 @@ func NewCommand() *cobra.Command {
 
 	flags.Port(cmd)
 
-	cmd.Flags().StringSlice("address", []string{"127.0.0.1", "::1"}, "Local listen address")
+	cmd.Flags().StringSlice(consts.AddrFlag, []string{"127.0.0.1", "::1"}, "Local listen address")
 	if err := cmd.RegisterFlagCompletionFunc(
-		"address",
+		consts.AddrFlag,
 		func(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
 			return []string{"127.0.0.1\tprivate", "::1\tprivate", "0.0.0.0\tpublic", "::\tpublic"}, cobra.ShellCompDirectiveNoFileComp
 		}); err != nil {
 		panic(err)
 	}
 
-	cmd.Flags().Uint16("listen-port", 0, "Local listen port (default discovered)")
+	cmd.Flags().Uint16(consts.ListenPortFlag, 0, "Local listen port (default discovered)")
 	if err := cmd.RegisterFlagCompletionFunc(
-		"listen-port",
+		consts.ListenPortFlag,
 		func(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
 			err := preRun(cmd, args)
 			if err != nil {
@@ -58,10 +59,10 @@ func NewCommand() *cobra.Command {
 }
 
 func preRun(cmd *cobra.Command, args []string) error {
-	if err := viper.BindPFlag("port-forward.address", cmd.Flags().Lookup("address")); err != nil {
+	if err := viper.BindPFlag(consts.PortForwardAddrKey, cmd.Flags().Lookup(consts.AddrFlag)); err != nil {
 		panic(err)
 	}
-	action.Addresses = viper.GetStringSlice("port-forward.address")
+	action.Addresses = viper.GetStringSlice(consts.PortForwardAddrKey)
 
 	err := util.DefaultSetup(cmd, &action.Global, util.SetupOptions{DisableAuthFlags: true})
 	if err != nil {
@@ -69,11 +70,11 @@ func preRun(cmd *cobra.Command, args []string) error {
 	}
 
 	if len(args) != 0 {
-		if err := cmd.Flags().Set("listen-port", args[0]); err != nil {
+		if err := cmd.Flags().Set(consts.ListenPortFlag, args[0]); err != nil {
 			return err
 		}
 	}
-	action.LocalPort, err = cmd.Flags().GetUint16("listen-port")
+	action.LocalPort, err = cmd.Flags().GetUint16(consts.ListenPortFlag)
 	if err != nil {
 		util.Teardown(cmd, &action.Global)
 		panic(err)

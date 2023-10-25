@@ -10,6 +10,7 @@ import (
 
 	"github.com/AlecAivazis/survey/v2"
 	"github.com/clevyr/kubedb/internal/config"
+	"github.com/clevyr/kubedb/internal/consts"
 	"github.com/clevyr/kubedb/internal/database"
 	"github.com/clevyr/kubedb/internal/kubernetes"
 	"github.com/clevyr/kubedb/internal/log_hooks"
@@ -31,12 +32,12 @@ type SetupOptions struct {
 func DefaultSetup(cmd *cobra.Command, conf *config.Global, opts SetupOptions) (err error) {
 	cmd.SilenceUsage = true
 
-	conf.Kubeconfig = viper.GetString("kubernetes.kubeconfig")
-	conf.Context, err = cmd.Flags().GetString("context")
+	conf.Kubeconfig = viper.GetString(consts.KubeconfigKey)
+	conf.Context, err = cmd.Flags().GetString(consts.ContextFlag)
 	if err != nil {
 		panic(err)
 	}
-	conf.Namespace, err = cmd.Flags().GetString("namespace")
+	conf.Namespace, err = cmd.Flags().GetString(consts.NamespaceFlag)
 	if err != nil {
 		panic(err)
 	}
@@ -52,7 +53,7 @@ func DefaultSetup(cmd *cobra.Command, conf *config.Global, opts SetupOptions) (e
 		return errors.New("The current action is disabled for namespace " + conf.Client.Namespace)
 	}
 
-	podFlag, err := cmd.Flags().GetString("pod")
+	podFlag, err := cmd.Flags().GetString(consts.PodFlag)
 	if err != nil {
 		panic(err)
 	}
@@ -69,7 +70,7 @@ func DefaultSetup(cmd *cobra.Command, conf *config.Global, opts SetupOptions) (e
 		pods = []corev1.Pod{*pod}
 	}
 
-	dialectFlag, err := cmd.Flags().GetString("dialect")
+	dialectFlag, err := cmd.Flags().GetString(consts.DialectFlag)
 	if err != nil {
 		panic(err)
 	}
@@ -129,7 +130,7 @@ func DefaultSetup(cmd *cobra.Command, conf *config.Global, opts SetupOptions) (e
 		conf.DbPod = pods[idx]
 	}
 
-	conf.Port, err = cmd.Flags().GetUint16("port")
+	conf.Port, err = cmd.Flags().GetUint16(consts.PortFlag)
 	if err != nil {
 		panic(err)
 	}
@@ -151,7 +152,7 @@ func DefaultSetup(cmd *cobra.Command, conf *config.Global, opts SetupOptions) (e
 		conf.Port = conf.Dialect.DefaultPort()
 	}
 
-	conf.Database, err = cmd.Flags().GetString("dbname")
+	conf.Database, err = cmd.Flags().GetString(consts.DbnameFlag)
 	if err != nil && !opts.DisableAuthFlags {
 		panic(err)
 	}
@@ -164,7 +165,7 @@ func DefaultSetup(cmd *cobra.Command, conf *config.Global, opts SetupOptions) (e
 		}
 	}
 
-	conf.Username, err = cmd.Flags().GetString("username")
+	conf.Username, err = cmd.Flags().GetString(consts.UsernameFlag)
 	if err != nil && !opts.DisableAuthFlags {
 		panic(err)
 	}
@@ -178,7 +179,7 @@ func DefaultSetup(cmd *cobra.Command, conf *config.Global, opts SetupOptions) (e
 		}
 	}
 
-	conf.Password, err = cmd.Flags().GetString("password")
+	conf.Password, err = cmd.Flags().GetString(consts.PasswordFlag)
 	if err != nil && !opts.DisableAuthFlags {
 		panic(err)
 	}
@@ -188,7 +189,7 @@ func DefaultSetup(cmd *cobra.Command, conf *config.Global, opts SetupOptions) (e
 			return err
 		}
 	}
-	if viper.GetBool("log.redact") {
+	if viper.GetBool(consts.LogRedactKey) {
 		log.AddHook(log_hooks.Redact(conf.Password))
 	}
 
@@ -196,7 +197,7 @@ func DefaultSetup(cmd *cobra.Command, conf *config.Global, opts SetupOptions) (e
 }
 
 func CreateJob(cmd *cobra.Command, conf *config.Global, opts SetupOptions) error {
-	if viper.GetBool("kubernetes.no-job") {
+	if viper.GetBool(consts.NoJobKey) {
 		conf.Host = "127.0.0.1"
 		conf.JobPod = conf.DbPod
 	} else {
@@ -231,7 +232,7 @@ func createJob(cmd *cobra.Command, conf *config.Global, actionName string) error
 		"sidecar.istio.io/inject": "false",
 	}
 	maps.Copy(podLabels, standardLabels)
-	maps.Copy(podLabels, viper.GetStringMapString("kubernetes.job-pod-labels"))
+	maps.Copy(podLabels, viper.GetStringMapString(consts.JobPodLabelsKey))
 
 	job := batchv1.Job{
 		ObjectMeta: metav1.ObjectMeta{

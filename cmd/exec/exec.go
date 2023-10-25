@@ -3,6 +3,7 @@ package exec
 import (
 	"github.com/clevyr/kubedb/internal/actions/exec"
 	"github.com/clevyr/kubedb/internal/config/flags"
+	"github.com/clevyr/kubedb/internal/consts"
 	"github.com/clevyr/kubedb/internal/util"
 	"github.com/spf13/cobra"
 	_ "k8s.io/client-go/plugin/pkg/client/auth"
@@ -26,7 +27,7 @@ func NewCommand() *cobra.Command {
 	flags.Database(cmd)
 	flags.Username(cmd)
 	flags.Password(cmd)
-	cmd.Flags().StringVarP(&action.Command, "command", "c", "", "Run a single command and exit")
+	cmd.Flags().StringVarP(&action.Command, consts.CommandFlag, "c", "", "Run a single command and exit")
 	return cmd
 }
 

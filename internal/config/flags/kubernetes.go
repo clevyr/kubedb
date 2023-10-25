@@ -5,6 +5,7 @@ import (
 	"path/filepath"
 
 	"github.com/clevyr/kubedb/internal/config"
+	"github.com/clevyr/kubedb/internal/consts"
 	"github.com/clevyr/kubedb/internal/kubernetes"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
@@ -20,21 +21,21 @@ func Kubeconfig(cmd *cobra.Command) {
 		kubeconfigEnv = filepath.Join("$HOME", ".kube", "config")
 	}
 
-	cmd.PersistentFlags().String("kubeconfig", kubeconfigEnv, "Paths to the kubeconfig file")
+	cmd.PersistentFlags().String(consts.KubeconfigFlag, kubeconfigEnv, "Paths to the kubeconfig file")
 }
 
 func BindKubeconfig(cmd *cobra.Command) {
-	if err := viper.BindPFlag("kubernetes.kubeconfig", cmd.Flags().Lookup("kubeconfig")); err != nil {
+	if err := viper.BindPFlag(consts.KubeconfigKey, cmd.Flags().Lookup(consts.KubeconfigFlag)); err != nil {
 		panic(err)
 	}
 }
 
 func Context(cmd *cobra.Command) {
-	cmd.PersistentFlags().String("context", "", "Kubernetes context name")
+	cmd.PersistentFlags().String(consts.ContextFlag, "", "Kubernetes context name")
 	err := cmd.RegisterFlagCompletionFunc(
-		"context",
+		consts.ContextFlag,
 		func(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
-			kubeconfig := viper.GetString("kubernetes.kubeconfig")
+			kubeconfig := viper.GetString(consts.KubeconfigKey)
 			configLoader := clientcmd.NewNonInteractiveDeferredLoadingClientConfig(
 				&clientcmd.ClientConfigLoadingRules{Precedence: filepath.SplitList(kubeconfig)},
 				nil,
@@ -55,9 +56,9 @@ func Context(cmd *cobra.Command) {
 }
 
 func Namespace(cmd *cobra.Command) {
-	cmd.PersistentFlags().StringP("namespace", "n", "", "Kubernetes namespace")
+	cmd.PersistentFlags().StringP(consts.NamespaceFlag, "n", "", "Kubernetes namespace")
 	err := cmd.RegisterFlagCompletionFunc(
-		"namespace",
+		consts.NamespaceFlag,
 		func(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
 			client, err := kubernetes.NewClientFromCmd(cmd)
 			if err != nil {
@@ -82,7 +83,7 @@ func Namespace(cmd *cobra.Command) {
 }
 
 func Pod(cmd *cobra.Command) {
-	cmd.PersistentFlags().String("pod", "", "Perform detection from a pod instead of searching the namespace")
+	cmd.PersistentFlags().String(consts.PodFlag, "", "Perform detection from a pod instead of searching the namespace")
 	err := cmd.RegisterFlagCompletionFunc(
 		"pod",
 		func(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
@@ -106,21 +107,21 @@ func Pod(cmd *cobra.Command) {
 }
 
 func JobPodLabels(cmd *cobra.Command) {
-	cmd.Flags().StringToString("job-pod-labels", map[string]string{}, "Pod labels to add to the job")
+	cmd.Flags().StringToString(consts.JobPodLabelsFlag, map[string]string{}, "Pod labels to add to the job")
 }
 
 func BindJobPodLabels(cmd *cobra.Command) {
-	if err := viper.BindPFlag("kubernetes.job-pod-labels", cmd.Flags().Lookup("job-pod-labels")); err != nil {
+	if err := viper.BindPFlag(consts.JobPodLabelsKey, cmd.Flags().Lookup(consts.JobPodLabelsFlag)); err != nil {
 		panic(err)
 	}
 }
 
 func NoJob(cmd *cobra.Command) {
-	cmd.Flags().Bool("no-job", false, "Database commands will be run in the database pod instead of a dedicated job")
+	cmd.Flags().Bool(consts.NoJobFlag, false, "Database commands will be run in the database pod instead of a dedicated job")
 }
 
 func BindNoJob(cmd *cobra.Command) {
-	if err := viper.BindPFlag("kubernetes.no-job", cmd.Flags().Lookup("no-job")); err != nil {
+	if err := viper.BindPFlag(consts.NoJobKey, cmd.Flags().Lookup(consts.NoJobFlag)); err != nil {
 		panic(err)
 	}
 }

@@ -3,6 +3,7 @@ package kubernetes
 import (
 	"path/filepath"
 
+	"github.com/clevyr/kubedb/internal/consts"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 	"k8s.io/client-go/discovery"
@@ -85,14 +86,14 @@ func NewClient(kubeconfig, context, namespace string) (config KubeClient, err er
 }
 
 func NewClientFromCmd(cmd *cobra.Command) (KubeClient, error) {
-	kubeconfig := viper.GetString("kubernetes.kubeconfig")
+	kubeconfig := viper.GetString(consts.KubeconfigKey)
 
-	context, err := cmd.Flags().GetString("context")
+	context, err := cmd.Flags().GetString(consts.ContextFlag)
 	if err != nil {
 		panic(err)
 	}
 
-	namespace, err := cmd.Flags().GetString("namespace")
+	namespace, err := cmd.Flags().GetString(consts.NamespaceFlag)
 	if err != nil {
 		panic(err)
 	}

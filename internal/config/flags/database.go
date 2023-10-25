@@ -6,6 +6,7 @@ import (
 	"time"
 
 	"github.com/clevyr/kubedb/internal/config"
+	"github.com/clevyr/kubedb/internal/consts"
 	"github.com/clevyr/kubedb/internal/database/dialect"
 	"github.com/clevyr/kubedb/internal/database/sqlformat"
 	"github.com/clevyr/kubedb/internal/util"
@@ -14,9 +15,9 @@ import (
 )
 
 func Dialect(cmd *cobra.Command) {
-	cmd.PersistentFlags().String("dialect", "", "Database dialect. One of (postgres|mariadb|mongodb) (default discovered)")
+	cmd.PersistentFlags().String(consts.DialectFlag, "", "Database dialect. One of (postgres|mariadb|mongodb) (default discovered)")
 	err := cmd.RegisterFlagCompletionFunc(
-		"dialect",
+		consts.DialectFlag,
 		func(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
 			return []string{
 				dialect.Postgres{}.Name(),
@@ -31,9 +32,9 @@ func Dialect(cmd *cobra.Command) {
 
 func Format(cmd *cobra.Command, p *sqlformat.Format) {
 	*p = sqlformat.Gzip
-	cmd.Flags().VarP(p, "format", "F", `Output file format One of (gzip|custom|plain)`)
+	cmd.Flags().VarP(p, consts.FormatFlag, "F", `Output file format One of (gzip|custom|plain)`)
 	err := cmd.RegisterFlagCompletionFunc(
-		"format",
+		consts.FormatFlag,
 		func(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
 			return []string{
 				sqlformat.Gzip.String(),
@@ -47,71 +48,71 @@ func Format(cmd *cobra.Command, p *sqlformat.Format) {
 }
 
 func Port(cmd *cobra.Command) {
-	cmd.PersistentFlags().Uint16("port", 0, "Database port (default discovered)")
+	cmd.PersistentFlags().Uint16(consts.PortFlag, 0, "Database port (default discovered)")
 }
 
 func Database(cmd *cobra.Command) {
-	cmd.Flags().StringP("dbname", "d", "", "Database name to use (default discovered)")
-	err := cmd.RegisterFlagCompletionFunc("dbname", listDatabases)
+	cmd.Flags().StringP(consts.DbnameFlag, "d", "", "Database name to use (default discovered)")
+	err := cmd.RegisterFlagCompletionFunc(consts.DbnameFlag, listDatabases)
 	if err != nil {
 		panic(err)
 	}
 }
 
 func Username(cmd *cobra.Command) {
-	cmd.Flags().StringP("username", "U", "", "Database username (default discovered)")
+	cmd.Flags().StringP(consts.UsernameFlag, "U", "", "Database username (default discovered)")
 }
 
 func Password(cmd *cobra.Command) {
-	cmd.Flags().StringP("password", "p", "", "Database password (default discovered)")
+	cmd.Flags().StringP(consts.PasswordFlag, "p", "", "Database password (default discovered)")
 }
 
 func SingleTransaction(cmd *cobra.Command, p *bool) {
-	cmd.Flags().BoolVarP(p, "single-transaction", "1", true, "Restore as a single transaction")
+	cmd.Flags().BoolVarP(p, consts.SingleTransactionFlag, "1", true, "Restore as a single transaction")
 }
 
 func Clean(cmd *cobra.Command, p *bool) {
-	cmd.Flags().BoolVarP(p, "clean", "c", true, "Clean (drop) database objects before recreating")
+	cmd.Flags().BoolVarP(p, consts.CleanFlag, "c", true, "Clean (drop) database objects before recreating")
 }
 
 func IfExists(cmd *cobra.Command, p *bool) {
-	cmd.Flags().BoolVar(p, "if-exists", true, "Use IF EXISTS when dropping objects")
+	cmd.Flags().BoolVar(p, consts.IfExistsFlag, true, "Use IF EXISTS when dropping objects")
 }
 
 func NoOwner(cmd *cobra.Command, p *bool) {
-	cmd.Flags().BoolVarP(p, "no-owner", "O", true, "Skip restoration of object ownership in plain-text format")
+	cmd.Flags().BoolVarP(p, consts.NoOwnerFlag, "O", true, "Skip restoration of object ownership in plain-text format")
 }
 
 func Tables(cmd *cobra.Command, p *[]string) {
-	cmd.Flags().StringSliceVarP(p, "table", "t", []string{}, "Dump the specified table(s) only")
-	err := cmd.RegisterFlagCompletionFunc("table", listTables)
+	cmd.Flags().StringSliceVarP(p, consts.TableFlag, "t", []string{}, "Dump the specified table(s) only")
+	err := cmd.RegisterFlagCompletionFunc(consts.TableFlag, listTables)
 	if err != nil {
 		panic(err)
 	}
 }
 
 func ExcludeTable(cmd *cobra.Command, p *[]string) {
-	cmd.Flags().StringSliceVarP(p, "exclude-table", "T", []string{}, "Do NOT dump the specified table(s)")
-	err := cmd.RegisterFlagCompletionFunc("exclude-table", listTables)
+	cmd.Flags().StringSliceVarP(p, consts.ExcludeTableFlag, "T", []string{}, "Do NOT dump the specified table(s)")
+	err := cmd.RegisterFlagCompletionFunc(consts.ExcludeTableFlag, listTables)
 	if err != nil {
 		panic(err)
 	}
 }
 
 func ExcludeTableData(cmd *cobra.Command, p *[]string) {
-	cmd.Flags().StringSliceVarP(p, "exclude-table-data", "D", []string{}, "Do NOT dump data for the specified table(s)")
-	err := cmd.RegisterFlagCompletionFunc("exclude-table-data", listTables)
+	cmd.Flags().StringSliceVarP(p, consts.ExcludeTableDataFlag, "D", []string{}, "Do NOT dump data for the specified table(s)")
+	err := cmd.RegisterFlagCompletionFunc(consts.ExcludeTableDataFlag, listTables)
 	if err != nil {
 		panic(err)
 	}
 }
 
 func Analyze(cmd *cobra.Command) {
-	cmd.Flags().Bool("analyze", true, "Run an analyze query after restore")
+	cmd.Flags().Bool(consts.AnalyzeFlag, true, "Run an analyze query after restore")
 }
 
 func BindAnalyze(cmd *cobra.Command) {
-	if err := viper.BindPFlag("restore.analyze", cmd.Flags().Lookup("analyze")); err != nil {
+	if err := viper.BindPFlag(consts.AnalyzeKey, cmd.Flags().Lookup(consts.AnalyzeFlag)); err != nil {
 		panic(err)
 	}
 }

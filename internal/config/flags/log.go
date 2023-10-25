@@ -1,19 +1,20 @@
 package flags
 
 import (
+	"github.com/clevyr/kubedb/internal/consts"
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 )
 
 func Quiet(cmd *cobra.Command, p *bool) {
-	cmd.PersistentFlags().BoolVarP(p, "quiet", "q", false, "Silence remote log output")
+	cmd.PersistentFlags().BoolVarP(p, consts.QuietFlag, "q", false, "Silence remote log output")
 }
 
 func LogLevel(cmd *cobra.Command) {
-	cmd.PersistentFlags().String("log-level", "info", "Log level. One of (trace|debug|info|warning|error|fatal|panic)")
+	cmd.PersistentFlags().String(consts.LogLevelFlag, "info", "Log level. One of (trace|debug|info|warning|error|fatal|panic)")
 	err := cmd.RegisterFlagCompletionFunc(
-		"log-level",
+		consts.LogLevelFlag,
 		func(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
 			return []string{
 				log.TraceLevel.String(),
@@ -31,15 +32,15 @@ func LogLevel(cmd *cobra.Command) {
 }
 
 func BindLogLevel(cmd *cobra.Command) {
-	if err := viper.BindPFlag("log.level", cmd.Flags().Lookup("log-level")); err != nil {
+	if err := viper.BindPFlag(consts.LogLevelKey, cmd.Flags().Lookup(consts.LogLevelFlag)); err != nil {
 		panic(err)
 	}
 }
 
 func LogFormat(cmd *cobra.Command) {
-	cmd.PersistentFlags().String("log-format", "text", "Log formatter. One of (text|json)")
+	cmd.PersistentFlags().String(consts.LogFormatFlag, "text", "Log formatter. One of (text|json)")
 	err := cmd.RegisterFlagCompletionFunc(
-		"log-format",
+		consts.LogFormatFlag,
 		func(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
 			return []string{"text", "json"}, cobra.ShellCompDirectiveNoFileComp
 		})
@@ -49,20 +50,20 @@ func LogFormat(cmd *cobra.Command) {
 }
 
 func BindLogFormat(cmd *cobra.Command) {
-	if err := viper.BindPFlag("log.format", cmd.Flags().Lookup("log-format")); err != nil {
+	if err := viper.BindPFlag(consts.LogFormatKey, cmd.Flags().Lookup(consts.LogFormatFlag)); err != nil {
 		panic(err)
 	}
 }
 
 func Redact(cmd *cobra.Command) {
-	cmd.PersistentFlags().Bool("redact", true, "Redact password from logs")
-	if err := cmd.PersistentFlags().MarkHidden("redact"); err != nil {
+	cmd.PersistentFlags().Bool(consts.RedactFlag, true, "Redact password from logs")
+	if err := cmd.PersistentFlags().MarkHidden(consts.RedactFlag); err != nil {
 		panic(err)
 	}
 }
 
 func BindRedact(cmd *cobra.Command) {
-	if err := viper.BindPFlag("log.redact", cmd.Flags().Lookup("redact")); err != nil {
+	if err := viper.BindPFlag(consts.LogRedactKey, cmd.Flags().Lookup(consts.RedactFlag)); err != nil {
 		panic(err)
 	}
 }

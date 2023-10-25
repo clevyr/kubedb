@@ -5,6 +5,7 @@ import (
 	"strconv"
 	"testing"
 
+	"github.com/clevyr/kubedb/internal/consts"
 	"github.com/spf13/viper"
 	"github.com/stretchr/testify/assert"
 )
@@ -44,7 +45,7 @@ func TestNamespaceRegexp_Match(t *testing.T) {
 			level := NamespaceRegexp{
 				re: tt.fields.re,
 			}
-			viper.Set("namespace.filter", tt.enabled)
+			viper.Set(consts.NamespaceFilterKey, tt.enabled)
 			got := level.Match(tt.args.namespace)
 			assert.Equal(t, tt.want, got)
 		})

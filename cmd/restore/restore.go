@@ -7,6 +7,7 @@ import (
 	"github.com/AlecAivazis/survey/v2"
 	"github.com/clevyr/kubedb/internal/actions/restore"
 	"github.com/clevyr/kubedb/internal/config/flags"
+	"github.com/clevyr/kubedb/internal/consts"
 	"github.com/clevyr/kubedb/internal/util"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
@@ -50,7 +51,7 @@ Supported Input Filetypes:
 	flags.RemoteGzip(cmd)
 	flags.Analyze(cmd)
 	flags.Spinner(cmd, &action.Spinner)
-	cmd.Flags().BoolVarP(&action.Force, "force", "f", false, "Do not prompt before restore")
+	cmd.Flags().BoolVarP(&action.Force, consts.ForceFlag, "f", false, "Do not prompt before restore")
 
 	return cmd
 }
@@ -60,7 +61,7 @@ func validArgs(cmd *cobra.Command, args []string, toComplete string) ([]string, 
 		return nil, cobra.ShellCompDirectiveNoFileComp
 	}
 
-	viper.Set("kubernetes.no-job", true)
+	viper.Set(consts.NoJobKey, true)
 	action.Force = true
 
 	err := preRun(cmd, args)
@@ -78,13 +79,13 @@ func validArgs(cmd *cobra.Command, args []string, toComplete string) ([]string, 
 
 func preRun(cmd *cobra.Command, args []string) (err error) {
 	flags.BindRemoteGzip(cmd)
-	action.RemoteGzip = viper.GetBool("remote-gzip")
+	action.RemoteGzip = viper.GetBool(consts.RemoteGzipKey)
 	flags.BindAnalyze(cmd)
-	action.Analyze = viper.GetBool("restore.analyze")
+	action.Analyze = viper.GetBool(consts.AnalyzeKey)
 	flags.BindJobPodLabels(cmd)
 	flags.BindNoJob(cmd)
 	flags.BindSpinner(cmd)
-	action.Spinner = viper.GetString("spinner.name")
+	action.Spinner = viper.GetString(consts.SpinnerKey)
 
 	if len(args) > 0 {
 		action.Filename = args[0]
@@ -117,7 +118,7 @@ func preRun(cmd *cobra.Command, args []string) (err error) {
 		return err
 	}
 
-	if !cmd.Flags().Lookup("format").Changed {
+	if !cmd.Flags().Lookup(consts.FormatFlag).Changed {
 		action.Format = action.Dialect.FormatFromFilename(action.Filename)
 	}
 

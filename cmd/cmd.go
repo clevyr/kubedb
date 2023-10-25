@@ -12,6 +12,7 @@ import (
 	"github.com/clevyr/kubedb/cmd/port_forward"
 	"github.com/clevyr/kubedb/cmd/restore"
 	"github.com/clevyr/kubedb/internal/config/flags"
+	"github.com/clevyr/kubedb/internal/consts"
 	"github.com/clevyr/kubedb/internal/util"
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
@@ -69,14 +70,14 @@ func preRun(cmd *cobra.Command, args []string) error {
 	cmd.PersistentPostRun = func(cmd *cobra.Command, args []string) { cancel() }
 	cmd.SetContext(ctx)
 
-	kubeconfig := viper.GetString("kubernetes.kubeconfig")
+	kubeconfig := viper.GetString(consts.KubeconfigKey)
 	if kubeconfig == "$HOME" || strings.HasPrefix(kubeconfig, "$HOME"+string(os.PathSeparator)) {
 		home, err := os.UserHomeDir()
 		if err != nil {
 			return err
 		}
 		kubeconfig = home + kubeconfig[5:]
-		viper.Set("kubernetes.kubeconfig", kubeconfig)
+		viper.Set(consts.KubeconfigKey, kubeconfig)
 	}
 
 	initLog(cmd)
@@ -88,16 +89,16 @@ func preRun(cmd *cobra.Command, args []string) error {
 }
 
 func initLog(cmd *cobra.Command) {
-	logLevel := viper.GetString("log.level")
+	logLevel := viper.GetString(consts.LogLevelKey)
 	parsedLevel, err := log.ParseLevel(logLevel)
 	if err != nil {
 		log.WithField("log-level", logLevel).Warn("invalid log level. defaulting to info.")
-		viper.Set("log.level", "info")
+		viper.Set(consts.LogLevelKey, "info")
 		parsedLevel = log.InfoLevel
 	}
 	log.SetLevel(parsedLevel)
 
-	logFormat := viper.GetString("log.format")
+	logFormat := viper.GetString(consts.LogFormatKey)
 	switch logFormat {
 	case "text", "txt", "t":
 		log.SetFormatter(&log.TextFormatter{})
@@ -105,7 +106,7 @@ func initLog(cmd *cobra.Command) {
 		log.SetFormatter(&log.JSONFormatter{})
 	default:
 		log.WithField("log-format", logFormat).Warn("invalid log formatter. defaulting to text.")
-		viper.Set("log.format", "text")
+		viper.Set(consts.LogFormatKey, "text")
 	}
 }
 

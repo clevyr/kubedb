@@ -4,6 +4,7 @@ import (
 	"regexp"
 	"strconv"
 
+	"github.com/clevyr/kubedb/internal/consts"
 	"github.com/spf13/viper"
 )
 
@@ -24,7 +25,7 @@ type NamespaceRegexp struct {
 }
 
 func (level NamespaceRegexp) Match(namespace string) bool {
-	if !viper.GetBool("namespace.filter") {
+	if !viper.GetBool(consts.NamespaceFilterKey) {
 		return true
 	}
 	return level.re.MatchString(namespace)
@@ -39,7 +40,7 @@ func NewNamespaceRegexp(accessLevel string) NamespaceRegexp {
 }
 
 func init() {
-	viper.SetDefault("namespace.filter", true)
-	viper.SetDefault("namespace.ro", namespaceFilterReadOnly)
-	viper.SetDefault("namespace.rw", namespaceFilterReadWrite)
+	viper.SetDefault(consts.NamespaceFilterKey, true)
+	viper.SetDefault(consts.NamespaceFilterROKey, namespaceFilterReadOnly)
+	viper.SetDefault(consts.NamespaceFilterRWKey, namespaceFilterReadWrite)
 }
