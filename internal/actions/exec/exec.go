@@ -7,6 +7,7 @@ import (
 
 	"github.com/clevyr/kubedb/internal/command"
 	"github.com/clevyr/kubedb/internal/config"
+	"github.com/clevyr/kubedb/internal/kubernetes"
 	log "github.com/sirupsen/logrus"
 	"k8s.io/client-go/tools/remotecommand"
 	"k8s.io/kubectl/pkg/util/term"
@@ -33,17 +34,16 @@ func (action Exec) Run(ctx context.Context) error {
 	}
 
 	return t.Safe(func() error {
-		return action.Client.Exec(
-			ctx,
-			action.JobPod,
-			action.buildCommand().String(),
-			t.In,
-			t.Out,
-			os.Stderr,
-			t.IsTerminalIn(),
-			sizeQueue,
-			5*time.Second,
-		)
+		return action.Client.Exec(ctx, kubernetes.ExecOptions{
+			Pod:        action.JobPod,
+			Cmd:        action.buildCommand().String(),
+			Stdin:      t.In,
+			Stdout:     t.Out,
+			Stderr:     os.Stderr,
+			TTY:        t.IsTerminalIn(),
+			SizeQueue:  sizeQueue,
+			PingPeriod: 5 * time.Second,
+		})
 	})
 }
 

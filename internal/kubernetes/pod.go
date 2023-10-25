@@ -34,18 +34,28 @@ func (client KubeClient) GetNamespacedPods(ctx context.Context) (*v1.PodList, er
 	return pods, nil
 }
 
-func (client KubeClient) Exec(ctx context.Context, pod v1.Pod, cmd string, stdin io.Reader, stdout, stderr io.Writer, tty bool, terminalSizeQueue remotecommand.TerminalSizeQueue, pingPeriod time.Duration) error {
+type ExecOptions struct {
+	Pod            v1.Pod
+	Cmd            string
+	Stdin          io.Reader
+	Stdout, Stderr io.Writer
+	TTY            bool
+	SizeQueue      remotecommand.TerminalSizeQueue
+	PingPeriod     time.Duration
+}
+
+func (client KubeClient) Exec(ctx context.Context, opt ExecOptions) error {
 	req := client.ClientSet.CoreV1().RESTClient().Post().
 		Resource("pods").
 		Namespace(client.Namespace).
-		Name(pod.Name).
+		Name(opt.Pod.Name).
 		SubResource("exec").
 		VersionedParams(&v1.PodExecOptions{
-			Command: []string{"sh", "-c", cmd},
-			Stdin:   stdin != nil,
-			Stdout:  stdout != nil,
-			Stderr:  stderr != nil,
-			TTY:     tty,
+			Command: []string{"sh", "-c", opt.Cmd},
+			Stdin:   opt.Stdin != nil,
+			Stdout:  opt.Stdout != nil,
+			Stderr:  opt.Stderr != nil,
+			TTY:     opt.TTY,
 		}, scheme.ParameterCodec)
 
 	tlsConfig, err := rest.TLSConfigFor(client.ClientConfig)
@@ -61,7 +71,7 @@ func (client KubeClient) Exec(ctx context.Context, pod v1.Pod, cmd string, stdin
 		Proxier: proxy,
 		// Needs to be 0 for dump/restore to prevent unexpected EOF.
 		// See https://github.com/kubernetes/kubernetes/issues/60140#issuecomment-1411477275
-		PingPeriod: pingPeriod,
+		PingPeriod: opt.PingPeriod,
 	})
 	wrapper, err := rest.HTTPWrappersForConfig(client.ClientConfig, upgradeRoundTripper)
 	if err != nil {
@@ -74,11 +84,11 @@ func (client KubeClient) Exec(ctx context.Context, pod v1.Pod, cmd string, stdin
 	}
 
 	err = exec.StreamWithContext(ctx, remotecommand.StreamOptions{
-		Stdin:             stdin,
-		Stdout:            stdout,
-		Stderr:            stderr,
-		Tty:               tty,
-		TerminalSizeQueue: terminalSizeQueue,
+		Stdin:             opt.Stdin,
+		Stdout:            opt.Stdout,
+		Stderr:            opt.Stderr,
+		Tty:               opt.TTY,
+		TerminalSizeQueue: opt.SizeQueue,
 	})
 
 	return err

@@ -12,6 +12,7 @@ import (
 	"github.com/clevyr/kubedb/internal/config"
 	"github.com/clevyr/kubedb/internal/database/sqlformat"
 	"github.com/clevyr/kubedb/internal/github"
+	"github.com/clevyr/kubedb/internal/kubernetes"
 	"github.com/clevyr/kubedb/internal/progressbar"
 	gzip "github.com/klauspost/pgzip"
 	log "github.com/sirupsen/logrus"
@@ -79,17 +80,13 @@ func (action Dump) Run(ctx context.Context) (err error) {
 			_ = pw.Close()
 		}(pw)
 
-		if err := action.Client.Exec(
-			ctx,
-			action.JobPod,
-			action.buildCommand().String(),
-			os.Stdin,
-			pw,
-			plogger,
-			false,
-			nil,
-			0,
-		); err != nil {
+		if err := action.Client.Exec(ctx, kubernetes.ExecOptions{
+			Pod:    action.JobPod,
+			Cmd:    action.buildCommand().String(),
+			Stdin:  os.Stdin,
+			Stdout: pw,
+			Stderr: plogger,
+		}); err != nil {
 			return err
 		}
 

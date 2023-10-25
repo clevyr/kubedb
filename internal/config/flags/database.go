@@ -9,6 +9,7 @@ import (
 	"github.com/clevyr/kubedb/internal/consts"
 	"github.com/clevyr/kubedb/internal/database/dialect"
 	"github.com/clevyr/kubedb/internal/database/sqlformat"
+	"github.com/clevyr/kubedb/internal/kubernetes"
 	"github.com/clevyr/kubedb/internal/util"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
@@ -141,9 +142,13 @@ func listDatabases(cmd *cobra.Command, args []string, toComplete string) ([]stri
 
 func queryInDatabase(cmd *cobra.Command, args []string, conf config.Exec) ([]string, cobra.ShellCompDirective) {
 	var buf strings.Builder
-	sqlCmd := conf.Dialect.ExecCommand(conf)
-	err := conf.Client.Exec(cmd.Context(), conf.DbPod, sqlCmd.String(), nil, &buf, os.Stderr, false, nil, 5*time.Second)
-	if err != nil {
+	if err := conf.Client.Exec(cmd.Context(), kubernetes.ExecOptions{
+		Pod:        conf.DbPod,
+		Cmd:        conf.Dialect.ExecCommand(conf).String(),
+		Stdout:     &buf,
+		Stderr:     os.Stderr,
+		PingPeriod: 5 * time.Second,
+	}); err != nil {
 		return nil, cobra.ShellCompDirectiveError
 	}
 

@@ -10,6 +10,7 @@ import (
 	"github.com/clevyr/kubedb/internal/command"
 	"github.com/clevyr/kubedb/internal/config"
 	"github.com/clevyr/kubedb/internal/database/sqlformat"
+	"github.com/clevyr/kubedb/internal/kubernetes"
 	"github.com/clevyr/kubedb/internal/progressbar"
 	gzip "github.com/klauspost/pgzip"
 	log "github.com/sirupsen/logrus"
@@ -193,17 +194,13 @@ func (action Restore) runInDatabasePod(ctx context.Context, r *io.PipeReader, st
 		_ = r.Close()
 	}(r)
 
-	if err := action.Client.Exec(
-		ctx,
-		action.JobPod,
-		buildCommand(action.Restore, inputFormat).String(),
-		r,
-		stdout,
-		stderr,
-		false,
-		nil,
-		0,
-	); err != nil {
+	if err := action.Client.Exec(ctx, kubernetes.ExecOptions{
+		Pod:    action.JobPod,
+		Cmd:    buildCommand(action.Restore, inputFormat).String(),
+		Stdin:  r,
+		Stdout: stdout,
+		Stderr: stderr,
+	}); err != nil {
 		return err
 	}
 
