@@ -89,7 +89,6 @@ func (Postgres) FilterPods(ctx context.Context, client kubernetes.KubeClient, po
 		if err := client.Exec(ctx, kubernetes.ExecOptions{
 			Pod:        pods[0],
 			Cmd:        cmd.String(),
-			Stdin:      strings.NewReader(""),
 			Stdout:     &buf,
 			Stderr:     os.Stderr,
 			PingPeriod: 5 * time.Second,
