@@ -164,9 +164,9 @@ func (action Restore) Run(ctx context.Context) (err error) {
 	return nil
 }
 
-func buildCommand(conf config.Restore, inputFormat sqlformat.Format) *command.Builder {
-	cmd := conf.Dialect.RestoreCommand(conf, inputFormat)
-	if conf.RemoteGzip && conf.Format != sqlformat.Custom {
+func (action Restore) buildCommand(inputFormat sqlformat.Format) *command.Builder {
+	cmd := action.Dialect.RestoreCommand(action.Restore, inputFormat)
+	if action.RemoteGzip && action.Format != sqlformat.Custom {
 		cmd.Unshift("gunzip", "--force", command.Pipe)
 	}
 	log.WithField("cmd", cmd).Trace("finished building command")
@@ -196,7 +196,7 @@ func (action Restore) runInDatabasePod(ctx context.Context, r *io.PipeReader, st
 
 	if err := action.Client.Exec(ctx, kubernetes.ExecOptions{
 		Pod:    action.JobPod,
-		Cmd:    buildCommand(action.Restore, inputFormat).String(),
+		Cmd:    action.buildCommand(inputFormat).String(),
 		Stdin:  r,
 		Stdout: stdout,
 		Stderr: stderr,

@@ -14,55 +14,54 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func Test_buildCommand(t *testing.T) {
+func TestRestore_buildCommand(t *testing.T) {
 	pgpassword := command.NewEnv("PGPASSWORD", "")
 
+	type fields struct {
+		Restore config.Restore
+		Analyze bool
+	}
 	type args struct {
-		conf        config.Restore
 		inputFormat sqlformat.Format
 	}
 	tests := []struct {
-		name string
-		args args
-		want *command.Builder
+		name   string
+		fields fields
+		args   args
+		want   *command.Builder
 	}{
 		{
 			"postgres-gzip",
-			args{
-				config.Restore{Global: config.Global{Dialect: dialect.Postgres{}, Host: "1.1.1.1", Database: "d", Username: "u", RemoteGzip: true}},
-				sqlformat.Gzip,
-			},
+			fields{Restore: config.Restore{Global: config.Global{Dialect: dialect.Postgres{}, Host: "1.1.1.1", Database: "d", Username: "u", RemoteGzip: true}}},
+			args{sqlformat.Gzip},
 			command.NewBuilder("gunzip", "--force", command.Pipe, pgpassword, "psql", "--host=1.1.1.1", "--username=u", "--dbname=d"),
 		},
 		{
 			"postgres-plain",
-			args{
-				config.Restore{Global: config.Global{Dialect: dialect.Postgres{}, Host: "1.1.1.1", Database: "d", Username: "u", RemoteGzip: true}},
-				sqlformat.Gzip,
-			},
+			fields{Restore: config.Restore{Global: config.Global{Dialect: dialect.Postgres{}, Host: "1.1.1.1", Database: "d", Username: "u", RemoteGzip: true}}},
+			args{sqlformat.Gzip},
 			command.NewBuilder("gunzip", "--force", command.Pipe, pgpassword, "psql", "--host=1.1.1.1", "--username=u", "--dbname=d"),
 		},
 		{
 			"postgres-custom",
-			args{
-				config.Restore{Global: config.Global{Dialect: dialect.Postgres{}, Host: "1.1.1.1", Database: "d", Username: "u", RemoteGzip: true}},
-				sqlformat.Gzip,
-			},
+			fields{Restore: config.Restore{Global: config.Global{Dialect: dialect.Postgres{}, Host: "1.1.1.1", Database: "d", Username: "u", RemoteGzip: true}}},
+			args{sqlformat.Gzip},
 			command.NewBuilder("gunzip", "--force", command.Pipe, pgpassword, "psql", "--host=1.1.1.1", "--username=u", "--dbname=d"),
 		},
 		{
 			"postgres-remote-gzip-disabled",
-			args{
-				config.Restore{Global: config.Global{Dialect: dialect.Postgres{}, Host: "1.1.1.1", Database: "d", Username: "u"}},
-				sqlformat.Gzip,
-			},
+			fields{Restore: config.Restore{Global: config.Global{Dialect: dialect.Postgres{}, Host: "1.1.1.1", Database: "d", Username: "u"}}},
+			args{sqlformat.Gzip},
 			command.NewBuilder(command.Env{Key: "PGPASSWORD", Value: ""}, "psql", "--host=1.1.1.1", "--username=u", "--dbname=d"),
 		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got := buildCommand(tt.args.conf, tt.args.inputFormat)
-			assert.Equal(t, tt.want, got)
+			action := Restore{
+				Restore: tt.fields.Restore,
+				Analyze: tt.fields.Analyze,
+			}
+			assert.Equal(t, tt.want, action.buildCommand(tt.args.inputFormat))
 		})
 	}
 }
