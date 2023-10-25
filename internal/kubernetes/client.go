@@ -18,6 +18,7 @@ type KubeClient struct {
 	ClientSet    kubernetes.Interface
 	ClientConfig *rest.Config
 	Discovery    *discovery.DiscoveryClient
+	Context      string
 	Namespace    string
 }
 
@@ -55,6 +56,10 @@ func NewConfigLoader(kubeconfig, context string) clientcmd.ClientConfig {
 
 func NewClient(kubeconfig, context, namespace string) (config KubeClient, err error) {
 	configLoader := NewConfigLoader(kubeconfig, context)
+
+	if rawConfig, err := configLoader.RawConfig(); err == nil {
+		config.Context = rawConfig.CurrentContext
+	}
 
 	config.ClientConfig, err = configLoader.ClientConfig()
 	if err != nil {

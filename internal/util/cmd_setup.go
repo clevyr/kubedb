@@ -46,6 +46,7 @@ func DefaultSetup(cmd *cobra.Command, conf *config.Global, opts SetupOptions) (e
 		return err
 	}
 	log.WithField("namespace", conf.Client.Namespace).Debug("created kube client")
+	conf.Context = conf.Client.Context
 	conf.Namespace = conf.Client.Namespace
 
 	access := config.NewNamespaceRegexp(cmd.Annotations["access"])
