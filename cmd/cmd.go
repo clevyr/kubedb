@@ -11,6 +11,7 @@ import (
 	"github.com/clevyr/kubedb/cmd/exec"
 	"github.com/clevyr/kubedb/cmd/port_forward"
 	"github.com/clevyr/kubedb/cmd/restore"
+	"github.com/clevyr/kubedb/cmd/status"
 	"github.com/clevyr/kubedb/internal/config/flags"
 	"github.com/clevyr/kubedb/internal/consts"
 	"github.com/clevyr/kubedb/internal/util"
@@ -55,6 +56,7 @@ func NewCommand() *cobra.Command {
 		dump.New(),
 		restore.New(),
 		port_forward.New(),
+		status.New(),
 	)
 
 	return cmd

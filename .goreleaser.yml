@@ -65,6 +65,7 @@ brews:
       man1.install "manpages/{{ .ProjectName }}-exec.1.gz"
       man1.install "manpages/{{ .ProjectName }}-port-forward.1.gz"
       man1.install "manpages/{{ .ProjectName }}-restore.1.gz"
+      man1.install "manpages/{{ .ProjectName }}-status.1.gz"
       bash_completion.install "completions/{{ .ProjectName }}.bash" => "{{ .ProjectName }}"
       zsh_completion.install "completions/{{ .ProjectName }}.zsh" => "_{{ .ProjectName }}"
       fish_completion.install "completions/{{ .ProjectName }}.fish"
@@ -156,6 +157,7 @@ aurs:
       install -Dm644 "./manpages/{{ .ProjectName }}-exec.1.gz" "${pkgdir}/usr/share/man/man1/{{ .ProjectName }}-exec.1.gz"
       install -Dm644 "./manpages/{{ .ProjectName }}-port-forward.1.gz" "${pkgdir}/usr/share/man/man1/{{ .ProjectName }}-port-forward.1.gz"
       install -Dm644 "./manpages/{{ .ProjectName }}-restore.1.gz" "${pkgdir}/usr/share/man/man1/{{ .ProjectName }}-restore.1.gz"
+      install -Dm644 "./manpages/{{ .ProjectName }}-status.1.gz" "${pkgdir}/usr/share/man/man1/{{ .ProjectName }}-status.1.gz"
       # completion
       install -Dm644 "./completions/{{ .ProjectName }}.bash" "${pkgdir}/usr/share/bash-completion/completions/{{ .ProjectName }}"
       install -Dm644 "./completions/{{ .ProjectName }}.zsh" "${pkgdir}/usr/share/zsh/site-functions/_{{ .ProjectName }}"
