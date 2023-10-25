@@ -16,17 +16,16 @@ import (
 const KubeconfigEnv = "KUBECONFIG"
 
 func Kubeconfig(cmd *cobra.Command) {
-	kubeconfigEnv := os.Getenv(KubeconfigEnv)
-	if kubeconfigEnv == "" {
-		kubeconfigEnv = filepath.Join("$HOME", ".kube", "config")
-	}
-
-	cmd.PersistentFlags().String(consts.KubeconfigFlag, kubeconfigEnv, "Paths to the kubeconfig file")
+	cmd.PersistentFlags().String(consts.KubeconfigFlag, filepath.Join("$HOME", ".kube", "config"), "Paths to the kubeconfig file")
 }
 
 func BindKubeconfig(cmd *cobra.Command) {
 	if err := viper.BindPFlag(consts.KubeconfigKey, cmd.Flags().Lookup(consts.KubeconfigFlag)); err != nil {
 		panic(err)
+	}
+
+	if env := os.Getenv(KubeconfigEnv); env != "" {
+		viper.SetDefault(consts.KubeconfigKey, env)
 	}
 }
 

@@ -9,7 +9,6 @@ import (
 	"time"
 
 	"github.com/clevyr/kubedb/cmd"
-	kubedbFlags "github.com/clevyr/kubedb/internal/config/flags"
 	gzip "github.com/klauspost/pgzip"
 	"github.com/spf13/cobra/doc"
 	flag "github.com/spf13/pflag"
@@ -33,10 +32,6 @@ func main() {
 	}
 
 	if err := os.MkdirAll("manpages", 0o755); err != nil {
-		panic(err)
-	}
-
-	if err := os.Setenv(kubedbFlags.KubeconfigEnv, ""); err != nil {
 		panic(err)
 	}
 
