@@ -21,10 +21,8 @@ func (r Redact) Fire(entry *log.Entry) error {
 		switch field := field.(type) {
 		case string:
 			entry.Data[i] = strings.ReplaceAll(field, string(r), "***")
-		default:
-			if field, ok := field.(fmt.Stringer); ok {
-				entry.Data[i] = strings.ReplaceAll(field.String(), string(r), "***")
-			}
+		case fmt.Stringer:
+			entry.Data[i] = strings.ReplaceAll(field.String(), string(r), "***")
 		}
 	}
 	return nil

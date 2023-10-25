@@ -33,10 +33,10 @@ func (j Builder) String() string {
 		switch v := v.(type) {
 		case string:
 			buf.WriteString(shellescape.Quote(v))
-		case Env:
-			buf.WriteString(v.String())
 		case Raw:
 			buf.WriteString(string(v))
+		case fmt.Stringer:
+			buf.WriteString(v.String())
 		default:
 			panic(fmt.Errorf("unknown value in command: %#v", v))
 		}
