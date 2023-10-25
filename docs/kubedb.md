@@ -22,4 +22,5 @@ Painlessly work with databases in Kubernetes.
 * [kubedb exec](kubedb_exec.md)	 - Connect to an interactive shell
 * [kubedb port-forward](kubedb_port-forward.md)	 - Set up a local port forward
 * [kubedb restore](kubedb_restore.md)	 - Restore a sql file to a database
+* [kubedb status](kubedb_status.md)	 - View connection status
 
