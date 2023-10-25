@@ -16,7 +16,7 @@ import (
 
 var action dump.Dump
 
-func NewCommand() *cobra.Command {
+func New() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:     "dump [filename]",
 		Aliases: []string{"d", "export"},

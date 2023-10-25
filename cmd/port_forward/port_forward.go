@@ -14,7 +14,7 @@ import (
 
 var action port_forward.PortForward
 
-func NewCommand() *cobra.Command {
+func New() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:     "port-forward [local_port]",
 		Short:   "Set up a local port forward",

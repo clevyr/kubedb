@@ -17,7 +17,7 @@ import (
 
 var action restore.Restore
 
-func NewCommand() *cobra.Command {
+func New() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:     "restore filename",
 		Aliases: []string{"r", "import"},

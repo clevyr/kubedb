@@ -11,7 +11,7 @@ import (
 
 var action exec.Exec
 
-func NewCommand() *cobra.Command {
+func New() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:     "exec",
 		Aliases: []string{"e", "shell"},

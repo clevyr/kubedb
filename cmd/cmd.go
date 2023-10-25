@@ -51,10 +51,10 @@ func NewCommand() *cobra.Command {
 	)
 
 	cmd.AddCommand(
-		exec.NewCommand(),
-		dump.NewCommand(),
-		restore.NewCommand(),
-		port_forward.NewCommand(),
+		exec.New(),
+		dump.New(),
+		restore.New(),
+		port_forward.New(),
 	)
 
 	return cmd
