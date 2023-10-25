@@ -1,12 +1,14 @@
 package restore
 
 import (
+	"context"
 	"errors"
 	"os"
 
 	"github.com/AlecAivazis/survey/v2"
 	"github.com/clevyr/kubedb/internal/actions/restore"
 	"github.com/clevyr/kubedb/internal/config/flags"
+	"github.com/clevyr/kubedb/internal/config/namespace_filter"
 	"github.com/clevyr/kubedb/internal/consts"
 	"github.com/clevyr/kubedb/internal/util"
 	"github.com/spf13/cobra"
@@ -53,6 +55,7 @@ Supported Input Filetypes:
 	flags.Spinner(cmd, &action.Spinner)
 	cmd.Flags().BoolVarP(&action.Force, consts.ForceFlag, "f", false, "Do not prompt before restore")
 
+	cmd.SetContext(namespace_filter.NewContext(context.Background(), namespace_filter.ReadWrite))
 	return cmd
 }
 

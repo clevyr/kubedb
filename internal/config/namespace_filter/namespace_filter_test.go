@@ -1,8 +1,8 @@
-package config
+package namespace_filter
 
 import (
+	"context"
 	"regexp"
-	"strconv"
 	"testing"
 
 	"github.com/clevyr/kubedb/internal/consts"
@@ -52,22 +52,25 @@ func TestNamespaceRegexp_Match(t *testing.T) {
 	}
 }
 
-func TestNewNamespaceRegexp(t *testing.T) {
+func TestNewFromContext(t *testing.T) {
+	roCtx := NewContext(context.Background(), ReadOnly)
+	rwCtx := NewContext(context.Background(), ReadWrite)
+
 	type args struct {
-		accessLevel string
+		ctx context.Context
 	}
 	tests := []struct {
 		name string
 		args args
 		want NamespaceRegexp
 	}{
-		{"ro", args{strconv.Itoa(ReadOnly)}, NamespaceRegexp{re: regexp.MustCompile(namespaceFilterReadOnly)}},
-		{"rw", args{strconv.Itoa(ReadWrite)}, NamespaceRegexp{re: regexp.MustCompile(namespaceFilterReadWrite)}},
+		{"ro", args{roCtx}, NamespaceRegexp{re: regexp.MustCompile(namespaceFilterReadOnly)}},
+		{"rw", args{rwCtx}, NamespaceRegexp{re: regexp.MustCompile(namespaceFilterReadWrite)}},
+		{"unset", args{context.Background()}, NamespaceRegexp{re: regexp.MustCompile(namespaceFilterReadWrite)}},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got := NewNamespaceRegexp(tt.args.accessLevel)
-			assert.Equal(t, tt.want, got)
+			assert.Equal(t, tt.want, NewFromContext(tt.args.ctx))
 		})
 	}
 }

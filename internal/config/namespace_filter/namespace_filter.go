@@ -1,8 +1,8 @@
-package config
+package namespace_filter
 
 import (
+	"context"
 	"regexp"
-	"strconv"
 
 	"github.com/clevyr/kubedb/internal/consts"
 	"github.com/spf13/viper"
@@ -16,7 +16,7 @@ var (
 type AccessLevel uint8
 
 const (
-	ReadWrite = iota
+	ReadWrite AccessLevel = iota
 	ReadOnly
 )
 
@@ -31,16 +31,32 @@ func (level NamespaceRegexp) Match(namespace string) bool {
 	return level.re.MatchString(namespace)
 }
 
-func NewNamespaceRegexp(accessLevel string) NamespaceRegexp {
-	v, _ := strconv.ParseUint(accessLevel, 10, 8)
-	if AccessLevel(v) == ReadOnly {
+func NewFromContext(ctx context.Context) NamespaceRegexp {
+	accessLevel, _ := LevelFromContext(ctx)
+
+	switch accessLevel {
+	case ReadOnly:
 		return NamespaceRegexp{re: regexp.MustCompile(namespaceFilterReadOnly)}
+	default:
+		return NamespaceRegexp{re: regexp.MustCompile(namespaceFilterReadWrite)}
 	}
-	return NamespaceRegexp{re: regexp.MustCompile(namespaceFilterReadWrite)}
 }
 
 func init() {
 	viper.SetDefault(consts.NamespaceFilterKey, true)
 	viper.SetDefault(consts.NamespaceFilterROKey, namespaceFilterReadOnly)
 	viper.SetDefault(consts.NamespaceFilterRWKey, namespaceFilterReadWrite)
+}
+
+type contextKey string
+
+var accessLevelKey = contextKey("accessLevel")
+
+func NewContext(ctx context.Context, level AccessLevel) context.Context {
+	return context.WithValue(ctx, accessLevelKey, level)
+}
+
+func LevelFromContext(ctx context.Context) (AccessLevel, bool) {
+	filter, ok := ctx.Value(accessLevelKey).(AccessLevel)
+	return filter, ok
 }
