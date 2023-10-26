@@ -55,6 +55,10 @@ func DefaultSetup(cmd *cobra.Command, conf *config.Global, opts SetupOptions) (e
 		return errors.New("The current action is disabled for namespace " + conf.Client.Namespace)
 	}
 
+	if _, err := conf.Client.Namespaces().Get(cmd.Context(), conf.Namespace, metav1.GetOptions{}); err != nil {
+		log.WithError(err).Warn("namespace may not exist")
+	}
+
 	podFlag, err := cmd.Flags().GetString(consts.PodFlag)
 	if err != nil {
 		panic(err)
