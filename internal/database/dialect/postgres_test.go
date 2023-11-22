@@ -255,7 +255,7 @@ func TestPostgres_RestoreCommand(t *testing.T) {
 	}
 }
 
-func Test_quoteParam(t *testing.T) {
+func TestPostgres_quoteParam(t *testing.T) {
 	type args struct {
 		param string
 	}
@@ -273,7 +273,8 @@ func Test_quoteParam(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got := quoteParam(tt.args.param)
+			po := Postgres{}
+			got := po.quoteParam(tt.args.param)
 			assert.Equal(t, tt.want, got)
 		})
 	}

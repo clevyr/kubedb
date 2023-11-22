@@ -144,13 +144,13 @@ func (Postgres) ExecCommand(conf config.Exec) *command.Builder {
 	return cmd
 }
 
-func quoteParam(param string) string {
+func (Postgres) quoteParam(param string) string {
 	param = `"` + param + `"`
 	param = strings.ReplaceAll(param, "*", `"*"`)
 	return param
 }
 
-func (Postgres) DumpCommand(conf config.Dump) *command.Builder {
+func (db Postgres) DumpCommand(conf config.Dump) *command.Builder {
 	cmd := command.NewBuilder(
 		command.NewEnv("PGPASSWORD", conf.Password),
 		"pg_dump", "--host="+conf.Host, "--username="+conf.Username,
@@ -171,13 +171,13 @@ func (Postgres) DumpCommand(conf config.Dump) *command.Builder {
 		cmd.Push("--if-exists")
 	}
 	for _, table := range conf.Tables {
-		cmd.Push("--table=" + quoteParam(table))
+		cmd.Push("--table=" + db.quoteParam(table))
 	}
 	for _, table := range conf.ExcludeTable {
-		cmd.Push("--exclude-table=" + quoteParam(table))
+		cmd.Push("--exclude-table=" + db.quoteParam(table))
 	}
 	for _, table := range conf.ExcludeTableData {
-		cmd.Push("--exclude-table-data=" + quoteParam(table))
+		cmd.Push("--exclude-table-data=" + db.quoteParam(table))
 	}
 	if conf.Format == sqlformat.Custom {
 		cmd.Push("--format=c")
