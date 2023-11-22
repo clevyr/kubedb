@@ -46,7 +46,8 @@ func (MariaDB) DefaultUser() string {
 	return "root"
 }
 
-func (MariaDB) DropDatabaseQuery(database string) string {
+func (db MariaDB) DropDatabaseQuery(database string) string {
+	database = db.quoteIdentifier(database)
 	return "set FOREIGN_KEY_CHECKS=0; create or replace database " + database + "; set FOREIGN_KEY_CHECKS=1; use " + database + ";"
 }
 
@@ -159,4 +160,10 @@ func (db MariaDB) DumpExtension(format sqlformat.Format) string {
 		return ext
 	}
 	return ""
+}
+
+func (db MariaDB) quoteIdentifier(param string) string {
+	param = strings.ReplaceAll(param, "`", "``")
+	param = "`" + param + "`"
+	return param
 }

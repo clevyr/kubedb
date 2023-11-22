@@ -21,7 +21,7 @@ func TestMariaDB_DropDatabaseQuery(t *testing.T) {
 		args args
 		want string
 	}{
-		{"database", args{"database"}, "set FOREIGN_KEY_CHECKS=0; create or replace database database; set FOREIGN_KEY_CHECKS=1; use database;"},
+		{"database", args{"database"}, "set FOREIGN_KEY_CHECKS=0; create or replace database `database`; set FOREIGN_KEY_CHECKS=1; use `database`;"},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -261,6 +261,26 @@ func TestMariaDB_FormatFromFilename(t *testing.T) {
 			ma := MariaDB{}
 			got := ma.FormatFromFilename(tt.args.filename)
 			assert.Equal(t, tt.want, got)
+		})
+	}
+}
+
+func TestMariaDB_quoteIdentifier(t *testing.T) {
+	type args struct {
+		param string
+	}
+	tests := []struct {
+		name string
+		args args
+		want string
+	}{
+		{"simple", args{"table"}, "`table`"},
+		{"escaped", args{"T`able"}, "`T``able`"},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			db := MariaDB{}
+			assert.Equal(t, tt.want, db.quoteIdentifier(tt.args.param))
 		})
 	}
 }
