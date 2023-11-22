@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 
+	log "github.com/sirupsen/logrus"
 	v1 "k8s.io/api/core/v1"
 	v1meta "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
@@ -19,6 +20,7 @@ func FindEnvVar(pod v1.Pod, envName string) (*v1.EnvVar, error) {
 			}
 		}
 	}
+	log.WithField("name", envName).Trace("failed to find env")
 	return nil, fmt.Errorf("%v: %s", ErrEnvVarNotFound, envName)
 }
 
