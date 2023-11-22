@@ -196,10 +196,7 @@ func DefaultSetup(cmd *cobra.Command, conf *config.Global, opts SetupOptions) (e
 				log.WithField("user", conf.Username).Debug("found user in pod env")
 			}
 		}
-		return nil
-	})
 
-	group.Go(func() error {
 		conf.Password, err = cmd.Flags().GetString(consts.PasswordFlag)
 		if err != nil && !opts.DisableAuthFlags {
 			panic(err)
