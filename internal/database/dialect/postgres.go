@@ -9,7 +9,6 @@ import (
 	"io"
 	"strconv"
 	"strings"
-	"time"
 
 	"github.com/clevyr/kubedb/internal/command"
 	"github.com/clevyr/kubedb/internal/config"
@@ -96,11 +95,10 @@ func (Postgres) FilterPods(ctx context.Context, client kubernetes.KubeClient, po
 		var buf bytes.Buffer
 		var errBuf strings.Builder
 		if err := client.Exec(ctx, kubernetes.ExecOptions{
-			Pod:        pods[0],
-			Cmd:        cmd.String(),
-			Stdout:     &buf,
-			Stderr:     &errBuf,
-			PingPeriod: 5 * time.Second,
+			Pod:    pods[0],
+			Cmd:    cmd.String(),
+			Stdout: &buf,
+			Stderr: &errBuf,
 		}); err != nil {
 			return pods, fmt.Errorf("%w: %s", err, errBuf.String())
 		}
@@ -126,11 +124,10 @@ func (Postgres) FilterPods(ctx context.Context, client kubernetes.KubeClient, po
 		var buf bytes.Buffer
 		var errBuf strings.Builder
 		if err := client.Exec(ctx, kubernetes.ExecOptions{
-			Pod:        pods[0],
-			Cmd:        cmd.String(),
-			Stdout:     &buf,
-			Stderr:     &errBuf,
-			PingPeriod: 5 * time.Second,
+			Pod:    pods[0],
+			Cmd:    cmd.String(),
+			Stdout: &buf,
+			Stderr: &errBuf,
 		}); err != nil {
 			return pods, fmt.Errorf("%w: %s", err, errBuf.String())
 		}

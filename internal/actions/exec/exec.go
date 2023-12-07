@@ -3,7 +3,6 @@ package exec
 import (
 	"context"
 	"os"
-	"time"
 
 	"github.com/clevyr/kubedb/internal/command"
 	"github.com/clevyr/kubedb/internal/config"
@@ -35,14 +34,13 @@ func (action Exec) Run(ctx context.Context) error {
 
 	return t.Safe(func() error {
 		return action.Client.Exec(ctx, kubernetes.ExecOptions{
-			Pod:        action.JobPod,
-			Cmd:        action.buildCommand().String(),
-			Stdin:      t.In,
-			Stdout:     t.Out,
-			Stderr:     os.Stderr,
-			TTY:        t.IsTerminalIn(),
-			SizeQueue:  sizeQueue,
-			PingPeriod: 5 * time.Second,
+			Pod:       action.JobPod,
+			Cmd:       action.buildCommand().String(),
+			Stdin:     t.In,
+			Stdout:    t.Out,
+			Stderr:    os.Stderr,
+			TTY:       t.IsTerminalIn(),
+			SizeQueue: sizeQueue,
 		})
 	})
 }

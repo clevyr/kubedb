@@ -3,7 +3,6 @@ package flags
 import (
 	"os"
 	"strings"
-	"time"
 
 	"github.com/clevyr/kubedb/internal/config"
 	"github.com/clevyr/kubedb/internal/consts"
@@ -143,11 +142,10 @@ func listDatabases(cmd *cobra.Command, args []string, toComplete string) ([]stri
 func queryInDatabase(cmd *cobra.Command, args []string, conf config.Exec) ([]string, cobra.ShellCompDirective) {
 	var buf strings.Builder
 	if err := conf.Client.Exec(cmd.Context(), kubernetes.ExecOptions{
-		Pod:        conf.DbPod,
-		Cmd:        conf.Dialect.ExecCommand(conf).String(),
-		Stdout:     &buf,
-		Stderr:     os.Stderr,
-		PingPeriod: 5 * time.Second,
+		Pod:    conf.DbPod,
+		Cmd:    conf.Dialect.ExecCommand(conf).String(),
+		Stdout: &buf,
+		Stderr: os.Stderr,
 	}); err != nil {
 		return nil, cobra.ShellCompDirectiveError
 	}

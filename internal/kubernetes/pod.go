@@ -41,7 +41,7 @@ type ExecOptions struct {
 	Stdout, Stderr io.Writer
 	TTY            bool
 	SizeQueue      remotecommand.TerminalSizeQueue
-	PingPeriod     time.Duration
+	DisablePing    bool
 }
 
 func (client KubeClient) Exec(ctx context.Context, opt ExecOptions) error {
@@ -66,12 +66,17 @@ func (client KubeClient) Exec(ctx context.Context, opt ExecOptions) error {
 	if client.ClientConfig.Proxy != nil {
 		proxy = client.ClientConfig.Proxy
 	}
+
+	pingPeriod := 5 * time.Second
+	if opt.DisablePing {
+		pingPeriod = 0
+	}
 	upgradeRoundTripper := spdy.NewRoundTripperWithConfig(spdy.RoundTripperConfig{
 		TLS:     tlsConfig,
 		Proxier: proxy,
 		// Needs to be 0 for dump/restore to prevent unexpected EOF.
 		// See https://github.com/kubernetes/kubernetes/issues/60140#issuecomment-1411477275
-		PingPeriod: opt.PingPeriod,
+		PingPeriod: pingPeriod,
 	})
 	wrapper, err := rest.HTTPWrappersForConfig(client.ClientConfig, upgradeRoundTripper)
 	if err != nil {

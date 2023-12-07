@@ -81,11 +81,12 @@ func (action Dump) Run(ctx context.Context) (err error) {
 		}(pw)
 
 		if err := action.Client.Exec(ctx, kubernetes.ExecOptions{
-			Pod:    action.JobPod,
-			Cmd:    action.buildCommand().String(),
-			Stdin:  os.Stdin,
-			Stdout: pw,
-			Stderr: plogger,
+			Pod:         action.JobPod,
+			Cmd:         action.buildCommand().String(),
+			Stdin:       os.Stdin,
+			Stdout:      pw,
+			Stderr:      plogger,
+			DisablePing: true,
 		}); err != nil {
 			return err
 		}
