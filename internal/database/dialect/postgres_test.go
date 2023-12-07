@@ -186,14 +186,14 @@ func TestPostgres_PasswordEnvNames(t *testing.T) {
 		args args
 		want []string
 	}{
-		{"default", args{}, []string{"POSTGRES_PASSWORD", "PGPOOL_POSTGRES_PASSWORD"}},
-		{"postgres", args{config.Global{Username: "postgres"}}, []string{"POSTGRES_POSTGRES_PASSWORD", "POSTGRES_PASSWORD", "PGPOOL_POSTGRES_PASSWORD"}},
+		{"default", args{}, []string{"POSTGRES_PASSWORD", "PGPOOL_POSTGRES_PASSWORD", "PGPASSWORD_SUPERUSER"}},
+		{"postgres", args{config.Global{Username: "postgres"}}, []string{"POSTGRES_POSTGRES_PASSWORD", "POSTGRES_PASSWORD", "PGPOOL_POSTGRES_PASSWORD", "PGPASSWORD_SUPERUSER"}},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			db := Postgres{}
 			got := db.PasswordEnvNames(tt.args.c)
-			assert.Equal(t, got, tt.want)
+			assert.Equal(t, tt.want, got)
 		})
 	}
 }

@@ -1,8 +1,10 @@
 package dialect
 
 import (
+	"bytes"
 	"context"
 	"encoding/csv"
+	"encoding/json"
 	"io"
 	"os"
 	"strconv"
@@ -45,7 +47,7 @@ func (Postgres) ListTablesQuery() string {
 }
 
 func (Postgres) UserEnvNames() []string {
-	return []string{"POSTGRES_USER", "PGPOOL_POSTGRES_USERNAME"}
+	return []string{"POSTGRES_USER", "PGPOOL_POSTGRES_USERNAME", "PGUSER_SUPERUSER"}
 }
 
 func (Postgres) DefaultUser() string {
@@ -70,14 +72,20 @@ func (Postgres) PodLabels() []kubernetes.LabelQueryable {
 			{Name: "app.kubernetes.io/name", Value: "postgresql-ha"},
 			{Name: "app.kubernetes.io/component", Value: "postgresql"},
 		},
+		kubernetes.LabelQuery{Name: "application", Value: "spilo"},
 		kubernetes.LabelQuery{Name: "app", Value: "postgresql"},
 	}
 }
 
 func (Postgres) FilterPods(ctx context.Context, client kubernetes.KubeClient, pods []v1.Pod) ([]v1.Pod, error) {
-	if len(pods) > 0 && pods[0].Labels["app.kubernetes.io/name"] == "postgresql-ha" {
+	if len(pods) == 0 {
+		return pods, nil
+	}
+
+	var leaderName string
+	if pods[0].Labels["app.kubernetes.io/name"] == "postgresql-ha" {
 		// HA chart. Need to detect primary.
-		log.Debug("querying for primary instance")
+		log.Debug("querying Bitnami repmgr for primary instance")
 		cmd := command.NewBuilder(
 			command.NewEnv("DISABLE_WELCOME_MESSAGE", "true"),
 			"/opt/bitnami/scripts/postgresql-repmgr/entrypoint.sh",
@@ -85,7 +93,7 @@ func (Postgres) FilterPods(ctx context.Context, client kubernetes.KubeClient, po
 			"service", "status", "--csv",
 		)
 
-		var buf strings.Builder
+		var buf bytes.Buffer
 		if err := client.Exec(ctx, kubernetes.ExecOptions{
 			Pod:        pods[0],
 			Cmd:        cmd.String(),
@@ -96,7 +104,7 @@ func (Postgres) FilterPods(ctx context.Context, client kubernetes.KubeClient, po
 			return pods, err
 		}
 
-		r := csv.NewReader(strings.NewReader(buf.String()))
+		r := csv.NewReader(&buf)
 		for {
 			row, err := r.Read()
 			if err == io.EOF {
@@ -106,22 +114,56 @@ func (Postgres) FilterPods(ctx context.Context, client kubernetes.KubeClient, po
 				return pods, err
 			}
 			if row[2] == "primary" {
-				for key, pod := range pods {
-					if pod.Name == row[1] {
-						return pods[key : key+1], nil
-					}
+				leaderName = row[1]
+				break
+			}
+		}
+	} else if pods[0].Labels["application"] == "spilo" {
+		log.Debug("querying Patroni for primary instance")
+		cmd := command.NewBuilder("patronictl", "list", "--format=json")
+
+		var buf bytes.Buffer
+		if err := client.Exec(ctx, kubernetes.ExecOptions{
+			Pod:        pods[0],
+			Cmd:        cmd.String(),
+			Stdout:     &buf,
+			Stderr:     os.Stderr,
+			PingPeriod: 5 * time.Second,
+		}); err != nil {
+			return pods, err
+		}
+
+		var data []map[string]any
+		if err := json.NewDecoder(&buf).Decode(&data); err != nil {
+			return pods, err
+		}
+
+		for _, member := range data {
+			if role, ok := member["Role"]; ok && role == "Leader" {
+				if name, ok := member["Member"].(string); ok {
+					leaderName = name
+					break
 				}
 			}
 		}
 	}
+
+	if leaderName != "" {
+		for key, pod := range pods {
+			if pod.Name == leaderName {
+				return pods[key : key+1], nil
+			}
+		}
+	}
+
 	return pods, nil
 }
 
 func (db Postgres) PasswordEnvNames(c config.Global) []string {
 	if c.Username == db.DefaultUser() {
-		return []string{"POSTGRES_POSTGRES_PASSWORD", "POSTGRES_PASSWORD", "PGPOOL_POSTGRES_PASSWORD"}
+		return []string{"POSTGRES_POSTGRES_PASSWORD", "POSTGRES_PASSWORD", "PGPOOL_POSTGRES_PASSWORD", "PGPASSWORD_SUPERUSER"}
 	}
-	return []string{"POSTGRES_PASSWORD", "PGPOOL_POSTGRES_PASSWORD"}
+	return []string{"POSTGRES_PASSWORD", "PGPOOL_POSTGRES_PASSWORD", "PGPASSWORD_SUPERUSER"}
 }
 
 func (Postgres) ExecCommand(conf config.Exec) *command.Builder {
