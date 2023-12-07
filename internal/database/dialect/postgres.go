@@ -5,8 +5,8 @@ import (
 	"context"
 	"encoding/csv"
 	"encoding/json"
+	"fmt"
 	"io"
-	"os"
 	"strconv"
 	"strings"
 	"time"
@@ -96,14 +96,15 @@ func (Postgres) FilterPods(ctx context.Context, client kubernetes.KubeClient, po
 		)
 
 		var buf bytes.Buffer
+		var errBuf strings.Builder
 		if err := client.Exec(ctx, kubernetes.ExecOptions{
 			Pod:        pods[0],
 			Cmd:        cmd.String(),
 			Stdout:     &buf,
-			Stderr:     os.Stderr,
+			Stderr:     &errBuf,
 			PingPeriod: 5 * time.Second,
 		}); err != nil {
-			return pods, err
+			return pods, fmt.Errorf("%w: %s", err, errBuf.String())
 		}
 
 		r := csv.NewReader(&buf)
@@ -125,14 +126,15 @@ func (Postgres) FilterPods(ctx context.Context, client kubernetes.KubeClient, po
 		cmd := command.NewBuilder("patronictl", "list", "--format=json")
 
 		var buf bytes.Buffer
+		var errBuf strings.Builder
 		if err := client.Exec(ctx, kubernetes.ExecOptions{
 			Pod:        pods[0],
 			Cmd:        cmd.String(),
 			Stdout:     &buf,
-			Stderr:     os.Stderr,
+			Stderr:     &errBuf,
 			PingPeriod: 5 * time.Second,
 		}); err != nil {
-			return pods, err
+			return pods, fmt.Errorf("%w: %s", err, errBuf.String())
 		}
 
 		var data []map[string]any
