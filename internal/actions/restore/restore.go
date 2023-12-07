@@ -195,11 +195,12 @@ func (action Restore) runInDatabasePod(ctx context.Context, r *io.PipeReader, st
 	}(r)
 
 	if err := action.Client.Exec(ctx, kubernetes.ExecOptions{
-		Pod:    action.JobPod,
-		Cmd:    action.buildCommand(inputFormat).String(),
-		Stdin:  r,
-		Stdout: stdout,
-		Stderr: stderr,
+		Pod:         action.JobPod,
+		Cmd:         action.buildCommand(inputFormat).String(),
+		Stdin:       r,
+		Stdout:      stdout,
+		Stderr:      stderr,
+		DisablePing: true,
 	}); err != nil {
 		return err
 	}

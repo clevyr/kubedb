@@ -7,7 +7,6 @@ import (
 	"os"
 	"strconv"
 	"strings"
-	"time"
 
 	"github.com/clevyr/kubedb/internal/config"
 	"github.com/clevyr/kubedb/internal/config/flags"
@@ -116,11 +115,10 @@ func run(cmd *cobra.Command, args []string) error {
 		Command:        conf.Dialect.ListTablesQuery(),
 	})
 	execOpts := kubernetes.ExecOptions{
-		Pod:        conf.JobPod,
-		Cmd:        listTablesCmd.String(),
-		Stdout:     &buf,
-		Stderr:     os.Stderr,
-		PingPeriod: 5 * time.Second,
+		Pod:    conf.JobPod,
+		Cmd:    listTablesCmd.String(),
+		Stdout: &buf,
+		Stderr: os.Stderr,
 	}
 	if err := conf.Client.Exec(cmd.Context(), execOpts); err == nil {
 		names := strings.Split(buf.String(), "\n")
