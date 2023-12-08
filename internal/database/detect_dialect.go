@@ -5,7 +5,6 @@ import (
 	"errors"
 
 	"github.com/clevyr/kubedb/internal/config"
-	"github.com/clevyr/kubedb/internal/database/dialect"
 	"github.com/clevyr/kubedb/internal/kubernetes"
 	v1 "k8s.io/api/core/v1"
 )
@@ -18,7 +17,7 @@ func DetectDialect(ctx context.Context, client kubernetes.KubeClient) (config.Da
 		return nil, []v1.Pod{}, err
 	}
 
-	for _, g := range dialect.All() {
+	for _, g := range All() {
 		pods, err := client.FilterPodList(pods, g.PodLabels())
 		if err == nil {
 			return g, pods, nil
@@ -28,7 +27,7 @@ func DetectDialect(ctx context.Context, client kubernetes.KubeClient) (config.Da
 }
 
 func DetectDialectFromPod(pod v1.Pod) (config.Database, error) {
-	for _, g := range dialect.All() {
+	for _, g := range All() {
 		for _, v := range g.PodLabels() {
 			if v.Matches(pod) {
 				return g, nil

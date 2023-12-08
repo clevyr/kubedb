@@ -8,7 +8,7 @@ import (
 
 	"github.com/clevyr/kubedb/internal/command"
 	"github.com/clevyr/kubedb/internal/config"
-	"github.com/clevyr/kubedb/internal/database/dialect"
+	"github.com/clevyr/kubedb/internal/database/postgres"
 	"github.com/clevyr/kubedb/internal/database/sqlformat"
 	gzip "github.com/klauspost/pgzip"
 	"github.com/stretchr/testify/assert"
@@ -32,25 +32,25 @@ func TestRestore_buildCommand(t *testing.T) {
 	}{
 		{
 			"postgres-gzip",
-			fields{Restore: config.Restore{Global: config.Global{Dialect: dialect.Postgres{}, Host: "1.1.1.1", Database: "d", Username: "u", RemoteGzip: true}}},
+			fields{Restore: config.Restore{Global: config.Global{Dialect: postgres.Postgres{}, Host: "1.1.1.1", Database: "d", Username: "u", RemoteGzip: true}}},
 			args{sqlformat.Gzip},
 			command.NewBuilder("gunzip", "--force", command.Pipe, pgpassword, "psql", "--host=1.1.1.1", "--username=u", "--dbname=d"),
 		},
 		{
 			"postgres-plain",
-			fields{Restore: config.Restore{Global: config.Global{Dialect: dialect.Postgres{}, Host: "1.1.1.1", Database: "d", Username: "u", RemoteGzip: true}}},
+			fields{Restore: config.Restore{Global: config.Global{Dialect: postgres.Postgres{}, Host: "1.1.1.1", Database: "d", Username: "u", RemoteGzip: true}}},
 			args{sqlformat.Gzip},
 			command.NewBuilder("gunzip", "--force", command.Pipe, pgpassword, "psql", "--host=1.1.1.1", "--username=u", "--dbname=d"),
 		},
 		{
 			"postgres-custom",
-			fields{Restore: config.Restore{Global: config.Global{Dialect: dialect.Postgres{}, Host: "1.1.1.1", Database: "d", Username: "u", RemoteGzip: true}}},
+			fields{Restore: config.Restore{Global: config.Global{Dialect: postgres.Postgres{}, Host: "1.1.1.1", Database: "d", Username: "u", RemoteGzip: true}}},
 			args{sqlformat.Gzip},
 			command.NewBuilder("gunzip", "--force", command.Pipe, pgpassword, "psql", "--host=1.1.1.1", "--username=u", "--dbname=d"),
 		},
 		{
 			"postgres-remote-gzip-disabled",
-			fields{Restore: config.Restore{Global: config.Global{Dialect: dialect.Postgres{}, Host: "1.1.1.1", Database: "d", Username: "u"}}},
+			fields{Restore: config.Restore{Global: config.Global{Dialect: postgres.Postgres{}, Host: "1.1.1.1", Database: "d", Username: "u"}}},
 			args{sqlformat.Gzip},
 			command.NewBuilder(command.Env{Key: "PGPASSWORD", Value: ""}, "psql", "--host=1.1.1.1", "--username=u", "--dbname=d"),
 		},

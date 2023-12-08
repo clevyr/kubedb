@@ -5,7 +5,9 @@ import (
 	"fmt"
 
 	"github.com/clevyr/kubedb/internal/config"
-	"github.com/clevyr/kubedb/internal/database/dialect"
+	"github.com/clevyr/kubedb/internal/database/mariadb"
+	"github.com/clevyr/kubedb/internal/database/mongodb"
+	"github.com/clevyr/kubedb/internal/database/postgres"
 )
 
 var ErrUnsupportedDatabase = errors.New("unsupported database")
@@ -13,11 +15,11 @@ var ErrUnsupportedDatabase = errors.New("unsupported database")
 func New(name string) (config.Database, error) {
 	switch name {
 	case "postgresql", "postgres", "psql", "pg":
-		return dialect.Postgres{}, nil
+		return postgres.Postgres{}, nil
 	case "mariadb", "maria", "mysql":
-		return dialect.MariaDB{}, nil
+		return mariadb.MariaDB{}, nil
 	case "mongodb", "mongo":
-		return dialect.MongoDB{}, nil
+		return mongodb.MongoDB{}, nil
 	}
 	return nil, fmt.Errorf("%v: %s", ErrUnsupportedDatabase, name)
 }

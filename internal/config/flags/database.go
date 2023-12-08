@@ -6,7 +6,9 @@ import (
 
 	"github.com/clevyr/kubedb/internal/config"
 	"github.com/clevyr/kubedb/internal/consts"
-	"github.com/clevyr/kubedb/internal/database/dialect"
+	"github.com/clevyr/kubedb/internal/database/mariadb"
+	"github.com/clevyr/kubedb/internal/database/mongodb"
+	"github.com/clevyr/kubedb/internal/database/postgres"
 	"github.com/clevyr/kubedb/internal/database/sqlformat"
 	"github.com/clevyr/kubedb/internal/kubernetes"
 	"github.com/clevyr/kubedb/internal/util"
@@ -20,9 +22,9 @@ func Dialect(cmd *cobra.Command) {
 		consts.DialectFlag,
 		func(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
 			return []string{
-				dialect.Postgres{}.Name(),
-				dialect.MariaDB{}.Name(),
-				dialect.MongoDB{}.Name(),
+				postgres.Postgres{}.Name(),
+				mariadb.MariaDB{}.Name(),
+				mongodb.MongoDB{}.Name(),
 			}, cobra.ShellCompDirectiveNoFileComp
 		})
 	if err != nil {

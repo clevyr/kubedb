@@ -1,4 +1,4 @@
-package dialect
+package postgres
 
 import (
 	"bytes"

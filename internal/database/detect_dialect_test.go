@@ -5,7 +5,7 @@ import (
 	"testing"
 
 	"github.com/clevyr/kubedb/internal/config"
-	"github.com/clevyr/kubedb/internal/database/dialect"
+	"github.com/clevyr/kubedb/internal/database/postgres"
 	"github.com/clevyr/kubedb/internal/kubernetes"
 	"github.com/stretchr/testify/assert"
 	v1 "k8s.io/api/core/v1"
@@ -49,7 +49,7 @@ func TestDetectDialect(t *testing.T) {
 					ClientSet: kubernetesfake.NewSimpleClientset(&postgresPod),
 				},
 			},
-			dialect.Postgres{},
+			postgres.Postgres{},
 			[]v1.Pod{postgresPod},
 			false,
 		},
@@ -60,7 +60,7 @@ func TestDetectDialect(t *testing.T) {
 					ClientSet: kubernetesfake.NewSimpleClientset(&mariadbPod),
 				},
 			},
-			dialect.Postgres{},
+			postgres.Postgres{},
 			[]v1.Pod{mariadbPod},
 			false,
 		},
