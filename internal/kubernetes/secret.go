@@ -4,13 +4,17 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"strings"
 
 	log "github.com/sirupsen/logrus"
 	v1 "k8s.io/api/core/v1"
 	v1meta "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
-var ErrEnvVarNotFound = errors.New("env var not found")
+var (
+	ErrEnvVarNotFound  = errors.New("env var not found")
+	ErrNoDiscoveryEnvs = errors.New("discovery envs not found")
+)
 
 func FindEnvVar(pod v1.Pod, envName string) (*v1.EnvVar, error) {
 	for _, container := range pod.Spec.Containers {
@@ -21,7 +25,7 @@ func FindEnvVar(pod v1.Pod, envName string) (*v1.EnvVar, error) {
 		}
 	}
 	log.WithField("name", envName).Trace("failed to find env")
-	return nil, fmt.Errorf("%v: %s", ErrEnvVarNotFound, envName)
+	return nil, fmt.Errorf("%w: %s", ErrEnvVarNotFound, envName)
 }
 
 var (
@@ -44,6 +48,9 @@ func (client KubeClient) GetValueFromEnv(ctx context.Context, pod v1.Pod, envNam
 		}
 	}
 	if err != nil {
+		if errors.Is(err, ErrEnvVarNotFound) {
+			return "", fmt.Errorf("%w: %s", ErrNoDiscoveryEnvs, strings.Join(envNames, ", "))
+		}
 		return "", err
 	}
 
