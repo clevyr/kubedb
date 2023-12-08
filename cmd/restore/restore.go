@@ -99,6 +99,12 @@ func preRun(cmd *cobra.Command, args []string) (err error) {
 		return err
 	}
 
+	if action.Filename != "-" {
+		if _, err := os.Stat(action.Filename); errors.Is(err, os.ErrNotExist) {
+			return err
+		}
+	}
+
 	if !action.Force {
 		tty := term.TTY{In: os.Stdin}.IsTerminalIn()
 		if tty {
