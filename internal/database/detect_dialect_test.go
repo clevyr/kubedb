@@ -38,7 +38,7 @@ func TestDetectDialect(t *testing.T) {
 	tests := []struct {
 		name    string
 		args    args
-		want    config.Databaser
+		want    config.Database
 		want1   []v1.Pod
 		wantErr bool
 	}{

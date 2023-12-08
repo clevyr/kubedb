@@ -9,7 +9,7 @@ import (
 type Global struct {
 	Kubernetes
 	Client  kubernetes.KubeClient
-	Dialect Databaser `mapstructure:"-"`
+	Dialect Database `mapstructure:"-"`
 
 	Job    *batchv1.Job
 	JobPod v1.Pod `mapstructure:"-"`

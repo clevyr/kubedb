@@ -2,8 +2,8 @@ package dialect
 
 import "github.com/clevyr/kubedb/internal/config"
 
-func All() []config.Databaser {
-	return []config.Databaser{
+func All() []config.Database {
+	return []config.Database{
 		Postgres{},
 		MariaDB{},
 		MongoDB{},

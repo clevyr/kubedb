@@ -15,7 +15,7 @@ func TestNew(t *testing.T) {
 	tests := []struct {
 		name    string
 		args    args
-		want    config.Databaser
+		want    config.Database
 		wantErr bool
 	}{
 		{"postgresql", args{"postgresql"}, dialect.Postgres{}, false},

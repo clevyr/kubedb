@@ -10,7 +10,7 @@ import (
 
 var ErrUnsupportedDatabase = errors.New("unsupported database")
 
-func New(name string) (config.Databaser, error) {
+func New(name string) (config.Database, error) {
 	switch name {
 	case "postgresql", "postgres", "psql", "pg":
 		return dialect.Postgres{}, nil

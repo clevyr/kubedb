@@ -12,7 +12,7 @@ import (
 
 var ErrDatabaseNotFound = errors.New("could not detect a database")
 
-func DetectDialect(ctx context.Context, client kubernetes.KubeClient) (config.Databaser, []v1.Pod, error) {
+func DetectDialect(ctx context.Context, client kubernetes.KubeClient) (config.Database, []v1.Pod, error) {
 	pods, err := client.GetNamespacedPods(ctx)
 	if err != nil {
 		return nil, []v1.Pod{}, err
@@ -27,7 +27,7 @@ func DetectDialect(ctx context.Context, client kubernetes.KubeClient) (config.Da
 	return nil, []v1.Pod{}, ErrDatabaseNotFound
 }
 
-func DetectDialectFromPod(pod v1.Pod) (config.Databaser, error) {
+func DetectDialectFromPod(pod v1.Pod) (config.Database, error) {
 	for _, g := range dialect.All() {
 		for _, v := range g.PodLabels() {
 			if v.Matches(pod) {
