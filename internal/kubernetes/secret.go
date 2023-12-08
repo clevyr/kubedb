@@ -1,19 +1,11 @@
 package kubernetes
 
 import (
-	"context"
 	"errors"
 	"fmt"
-	"strings"
 
 	log "github.com/sirupsen/logrus"
 	v1 "k8s.io/api/core/v1"
-	v1meta "k8s.io/apimachinery/pkg/apis/meta/v1"
-)
-
-var (
-	ErrEnvVarNotFound  = errors.New("env var not found")
-	ErrNoDiscoveryEnvs = errors.New("discovery envs not found")
 )
 
 func FindEnvVar(pod v1.Pod, envName string) (*v1.EnvVar, error) {
@@ -33,52 +25,3 @@ var (
 	ErrSecretDoesNotHaveKey    = errors.New("secret does not have key")
 	ErrConfigMapDoesNotHaveKey = errors.New("config map does not have key")
 )
-
-func (client KubeClient) GetValueFromEnv(ctx context.Context, pod v1.Pod, envNames []string) (string, error) {
-	if len(envNames) == 0 {
-		return "", ErrNoEnvNames
-	}
-
-	var err error
-	var envVar *v1.EnvVar
-	for _, envName := range envNames {
-		envVar, err = FindEnvVar(pod, envName)
-		if err == nil {
-			break
-		}
-	}
-	if err != nil {
-		if errors.Is(err, ErrEnvVarNotFound) {
-			return "", fmt.Errorf("%w: %s", ErrNoDiscoveryEnvs, strings.Join(envNames, ", "))
-		}
-		return "", err
-	}
-
-	if envVar.ValueFrom != nil {
-		switch {
-		case envVar.ValueFrom.SecretKeyRef != nil:
-			secretKeyRef := envVar.ValueFrom.SecretKeyRef
-			secret, err := client.Secrets().Get(ctx, secretKeyRef.Name, v1meta.GetOptions{})
-			if err != nil {
-				return "", err
-			}
-			data, ok := secret.Data[secretKeyRef.Key]
-			if !ok {
-				return "", fmt.Errorf("%w: %v", ErrSecretDoesNotHaveKey, secretKeyRef)
-			}
-			return string(data), nil
-		case envVar.ValueFrom.ConfigMapKeyRef != nil:
-			configMapRef := envVar.ValueFrom.ConfigMapKeyRef
-			configMap, err := client.ConfigMaps().Get(ctx, configMapRef.Name, v1meta.GetOptions{})
-			if err != nil {
-				return "", err
-			}
-			data, ok := configMap.Data[configMapRef.Key]
-			if !ok {
-				return "", fmt.Errorf("%w: %v", ErrConfigMapDoesNotHaveKey, configMapRef)
-			}
-			return data, nil
-		}
-	}
-	return envVar.Value, nil
-}

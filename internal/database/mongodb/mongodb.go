@@ -18,16 +18,16 @@ func (MongoDB) Name() string {
 	return "mongodb"
 }
 
-func (MongoDB) PortEnvNames() []string {
-	return []string{"MONGODB_PORT_NUMBER"}
+func (MongoDB) PortEnvNames() kubernetes.ConfigFinders {
+	return kubernetes.ConfigFinders{kubernetes.ConfigFromEnv{"MONGODB_PORT_NUMBER"}}
 }
 
 func (MongoDB) DefaultPort() uint16 {
 	return 27017
 }
 
-func (MongoDB) DatabaseEnvNames() []string {
-	return []string{"MONGODB_EXTRA_DATABASES"}
+func (MongoDB) DatabaseEnvNames() kubernetes.ConfigFinders {
+	return kubernetes.ConfigFinders{kubernetes.ConfigFromEnv{"MONGODB_EXTRA_DATABASES"}}
 }
 
 func (MongoDB) ListDatabasesQuery() string {
@@ -38,8 +38,8 @@ func (MongoDB) ListTablesQuery() string {
 	return "db.getCollectionNames().forEach(function(collection){ print(collection) })"
 }
 
-func (MongoDB) UserEnvNames() []string {
-	return []string{"MONGODB_EXTRA_USERNAMES", "MONGODB_ROOT_USER"}
+func (MongoDB) UserEnvNames() kubernetes.ConfigFinders {
+	return kubernetes.ConfigFinders{kubernetes.ConfigFromEnv{"MONGODB_EXTRA_USERNAMES", "MONGODB_ROOT_USER"}}
 }
 
 func (MongoDB) DefaultUser() string {
@@ -73,11 +73,11 @@ func (MongoDB) FilterPods(ctx context.Context, client kubernetes.KubeClient, pod
 	return pods, nil
 }
 
-func (db MongoDB) PasswordEnvNames(c config.Global) []string {
+func (db MongoDB) PasswordEnvNames(c config.Global) kubernetes.ConfigFinders {
 	if c.Username == db.DefaultUser() {
-		return []string{"MONGODB_ROOT_PASSWORD"}
+		return kubernetes.ConfigFinders{kubernetes.ConfigFromEnv{"MONGODB_ROOT_PASSWORD"}}
 	}
-	return []string{"MONGODB_EXTRA_PASSWORDS"}
+	return kubernetes.ConfigFinders{kubernetes.ConfigFromEnv{"MONGODB_EXTRA_PASSWORDS"}}
 }
 
 func (db MongoDB) AuthenticationDatabase(c config.Global) string {

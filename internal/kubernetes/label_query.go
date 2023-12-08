@@ -1,18 +1,26 @@
 package kubernetes
 
 import (
+	log "github.com/sirupsen/logrus"
 	v1 "k8s.io/api/core/v1"
+	"k8s.io/apimachinery/pkg/selection"
 )
 
 type LabelQuery struct {
-	Name  string
-	Value string
+	Name     string
+	Operator selection.Operator
+	Value    string
 }
 
 func (query LabelQuery) Matches(pod v1.Pod) bool {
 	labelValue, ok := pod.Labels[query.Name]
-	if ok && labelValue == query.Value {
-		return true
+	switch query.Operator {
+	case selection.Exists:
+		return ok
+	case "":
+		return ok && labelValue == query.Value
+	default:
+		log.Panicf("Query operator not implemented: %q", query.Operator)
 	}
 	return false
 }

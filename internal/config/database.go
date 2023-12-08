@@ -13,19 +13,19 @@ type Database interface {
 	Name() string
 	DefaultPort() uint16
 
-	PortEnvNames() []string
-	DatabaseEnvNames() []string
+	PortEnvNames() kubernetes.ConfigFinders
+	DatabaseEnvNames() kubernetes.ConfigFinders
 	ListDatabasesQuery() string
 	ListTablesQuery() string
 
-	UserEnvNames() []string
+	UserEnvNames() kubernetes.ConfigFinders
 	DefaultUser() string
 
 	DropDatabaseQuery(database string) string
 	AnalyzeQuery() string
 	PodLabels() []kubernetes.LabelQueryable
 	FilterPods(ctx context.Context, client kubernetes.KubeClient, pods []v1.Pod) ([]v1.Pod, error)
-	PasswordEnvNames(conf Global) []string
+	PasswordEnvNames(conf Global) kubernetes.ConfigFinders
 
 	ExecCommand(conf Exec) *command.Builder
 	DumpCommand(conf Dump) *command.Builder

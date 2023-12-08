@@ -18,16 +18,16 @@ func (MariaDB) Name() string {
 	return "mariadb"
 }
 
-func (MariaDB) PortEnvNames() []string {
-	return []string{"MARIADB_PORT_NUMBER", "MYSQL_PORT_NUMBER"}
+func (MariaDB) PortEnvNames() kubernetes.ConfigFinders {
+	return kubernetes.ConfigFinders{kubernetes.ConfigFromEnv{"MARIADB_PORT_NUMBER", "MYSQL_PORT_NUMBER"}}
 }
 
 func (MariaDB) DefaultPort() uint16 {
 	return 3306
 }
 
-func (MariaDB) DatabaseEnvNames() []string {
-	return []string{"MARIADB_DATABASE", "MYSQL_DATABASE"}
+func (MariaDB) DatabaseEnvNames() kubernetes.ConfigFinders {
+	return kubernetes.ConfigFinders{kubernetes.ConfigFromEnv{"MARIADB_DATABASE", "MYSQL_DATABASE"}}
 }
 
 func (MariaDB) ListDatabasesQuery() string {
@@ -38,8 +38,8 @@ func (MariaDB) ListTablesQuery() string {
 	return "show tables"
 }
 
-func (MariaDB) UserEnvNames() []string {
-	return []string{"MARIADB_USER", "MYSQL_USER"}
+func (MariaDB) UserEnvNames() kubernetes.ConfigFinders {
+	return kubernetes.ConfigFinders{kubernetes.ConfigFromEnv{"MARIADB_USER", "MYSQL_USER"}}
 }
 
 func (MariaDB) DefaultUser() string {
@@ -77,11 +77,15 @@ func (MariaDB) FilterPods(ctx context.Context, client kubernetes.KubeClient, pod
 	return pods, nil
 }
 
-func (db MariaDB) PasswordEnvNames(c config.Global) []string {
+func (db MariaDB) PasswordEnvNames(c config.Global) kubernetes.ConfigFinders {
 	if c.Username == db.DefaultUser() {
-		return []string{"MARIADB_ROOT_PASSWORD", "MYSQL_ROOT_PASSWORD"}
+		return kubernetes.ConfigFinders{
+			kubernetes.ConfigFromEnv{"MARIADB_ROOT_PASSWORD", "MYSQL_ROOT_PASSWORD"},
+		}
 	}
-	return []string{"MARIADB_PASSWORD", "MYSQL_PASSWORD"}
+	return kubernetes.ConfigFinders{
+		kubernetes.ConfigFromEnv{"MARIADB_PASSWORD", "MYSQL_PASSWORD"},
+	}
 }
 
 func (MariaDB) ExecCommand(conf config.Exec) *command.Builder {

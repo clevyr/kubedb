@@ -15,6 +15,7 @@ import (
 	"github.com/clevyr/kubedb/internal/database/sqlformat"
 	"github.com/clevyr/kubedb/internal/kubernetes"
 	log "github.com/sirupsen/logrus"
+	"k8s.io/apimachinery/pkg/selection"
 
 	v1 "k8s.io/api/core/v1"
 )
@@ -25,16 +26,22 @@ func (Postgres) Name() string {
 	return "postgres"
 }
 
-func (Postgres) PortEnvNames() []string {
-	return []string{"POSTGRESQL_PORT_NUMBER"}
+func (Postgres) PortEnvNames() kubernetes.ConfigFinders {
+	return kubernetes.ConfigFinders{
+		kubernetes.ConfigFromEnv{"POSTGRESQL_PORT_NUMBER"},
+		kubernetes.ConfigFromVolumeSecret{Name: "app-secret", Key: "port"},
+	}
 }
 
 func (Postgres) DefaultPort() uint16 {
 	return 5432
 }
 
-func (Postgres) DatabaseEnvNames() []string {
-	return []string{"POSTGRES_DATABASE", "POSTGRES_DB"}
+func (Postgres) DatabaseEnvNames() kubernetes.ConfigFinders {
+	return kubernetes.ConfigFinders{
+		kubernetes.ConfigFromEnv{"POSTGRES_DATABASE", "POSTGRES_DB"},
+		kubernetes.ConfigFromVolumeSecret{Name: "app-secret", Key: "dbname"},
+	}
 }
 
 func (Postgres) ListDatabasesQuery() string {
@@ -45,8 +52,11 @@ func (Postgres) ListTablesQuery() string {
 	return "SELECT table_name FROM information_schema.tables WHERE table_schema='public' AND table_type='BASE TABLE'"
 }
 
-func (Postgres) UserEnvNames() []string {
-	return []string{"POSTGRES_USER", "PGPOOL_POSTGRES_USERNAME", "PGUSER_SUPERUSER"}
+func (Postgres) UserEnvNames() kubernetes.ConfigFinders {
+	return kubernetes.ConfigFinders{
+		kubernetes.ConfigFromEnv{"POSTGRES_USER", "PGPOOL_POSTGRES_USERNAME", "PGUSER_SUPERUSER"},
+		kubernetes.ConfigFromVolumeSecret{Name: "app-secret", Key: "username"},
+	}
 }
 
 func (Postgres) DefaultUser() string {
@@ -71,6 +81,7 @@ func (Postgres) PodLabels() []kubernetes.LabelQueryable {
 			{Name: "app.kubernetes.io/name", Value: "postgresql-ha"},
 			{Name: "app.kubernetes.io/component", Value: "postgresql"},
 		},
+		kubernetes.LabelQuery{Name: "cnpg.io/cluster", Operator: selection.Exists},
 		kubernetes.LabelQuery{Name: "application", Value: "spilo"},
 		kubernetes.LabelQuery{Name: "app", Value: "postgresql"},
 	}
@@ -117,6 +128,16 @@ func (Postgres) FilterPods(ctx context.Context, client kubernetes.KubeClient, po
 				break
 			}
 		}
+	} else if _, ok := pods[0].Labels["cnpg.io/cluster"]; ok {
+		log.Debug("filtering CloudNativePG Pods for Leader")
+
+		for key, pod := range pods {
+			if role, ok := pod.Labels["cnpg.io/instanceRole"]; ok {
+				if role == "primary" {
+					return pods[key : key+1], nil
+				}
+			}
+		}
 	} else if pods[0].Labels["application"] == "spilo" {
 		log.Debug("querying Patroni for primary instance")
 		cmd := command.NewBuilder("patronictl", "list", "--format=json")
@@ -158,11 +179,16 @@ func (Postgres) FilterPods(ctx context.Context, client kubernetes.KubeClient, po
 	return pods, nil
 }
 
-func (db Postgres) PasswordEnvNames(c config.Global) []string {
+func (db Postgres) PasswordEnvNames(c config.Global) kubernetes.ConfigFinders {
+	var searchEnvs kubernetes.ConfigFromEnv
 	if c.Username == db.DefaultUser() {
-		return []string{"POSTGRES_POSTGRES_PASSWORD", "POSTGRES_PASSWORD", "PGPOOL_POSTGRES_PASSWORD", "PGPASSWORD_SUPERUSER"}
+		searchEnvs = append(searchEnvs, "POSTGRES_POSTGRES_PASSWORD")
 	}
-	return []string{"POSTGRES_PASSWORD", "PGPOOL_POSTGRES_PASSWORD", "PGPASSWORD_SUPERUSER"}
+	searchEnvs = append(searchEnvs, "POSTGRES_PASSWORD", "PGPOOL_POSTGRES_PASSWORD", "PGPASSWORD_SUPERUSER")
+	return kubernetes.ConfigFinders{
+		searchEnvs,
+		kubernetes.ConfigFromVolumeSecret{Name: "app-secret", Key: "password"},
+	}
 }
 
 func (Postgres) ExecCommand(conf config.Exec) *command.Builder {

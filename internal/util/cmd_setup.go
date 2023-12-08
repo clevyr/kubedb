@@ -147,7 +147,7 @@ func DefaultSetup(cmd *cobra.Command, conf *config.Global, opts SetupOptions) (e
 			panic(err)
 		}
 		if conf.Port == 0 {
-			port, err := conf.Client.GetValueFromEnv(ctx, conf.DbPod, conf.Dialect.PortEnvNames())
+			port, err := conf.Dialect.PortEnvNames().Search(ctx, conf.Client, conf.DbPod)
 			if err != nil {
 				log.Debug("could not detect port from pod env")
 			} else {
@@ -172,7 +172,7 @@ func DefaultSetup(cmd *cobra.Command, conf *config.Global, opts SetupOptions) (e
 			panic(err)
 		}
 		if conf.Database == "" {
-			conf.Database, err = conf.Client.GetValueFromEnv(ctx, conf.DbPod, conf.Dialect.DatabaseEnvNames())
+			conf.Database, err = conf.Dialect.DatabaseEnvNames().Search(ctx, conf.Client, conf.DbPod)
 			if err != nil {
 				log.Debug("could not detect database from pod env")
 			} else {
@@ -188,7 +188,7 @@ func DefaultSetup(cmd *cobra.Command, conf *config.Global, opts SetupOptions) (e
 			panic(err)
 		}
 		if conf.Username == "" {
-			conf.Username, err = conf.Client.GetValueFromEnv(ctx, conf.DbPod, conf.Dialect.UserEnvNames())
+			conf.Username, err = conf.Dialect.UserEnvNames().Search(ctx, conf.Client, conf.DbPod)
 			if err != nil {
 				conf.Username = conf.Dialect.DefaultUser()
 				log.WithField("user", conf.Username).Debug("could not detect user from pod env, using default")
@@ -202,7 +202,7 @@ func DefaultSetup(cmd *cobra.Command, conf *config.Global, opts SetupOptions) (e
 			panic(err)
 		}
 		if conf.Password == "" {
-			conf.Password, err = conf.Client.GetValueFromEnv(ctx, conf.DbPod, conf.Dialect.PasswordEnvNames(*conf))
+			conf.Password, err = conf.Dialect.PasswordEnvNames(*conf).Search(ctx, conf.Client, conf.DbPod)
 			if err != nil {
 				return err
 			}

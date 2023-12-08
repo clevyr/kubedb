@@ -21,8 +21,8 @@ func TestLabelQueryAnd_FindPods(t *testing.T) {
 		{
 			"1 found",
 			LabelQueryAnd{
-				{"key", "value"},
-				{"key2", "value2"},
+				{Name: "key", Value: "value"},
+				{Name: "key2", Value: "value2"},
 			},
 			args{&podList},
 			[]v1.Pod{pod},
@@ -31,8 +31,8 @@ func TestLabelQueryAnd_FindPods(t *testing.T) {
 		{
 			"0 found",
 			LabelQueryAnd{
-				{"key", "value"},
-				{"key2", "wrong"},
+				{Name: "key", Value: "value"},
+				{Name: "key2", Value: "wrong"},
 			},
 			args{&podList},
 			nil,
@@ -65,8 +65,8 @@ func TestLabelQueryAnd_Matches(t *testing.T) {
 		{
 			"1 found",
 			LabelQueryAnd{
-				{"key", "value"},
-				{"key2", "value2"},
+				{Name: "key", Value: "value"},
+				{Name: "key2", Value: "value2"},
 			},
 			args{pod},
 			true,
@@ -74,8 +74,8 @@ func TestLabelQueryAnd_Matches(t *testing.T) {
 		{
 			"0 found",
 			LabelQueryAnd{
-				{"key", "value"},
-				{"key2", "wrong"},
+				{Name: "key", Value: "value"},
+				{Name: "key2", Value: "wrong"},
 			},
 			args{pod},
 			false,
