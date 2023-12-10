@@ -2,6 +2,7 @@ package progressbar
 
 import (
 	"io"
+	"time"
 )
 
 func NewBarSafeLogger(w io.Writer, bar *ProgressBar) *BarSafeLogger {
@@ -12,9 +13,10 @@ func NewBarSafeLogger(w io.Writer, bar *ProgressBar) *BarSafeLogger {
 }
 
 type BarSafeLogger struct {
-	out     io.Writer
-	bar     *ProgressBar
-	atStart bool
+	out          io.Writer
+	bar          *ProgressBar
+	canOverwrite bool
+	lastWrite    time.Time
 }
 
 func (l *BarSafeLogger) Write(p []byte) (int, error) {
@@ -25,7 +27,7 @@ func (l *BarSafeLogger) Write(p []byte) (int, error) {
 	l.bar.mu.Lock()
 	defer l.bar.mu.Unlock()
 
-	if !l.atStart {
+	if l.canOverwrite {
 		if _, err := l.out.Write([]byte("\r\x1B[K")); err != nil {
 			return 0, err
 		}
@@ -40,10 +42,11 @@ func (l *BarSafeLogger) Write(p []byte) (int, error) {
 		if _, err := l.out.Write([]byte(l.bar.String())); err != nil {
 			return n, err
 		}
-		l.atStart = false
+		l.canOverwrite = true
 	} else {
-		l.atStart = true
+		l.canOverwrite = false
 	}
 
+	l.lastWrite = time.Now()
 	return n, nil
 }

@@ -61,9 +61,15 @@ func New(w io.Writer, max int64, label string, spinnerKey string) (*ProgressBar,
 				if bar.IsFinished() {
 					return
 				}
-				if !bar.logger.atStart && bar.mu.TryLock() {
-					_ = bar.RenderBlank()
-					_, _ = os.Stderr.Write([]byte(bar.String()))
+				if bar.mu.TryLock() {
+					if !bar.logger.canOverwrite && time.Since(bar.logger.lastWrite) > time.Millisecond {
+						_, _ = os.Stderr.Write([]byte("\n"))
+						bar.logger.canOverwrite = true
+					}
+					if bar.logger.canOverwrite {
+						_ = bar.RenderBlank()
+						_, _ = os.Stderr.Write([]byte(bar.String()))
+					}
 					bar.mu.Unlock()
 				}
 			}
