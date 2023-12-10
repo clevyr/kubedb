@@ -201,7 +201,7 @@ func TestPostgres_PasswordEnvNames(t *testing.T) {
 				"PGPOOL_POSTGRES_PASSWORD",
 				"PGPASSWORD_SUPERUSER",
 			},
-			kubernetes.ConfigFromVolumeSecret{Name: "app-secret", Key: "password"},
+			kubernetes.ConfigFromVolumeSecret{Name: "superuser-secret", Key: "password"},
 		}},
 	}
 	for _, tt := range tests {

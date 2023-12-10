@@ -181,14 +181,15 @@ func (Postgres) FilterPods(ctx context.Context, client kubernetes.KubeClient, po
 
 func (db Postgres) PasswordEnvNames(c config.Global) kubernetes.ConfigFinders {
 	var searchEnvs kubernetes.ConfigFromEnv
+	searchUser := kubernetes.ConfigFromVolumeSecret{Key: "password"}
 	if c.Username == db.DefaultUser() {
 		searchEnvs = append(searchEnvs, "POSTGRES_POSTGRES_PASSWORD")
+		searchUser.Name = "superuser-secret"
+	} else {
+		searchUser.Name = "app-secret"
 	}
 	searchEnvs = append(searchEnvs, "POSTGRES_PASSWORD", "PGPOOL_POSTGRES_PASSWORD", "PGPASSWORD_SUPERUSER")
-	return kubernetes.ConfigFinders{
-		searchEnvs,
-		kubernetes.ConfigFromVolumeSecret{Name: "app-secret", Key: "password"},
-	}
+	return kubernetes.ConfigFinders{searchEnvs, searchUser}
 }
 
 func (Postgres) ExecCommand(conf config.Exec) *command.Builder {
