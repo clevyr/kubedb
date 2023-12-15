@@ -20,6 +20,17 @@ import (
 	v1 "k8s.io/api/core/v1"
 )
 
+var (
+	postgresqlHaQuery = kubernetes.LabelQueryAnd{
+		{Name: "app.kubernetes.io/name", Value: "postgresql-ha"},
+		{Name: "app.kubernetes.io/component", Value: "postgresql"},
+	}
+
+	cnpgQuery = kubernetes.LabelQuery{Name: "cnpg.io/cluster", Operator: selection.Exists}
+
+	zalandoQuery = kubernetes.LabelQuery{Name: "application", Value: "spilo"}
+)
+
 type Postgres struct{}
 
 func (Postgres) Name() string {
@@ -77,23 +88,22 @@ func (Postgres) PodLabels() []kubernetes.LabelQueryable {
 			{Name: "app.kubernetes.io/name", Value: "postgresql"},
 			{Name: "app.kubernetes.io/component", Value: "primary"},
 		},
-		kubernetes.LabelQueryAnd{
-			{Name: "app.kubernetes.io/name", Value: "postgresql-ha"},
-			{Name: "app.kubernetes.io/component", Value: "postgresql"},
-		},
-		kubernetes.LabelQuery{Name: "cnpg.io/cluster", Operator: selection.Exists},
-		kubernetes.LabelQuery{Name: "application", Value: "spilo"},
+		postgresqlHaQuery,
+		cnpgQuery,
+		zalandoQuery,
 		kubernetes.LabelQuery{Name: "app", Value: "postgresql"},
 	}
 }
 
 func (Postgres) FilterPods(ctx context.Context, client kubernetes.KubeClient, pods []v1.Pod) ([]v1.Pod, error) {
-	if len(pods) == 0 {
+	if len(pods) <= 1 {
 		return pods, nil
 	}
 
-	var leaderName string
-	if pods[0].Labels["app.kubernetes.io/name"] == "postgresql-ha" {
+	preferred := make([]v1.Pod, 0, len(pods))
+
+	// bitnami/postgresql-ha
+	if matched := postgresqlHaQuery.FindPods(pods); len(matched) != 0 {
 		// HA chart. Need to detect primary.
 		log.Debug("querying Bitnami repmgr for primary instance")
 		cmd := command.NewBuilder(
@@ -106,7 +116,7 @@ func (Postgres) FilterPods(ctx context.Context, client kubernetes.KubeClient, po
 		var buf bytes.Buffer
 		var errBuf strings.Builder
 		if err := client.Exec(ctx, kubernetes.ExecOptions{
-			Pod:    pods[0],
+			Pod:    matched[0],
 			Cmd:    cmd.String(),
 			Stdout: &buf,
 			Stderr: &errBuf,
@@ -114,6 +124,7 @@ func (Postgres) FilterPods(ctx context.Context, client kubernetes.KubeClient, po
 			return pods, fmt.Errorf("%w: %s", err, errBuf.String())
 		}
 
+		var primaryName string
 		r := csv.NewReader(&buf)
 		for {
 			row, err := r.Read()
@@ -124,28 +135,40 @@ func (Postgres) FilterPods(ctx context.Context, client kubernetes.KubeClient, po
 				return pods, err
 			}
 			if row[2] == "primary" {
-				leaderName = row[1]
+				primaryName = row[1]
 				break
 			}
 		}
-	} else if _, ok := pods[0].Labels["cnpg.io/cluster"]; ok {
-		log.Debug("filtering CloudNativePG Pods for Leader")
 
-		for key, pod := range pods {
-			if role, ok := pod.Labels["cnpg.io/instanceRole"]; ok {
-				if role == "primary" {
-					return pods[key : key+1], nil
+		if primaryName != "" {
+			for _, pod := range matched {
+				if pod.Name == primaryName {
+					preferred = append(preferred, pod)
 				}
 			}
 		}
-	} else if pods[0].Labels["application"] == "spilo" {
+	}
+
+	// CloudNativePG
+	if matched := cnpgQuery.FindPods(pods); len(matched) != 0 {
+		log.Debug("filtering CloudNativePG Pods for Leader")
+
+		for _, pod := range matched {
+			if role, ok := pod.Labels["cnpg.io/instanceRole"]; ok && role == "primary" {
+				preferred = append(preferred, pod)
+			}
+		}
+	}
+
+	// Zalando Postgres Operator
+	if matched := zalandoQuery.FindPods(pods); len(matched) != 0 {
 		log.Debug("querying Patroni for primary instance")
 		cmd := command.NewBuilder("patronictl", "list", "--format=json")
 
 		var buf bytes.Buffer
 		var errBuf strings.Builder
 		if err := client.Exec(ctx, kubernetes.ExecOptions{
-			Pod:    pods[0],
+			Pod:    matched[0],
 			Cmd:    cmd.String(),
 			Stdout: &buf,
 			Stderr: &errBuf,
@@ -159,24 +182,19 @@ func (Postgres) FilterPods(ctx context.Context, client kubernetes.KubeClient, po
 		}
 
 		for _, member := range data {
-			if role, ok := member["Role"]; ok && role == "Leader" {
-				if name, ok := member["Member"].(string); ok {
-					leaderName = name
-					break
+			if role, ok := member["Role"]; ok && role != "Leader" {
+				if leaderName, ok := member["Member"].(string); ok {
+					for _, pod := range matched {
+						if pod.Name == leaderName {
+							preferred = append(preferred, pod)
+						}
+					}
 				}
 			}
 		}
 	}
 
-	if leaderName != "" {
-		for key, pod := range pods {
-			if pod.Name == leaderName {
-				return pods[key : key+1], nil
-			}
-		}
-	}
-
-	return pods, nil
+	return preferred, nil
 }
 
 func (db Postgres) PasswordEnvNames(c config.Global) kubernetes.ConfigFinders {

@@ -25,15 +25,14 @@ func (query LabelQuery) Matches(pod v1.Pod) bool {
 	return false
 }
 
-func (query LabelQuery) FindPods(list *v1.PodList) (pods []v1.Pod, err error) {
-	for _, pod := range list.Items {
+func (query LabelQuery) FindPods(pods []v1.Pod) []v1.Pod {
+	matched := make([]v1.Pod, 0, len(pods))
+
+	for _, pod := range pods {
 		if query.Matches(pod) {
-			pods = append(pods, pod)
+			matched = append(matched, pod)
 		}
 	}
 
-	if len(pods) == 0 {
-		err = ErrPodNotFound
-	}
-	return pods, err
+	return matched
 }

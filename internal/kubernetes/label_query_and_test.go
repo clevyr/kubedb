@@ -9,14 +9,13 @@ import (
 
 func TestLabelQueryAnd_FindPods(t *testing.T) {
 	type args struct {
-		list *v1.PodList
+		list []v1.Pod
 	}
 	tests := []struct {
 		name     string
 		queries  LabelQueryAnd
 		args     args
 		wantPods []v1.Pod
-		wantErr  bool
 	}{
 		{
 			"1 found",
@@ -24,9 +23,8 @@ func TestLabelQueryAnd_FindPods(t *testing.T) {
 				{Name: "key", Value: "value"},
 				{Name: "key2", Value: "value2"},
 			},
-			args{&podList},
+			args{pods},
 			[]v1.Pod{pod},
-			false,
 		},
 		{
 			"0 found",
@@ -34,20 +32,13 @@ func TestLabelQueryAnd_FindPods(t *testing.T) {
 				{Name: "key", Value: "value"},
 				{Name: "key2", Value: "wrong"},
 			},
-			args{&podList},
-			nil,
-			true,
+			args{pods},
+			[]v1.Pod{},
 		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			gotPods, err := tt.queries.FindPods(tt.args.list)
-			if tt.wantErr {
-				assert.Error(t, err)
-			} else {
-				assert.NoError(t, err)
-			}
-			assert.Equal(t, tt.wantPods, gotPods)
+			assert.Equal(t, tt.wantPods, tt.queries.FindPods(tt.args.list))
 		})
 	}
 }

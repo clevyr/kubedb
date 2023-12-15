@@ -110,6 +110,10 @@ func DefaultSetup(cmd *cobra.Command, conf *config.Global, opts SetupOptions) (e
 			if err != nil {
 				return err
 			}
+
+			if len(pods) == 0 {
+				return kubernetes.ErrPodNotFound
+			}
 		}
 	}
 

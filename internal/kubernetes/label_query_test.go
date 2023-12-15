@@ -17,7 +17,7 @@ var pod = v1.Pod{
 	},
 }
 
-var podList = v1.PodList{Items: []v1.Pod{pod}}
+var pods = []v1.Pod{pod}
 
 func TestLabelQuery_FindPods(t *testing.T) {
 	type fields struct {
@@ -25,17 +25,16 @@ func TestLabelQuery_FindPods(t *testing.T) {
 		Value string
 	}
 	type args struct {
-		list *v1.PodList
+		list []v1.Pod
 	}
 	tests := []struct {
 		name     string
 		fields   fields
 		args     args
 		wantPods []v1.Pod
-		wantErr  bool
 	}{
-		{"1 found", fields{"key", "value"}, args{&podList}, []v1.Pod{pod}, false},
-		{"0 found", fields{"key", "wrong"}, args{&podList}, nil, true},
+		{"1 found", fields{"key", "value"}, args{pods}, []v1.Pod{pod}},
+		{"0 found", fields{"key", "wrong"}, args{pods}, []v1.Pod{}},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -43,13 +42,7 @@ func TestLabelQuery_FindPods(t *testing.T) {
 				Name:  tt.fields.Name,
 				Value: tt.fields.Value,
 			}
-			gotPods, err := query.FindPods(tt.args.list)
-			if tt.wantErr {
-				assert.Error(t, err)
-			} else {
-				assert.NoError(t, err)
-			}
-			assert.Equal(t, tt.wantPods, gotPods)
+			assert.Equal(t, tt.wantPods, query.FindPods(tt.args.list))
 		})
 	}
 }
