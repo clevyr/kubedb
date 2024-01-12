@@ -1,6 +1,6 @@
 module github.com/clevyr/kubedb
 
-go 1.21.5
+go 1.21.6
 
 require (
 	github.com/AlecAivazis/survey/v2 v2.3.7
