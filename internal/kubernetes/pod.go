@@ -71,13 +71,16 @@ func (client KubeClient) Exec(ctx context.Context, opt ExecOptions) error {
 	if opt.DisablePing {
 		pingPeriod = 0
 	}
-	upgradeRoundTripper := spdy.NewRoundTripperWithConfig(spdy.RoundTripperConfig{
+	upgradeRoundTripper, err := spdy.NewRoundTripperWithConfig(spdy.RoundTripperConfig{
 		TLS:     tlsConfig,
 		Proxier: proxy,
 		// Needs to be 0 for dump/restore to prevent unexpected EOF.
 		// See https://github.com/kubernetes/kubernetes/issues/60140#issuecomment-1411477275
 		PingPeriod: pingPeriod,
 	})
+	if err != nil {
+		return err
+	}
 	wrapper, err := rest.HTTPWrappersForConfig(client.ClientConfig, upgradeRoundTripper)
 	if err != nil {
 		return err
