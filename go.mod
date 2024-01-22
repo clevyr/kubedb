@@ -7,7 +7,7 @@ require (
 	github.com/alessio/shellescape v1.4.2
 	github.com/fatih/color v1.16.0
 	github.com/gabe565/go-spinners v1.0.1
-	github.com/jedib0t/go-pretty/v6 v6.5.2
+	github.com/jedib0t/go-pretty/v6 v6.5.3
 	github.com/klauspost/pgzip v1.2.6
 	github.com/mattn/go-isatty v0.0.20
 	github.com/schollz/progressbar/v3 v3.14.1
