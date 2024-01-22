@@ -32,10 +32,11 @@ func (action Exec) Run(ctx context.Context) error {
 		sizeQueue = t.MonitorSize(t.GetSize())
 	}
 
+	cmd := action.buildCommand().String()
 	return t.Safe(func() error {
 		return action.Client.Exec(ctx, kubernetes.ExecOptions{
 			Pod:       action.JobPod,
-			Cmd:       action.buildCommand().String(),
+			Cmd:       cmd,
 			Stdin:     t.In,
 			Stdout:    t.Out,
 			Stderr:    os.Stderr,
