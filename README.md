@@ -16,8 +16,16 @@ to configure itself via the Kubernetes EnvVar API.
 
 ## Supported Databases
 - PostgreSQL
+  - [bitnami/postgresql](https://artifacthub.io/packages/helm/bitnami/postgresql)
+  - [bitnami/postgresql-ha](https://artifacthub.io/packages/helm/bitnami/postgresql-ha)
+  - [CloudNativePG](https://cloudnative-pg.io)
+  - [Zalando Operator](https://github.com/zalando/postgres-operator)
 - MariaDB/MySQL
+  - [bitnami/mariadb](https://artifacthub.io/packages/helm/bitnami/mariadb)
+  - [bitnami/mariadb-galera](https://artifacthub.io/packages/helm/bitnami/mariadb-galera)
+  - [bitnami/mysql](https://artifacthub.io/packages/helm/bitnami/mysql)
 - MongoDB
+  - [bitnami/mongodb](https://artifacthub.io/packages/helm/bitnami/mongodb)
 
 ## Installation
 
