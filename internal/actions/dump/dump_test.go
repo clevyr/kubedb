@@ -46,7 +46,7 @@ func Test_buildCommand(t *testing.T) {
 		{
 			"mariadb-gzip",
 			args{Dump{Dump: config.Dump{Files: config.Files{Format: sqlformat.Gzip}, Global: config.Global{Dialect: mariadb.MariaDB{}, Host: "1.1.1.1", Database: "d", Username: "u", RemoteGzip: true}}}},
-			command.NewBuilder(mysql_pwd, "mysqldump", "--host=1.1.1.1", "--user=u", "d", "--verbose", command.Pipe, "gzip", "--force"),
+			command.NewBuilder(mysql_pwd, command.Raw(`"$(which mariadb-dump || which mysqldump)"`), "--host=1.1.1.1", "--user=u", "d", "--verbose", command.Pipe, "gzip", "--force"),
 		},
 	}
 	for _, tt := range tests {

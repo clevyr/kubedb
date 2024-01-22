@@ -91,7 +91,7 @@ func (db MariaDB) PasswordEnvNames(c config.Global) kubernetes.ConfigFinders {
 func (MariaDB) ExecCommand(conf config.Exec) *command.Builder {
 	cmd := command.NewBuilder(
 		command.NewEnv("MYSQL_PWD", conf.Password),
-		"exec", "mysql", "--host="+conf.Host, "--user="+conf.Username,
+		"exec", command.Raw(`"$(which mariadb || which mysql)"`), "--host="+conf.Host, "--user="+conf.Username,
 	)
 	if conf.Port != 0 {
 		cmd.Push("--port=" + strconv.Itoa(int(conf.Port)))
@@ -111,7 +111,7 @@ func (MariaDB) ExecCommand(conf config.Exec) *command.Builder {
 func (MariaDB) DumpCommand(conf config.Dump) *command.Builder {
 	cmd := command.NewBuilder(
 		command.NewEnv("MYSQL_PWD", conf.Password),
-		"mysqldump", "--host="+conf.Host, "--user="+conf.Username, conf.Database,
+		command.Raw(`"$(which mariadb-dump || which mysqldump)"`), "--host="+conf.Host, "--user="+conf.Username, conf.Database,
 	)
 	if conf.Port != 0 {
 		cmd.Push("--port=" + strconv.Itoa(int(conf.Port)))
@@ -134,7 +134,7 @@ func (MariaDB) DumpCommand(conf config.Dump) *command.Builder {
 func (MariaDB) RestoreCommand(conf config.Restore, inputFormat sqlformat.Format) *command.Builder {
 	cmd := command.NewBuilder(
 		command.NewEnv("MYSQL_PWD", conf.Password),
-		"mysql", "--host="+conf.Host, "--user="+conf.Username, "--database="+conf.Database,
+		command.Raw(`"$(which mariadb || which mysql)"`), "--host="+conf.Host, "--user="+conf.Username, "--database="+conf.Database,
 	)
 	if conf.Port != 0 {
 		cmd.Push("--port=" + strconv.Itoa(int(conf.Port)))
