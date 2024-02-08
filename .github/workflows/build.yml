@@ -70,13 +70,21 @@ jobs:
             args+=' --snapshot'
           fi
           echo "args=$args" >> $GITHUB_OUTPUT
+      - name: Generate Token
+        id: app-token
+        if: startsWith(github.ref, 'refs/tags/')
+        uses: actions/create-github-app-token@v1
+        with:
+          app-id: ${{ secrets.BOT_APP_ID }}
+          private-key: ${{ secrets.BOT_APP_PRIVATE_KEY }}
+          repositories: kubedb,homebrew-tap
       - name: Run GoReleaser
         uses: goreleaser/goreleaser-action@v5
         with:
           version: latest
           args: ${{ steps.vars.outputs.args }}
         env:
-          GITHUB_TOKEN: ${{ secrets.GORELEASER_GITHUB_TOKEN }}
+          GITHUB_TOKEN: ${{ steps.app-token.outputs.token }}
           FURY_TOKEN: ${{ secrets.FURY_TOKEN }}
           AUR_SSH_KEY: ${{ secrets.AUR_SSH_KEY }}
       - uses: actions/upload-artifact@v4
