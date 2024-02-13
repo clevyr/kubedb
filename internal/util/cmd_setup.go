@@ -10,7 +10,6 @@ import (
 
 	"github.com/AlecAivazis/survey/v2"
 	"github.com/clevyr/kubedb/internal/config"
-	"github.com/clevyr/kubedb/internal/config/namespace_filter"
 	"github.com/clevyr/kubedb/internal/consts"
 	"github.com/clevyr/kubedb/internal/database"
 	"github.com/clevyr/kubedb/internal/kubernetes"
@@ -52,11 +51,6 @@ func DefaultSetup(cmd *cobra.Command, conf *config.Global, opts SetupOptions) (e
 	log.WithField("namespace", conf.Client.Namespace).Debug("created kube client")
 	conf.Context = conf.Client.Context
 	conf.Namespace = conf.Client.Namespace
-
-	access := namespace_filter.NewFromContext(ctx)
-	if !access.Match(conf.Client.Namespace) {
-		return errors.New("The current action is disabled for namespace " + conf.Client.Namespace)
-	}
 
 	if _, err := conf.Client.Namespaces().Get(ctx, conf.Namespace, metav1.GetOptions{}); err != nil {
 		log.WithError(err).Warn("namespace may not exist")

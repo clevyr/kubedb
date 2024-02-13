@@ -1,12 +1,10 @@
 package dump
 
 import (
-	"context"
 	"os"
 
 	"github.com/clevyr/kubedb/internal/actions/dump"
 	"github.com/clevyr/kubedb/internal/config/flags"
-	"github.com/clevyr/kubedb/internal/config/namespace_filter"
 	"github.com/clevyr/kubedb/internal/consts"
 	"github.com/clevyr/kubedb/internal/util"
 	"github.com/spf13/cobra"
@@ -53,7 +51,6 @@ the generated filename might look like "` + dump.HelpFilename() + `"`,
 	flags.RemoteGzip(cmd)
 	flags.Spinner(cmd, &action.Spinner)
 
-	cmd.SetContext(namespace_filter.NewContext(context.Background(), namespace_filter.ReadOnly))
 	return cmd
 }
 

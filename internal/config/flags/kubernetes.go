@@ -4,7 +4,6 @@ import (
 	"os"
 	"path/filepath"
 
-	"github.com/clevyr/kubedb/internal/config/namespace_filter"
 	"github.com/clevyr/kubedb/internal/consts"
 	"github.com/clevyr/kubedb/internal/kubernetes"
 	"github.com/spf13/cobra"
@@ -68,11 +67,8 @@ func Namespace(cmd *cobra.Command) {
 				return nil, cobra.ShellCompDirectiveError
 			}
 			names := make([]string, 0, len(namespaces.Items))
-			access := namespace_filter.NewFromContext(cmd.Context())
 			for _, namespace := range namespaces.Items {
-				if access.Match(namespace.Name) {
-					names = append(names, namespace.Name)
-				}
+				names = append(names, namespace.Name)
 			}
 			return names, cobra.ShellCompDirectiveNoFileComp
 		})

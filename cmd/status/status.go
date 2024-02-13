@@ -1,7 +1,6 @@
 package status
 
 import (
-	"context"
 	"errors"
 	"fmt"
 	"os"
@@ -10,7 +9,6 @@ import (
 
 	"github.com/clevyr/kubedb/internal/config"
 	"github.com/clevyr/kubedb/internal/config/flags"
-	"github.com/clevyr/kubedb/internal/config/namespace_filter"
 	"github.com/clevyr/kubedb/internal/database"
 	"github.com/clevyr/kubedb/internal/kubernetes"
 	"github.com/clevyr/kubedb/internal/util"
@@ -34,7 +32,6 @@ func New() *cobra.Command {
 	flags.Username(cmd)
 	flags.Password(cmd)
 
-	cmd.SetContext(namespace_filter.NewContext(context.Background(), namespace_filter.ReadOnly))
 	return cmd
 }
 

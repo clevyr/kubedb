@@ -1,11 +1,8 @@
 package exec
 
 import (
-	"context"
-
 	"github.com/clevyr/kubedb/internal/actions/exec"
 	"github.com/clevyr/kubedb/internal/config/flags"
-	"github.com/clevyr/kubedb/internal/config/namespace_filter"
 	"github.com/clevyr/kubedb/internal/consts"
 	"github.com/clevyr/kubedb/internal/util"
 	"github.com/spf13/cobra"
@@ -32,7 +29,6 @@ func New() *cobra.Command {
 	flags.Password(cmd)
 	cmd.Flags().StringVarP(&action.Command, consts.CommandFlag, "c", "", "Run a single command and exit")
 
-	cmd.SetContext(namespace_filter.NewContext(context.Background(), namespace_filter.ReadWrite))
 	return cmd
 }
 
