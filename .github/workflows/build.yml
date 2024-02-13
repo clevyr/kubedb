@@ -28,8 +28,6 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
-      - name: Change Cache Key
-        run: echo '// ${{ github.job }}' >> go.sum
       - name: Set up Go
         uses: actions/setup-go@v5
         with:
