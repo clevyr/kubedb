@@ -26,6 +26,7 @@ type Dump struct {
 func (action Dump) Run(ctx context.Context) (err error) {
 	if action.Filename == "" {
 		action.Filename = Filename{
+			Database:  action.Database,
 			Namespace: action.Client.Namespace,
 			Ext:       action.Dialect.DumpExtension(action.Format),
 			Date:      time.Now(),
