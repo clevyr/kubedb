@@ -182,7 +182,7 @@ func (Postgres) FilterPods(ctx context.Context, client kubernetes.KubeClient, po
 		}
 
 		for _, member := range data {
-			if role, ok := member["Role"]; ok && role != "Leader" {
+			if role, ok := member["Role"]; ok && role == "Leader" {
 				if leaderName, ok := member["Member"].(string); ok {
 					for _, pod := range matched {
 						if pod.Name == leaderName {
