@@ -4,7 +4,6 @@ import (
 	"bytes"
 	"context"
 	"encoding/csv"
-	"encoding/json"
 	"fmt"
 	"io"
 	"strconv"
@@ -162,34 +161,11 @@ func (Postgres) FilterPods(ctx context.Context, client kubernetes.KubeClient, po
 
 	// Zalando Postgres Operator
 	if matched := zalandoQuery.FindPods(pods); len(matched) != 0 {
-		log.Debug("querying Patroni for primary instance")
-		cmd := command.NewBuilder("patronictl", "list", "--format=json")
+		log.Debug("filtering Zalando Pods for Leader")
 
-		var buf bytes.Buffer
-		var errBuf strings.Builder
-		if err := client.Exec(ctx, kubernetes.ExecOptions{
-			Pod:    matched[0],
-			Cmd:    cmd.String(),
-			Stdout: &buf,
-			Stderr: &errBuf,
-		}); err != nil {
-			return pods, fmt.Errorf("%w: %s", err, errBuf.String())
-		}
-
-		var data []map[string]any
-		if err := json.NewDecoder(&buf).Decode(&data); err != nil {
-			return pods, err
-		}
-
-		for _, member := range data {
-			if role, ok := member["Role"]; ok && role == "Leader" {
-				if leaderName, ok := member["Member"].(string); ok {
-					for _, pod := range matched {
-						if pod.Name == leaderName {
-							preferred = append(preferred, pod)
-						}
-					}
-				}
+		for _, pod := range matched {
+			if role, ok := pod.Labels["spilo-role"]; ok && role == "master" {
+				preferred = append(preferred, pod)
 			}
 		}
 	}
