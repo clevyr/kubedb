@@ -28,6 +28,7 @@ import (
 type SetupOptions struct {
 	Name             string
 	DisableAuthFlags bool
+	NoSurvey         bool
 }
 
 func DefaultSetup(cmd *cobra.Command, conf *config.Global, opts SetupOptions) (err error) {
@@ -118,7 +119,7 @@ func DefaultSetup(cmd *cobra.Command, conf *config.Global, opts SetupOptions) (e
 		}
 	}
 
-	if len(pods) == 1 {
+	if len(pods) == 1 || opts.NoSurvey {
 		conf.DbPod = pods[0]
 	} else {
 		names := make([]string, 0, len(pods))

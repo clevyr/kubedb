@@ -123,7 +123,7 @@ func listTables(cmd *cobra.Command, args []string, toComplete string) ([]string,
 	conf := config.Exec{DisableHeaders: true}
 
 	viper.Set(consts.NoJobKey, true)
-	err := util.DefaultSetup(cmd, &conf.Global, util.SetupOptions{})
+	err := util.DefaultSetup(cmd, &conf.Global, util.SetupOptions{NoSurvey: true})
 	if err != nil {
 		return nil, cobra.ShellCompDirectiveError
 	}
@@ -135,7 +135,7 @@ func listDatabases(cmd *cobra.Command, args []string, toComplete string) ([]stri
 	conf := config.Exec{DisableHeaders: true}
 
 	viper.Set(consts.NoJobKey, true)
-	err := util.DefaultSetup(cmd, &conf.Global, util.SetupOptions{})
+	err := util.DefaultSetup(cmd, &conf.Global, util.SetupOptions{NoSurvey: true})
 	if err != nil {
 		return nil, cobra.ShellCompDirectiveError
 	}
