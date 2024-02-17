@@ -120,7 +120,6 @@ func DefaultSetup(cmd *cobra.Command, conf *config.Global, opts SetupOptions) (e
 
 	if len(pods) == 1 {
 		conf.DbPod = pods[0]
-		conf.JobPod = pods[0]
 	} else {
 		names := make([]string, 0, len(pods))
 		for _, pod := range pods {
@@ -213,14 +212,19 @@ func DefaultSetup(cmd *cobra.Command, conf *config.Global, opts SetupOptions) (e
 		return nil
 	})
 
+	group.Go(func() error {
+		if viper.GetBool(consts.NoJobKey) {
+			conf.Host = "127.0.0.1"
+			conf.JobPod = conf.DbPod
+		}
+		return nil
+	})
+
 	return group.Wait()
 }
 
 func CreateJob(cmd *cobra.Command, conf *config.Global, opts SetupOptions) error {
-	if viper.GetBool(consts.NoJobKey) {
-		conf.Host = "127.0.0.1"
-		conf.JobPod = conf.DbPod
-	} else {
+	if !viper.GetBool(consts.NoJobKey) {
 		if err := createJob(cmd, conf, opts.Name); err != nil {
 			return err
 		}
