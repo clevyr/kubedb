@@ -23,6 +23,7 @@ kubedb restore filename [flags]
   -d, --dbname string                   Database name to use (default discovered)
   -f, --force                           Do not prompt before restore
   -F, --format string                   Output file format One of (gzip|custom|plain) (default "gzip")
+      --halt-on-error                   Halt on error (Postgres only) (default true)
   -h, --help                            help for restore
       --job-pod-labels stringToString   Pod labels to add to the job (default [])
       --no-job                          Database commands will be run in the database pod instead of a dedicated job

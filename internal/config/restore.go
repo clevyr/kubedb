@@ -8,4 +8,5 @@ type Restore struct {
 	NoOwner           bool
 	Force             bool
 	Spinner           string
+	HaltOnError       bool
 }

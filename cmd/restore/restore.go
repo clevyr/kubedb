@@ -50,6 +50,7 @@ Supported Input Filetypes:
 	flags.Quiet(cmd, &action.Quiet)
 	flags.RemoteGzip(cmd)
 	flags.Analyze(cmd)
+	flags.HaltOnError(cmd)
 	flags.Spinner(cmd, &action.Spinner)
 	cmd.Flags().BoolVarP(&action.Force, consts.ForceFlag, "f", false, "Do not prompt before restore")
 
@@ -85,6 +86,8 @@ func preRun(cmd *cobra.Command, args []string) (err error) {
 	flags.BindJobPodLabels(cmd)
 	flags.BindNoJob(cmd)
 	flags.BindSpinner(cmd)
+	flags.BindHaltOnError(cmd)
+	action.HaltOnError = viper.GetBool(consts.HaltOnErrorKey)
 	action.Spinner = viper.GetString(consts.SpinnerKey)
 
 	if len(args) > 0 {

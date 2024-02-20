@@ -119,6 +119,16 @@ func BindAnalyze(cmd *cobra.Command) {
 	}
 }
 
+func HaltOnError(cmd *cobra.Command) {
+	cmd.Flags().Bool(consts.HaltOnErrorFlag, true, "Halt on error (Postgres only)")
+}
+
+func BindHaltOnError(cmd *cobra.Command) {
+	if err := viper.BindPFlag(consts.HaltOnErrorKey, cmd.Flags().Lookup(consts.HaltOnErrorFlag)); err != nil {
+		panic(err)
+	}
+}
+
 func listTables(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
 	conf := config.Exec{DisableHeaders: true}
 

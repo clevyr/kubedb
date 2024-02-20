@@ -260,6 +260,11 @@ func TestPostgres_RestoreCommand(t *testing.T) {
 			args{config.Restore{Global: config.Global{Port: 1234}}, sqlformat.Plain},
 			command.NewBuilder(pgpassword, "psql", "--host=", "--username=", "--dbname=", "--port=1234"),
 		},
+		{
+			"halt_on_error",
+			args{config.Restore{HaltOnError: true}, sqlformat.Plain},
+			command.NewBuilder(pgpassword, "psql", "--set=ON_ERROR_STOP=1", "--host=", "--username=", "--dbname="),
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
