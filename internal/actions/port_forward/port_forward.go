@@ -31,7 +31,7 @@ func (a PortForward) Run(ctx context.Context) error {
 	if err != nil {
 		return err
 	}
-	hostUrl.Path = path.Join("api", "v1", "namespaces", a.Client.Namespace, "pods", a.JobPod.Name, "portforward")
+	hostUrl.Path = path.Join("api", "v1", "namespaces", a.Client.Namespace, "pods", a.DbPod.Name, "portforward")
 
 	transport, upgrader, err := spdy.RoundTripperFor(a.Client.ClientConfig)
 	if err != nil {
