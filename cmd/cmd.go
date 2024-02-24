@@ -114,7 +114,6 @@ func initLog(cmd *cobra.Command) {
 }
 
 func initConfig() error {
-	viper.SetConfigType("yaml")
 	viper.AddConfigPath(filepath.Join("$HOME", ".config", "kubedb"))
 	viper.AddConfigPath(filepath.Join("etc", "kubedb"))
 
