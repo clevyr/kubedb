@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"os"
 	"os/signal"
+	"path/filepath"
 	"strings"
 	"syscall"
 
@@ -115,9 +116,9 @@ func initLog(cmd *cobra.Command) {
 func initConfig() error {
 	viper.SetConfigName("kubedb")
 	viper.SetConfigType("yaml")
-	viper.AddConfigPath("$HOME/.config/")
-	viper.AddConfigPath("$HOME/")
-	viper.AddConfigPath("/etc/kubedb/")
+	viper.AddConfigPath(filepath.Join("$HOME", ".config"))
+	viper.AddConfigPath("$HOME")
+	viper.AddConfigPath(filepath.Join("etc", "kubedb"))
 
 	viper.AutomaticEnv()
 	viper.SetEnvPrefix("kubedb")
