@@ -7,6 +7,7 @@ import (
 	"strings"
 
 	"github.com/aws/aws-sdk-go-v2/config"
+	"github.com/aws/aws-sdk-go-v2/feature/s3/manager"
 	"github.com/aws/aws-sdk-go-v2/service/s3"
 	"k8s.io/utils/ptr"
 )
@@ -33,7 +34,7 @@ func CreateUpload(ctx context.Context, r io.ReadCloser, key string) error {
 		_ = r.Close()
 	}(r)
 
-	sdkConfig, err := config.LoadDefaultConfig(ctx)
+	awsCfg, err := config.LoadDefaultConfig(ctx)
 	if err != nil {
 		return err
 	}
@@ -44,8 +45,9 @@ func CreateUpload(ctx context.Context, r io.ReadCloser, key string) error {
 	}
 	u.Path = strings.TrimLeft(u.Path, "/")
 
-	s3Client := s3.NewFromConfig(sdkConfig)
-	_, err = s3Client.PutObject(ctx, &s3.PutObjectInput{
+	uploader := manager.NewUploader(s3.NewFromConfig(awsCfg))
+
+	_, err = uploader.Upload(ctx, &s3.PutObjectInput{
 		Bucket: ptr.To(u.Host),
 		Key:    ptr.To(u.Path),
 		Body:   r,
