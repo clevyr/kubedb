@@ -14,6 +14,7 @@ import (
 	"github.com/clevyr/kubedb/internal/github"
 	"github.com/clevyr/kubedb/internal/kubernetes"
 	"github.com/clevyr/kubedb/internal/progressbar"
+	"github.com/clevyr/kubedb/internal/s3"
 	gzip "github.com/klauspost/pgzip"
 	log "github.com/sirupsen/logrus"
 	"golang.org/x/sync/errgroup"
@@ -24,22 +25,22 @@ type Dump struct {
 }
 
 func (action Dump) Run(ctx context.Context) (err error) {
-	if action.Filename == "" {
-		action.Filename = Filename{
-			Database:  action.Database,
-			Namespace: action.Client.Namespace,
-			Ext:       action.Dialect.DumpExtension(action.Format),
-			Date:      time.Now(),
-		}.Generate()
-		if err != nil {
-			return err
-		}
-	}
+	errGroup, ctx := errgroup.WithContext(ctx)
 
 	var f io.WriteCloser
-	switch action.Filename {
-	case "-":
+	switch {
+	case action.Filename == "-":
 		f = os.Stdout
+	case s3.IsS3(action.Filename):
+		pr, pw := io.Pipe()
+		f = pw
+		defer func(pw *io.PipeWriter) {
+			_ = pw.Close()
+		}(pw)
+
+		errGroup.Go(func() error {
+			return s3.CreateUpload(ctx, pr, action.Filename)
+		})
 	default:
 		if _, err := os.Stat(filepath.Dir(action.Filename)); os.IsNotExist(err) {
 			err = os.MkdirAll(filepath.Dir(action.Filename), os.ModePerm)
@@ -71,8 +72,6 @@ func (action Dump) Run(ctx context.Context) (err error) {
 
 	bar, plogger := progressbar.New(os.Stderr, -1, "downloading", action.Spinner)
 	defer bar.Close()
-
-	errGroup, ctx := errgroup.WithContext(ctx)
 
 	pr, pw := io.Pipe()
 	// Begin database export
@@ -130,8 +129,15 @@ func (action Dump) Run(ctx context.Context) (err error) {
 			}
 		}
 
-		_, err := io.Copy(io.MultiWriter(f, bar), r)
-		return err
+		if _, err := io.Copy(io.MultiWriter(f, bar), r); err != nil {
+			return err
+		}
+
+		if err := f.Close(); err != nil && !errors.Is(err, os.ErrClosed) {
+			return err
+		}
+
+		return nil
 	})
 
 	if err := errGroup.Wait(); err != nil {
@@ -139,15 +145,6 @@ func (action Dump) Run(ctx context.Context) (err error) {
 	}
 
 	_ = bar.Finish()
-
-	// Close file
-	err = f.Close()
-	if err != nil {
-		// Ignore file already closed errors since w can be the same as f
-		if !errors.Is(err, os.ErrClosed) {
-			return err
-		}
-	}
 
 	log.WithFields(log.Fields{
 		"file": action.Filename,

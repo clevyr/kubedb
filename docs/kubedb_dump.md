@@ -6,12 +6,25 @@ Dump a database to a sql file
 
 Dump a database to a sql file.
 
-If no filename is provided, the filename will be generated.
-For example, if a dump is performed in the namespace "clevyr" with no extra flags,
-the generated filename might look like "clevyr_2022-01-09_094100.sql.gz"
+Filenames:  
+  If a filename is provided, and it does not end with a "/", then it will be used verbatim.
+  Otherwise, the filename will be generated and appended to the given path.
+  For example, if a dump is performed in the namespace "clevyr" with no extra flags,
+  the generated filename might look like "clevyr_2022-01-09_094100.sql.gz".
+  Similarly, if the filename is passed as "backups/", then the generated path might look like
+  "backups/clevyr_2022-01-09_094100.sql.gz".
+
+S3:  
+  If the filename begins with "s3://", then the dump will be directly uploaded to an S3 bucket.
+  S3 configuration will be loaded from the environment or from the current aws cli profile.
+  Note the above section on filenames. For example, if the filename is set to "s3://clevyr-backups/dev/",
+  then the resulting filename might look like "s3://clevyr-backups/dev/clevyr_2022-01-09_094100.sql.gz".
+  The only exception is if a bucket name is provided without any sub-path (like "s3://backups"), then
+  the generated filename will be appended without requiring an ending "/".
+
 
 ```
-kubedb dump [filename] [flags]
+kubedb dump [filename | S3 URI] [flags]
 ```
 
 ### Options
