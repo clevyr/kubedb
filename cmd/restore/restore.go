@@ -135,9 +135,5 @@ func preRun(cmd *cobra.Command, args []string) (err error) {
 }
 
 func run(cmd *cobra.Command, args []string) (err error) {
-	defer func() {
-		util.Teardown(cmd, &action.Global)
-	}()
-
 	return action.Run(cmd.Context())
 }

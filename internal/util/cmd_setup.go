@@ -229,9 +229,11 @@ func CreateJob(cmd *cobra.Command, conf *config.Global, opts SetupOptions) error
 		if err := createJob(cmd, conf, opts.Name); err != nil {
 			return err
 		}
+		cobra.OnFinalize(func() {
+			Teardown(conf)
+		})
 
 		if err := watchJobPod(cmd, conf); err != nil {
-			Teardown(cmd, conf)
 			return err
 		}
 	}

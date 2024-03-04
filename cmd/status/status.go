@@ -103,7 +103,6 @@ func run(cmd *cobra.Command, args []string) error {
 		fmt.Println(prefixErr, "Job creation failed:", err.Error())
 		os.Exit(1)
 	}
-	defer util.Teardown(cmd, &conf)
 
 	var buf strings.Builder
 	listTablesCmd := conf.Dialect.ExecCommand(config.Exec{

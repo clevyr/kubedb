@@ -76,7 +76,6 @@ func preRun(cmd *cobra.Command, args []string) error {
 	}
 	action.LocalPort, err = cmd.Flags().GetUint16(consts.ListenPortFlag)
 	if err != nil {
-		util.Teardown(cmd, &action.Global)
 		panic(err)
 	}
 	if action.LocalPort == 0 {
@@ -86,8 +85,5 @@ func preRun(cmd *cobra.Command, args []string) error {
 }
 
 func run(cmd *cobra.Command, args []string) (err error) {
-	defer func() {
-		util.Teardown(cmd, &action.Global)
-	}()
 	return action.Run(cmd.Context())
 }
