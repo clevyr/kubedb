@@ -224,23 +224,23 @@ func DefaultSetup(cmd *cobra.Command, conf *config.Global, opts SetupOptions) (e
 	return group.Wait()
 }
 
-func CreateJob(cmd *cobra.Command, conf *config.Global, opts SetupOptions) error {
+func CreateJob(ctx context.Context, conf *config.Global, opts SetupOptions) error {
 	if !viper.GetBool(consts.NoJobKey) {
-		if err := createJob(cmd, conf, opts.Name); err != nil {
+		if err := createJob(ctx, conf, opts.Name); err != nil {
 			return err
 		}
 		cobra.OnFinalize(func() {
 			Teardown(conf)
 		})
 
-		if err := watchJobPod(cmd, conf); err != nil {
+		if err := watchJobPod(ctx, conf); err != nil {
 			return err
 		}
 	}
 	return nil
 }
 
-func createJob(cmd *cobra.Command, conf *config.Global, actionName string) error {
+func createJob(ctx context.Context, conf *config.Global, actionName string) error {
 	image := conf.DbPod.Spec.Containers[0].Image
 
 	name := "kubedb-"
@@ -332,7 +332,7 @@ func createJob(cmd *cobra.Command, conf *config.Global, actionName string) error
 
 	log.WithField("namespace", conf.Namespace).Info("creating job")
 
-	ctx, cancel := context.WithTimeout(cmd.Context(), time.Minute)
+	ctx, cancel := context.WithTimeout(ctx, time.Minute)
 	defer cancel()
 
 	var err error
@@ -343,13 +343,13 @@ func createJob(cmd *cobra.Command, conf *config.Global, actionName string) error
 	return nil
 }
 
-func watchJobPod(cmd *cobra.Command, conf *config.Global) error {
+func watchJobPod(ctx context.Context, conf *config.Global) error {
 	log.WithFields(log.Fields{
 		"namespace": conf.Namespace,
 		"name":      "job.batch/" + conf.Job.ObjectMeta.Name,
 	}).Info("waiting for job...")
 
-	ctx, cancel := context.WithTimeout(cmd.Context(), 5*time.Minute)
+	ctx, cancel := context.WithTimeout(ctx, 5*time.Minute)
 	defer cancel()
 
 	watch, err := conf.Client.Pods().Watch(ctx, metav1.ListOptions{

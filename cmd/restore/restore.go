@@ -123,7 +123,7 @@ func preRun(cmd *cobra.Command, args []string) (err error) {
 		}
 	}
 
-	if err := util.CreateJob(cmd, &action.Global, setupOptions); err != nil {
+	if err := util.CreateJob(cmd.Context(), &action.Global, setupOptions); err != nil {
 		return err
 	}
 

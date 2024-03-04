@@ -97,7 +97,7 @@ func run(cmd *cobra.Command, args []string) error {
 		os.Exit(1)
 	}
 
-	if err := util.CreateJob(cmd, &conf, util.SetupOptions{Name: "status"}); err == nil {
+	if err := util.CreateJob(cmd.Context(), &conf, util.SetupOptions{Name: "status"}); err == nil {
 		fmt.Println(prefixOk, "Jobs can be created")
 	} else {
 		fmt.Println(prefixErr, "Job creation failed:", err.Error())
