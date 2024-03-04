@@ -9,6 +9,8 @@ import (
 func main() {
 	rootCmd := cmd.NewCommand()
 	if err := rootCmd.Execute(); err != nil {
+		cmd.PostRun(err)
 		os.Exit(1)
 	}
+	cmd.PostRun(nil)
 }

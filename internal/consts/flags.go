@@ -28,10 +28,11 @@ const (
 	JobPodLabelsFlag = "job-pod-labels"
 	NoJobFlag        = "no-job"
 
-	QuietFlag     = "quiet"
-	LogLevelFlag  = "log-level"
-	LogFormatFlag = "log-format"
-	RedactFlag    = "redact"
+	QuietFlag               = "quiet"
+	LogLevelFlag            = "log-level"
+	LogFormatFlag           = "log-format"
+	RedactFlag              = "redact"
+	HealthchecksPingUrlFlag = "healthchecks-ping-url"
 
 	RemoteGzipFlag = "remote-gzip"
 

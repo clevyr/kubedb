@@ -15,6 +15,7 @@ import (
 	"github.com/clevyr/kubedb/cmd/status"
 	"github.com/clevyr/kubedb/internal/config/flags"
 	"github.com/clevyr/kubedb/internal/consts"
+	"github.com/clevyr/kubedb/internal/notifier"
 	"github.com/clevyr/kubedb/internal/util"
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
@@ -38,6 +39,7 @@ func NewCommand() *cobra.Command {
 	flags.Pod(cmd)
 	flags.LogLevel(cmd)
 	flags.LogFormat(cmd)
+	flags.Healthchecks(cmd)
 	flags.Redact(cmd)
 	cmd.InitDefaultVersionFlag()
 
@@ -68,6 +70,7 @@ func preRun(cmd *cobra.Command, args []string) error {
 	flags.BindLogLevel(cmd)
 	flags.BindLogFormat(cmd)
 	flags.BindRedact(cmd)
+	flags.BindHealthchecks(cmd)
 
 	ctx, cancel := signal.NotifyContext(cmd.Context(), os.Interrupt, os.Kill, syscall.SIGTERM)
 	cmd.PersistentPostRun = func(cmd *cobra.Command, args []string) { cancel() }
@@ -88,6 +91,23 @@ func preRun(cmd *cobra.Command, args []string) error {
 		return err
 	}
 	initLog(cmd)
+
+	if url := viper.GetString(consts.HealthchecksPingUrlKey); url != "" {
+		if handler, err := notifier.NewHealthchecks(url); err != nil {
+			log.WithError(err).Error("Notifications creation failed")
+		} else {
+			if err := handler.Started(); err != nil {
+				log.WithError(err).Error("Notifications ping start failed")
+			}
+
+			OnFinalize(func(err error) {
+				if err := handler.Finished(err); err != nil {
+					log.WithError(err).Error("Notifications ping finished failed")
+				}
+			})
+		}
+	}
+
 	return nil
 }
 

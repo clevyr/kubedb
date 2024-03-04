@@ -67,3 +67,13 @@ func BindRedact(cmd *cobra.Command) {
 		panic(err)
 	}
 }
+
+func Healthchecks(cmd *cobra.Command) {
+	cmd.PersistentFlags().String(consts.HealthchecksPingUrlFlag, "", "Notification handler URL")
+}
+
+func BindHealthchecks(cmd *cobra.Command) {
+	if err := viper.BindPFlag(consts.HealthchecksPingUrlKey, cmd.Flags().Lookup(consts.HealthchecksPingUrlFlag)); err != nil {
+		panic(err)
+	}
+}
