@@ -1,6 +1,6 @@
 #syntax=docker/dockerfile:1.6
 
-FROM --platform=$BUILDPLATFORM golang:1.22.0-alpine AS builder
+FROM --platform=$BUILDPLATFORM golang:1.22.1-alpine AS builder
 WORKDIR /app
 
 RUN apk add --no-cache git
