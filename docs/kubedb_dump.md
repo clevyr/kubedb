@@ -14,9 +14,12 @@ Filenames:
   Similarly, if the filename is passed as "backups/", then the generated path might look like
   "backups/clevyr_2022-01-09_094100.sql.gz".
 
-S3:  
-  If the filename begins with "s3://", then the dump will be directly uploaded to an S3 bucket.
-  S3 configuration will be loaded from the environment or from the current aws cli profile.
+Cloud Upload:  
+  KubeDB will directly upload the dump to a cloud storage bucket if the output path starts with a URL scheme:
+    - S3 upload schema is "s3://".
+    - GCS upload schema is "gs://".
+  Cloud configuration will be loaded from the environment, similarly to the official aws and gcloud tools.
+
   Note the above section on filenames. For example, if the filename is set to "s3://clevyr-backups/dev/",
   then the resulting filename might look like "s3://clevyr-backups/dev/clevyr_2022-01-09_094100.sql.gz".
   The only exception is if a bucket name is provided without any sub-path (like "s3://backups"), then
@@ -24,7 +27,7 @@ S3:
 
 
 ```
-kubedb dump [filename | S3 URI] [flags]
+kubedb dump [filename | bucket URI] [flags]
 ```
 
 ### Options

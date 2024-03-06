@@ -1,4 +1,4 @@
-package s3
+package storage
 
 import (
 	"context"
@@ -12,10 +12,10 @@ import (
 	"k8s.io/utils/ptr"
 )
 
-const Schema = "s3://"
+const S3Schema = "s3://"
 
 func IsS3(path string) bool {
-	return strings.HasPrefix(path, Schema)
+	return strings.HasPrefix(path, S3Schema)
 }
 
 func IsS3Dir(path string) bool {
@@ -25,11 +25,11 @@ func IsS3Dir(path string) bool {
 	if strings.HasSuffix(path, "/") {
 		return true
 	}
-	trimmed := strings.TrimPrefix(path, Schema)
+	trimmed := strings.TrimPrefix(path, S3Schema)
 	return !strings.Contains(trimmed, "/")
 }
 
-func CreateUpload(ctx context.Context, r io.ReadCloser, key string) error {
+func CreateS3Upload(ctx context.Context, r io.ReadCloser, key string) error {
 	defer func(r io.ReadCloser) {
 		_ = r.Close()
 	}(r)

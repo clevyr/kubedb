@@ -14,7 +14,7 @@ import (
 	"github.com/clevyr/kubedb/internal/github"
 	"github.com/clevyr/kubedb/internal/kubernetes"
 	"github.com/clevyr/kubedb/internal/progressbar"
-	"github.com/clevyr/kubedb/internal/s3"
+	"github.com/clevyr/kubedb/internal/storage"
 	gzip "github.com/klauspost/pgzip"
 	log "github.com/sirupsen/logrus"
 	"golang.org/x/sync/errgroup"
@@ -31,7 +31,7 @@ func (action Dump) Run(ctx context.Context) (err error) {
 	switch {
 	case action.Filename == "-":
 		f = os.Stdout
-	case s3.IsS3(action.Filename):
+	case storage.IsS3(action.Filename):
 		pr, pw := io.Pipe()
 		f = pw
 		defer func(pw *io.PipeWriter) {
@@ -39,8 +39,16 @@ func (action Dump) Run(ctx context.Context) (err error) {
 		}(pw)
 
 		errGroup.Go(func() error {
-			return s3.CreateUpload(ctx, pr, action.Filename)
+			return storage.CreateS3Upload(ctx, pr, action.Filename)
 		})
+	case storage.IsGCS(action.Filename):
+		f, err = storage.CreateGCSUpload(ctx, action.Filename)
+		if err != nil {
+			return err
+		}
+		defer func(f io.WriteCloser) {
+			_ = f.Close()
+		}(f)
 	default:
 		if _, err := os.Stat(filepath.Dir(action.Filename)); os.IsNotExist(err) {
 			err = os.MkdirAll(filepath.Dir(action.Filename), os.ModePerm)

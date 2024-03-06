@@ -11,7 +11,7 @@ import (
 	"github.com/clevyr/kubedb/internal/actions/dump"
 	"github.com/clevyr/kubedb/internal/config/flags"
 	"github.com/clevyr/kubedb/internal/consts"
-	"github.com/clevyr/kubedb/internal/s3"
+	"github.com/clevyr/kubedb/internal/storage"
 	"github.com/clevyr/kubedb/internal/util"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
@@ -22,7 +22,7 @@ var action dump.Dump
 
 func New() *cobra.Command {
 	cmd := &cobra.Command{
-		Use:     "dump [filename | S3 URI]",
+		Use:     "dump [filename | bucket URI]",
 		Aliases: []string{"d", "export"},
 		Short:   "Dump a database to a sql file",
 		Long: `Dump a database to a sql file.
@@ -35,9 +35,12 @@ Filenames:
   Similarly, if the filename is passed as "backups/", then the generated path might look like
   "backups/` + dump.HelpFilename() + `".
 
-S3:  
-  If the filename begins with "s3://", then the dump will be directly uploaded to an S3 bucket.
-  S3 configuration will be loaded from the environment or from the current aws cli profile.
+Cloud Upload:  
+  KubeDB will directly upload the dump to a cloud storage bucket if the output path starts with a URL scheme:
+    - S3 upload schema is "s3://".
+    - GCS upload schema is "gs://".
+  Cloud configuration will be loaded from the environment, similarly to the official aws and gcloud tools.
+
   Note the above section on filenames. For example, if the filename is set to "s3://clevyr-backups/dev/",
   then the resulting filename might look like "s3://clevyr-backups/dev/` + dump.HelpFilename() + `".
   The only exception is if a bucket name is provided without any sub-path (like "s3://backups"), then
@@ -121,14 +124,14 @@ func preRun(cmd *cobra.Command, args []string) (err error) {
 		return err
 	}
 
-	if action.Filename == "" || strings.HasSuffix(action.Filename, string(os.PathSeparator)) || s3.IsS3Dir(action.Filename) {
+	if action.Filename == "" || strings.HasSuffix(action.Filename, string(os.PathSeparator)) || storage.IsCloudDir(action.Filename) {
 		generated := dump.Filename{
 			Database:  action.Database,
 			Namespace: action.Client.Namespace,
 			Ext:       action.Dialect.DumpExtension(action.Format),
 			Date:      time.Now(),
 		}.Generate()
-		if s3.IsS3(action.Filename) {
+		if storage.IsCloud(action.Filename) {
 			u, err := url.Parse(action.Filename)
 			if err != nil {
 				return err
