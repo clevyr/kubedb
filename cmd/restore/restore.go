@@ -2,10 +2,12 @@ package restore
 
 import (
 	"errors"
+	"fmt"
 	"os"
 
 	"github.com/AlecAivazis/survey/v2"
 	"github.com/clevyr/kubedb/internal/actions/restore"
+	"github.com/clevyr/kubedb/internal/config"
 	"github.com/clevyr/kubedb/internal/config/flags"
 	"github.com/clevyr/kubedb/internal/consts"
 	"github.com/clevyr/kubedb/internal/util"
@@ -70,7 +72,12 @@ func validArgs(cmd *cobra.Command, args []string, toComplete string) ([]string, 
 		return []string{"sql", "sql.gz", "dmp", "archive", "archive.gz"}, cobra.ShellCompDirectiveFilterFileExt
 	}
 
-	formats := action.Dialect.Formats()
+	db, ok := action.Dialect.(config.DatabaseRestore)
+	if !ok {
+		return nil, cobra.ShellCompDirectiveError
+	}
+
+	formats := db.Formats()
 	exts := make([]string, 0, len(formats))
 	for _, ext := range formats {
 		exts = append(exts, ext[1:])
@@ -128,7 +135,12 @@ func preRun(cmd *cobra.Command, args []string) (err error) {
 	}
 
 	if !cmd.Flags().Lookup(consts.FormatFlag).Changed {
-		action.Format = action.Dialect.FormatFromFilename(action.Filename)
+		db, ok := action.Dialect.(config.DatabaseRestore)
+		if !ok {
+			return fmt.Errorf("%w: %s", util.ErrNoRestore, action.Dialect.Name())
+		}
+
+		action.Format = db.FormatFromFilename(action.Filename)
 	}
 
 	return nil

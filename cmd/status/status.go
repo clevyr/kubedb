@@ -46,6 +46,7 @@ func preRun(cmd *cobra.Command, args []string) error {
 
 func run(cmd *cobra.Command, args []string) error {
 	prefixOk := color.GreenString(" ✓")
+	prefixNeutral := color.YellowString(" -")
 	prefixErr := color.RedString(" ✗")
 	bold := color.New(color.Bold).Sprintf
 
@@ -105,24 +106,33 @@ func run(cmd *cobra.Command, args []string) error {
 	}
 
 	var buf strings.Builder
-	listTablesCmd := conf.Dialect.ExecCommand(config.Exec{
-		Global:         conf,
-		DisableHeaders: true,
-		Command:        conf.Dialect.ListTablesQuery(),
-	})
-	execOpts := kubernetes.ExecOptions{
-		Pod:    conf.JobPod,
-		Cmd:    listTablesCmd.String(),
-		Stdout: &buf,
-		Stderr: os.Stderr,
-	}
-	if err := conf.Client.Exec(cmd.Context(), execOpts); err == nil {
-		names := strings.Split(buf.String(), "\n")
-		fmt.Println(prefixOk, "Database has", bold(strconv.Itoa(len(names))), "tables")
+	if db, ok := conf.Dialect.(dbExecList); ok {
+		listTablesCmd := db.ExecCommand(config.Exec{
+			Global:         conf,
+			DisableHeaders: true,
+			Command:        db.ListTablesQuery(),
+		})
+		execOpts := kubernetes.ExecOptions{
+			Pod:    conf.JobPod,
+			Cmd:    listTablesCmd.String(),
+			Stdout: &buf,
+			Stderr: os.Stderr,
+		}
+		if err := conf.Client.Exec(cmd.Context(), execOpts); err == nil {
+			names := strings.Split(buf.String(), "\n")
+			fmt.Println(prefixOk, "Database has", bold(strconv.Itoa(len(names))), "tables")
+		} else {
+			fmt.Println(prefixErr, "Failed to connect to database", err.Error())
+			os.Exit(1)
+		}
 	} else {
-		fmt.Println(prefixErr, "Failed to connect to database", err.Error())
-		os.Exit(1)
+		fmt.Println(prefixNeutral, "Database does not support listing tables")
 	}
 
 	return nil
+}
+
+type dbExecList interface {
+	config.DatabaseExec
+	config.DatabaseTables
 }

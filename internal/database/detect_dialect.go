@@ -17,20 +17,20 @@ func DetectDialect(ctx context.Context, client kubernetes.KubeClient) (config.Da
 		return nil, []v1.Pod{}, err
 	}
 
-	for _, g := range All() {
-		pods := kubernetes.FilterPodList(podList.Items, g.PodLabels())
+	for _, db := range All() {
+		pods := kubernetes.FilterPodList(podList.Items, db.PodLabels())
 		if len(pods) != 0 {
-			return g, pods, nil
+			return db, pods, nil
 		}
 	}
 	return nil, []v1.Pod{}, ErrDatabaseNotFound
 }
 
 func DetectDialectFromPod(pod v1.Pod) (config.Database, error) {
-	for _, g := range All() {
-		for _, v := range g.PodLabels() {
+	for _, db := range All() {
+		for _, v := range db.PodLabels() {
 			if v.Matches(pod) {
-				return g, nil
+				return db, nil
 			}
 		}
 	}

@@ -1,7 +1,6 @@
 package mariadb
 
 import (
-	"context"
 	"strconv"
 	"strings"
 
@@ -9,7 +8,6 @@ import (
 	"github.com/clevyr/kubedb/internal/config"
 	"github.com/clevyr/kubedb/internal/database/sqlformat"
 	"github.com/clevyr/kubedb/internal/kubernetes"
-	v1 "k8s.io/api/core/v1"
 )
 
 type MariaDB struct{}
@@ -51,10 +49,6 @@ func (db MariaDB) DropDatabaseQuery(database string) string {
 	return "set FOREIGN_KEY_CHECKS=0; create or replace database " + database + "; set FOREIGN_KEY_CHECKS=1; use " + database + ";"
 }
 
-func (MariaDB) AnalyzeQuery() string {
-	return ""
-}
-
 func (MariaDB) PodLabels() []kubernetes.LabelQueryable {
 	return []kubernetes.LabelQueryable{
 		kubernetes.LabelQueryAnd{
@@ -71,10 +65,6 @@ func (MariaDB) PodLabels() []kubernetes.LabelQueryable {
 		kubernetes.LabelQuery{Name: "app", Value: "mariadb"},
 		kubernetes.LabelQuery{Name: "app", Value: "mysql"},
 	}
-}
-
-func (MariaDB) FilterPods(ctx context.Context, client kubernetes.KubeClient, pods []v1.Pod) ([]v1.Pod, error) {
-	return pods, nil
 }
 
 func (db MariaDB) PasswordEnvNames(c config.Global) kubernetes.ConfigFinders {

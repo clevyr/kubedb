@@ -25,34 +25,39 @@ func TestRestore_buildCommand(t *testing.T) {
 		inputFormat sqlformat.Format
 	}
 	tests := []struct {
-		name   string
-		fields fields
-		args   args
-		want   *command.Builder
+		name    string
+		fields  fields
+		args    args
+		want    *command.Builder
+		wantErr assert.ErrorAssertionFunc
 	}{
 		{
 			"postgres-gzip",
 			fields{Restore: config.Restore{Global: config.Global{Dialect: postgres.Postgres{}, Host: "1.1.1.1", Database: "d", Username: "u", RemoteGzip: true}}},
 			args{sqlformat.Gzip},
 			command.NewBuilder("gunzip", "--force", command.Pipe, pgpassword, "psql", "--host=1.1.1.1", "--username=u", "--dbname=d"),
+			assert.NoError,
 		},
 		{
 			"postgres-plain",
 			fields{Restore: config.Restore{Global: config.Global{Dialect: postgres.Postgres{}, Host: "1.1.1.1", Database: "d", Username: "u", RemoteGzip: true}}},
 			args{sqlformat.Gzip},
 			command.NewBuilder("gunzip", "--force", command.Pipe, pgpassword, "psql", "--host=1.1.1.1", "--username=u", "--dbname=d"),
+			assert.NoError,
 		},
 		{
 			"postgres-custom",
 			fields{Restore: config.Restore{Global: config.Global{Dialect: postgres.Postgres{}, Host: "1.1.1.1", Database: "d", Username: "u", RemoteGzip: true}}},
 			args{sqlformat.Gzip},
 			command.NewBuilder("gunzip", "--force", command.Pipe, pgpassword, "psql", "--host=1.1.1.1", "--username=u", "--dbname=d"),
+			assert.NoError,
 		},
 		{
 			"postgres-remote-gzip-disabled",
 			fields{Restore: config.Restore{Global: config.Global{Dialect: postgres.Postgres{}, Host: "1.1.1.1", Database: "d", Username: "u"}}},
 			args{sqlformat.Gzip},
 			command.NewBuilder(command.Env{Key: "PGPASSWORD", Value: ""}, "psql", "--host=1.1.1.1", "--username=u", "--dbname=d"),
+			assert.NoError,
 		},
 	}
 	for _, tt := range tests {
@@ -61,7 +66,11 @@ func TestRestore_buildCommand(t *testing.T) {
 				Restore: tt.fields.Restore,
 				Analyze: tt.fields.Analyze,
 			}
-			assert.Equal(t, tt.want, action.buildCommand(tt.args.inputFormat))
+			cmd, err := action.buildCommand(tt.args.inputFormat)
+			if !tt.wantErr(t, err) {
+				return
+			}
+			assert.Equal(t, tt.want, cmd)
 		})
 	}
 }

@@ -2,6 +2,7 @@ package restore
 
 import (
 	"context"
+	"fmt"
 	"io"
 	"os"
 	"strings"
@@ -12,6 +13,7 @@ import (
 	"github.com/clevyr/kubedb/internal/database/sqlformat"
 	"github.com/clevyr/kubedb/internal/kubernetes"
 	"github.com/clevyr/kubedb/internal/progressbar"
+	"github.com/clevyr/kubedb/internal/util"
 	gzip "github.com/klauspost/pgzip"
 	log "github.com/sirupsen/logrus"
 	"golang.org/x/sync/errgroup"
@@ -69,8 +71,8 @@ func (action Restore) Run(ctx context.Context) (err error) {
 
 		// Clean database
 		if action.Clean && action.Format != sqlformat.Custom {
-			dropQuery := action.Dialect.DropDatabaseQuery(action.Database)
-			if dropQuery != "" {
+			if db, ok := action.Dialect.(config.DatabaseDbDrop); ok {
+				dropQuery := db.DropDatabaseQuery(action.Database)
 				log.Info("cleaning existing data")
 				if action.RemoteGzip {
 					err = gzipCopy(w, strings.NewReader(dropQuery))
@@ -113,33 +115,35 @@ func (action Restore) Run(ctx context.Context) (err error) {
 		}
 
 		// Analyze query
-		analyzeQuery := action.Dialect.AnalyzeQuery()
-		if analyzeQuery != "" && action.Analyze {
-			if action.Format == sqlformat.Custom {
-				if err := pw.Close(); err != nil {
-					return err
+		if action.Analyze {
+			if db, ok := action.Dialect.(config.DatabaseAnalyze); ok {
+				analyzeQuery := db.AnalyzeQuery()
+				if action.Format == sqlformat.Custom {
+					if err := pw.Close(); err != nil {
+						return err
+					}
+
+					pr, pw = io.Pipe()
+					defer func(pw io.WriteCloser) {
+						_ = pw.Close()
+					}(pw)
+					w = io.MultiWriter(pw, bar)
+					errGroup.Go(func() error {
+						defer func(pr io.ReadCloser) {
+							_ = pr.Close()
+						}(pr)
+						return action.runInDatabasePod(ctx, pr, errLog, errLog, sqlformat.Gzip)
+					})
 				}
 
-				pr, pw = io.Pipe()
-				defer func(pw io.WriteCloser) {
-					_ = pw.Close()
-				}(pw)
-				w = io.MultiWriter(pw, bar)
-				errGroup.Go(func() error {
-					defer func(pr io.ReadCloser) {
-						_ = pr.Close()
-					}(pr)
-					return action.runInDatabasePod(ctx, pr, errLog, errLog, sqlformat.Gzip)
-				})
-			}
-
-			if action.RemoteGzip {
-				err = gzipCopy(w, strings.NewReader(analyzeQuery))
-			} else {
-				_, err = io.Copy(w, strings.NewReader(analyzeQuery))
-			}
-			if err != nil {
-				return err
+				if action.RemoteGzip {
+					err = gzipCopy(w, strings.NewReader(analyzeQuery))
+				} else {
+					_, err = io.Copy(w, strings.NewReader(analyzeQuery))
+				}
+				if err != nil {
+					return err
+				}
 			}
 		}
 
@@ -164,13 +168,18 @@ func (action Restore) Run(ctx context.Context) (err error) {
 	return nil
 }
 
-func (action Restore) buildCommand(inputFormat sqlformat.Format) *command.Builder {
-	cmd := action.Dialect.RestoreCommand(action.Restore, inputFormat)
+func (action Restore) buildCommand(inputFormat sqlformat.Format) (*command.Builder, error) {
+	db, ok := action.Dialect.(config.DatabaseRestore)
+	if !ok {
+		return nil, fmt.Errorf("%w: %s", util.ErrNoRestore, action.Dialect.Name())
+	}
+
+	cmd := db.RestoreCommand(action.Restore, inputFormat)
 	if action.RemoteGzip && action.Format != sqlformat.Custom {
 		cmd.Unshift("gunzip", "--force", command.Pipe)
 	}
 	log.WithField("cmd", cmd).Trace("finished building command")
-	return cmd
+	return cmd, nil
 }
 
 func gzipCopy(w io.Writer, r io.Reader) (err error) {
@@ -194,9 +203,14 @@ func (action Restore) runInDatabasePod(ctx context.Context, r *io.PipeReader, st
 		_ = r.Close()
 	}(r)
 
+	cmd, err := action.buildCommand(inputFormat)
+	if err != nil {
+		return err
+	}
+
 	if err := action.Client.Exec(ctx, kubernetes.ExecOptions{
 		Pod:         action.JobPod,
-		Cmd:         action.buildCommand(inputFormat).String(),
+		Cmd:         cmd.String(),
 		Stdin:       r,
 		Stdout:      stdout,
 		Stderr:      stderr,

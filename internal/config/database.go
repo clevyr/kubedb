@@ -11,27 +11,66 @@ import (
 
 type Database interface {
 	Name() string
-	DefaultPort() uint16
-
-	PortEnvNames() kubernetes.ConfigFinders
-	DatabaseEnvNames() kubernetes.ConfigFinders
-	ListDatabasesQuery() string
-	ListTablesQuery() string
-
-	UserEnvNames() kubernetes.ConfigFinders
-	DefaultUser() string
-
-	DropDatabaseQuery(database string) string
-	AnalyzeQuery() string
 	PodLabels() []kubernetes.LabelQueryable
-	FilterPods(ctx context.Context, client kubernetes.KubeClient, pods []v1.Pod) ([]v1.Pod, error)
-	PasswordEnvNames(conf Global) kubernetes.ConfigFinders
+}
 
-	ExecCommand(conf Exec) *command.Builder
+type DatabaseDump interface {
+	Database
 	DumpCommand(conf Dump) *command.Builder
-	RestoreCommand(conf Restore, inputFormat sqlformat.Format) *command.Builder
+	DatabaseFile
+}
 
+type DatabaseExec interface {
+	Database
+	ExecCommand(conf Exec) *command.Builder
+}
+
+type DatabaseRestore interface {
+	Database
+	RestoreCommand(conf Restore, inputFormat sqlformat.Format) *command.Builder
+	DatabaseFile
+}
+
+type DatabaseFilter interface {
+	FilterPods(ctx context.Context, client kubernetes.KubeClient, pods []v1.Pod) ([]v1.Pod, error)
+}
+
+type DatabaseFile interface {
 	Formats() map[sqlformat.Format]string
 	FormatFromFilename(filename string) sqlformat.Format
 	DumpExtension(format sqlformat.Format) string
+}
+
+type DatabaseUsername interface {
+	UserEnvNames() kubernetes.ConfigFinders
+	DefaultUser() string
+}
+
+type DatabasePort interface {
+	DefaultPort() uint16
+	PortEnvNames() kubernetes.ConfigFinders
+}
+
+type DatabasePassword interface {
+	PasswordEnvNames(conf Global) kubernetes.ConfigFinders
+}
+
+type DatabaseDb interface {
+	DatabaseEnvNames() kubernetes.ConfigFinders
+}
+
+type DatabaseDbList interface {
+	ListDatabasesQuery() string
+}
+
+type DatabaseDbDrop interface {
+	DropDatabaseQuery(database string) string
+}
+
+type DatabaseTables interface {
+	ListTablesQuery() string
+}
+
+type DatabaseAnalyze interface {
+	AnalyzeQuery() string
 }

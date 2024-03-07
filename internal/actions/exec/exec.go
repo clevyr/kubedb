@@ -2,11 +2,13 @@ package exec
 
 import (
 	"context"
+	"fmt"
 	"os"
 
 	"github.com/clevyr/kubedb/internal/command"
 	"github.com/clevyr/kubedb/internal/config"
 	"github.com/clevyr/kubedb/internal/kubernetes"
+	"github.com/clevyr/kubedb/internal/util"
 	log "github.com/sirupsen/logrus"
 	"k8s.io/client-go/tools/remotecommand"
 	"k8s.io/kubectl/pkg/util/term"
@@ -32,11 +34,15 @@ func (action Exec) Run(ctx context.Context) error {
 		sizeQueue = t.MonitorSize(t.GetSize())
 	}
 
-	cmd := action.buildCommand().String()
+	cmd, err := action.buildCommand()
+	if err != nil {
+		return err
+	}
+
 	return t.Safe(func() error {
 		return action.Client.Exec(ctx, kubernetes.ExecOptions{
 			Pod:       action.JobPod,
-			Cmd:       cmd,
+			Cmd:       cmd.String(),
 			Stdin:     t.In,
 			Stdout:    t.Out,
 			Stderr:    os.Stderr,
@@ -46,8 +52,13 @@ func (action Exec) Run(ctx context.Context) error {
 	})
 }
 
-func (action Exec) buildCommand() *command.Builder {
-	cmd := action.Dialect.ExecCommand(action.Exec)
+func (action Exec) buildCommand() (*command.Builder, error) {
+	db, ok := action.Dialect.(config.DatabaseExec)
+	if !ok {
+		return nil, fmt.Errorf("%w: %s", util.ErrNoExec, action.Dialect.Name())
+	}
+
+	cmd := db.ExecCommand(action.Exec)
 	log.WithField("cmd", cmd).Trace("finished building command")
-	return cmd
+	return cmd, nil
 }

@@ -1,7 +1,6 @@
 package mariadb
 
 import (
-	"context"
 	"testing"
 
 	"github.com/clevyr/kubedb/internal/command"
@@ -9,7 +8,6 @@ import (
 	"github.com/clevyr/kubedb/internal/database/sqlformat"
 	"github.com/clevyr/kubedb/internal/kubernetes"
 	"github.com/stretchr/testify/assert"
-	v1 "k8s.io/api/core/v1"
 )
 
 func TestMariaDB_DropDatabaseQuery(t *testing.T) {
@@ -110,34 +108,6 @@ func TestMariaDB_ExecCommand(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			ma := MariaDB{}
 			got := ma.ExecCommand(tt.args.conf)
-			assert.Equal(t, got, tt.want)
-		})
-	}
-}
-
-func TestMariaDB_FilterPods(t *testing.T) {
-	type args struct {
-		client kubernetes.KubeClient
-		pods   []v1.Pod
-	}
-	tests := []struct {
-		name    string
-		args    args
-		want    []v1.Pod
-		wantErr bool
-	}{
-		{"empty", args{kubernetes.KubeClient{}, []v1.Pod{}}, []v1.Pod{}, false},
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			ma := MariaDB{}
-			got, err := ma.FilterPods(context.TODO(), tt.args.client, tt.args.pods)
-			if tt.wantErr {
-				assert.Error(t, err)
-			} else {
-				assert.NoError(t, err)
-			}
-
 			assert.Equal(t, got, tt.want)
 		})
 	}

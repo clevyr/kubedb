@@ -1,9 +1,11 @@
 package port_forward
 
 import (
+	"fmt"
 	"strconv"
 
 	"github.com/clevyr/kubedb/internal/actions/port_forward"
+	"github.com/clevyr/kubedb/internal/config"
 	"github.com/clevyr/kubedb/internal/config/flags"
 	"github.com/clevyr/kubedb/internal/consts"
 	"github.com/clevyr/kubedb/internal/util"
@@ -44,8 +46,12 @@ func New() *cobra.Command {
 				return nil, cobra.ShellCompDirectiveNoFileComp
 			}
 
-			defaultPort := action.Dialect.DefaultPort()
+			db, ok := action.Dialect.(config.DatabasePort)
+			if !ok {
+				return nil, cobra.ShellCompDirectiveError
+			}
 
+			defaultPort := db.DefaultPort()
 			return []string{
 				strconv.Itoa(int(action.LocalPort)),
 				strconv.Itoa(int(defaultPort)),
@@ -74,13 +80,21 @@ func preRun(cmd *cobra.Command, args []string) error {
 			return err
 		}
 	}
+
 	action.LocalPort, err = cmd.Flags().GetUint16(consts.ListenPortFlag)
 	if err != nil {
 		panic(err)
 	}
+
 	if action.LocalPort == 0 {
-		action.LocalPort = 30000 + action.Dialect.DefaultPort()
+		db, ok := action.Dialect.(config.DatabasePort)
+		if !ok {
+			return fmt.Errorf("%w: %s", util.ErrNoPortForward, action.Dialect.Name())
+		}
+
+		action.LocalPort = 30000 + db.DefaultPort()
 	}
+
 	return nil
 }
 

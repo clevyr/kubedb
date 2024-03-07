@@ -137,7 +137,13 @@ func listTables(cmd *cobra.Command, args []string, toComplete string) ([]string,
 	if err != nil {
 		return nil, cobra.ShellCompDirectiveError
 	}
-	conf.Command = conf.Dialect.ListTablesQuery()
+
+	db, ok := conf.Dialect.(config.DatabaseTables)
+	if !ok {
+		return nil, cobra.ShellCompDirectiveError
+	}
+
+	conf.Command = db.ListTablesQuery()
 	return queryInDatabase(cmd, args, conf)
 }
 
@@ -149,15 +155,26 @@ func listDatabases(cmd *cobra.Command, args []string, toComplete string) ([]stri
 	if err != nil {
 		return nil, cobra.ShellCompDirectiveError
 	}
-	conf.Command = conf.Dialect.ListDatabasesQuery()
+
+	db, ok := conf.Dialect.(config.DatabaseDbList)
+	if !ok {
+		return nil, cobra.ShellCompDirectiveError
+	}
+
+	conf.Command = db.ListDatabasesQuery()
 	return queryInDatabase(cmd, args, conf)
 }
 
 func queryInDatabase(cmd *cobra.Command, args []string, conf config.Exec) ([]string, cobra.ShellCompDirective) {
+	db, ok := conf.Dialect.(config.DatabaseExec)
+	if !ok {
+		return nil, cobra.ShellCompDirectiveError
+	}
+
 	var buf strings.Builder
 	if err := conf.Client.Exec(cmd.Context(), kubernetes.ExecOptions{
 		Pod:    conf.DbPod,
-		Cmd:    conf.Dialect.ExecCommand(conf).String(),
+		Cmd:    db.ExecCommand(conf).String(),
 		Stdout: &buf,
 		Stderr: os.Stderr,
 	}); err != nil {

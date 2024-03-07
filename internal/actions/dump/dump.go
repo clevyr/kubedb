@@ -3,6 +3,7 @@ package dump
 import (
 	"context"
 	"errors"
+	"fmt"
 	"io"
 	"os"
 	"path/filepath"
@@ -15,6 +16,7 @@ import (
 	"github.com/clevyr/kubedb/internal/kubernetes"
 	"github.com/clevyr/kubedb/internal/progressbar"
 	"github.com/clevyr/kubedb/internal/storage"
+	"github.com/clevyr/kubedb/internal/util"
 	gzip "github.com/klauspost/pgzip"
 	log "github.com/sirupsen/logrus"
 	"golang.org/x/sync/errgroup"
@@ -88,9 +90,14 @@ func (action Dump) Run(ctx context.Context) (err error) {
 			_ = pw.Close()
 		}(pw)
 
+		cmd, err := action.buildCommand()
+		if err != nil {
+			return err
+		}
+
 		if err := action.Client.Exec(ctx, kubernetes.ExecOptions{
 			Pod:         action.JobPod,
-			Cmd:         action.buildCommand().String(),
+			Cmd:         cmd.String(),
 			Stdin:       os.Stdin,
 			Stdout:      pw,
 			Stderr:      plogger,
@@ -162,11 +169,16 @@ func (action Dump) Run(ctx context.Context) (err error) {
 	return nil
 }
 
-func (action Dump) buildCommand() *command.Builder {
-	cmd := action.Dialect.DumpCommand(action.Dump)
+func (action Dump) buildCommand() (*command.Builder, error) {
+	db, ok := action.Dialect.(config.DatabaseDump)
+	if !ok {
+		return nil, fmt.Errorf("%w: %s", util.ErrNoDump, action.Dialect.Name())
+	}
+
+	cmd := db.DumpCommand(action.Dump)
 	if action.RemoteGzip && action.Format != sqlformat.Custom {
 		cmd.Push(command.Pipe, "gzip", "--force")
 	}
 	log.WithField("cmd", cmd).Trace("finished building command")
-	return cmd
+	return cmd, nil
 }

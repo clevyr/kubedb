@@ -1,6 +1,7 @@
 package dump
 
 import (
+	"fmt"
 	"net/url"
 	"os"
 	"path"
@@ -9,6 +10,7 @@ import (
 	"time"
 
 	"github.com/clevyr/kubedb/internal/actions/dump"
+	"github.com/clevyr/kubedb/internal/config"
 	"github.com/clevyr/kubedb/internal/config/flags"
 	"github.com/clevyr/kubedb/internal/consts"
 	"github.com/clevyr/kubedb/internal/storage"
@@ -88,7 +90,12 @@ func validArgs(cmd *cobra.Command, args []string, toComplete string) ([]string, 
 		return []string{"sql", "sql.gz", "dmp", "archive", "archive.gz"}, cobra.ShellCompDirectiveFilterFileExt
 	}
 
-	formats := action.Dialect.Formats()
+	db, ok := action.Dialect.(config.DatabaseDump)
+	if !ok {
+		return nil, cobra.ShellCompDirectiveError
+	}
+
+	formats := db.Formats()
 	exts := make([]string, 0, len(formats))
 	for _, ext := range formats {
 		exts = append(exts, ext[1:])
@@ -124,11 +131,16 @@ func preRun(cmd *cobra.Command, args []string) (err error) {
 		return err
 	}
 
+	db, ok := action.Dialect.(config.DatabaseDump)
+	if !ok {
+		return fmt.Errorf("%w: %s", util.ErrNoDump, action.Dialect.Name())
+	}
+
 	if action.Filename == "" || strings.HasSuffix(action.Filename, string(os.PathSeparator)) || storage.IsCloudDir(action.Filename) {
 		generated := dump.Filename{
 			Database:  action.Database,
 			Namespace: action.Client.Namespace,
-			Ext:       action.Dialect.DumpExtension(action.Format),
+			Ext:       db.DumpExtension(action.Format),
 			Date:      time.Now(),
 		}.Generate()
 		if storage.IsCloud(action.Filename) {
@@ -142,7 +154,7 @@ func preRun(cmd *cobra.Command, args []string) (err error) {
 			action.Filename = filepath.Join(action.Filename, generated)
 		}
 	} else if !cmd.Flags().Lookup(consts.FormatFlag).Changed {
-		action.Format = action.Dialect.FormatFromFilename(action.Filename)
+		action.Format = db.FormatFromFilename(action.Filename)
 	}
 
 	return nil
