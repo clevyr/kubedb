@@ -219,6 +219,9 @@ func DefaultSetup(cmd *cobra.Command, conf *config.Global, opts SetupOptions) (e
 	})
 
 	group.Go(func() error {
+		if db, ok := conf.Dialect.(config.DatabaseDisableJob); ok && db.DisableJob() {
+			viper.Set(consts.NoJobKey, true)
+		}
 		if viper.GetBool(consts.NoJobKey) {
 			conf.Host = "127.0.0.1"
 			conf.JobPod = conf.DbPod

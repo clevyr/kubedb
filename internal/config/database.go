@@ -78,3 +78,7 @@ type DatabaseTables interface {
 type DatabaseAnalyze interface {
 	AnalyzeQuery() string
 }
+
+type DatabaseDisableJob interface {
+	DisableJob() bool
+}
