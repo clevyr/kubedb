@@ -20,6 +20,22 @@ import (
 )
 
 var (
+	_ config.DatabaseAliases  = Postgres{}
+	_ config.DatabaseDump     = Postgres{}
+	_ config.DatabaseExec     = Postgres{}
+	_ config.DatabaseRestore  = Postgres{}
+	_ config.DatabaseFilter   = Postgres{}
+	_ config.DatabaseUsername = Postgres{}
+	_ config.DatabasePort     = Postgres{}
+	_ config.DatabasePassword = Postgres{}
+	_ config.DatabaseDb       = Postgres{}
+	_ config.DatabaseDbList   = Postgres{}
+	_ config.DatabaseDbDrop   = Postgres{}
+	_ config.DatabaseTables   = Postgres{}
+	_ config.DatabaseAnalyze  = Postgres{}
+)
+
+var (
 	postgresqlHaQuery = kubernetes.LabelQueryAnd{
 		{Name: "app.kubernetes.io/name", Value: "postgresql-ha"},
 		{Name: "app.kubernetes.io/component", Value: "postgresql"},

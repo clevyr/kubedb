@@ -8,6 +8,13 @@ import (
 	"github.com/clevyr/kubedb/internal/kubernetes"
 )
 
+var (
+	_ config.DatabaseExec     = Redis{}
+	_ config.DatabasePort     = Redis{}
+	_ config.DatabasePassword = Redis{}
+	_ config.DatabaseDb       = Redis{}
+)
+
 type Redis struct{}
 
 func (Redis) Name() string {

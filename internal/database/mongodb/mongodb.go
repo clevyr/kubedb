@@ -10,6 +10,19 @@ import (
 	"github.com/clevyr/kubedb/internal/kubernetes"
 )
 
+var (
+	_ config.DatabaseAliases  = MongoDB{}
+	_ config.DatabaseDump     = MongoDB{}
+	_ config.DatabaseExec     = MongoDB{}
+	_ config.DatabaseRestore  = MongoDB{}
+	_ config.DatabaseUsername = MongoDB{}
+	_ config.DatabasePort     = MongoDB{}
+	_ config.DatabasePassword = MongoDB{}
+	_ config.DatabaseDb       = MongoDB{}
+	_ config.DatabaseDbList   = MongoDB{}
+	_ config.DatabaseTables   = MongoDB{}
+)
+
 type MongoDB struct{}
 
 func (MongoDB) Name() string {

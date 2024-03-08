@@ -10,6 +10,20 @@ import (
 	"github.com/clevyr/kubedb/internal/kubernetes"
 )
 
+var (
+	_ config.DatabaseAliases  = MariaDB{}
+	_ config.DatabaseDump     = MariaDB{}
+	_ config.DatabaseExec     = MariaDB{}
+	_ config.DatabaseRestore  = MariaDB{}
+	_ config.DatabaseUsername = MariaDB{}
+	_ config.DatabasePort     = MariaDB{}
+	_ config.DatabasePassword = MariaDB{}
+	_ config.DatabaseDb       = MariaDB{}
+	_ config.DatabaseDbList   = MariaDB{}
+	_ config.DatabaseDbDrop   = MariaDB{}
+	_ config.DatabaseTables   = MariaDB{}
+)
+
 type MariaDB struct{}
 
 func (MariaDB) Name() string {
