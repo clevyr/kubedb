@@ -80,7 +80,7 @@ func NoOwner(cmd *cobra.Command, p *bool) {
 }
 
 func Tables(cmd *cobra.Command, p *[]string) {
-	cmd.Flags().StringSliceVarP(p, consts.TableFlag, "t", []string{}, "Dump the specified table(s) only")
+	cmd.Flags().StringSliceVarP(p, consts.TableFlag, "t", nil, "Dump the specified table(s) only")
 	err := cmd.RegisterFlagCompletionFunc(consts.TableFlag, listTables)
 	if err != nil {
 		panic(err)
@@ -88,7 +88,7 @@ func Tables(cmd *cobra.Command, p *[]string) {
 }
 
 func ExcludeTable(cmd *cobra.Command, p *[]string) {
-	cmd.Flags().StringSliceVarP(p, consts.ExcludeTableFlag, "T", []string{}, "Do NOT dump the specified table(s)")
+	cmd.Flags().StringSliceVarP(p, consts.ExcludeTableFlag, "T", nil, "Do NOT dump the specified table(s)")
 	err := cmd.RegisterFlagCompletionFunc(consts.ExcludeTableFlag, listTables)
 	if err != nil {
 		panic(err)
@@ -96,7 +96,7 @@ func ExcludeTable(cmd *cobra.Command, p *[]string) {
 }
 
 func ExcludeTableData(cmd *cobra.Command, p *[]string) {
-	cmd.Flags().StringSliceVarP(p, consts.ExcludeTableDataFlag, "D", []string{}, "Do NOT dump data for the specified table(s)")
+	cmd.Flags().StringSliceVarP(p, consts.ExcludeTableDataFlag, "D", nil, "Do NOT dump data for the specified table(s)")
 	err := cmd.RegisterFlagCompletionFunc(consts.ExcludeTableDataFlag, listTables)
 	if err != nil {
 		panic(err)
