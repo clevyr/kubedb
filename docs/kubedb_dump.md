@@ -44,6 +44,7 @@ kubedb dump [filename | bucket URI] [flags]
       --job-pod-labels stringToString   Pod labels to add to the job (default [])
       --no-job                          Database commands will be run in the database pod instead of a dedicated job
   -O, --no-owner                        Skip restoration of object ownership in plain-text format (default true)
+      --opts string                     Additional options to pass to the database client command
   -p, --password string                 Database password (default discovered)
       --port uint16                     Database port (default discovered)
   -q, --quiet                           Silence remote log output

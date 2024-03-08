@@ -3,6 +3,7 @@ package consts
 const (
 	AnalyzeKey             = "restore.analyze"
 	HaltOnErrorKey         = "restore.halt-on-error"
+	OptsKey                = "opts"
 	SpinnerKey             = "spinner.name"
 	KubeconfigKey          = "kubernetes.kubeconfig"
 	JobPodLabelsKey        = "kubernetes.job-pod-labels"

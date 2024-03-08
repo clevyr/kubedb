@@ -14,6 +14,7 @@ kubedb exec [flags]
   -h, --help                            help for exec
       --job-pod-labels stringToString   Pod labels to add to the job (default [])
       --no-job                          Database commands will be run in the database pod instead of a dedicated job
+      --opts string                     Additional options to pass to the database client command
   -p, --password string                 Database password (default discovered)
       --port uint16                     Database port (default discovered)
   -U, --username string                 Database username (default discovered)

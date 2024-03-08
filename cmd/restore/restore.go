@@ -54,6 +54,7 @@ Supported Input Filetypes:
 	flags.Analyze(cmd)
 	flags.HaltOnError(cmd)
 	flags.Spinner(cmd, &action.Spinner)
+	flags.Opts(cmd)
 	cmd.Flags().BoolVarP(&action.Force, consts.ForceFlag, "f", false, "Do not prompt before restore")
 
 	return cmd
@@ -94,6 +95,7 @@ func preRun(cmd *cobra.Command, args []string) (err error) {
 	flags.BindNoJob(cmd)
 	flags.BindSpinner(cmd)
 	flags.BindHaltOnError(cmd)
+	flags.BindOpts(cmd)
 	action.HaltOnError = viper.GetBool(consts.HaltOnErrorKey)
 	action.Spinner = viper.GetString(consts.SpinnerKey)
 

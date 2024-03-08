@@ -7,9 +7,11 @@ import (
 
 	"github.com/clevyr/kubedb/internal/command"
 	"github.com/clevyr/kubedb/internal/config"
+	"github.com/clevyr/kubedb/internal/consts"
 	"github.com/clevyr/kubedb/internal/kubernetes"
 	"github.com/clevyr/kubedb/internal/util"
 	log "github.com/sirupsen/logrus"
+	"github.com/spf13/viper"
 	"k8s.io/client-go/tools/remotecommand"
 	"k8s.io/kubectl/pkg/util/term"
 )
@@ -59,6 +61,10 @@ func (action Exec) buildCommand() (*command.Builder, error) {
 	}
 
 	cmd := db.ExecCommand(action.Exec)
+	if opts := viper.GetString(consts.OptsKey); opts != "" {
+		cmd.Push(command.Split(opts))
+	}
+
 	log.WithField("cmd", cmd).Trace("finished building command")
 	return cmd, nil
 }

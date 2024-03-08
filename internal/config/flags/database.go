@@ -131,6 +131,16 @@ func BindHaltOnError(cmd *cobra.Command) {
 	}
 }
 
+func Opts(cmd *cobra.Command) {
+	cmd.Flags().String(consts.OptsFlag, "", "Additional options to pass to the database client command")
+}
+
+func BindOpts(cmd *cobra.Command) {
+	if err := viper.BindPFlag(consts.OptsKey, cmd.Flags().Lookup(consts.OptsFlag)); err != nil {
+		panic(err)
+	}
+}
+
 func listTables(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
 	conf := config.Exec{DisableHeaders: true}
 

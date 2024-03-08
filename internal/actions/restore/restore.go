@@ -10,12 +10,14 @@ import (
 
 	"github.com/clevyr/kubedb/internal/command"
 	"github.com/clevyr/kubedb/internal/config"
+	"github.com/clevyr/kubedb/internal/consts"
 	"github.com/clevyr/kubedb/internal/database/sqlformat"
 	"github.com/clevyr/kubedb/internal/kubernetes"
 	"github.com/clevyr/kubedb/internal/progressbar"
 	"github.com/clevyr/kubedb/internal/util"
 	gzip "github.com/klauspost/pgzip"
 	log "github.com/sirupsen/logrus"
+	"github.com/spf13/viper"
 	"golang.org/x/sync/errgroup"
 )
 
@@ -175,6 +177,10 @@ func (action Restore) buildCommand(inputFormat sqlformat.Format) (*command.Build
 	}
 
 	cmd := db.RestoreCommand(action.Restore, inputFormat)
+	if opts := viper.GetString(consts.OptsKey); opts != "" {
+		cmd.Push(command.Split(opts))
+	}
+
 	if action.RemoteGzip && action.Format != sqlformat.Custom {
 		cmd.Unshift("gunzip", "--force", command.Pipe)
 	}

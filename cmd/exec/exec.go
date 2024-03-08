@@ -27,6 +27,7 @@ func New() *cobra.Command {
 	flags.Database(cmd)
 	flags.Username(cmd)
 	flags.Password(cmd)
+	flags.Opts(cmd)
 	cmd.Flags().StringVarP(&action.Command, consts.CommandFlag, "c", "", "Run a single command and exit")
 
 	return cmd
@@ -35,6 +36,7 @@ func New() *cobra.Command {
 func preRun(cmd *cobra.Command, args []string) error {
 	flags.BindJobPodLabels(cmd)
 	flags.BindNoJob(cmd)
+	flags.BindOpts(cmd)
 
 	setupOptions := util.SetupOptions{Name: "exec"}
 	if err := util.DefaultSetup(cmd, &action.Global, setupOptions); err != nil {

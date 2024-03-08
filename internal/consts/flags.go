@@ -16,6 +16,7 @@ const (
 	ExcludeTableDataFlag  = "exclude-table-data"
 	AnalyzeFlag           = "analyze"
 	HaltOnErrorFlag       = "halt-on-error"
+	OptsFlag              = "opts"
 
 	DirectoryFlag = "directory"
 

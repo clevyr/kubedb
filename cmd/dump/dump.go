@@ -74,6 +74,7 @@ Cloud Upload:
 	flags.Quiet(cmd, &action.Quiet)
 	flags.RemoteGzip(cmd)
 	flags.Spinner(cmd, &action.Spinner)
+	flags.Opts(cmd)
 
 	return cmd
 }
@@ -110,6 +111,7 @@ func preRun(cmd *cobra.Command, args []string) (err error) {
 	action.RemoteGzip = viper.GetBool(consts.RemoteGzipKey)
 	flags.BindSpinner(cmd)
 	action.Spinner = viper.GetString(consts.SpinnerKey)
+	flags.BindOpts(cmd)
 
 	if len(args) > 0 {
 		action.Filename = args[0]
