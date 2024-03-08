@@ -114,6 +114,15 @@ func preRun(cmd *cobra.Command, args []string) (err error) {
 		}
 	}
 
+	if !cmd.Flags().Lookup(consts.FormatFlag).Changed {
+		db, ok := action.Dialect.(config.DatabaseRestore)
+		if !ok {
+			return fmt.Errorf("%w: %s", util.ErrNoRestore, action.Dialect.Name())
+		}
+
+		action.Format = db.FormatFromFilename(action.Filename)
+	}
+
 	if !action.Force {
 		tty := term.TTY{In: os.Stdin}.IsTerminalIn()
 		if tty {
@@ -130,15 +139,6 @@ func preRun(cmd *cobra.Command, args []string) (err error) {
 		} else {
 			return errors.New("refusing to restore a database non-interactively without the --force flag")
 		}
-	}
-
-	if !cmd.Flags().Lookup(consts.FormatFlag).Changed {
-		db, ok := action.Dialect.(config.DatabaseRestore)
-		if !ok {
-			return fmt.Errorf("%w: %s", util.ErrNoRestore, action.Dialect.Name())
-		}
-
-		action.Format = db.FormatFromFilename(action.Filename)
 	}
 
 	if err := util.CreateJob(cmd.Context(), &action.Global, setupOptions); err != nil {
