@@ -6,7 +6,7 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func TestSplit_String(t *testing.T) {
+func TestSplit_Quote(t *testing.T) {
 	tests := []struct {
 		name string
 		s    Split
@@ -23,7 +23,7 @@ func TestSplit_String(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			assert.Equalf(t, tt.want, tt.s.String(), "String()")
+			assert.Equalf(t, tt.want, tt.s.Quote(), "String()")
 		})
 	}
 }

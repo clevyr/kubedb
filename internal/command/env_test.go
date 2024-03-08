@@ -6,7 +6,7 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func TestEnv_String(t *testing.T) {
+func TestEnv_Quote(t *testing.T) {
 	type fields struct {
 		Key   string
 		Value string
@@ -25,7 +25,7 @@ func TestEnv_String(t *testing.T) {
 				Key:   tt.fields.Key,
 				Value: tt.fields.Value,
 			}
-			got := e.String()
+			got := e.Quote()
 			assert.Equal(t, tt.want, got)
 		})
 	}

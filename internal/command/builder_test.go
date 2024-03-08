@@ -46,7 +46,7 @@ func TestBuilder_String(t *testing.T) {
 		{"simple", fields{[]any{"echo", "hello", "world"}}, "echo hello world", false},
 		{"pipe", fields{[]any{"echo", "hello", "world", Pipe, "cat"}}, "echo hello world | cat", false},
 		{"escape", fields{[]any{"echo", "hello world"}}, "echo 'hello world'", false},
-		{"env", fields{[]any{Env{"MESSAGE", "hello world"}, "env"}}, Env{"MESSAGE", "hello world"}.String() + " env", false},
+		{"env", fields{[]any{Env{"MESSAGE", "hello world"}, "env"}}, Env{"MESSAGE", "hello world"}.Quote() + " env", false},
 		{"panic", fields{[]any{0}}, "", true},
 	}
 	for _, tt := range tests {

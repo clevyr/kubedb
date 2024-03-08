@@ -8,7 +8,7 @@ import (
 
 type Split string
 
-func (s Split) String() string {
+func (s Split) Quote() string {
 	var inSingleString bool
 	var inDoubleString bool
 	var wasEscaped bool

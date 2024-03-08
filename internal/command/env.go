@@ -14,6 +14,6 @@ type Env struct {
 	Value string
 }
 
-func (e Env) String() string {
+func (e Env) Quote() string {
 	return e.Key + "=" + shellescape.Quote(e.Value)
 }
