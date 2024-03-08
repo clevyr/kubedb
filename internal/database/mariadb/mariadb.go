@@ -16,6 +16,10 @@ func (MariaDB) Name() string {
 	return "mariadb"
 }
 
+func (MariaDB) Aliases() []string {
+	return []string{"maria", "mysql"}
+}
+
 func (MariaDB) PortEnvNames() kubernetes.ConfigFinders {
 	return kubernetes.ConfigFinders{kubernetes.ConfigFromEnv{"MARIADB_PORT_NUMBER", "MYSQL_PORT_NUMBER"}}
 }

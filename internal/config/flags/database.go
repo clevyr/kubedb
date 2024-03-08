@@ -6,10 +6,7 @@ import (
 
 	"github.com/clevyr/kubedb/internal/config"
 	"github.com/clevyr/kubedb/internal/consts"
-	"github.com/clevyr/kubedb/internal/database/mariadb"
-	"github.com/clevyr/kubedb/internal/database/mongodb"
-	"github.com/clevyr/kubedb/internal/database/postgres"
-	"github.com/clevyr/kubedb/internal/database/redis"
+	"github.com/clevyr/kubedb/internal/database"
 	"github.com/clevyr/kubedb/internal/database/sqlformat"
 	"github.com/clevyr/kubedb/internal/kubernetes"
 	"github.com/clevyr/kubedb/internal/util"
@@ -22,12 +19,7 @@ func Dialect(cmd *cobra.Command) {
 	err := cmd.RegisterFlagCompletionFunc(
 		consts.DialectFlag,
 		func(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
-			return []string{
-				postgres.Postgres{}.Name(),
-				mariadb.MariaDB{}.Name(),
-				mongodb.MongoDB{}.Name(),
-				redis.Redis{}.Name(),
-			}, cobra.ShellCompDirectiveNoFileComp
+			return database.Names(), cobra.ShellCompDirectiveNoFileComp
 		})
 	if err != nil {
 		panic(err)

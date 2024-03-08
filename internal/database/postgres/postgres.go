@@ -36,6 +36,10 @@ func (Postgres) Name() string {
 	return "postgres"
 }
 
+func (Postgres) Aliases() []string {
+	return []string{"postgresql", "psql", "pg"}
+}
+
 func (Postgres) PortEnvNames() kubernetes.ConfigFinders {
 	return kubernetes.ConfigFinders{
 		kubernetes.ConfigFromEnv{"POSTGRESQL_PORT_NUMBER"},

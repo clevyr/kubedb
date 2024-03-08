@@ -14,6 +14,10 @@ type Database interface {
 	PodLabels() []kubernetes.LabelQueryable
 }
 
+type DatabaseAliases interface {
+	Aliases() []string
+}
+
 type DatabaseDump interface {
 	Database
 	DumpCommand(conf Dump) *command.Builder

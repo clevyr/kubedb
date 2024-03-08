@@ -16,6 +16,10 @@ func (MongoDB) Name() string {
 	return "mongodb"
 }
 
+func (MongoDB) Aliases() []string {
+	return []string{"mongo"}
+}
+
 func (MongoDB) PortEnvNames() kubernetes.ConfigFinders {
 	return kubernetes.ConfigFinders{kubernetes.ConfigFromEnv{"MONGODB_PORT_NUMBER"}}
 }
