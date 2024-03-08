@@ -8,6 +8,7 @@ import (
 	"github.com/clevyr/kubedb/internal/database/mariadb"
 	"github.com/clevyr/kubedb/internal/database/mongodb"
 	"github.com/clevyr/kubedb/internal/database/postgres"
+	"github.com/clevyr/kubedb/internal/database/redis"
 )
 
 var ErrUnsupportedDatabase = errors.New("unsupported database")
@@ -20,6 +21,8 @@ func New(name string) (config.Database, error) {
 		return mariadb.MariaDB{}, nil
 	case "mongodb", "mongo":
 		return mongodb.MongoDB{}, nil
+	case "redis":
+		return redis.Redis{}, nil
 	}
 	return nil, fmt.Errorf("%v: %s", ErrUnsupportedDatabase, name)
 }

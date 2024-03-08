@@ -9,6 +9,7 @@ import (
 	"github.com/clevyr/kubedb/internal/database/mariadb"
 	"github.com/clevyr/kubedb/internal/database/mongodb"
 	"github.com/clevyr/kubedb/internal/database/postgres"
+	"github.com/clevyr/kubedb/internal/database/redis"
 	"github.com/clevyr/kubedb/internal/database/sqlformat"
 	"github.com/clevyr/kubedb/internal/kubernetes"
 	"github.com/clevyr/kubedb/internal/util"
@@ -25,6 +26,7 @@ func Dialect(cmd *cobra.Command) {
 				postgres.Postgres{}.Name(),
 				mariadb.MariaDB{}.Name(),
 				mongodb.MongoDB{}.Name(),
+				redis.Redis{}.Name(),
 			}, cobra.ShellCompDirectiveNoFileComp
 		})
 	if err != nil {

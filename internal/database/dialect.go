@@ -5,6 +5,7 @@ import (
 	"github.com/clevyr/kubedb/internal/database/mariadb"
 	"github.com/clevyr/kubedb/internal/database/mongodb"
 	"github.com/clevyr/kubedb/internal/database/postgres"
+	"github.com/clevyr/kubedb/internal/database/redis"
 )
 
 func All() []config.Database {
@@ -12,5 +13,6 @@ func All() []config.Database {
 		postgres.Postgres{},
 		mariadb.MariaDB{},
 		mongodb.MongoDB{},
+		redis.Redis{},
 	}
 }
