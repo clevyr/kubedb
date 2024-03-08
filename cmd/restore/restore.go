@@ -67,6 +67,7 @@ func validArgs(cmd *cobra.Command, args []string, toComplete string) ([]string, 
 
 	viper.Set(consts.NoJobKey, true)
 	action.Force = true
+	action.Filename = "-"
 
 	err := preRun(cmd, args)
 	if err != nil {
