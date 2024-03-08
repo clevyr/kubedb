@@ -88,7 +88,7 @@ func validArgs(cmd *cobra.Command, args []string, toComplete string) ([]string, 
 
 	err := preRun(cmd, args)
 	if err != nil {
-		return []string{"sql", "sql.gz", "dmp", "archive", "archive.gz"}, cobra.ShellCompDirectiveFilterFileExt
+		return nil, cobra.ShellCompDirectiveError
 	}
 
 	db, ok := action.Dialect.(config.DatabaseDump)
