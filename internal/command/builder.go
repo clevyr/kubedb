@@ -1,6 +1,7 @@
 package command
 
 import (
+	"errors"
 	"fmt"
 	"strings"
 
@@ -21,12 +22,32 @@ type Quoter interface {
 	Quote() string
 }
 
+var ErrInvalidType = errors.New("invalid type")
+
+func checkType(p ...any) error {
+	for i := range p {
+		switch p[i].(type) {
+		case string, Quoter, fmt.Stringer:
+			return nil
+		default:
+			return fmt.Errorf("%w: %#v", ErrInvalidType, p)
+		}
+	}
+	return nil
+}
+
 func (j *Builder) Push(p ...any) *Builder {
+	if err := checkType(p...); err != nil {
+		panic(err)
+	}
 	j.cmd = append(j.cmd, p...)
 	return j
 }
 
 func (j *Builder) Unshift(p ...any) *Builder {
+	if err := checkType(p...); err != nil {
+		panic(err)
+	}
 	j.cmd = append(p, j.cmd...)
 	return j
 }
@@ -42,7 +63,7 @@ func (j Builder) String() string {
 		case fmt.Stringer:
 			buf.WriteString(shellescape.Quote(v.String()))
 		default:
-			panic(fmt.Errorf("unknown value in command: %#v", v))
+			panic(fmt.Errorf("%w: %#v", ErrInvalidType, v))
 		}
 		if k < len(j.cmd)-1 {
 			buf.WriteString(" ")
