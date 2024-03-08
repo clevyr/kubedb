@@ -33,8 +33,6 @@ func (j Builder) String() string {
 		switch v := v.(type) {
 		case string:
 			buf.WriteString(shellescape.Quote(v))
-		case Raw:
-			buf.WriteString(string(v))
 		case fmt.Stringer:
 			buf.WriteString(v.String())
 		default:
