@@ -132,10 +132,6 @@ func preRun(cmd *cobra.Command, args []string) (err error) {
 		}
 	}
 
-	if err := util.CreateJob(cmd.Context(), &action.Global, setupOptions); err != nil {
-		return err
-	}
-
 	if !cmd.Flags().Lookup(consts.FormatFlag).Changed {
 		db, ok := action.Dialect.(config.DatabaseRestore)
 		if !ok {
@@ -143,6 +139,10 @@ func preRun(cmd *cobra.Command, args []string) (err error) {
 		}
 
 		action.Format = db.FormatFromFilename(action.Filename)
+	}
+
+	if err := util.CreateJob(cmd.Context(), &action.Global, setupOptions); err != nil {
+		return err
 	}
 
 	return nil

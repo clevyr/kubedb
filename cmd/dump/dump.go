@@ -129,9 +129,6 @@ func preRun(cmd *cobra.Command, args []string) (err error) {
 	if err := util.DefaultSetup(cmd, &action.Global, setupOptions); err != nil {
 		return err
 	}
-	if err := util.CreateJob(cmd.Context(), &action.Global, setupOptions); err != nil {
-		return err
-	}
 
 	db, ok := action.Dialect.(config.DatabaseDump)
 	if !ok {
@@ -157,6 +154,10 @@ func preRun(cmd *cobra.Command, args []string) (err error) {
 		}
 	} else if !cmd.Flags().Lookup(consts.FormatFlag).Changed {
 		action.Format = db.FormatFromFilename(action.Filename)
+	}
+
+	if err := util.CreateJob(cmd.Context(), &action.Global, setupOptions); err != nil {
+		return err
 	}
 
 	return nil
