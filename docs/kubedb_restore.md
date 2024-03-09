@@ -20,6 +20,7 @@ kubedb restore filename [flags]
 ```
       --analyze                         Run an analyze query after restore (default true)
   -c, --clean                           Clean (drop) database objects before recreating (default true)
+      --create-network-policy           Creates a network policy allowing the KubeDB job to talk to the database. (default true)
   -d, --dbname string                   Database name to use (default discovered)
   -f, --force                           Do not prompt before restore
   -F, --format string                   Output file format One of (gzip|custom|plain) (default "gzip")

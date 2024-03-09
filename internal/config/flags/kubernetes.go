@@ -120,3 +120,13 @@ func BindNoJob(cmd *cobra.Command) {
 		panic(err)
 	}
 }
+
+func CreateNetworkPolicy(cmd *cobra.Command) {
+	cmd.Flags().Bool(consts.CreateNetworkPolicyFlag, true, "Creates a network policy allowing the KubeDB job to talk to the database.")
+}
+
+func BindCreateNetworkPolicy(cmd *cobra.Command) {
+	if err := viper.BindPFlag(consts.CreateNetworkPolicyKey, cmd.Flags().Lookup(consts.CreateNetworkPolicyFlag)); err != nil {
+		panic(err)
+	}
+}

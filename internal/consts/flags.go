@@ -22,12 +22,13 @@ const (
 
 	SpinnerFlag = "spinner"
 
-	KubeconfigFlag   = "kubeconfig"
-	ContextFlag      = "context"
-	NamespaceFlag    = "namespace"
-	PodFlag          = "pod"
-	JobPodLabelsFlag = "job-pod-labels"
-	NoJobFlag        = "no-job"
+	KubeconfigFlag          = "kubeconfig"
+	ContextFlag             = "context"
+	NamespaceFlag           = "namespace"
+	PodFlag                 = "pod"
+	JobPodLabelsFlag        = "job-pod-labels"
+	NoJobFlag               = "no-job"
+	CreateNetworkPolicyFlag = "create-network-policy"
 
 	QuietFlag               = "quiet"
 	LogLevelFlag            = "log-level"

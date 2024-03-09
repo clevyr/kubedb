@@ -20,7 +20,9 @@ import (
 	"golang.org/x/sync/errgroup"
 	batchv1 "k8s.io/api/batch/v1"
 	corev1 "k8s.io/api/core/v1"
+	networkingv1 "k8s.io/api/networking/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/util/intstr"
 	"k8s.io/apimachinery/pkg/util/wait"
 	"k8s.io/utils/ptr"
 )
@@ -248,7 +250,7 @@ func CreateJob(ctx context.Context, conf *config.Global, opts SetupOptions) erro
 	return nil
 }
 
-func createJob(ctx context.Context, conf *config.Global, actionName string) error {
+func createJob(ctx context.Context, conf *config.Global, actionName string) (err error) {
 	image := conf.DbPod.Spec.Containers[0].Image
 
 	name := "kubedb-"
@@ -338,14 +340,45 @@ func createJob(ctx context.Context, conf *config.Global, actionName string) erro
 		},
 	}
 
-	log.WithField("namespace", conf.Namespace).Info("creating job")
-
 	ctx, cancel := context.WithTimeout(ctx, time.Minute)
 	defer cancel()
 
-	var err error
+	log.WithField("namespace", conf.Namespace).Info("creating job")
 	if conf.Job, err = conf.Client.Jobs().Create(ctx, &job, metav1.CreateOptions{}); err != nil {
 		return err
+	}
+
+	if viper.GetBool(consts.CreateNetworkPolicyKey) {
+		jobPodKey, jobPodVal := jobPodLabel(conf, conf.Job)
+		policy := networkingv1.NetworkPolicy{
+			ObjectMeta: metav1.ObjectMeta{
+				Name:      conf.Job.Name,
+				Namespace: conf.Client.Namespace,
+				Labels:    standardLabels,
+			},
+			Spec: networkingv1.NetworkPolicySpec{
+				PodSelector: metav1.LabelSelector{MatchLabels: map[string]string{
+					jobPodKey: jobPodVal,
+				}},
+				PolicyTypes: []networkingv1.PolicyType{networkingv1.PolicyTypeEgress},
+				Egress: []networkingv1.NetworkPolicyEgressRule{
+					{
+						To: []networkingv1.NetworkPolicyPeer{{
+							PodSelector: ptr.To(metav1.LabelSelector{MatchLabels: conf.DbPod.Labels}),
+						}},
+						Ports: []networkingv1.NetworkPolicyPort{{
+							Port: ptr.To(intstr.FromInt32(int32(conf.Port))),
+						}},
+					},
+				},
+			},
+		}
+
+		log.WithField("namespace", conf.Namespace).Info("creating network policy")
+		if _, err := conf.Client.NetworkPolicies().Create(ctx, &policy, metav1.CreateOptions{}); err != nil {
+			log.WithError(err).Error("failed to create network policy")
+			viper.Set(consts.CreateNetworkPolicyKey, "false")
+		}
 	}
 
 	return nil
@@ -423,15 +456,23 @@ func pollJobPod(ctx context.Context, conf *config.Global) error {
 	)
 }
 
-func jobPodLabelSelector(conf *config.Global, job *batchv1.Job) string {
+func jobPodLabel(conf *config.Global, job *batchv1.Job) (string, string) {
 	useNewLabel, err := conf.Client.MinServerVersion(1, 27)
 	if err != nil {
 		log.WithError(err).Warn("failed to query server version; assuming v1.27+")
 		useNewLabel = true
 	}
 
+	var key string
 	if useNewLabel {
-		return "batch.kubernetes.io/controller-uid=" + string(job.ObjectMeta.UID)
+		key = "batch.kubernetes.io/controller-uid"
+	} else {
+		key = "controller-uid"
 	}
-	return "controller-uid=" + string(job.ObjectMeta.UID)
+	return key, string(job.ObjectMeta.UID)
+}
+
+func jobPodLabelSelector(conf *config.Global, job *batchv1.Job) string {
+	k, v := jobPodLabel(conf, job)
+	return k + "=" + v
 }

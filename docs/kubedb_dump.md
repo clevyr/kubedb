@@ -34,6 +34,7 @@ kubedb dump [filename | bucket URI] [flags]
 
 ```
   -c, --clean                           Clean (drop) database objects before recreating (default true)
+      --create-network-policy           Creates a network policy allowing the KubeDB job to talk to the database. (default true)
   -d, --dbname string                   Database name to use (default discovered)
   -C, --directory string                Directory to dump to (default ".")
   -T, --exclude-table strings           Do NOT dump the specified table(s)

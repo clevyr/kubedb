@@ -10,6 +10,7 @@ kubedb exec [flags]
 
 ```
   -c, --command string                  Run a single command and exit
+      --create-network-policy           Creates a network policy allowing the KubeDB job to talk to the database. (default true)
   -d, --dbname string                   Database name to use (default discovered)
   -h, --help                            help for exec
       --job-pod-labels stringToString   Pod labels to add to the job (default [])

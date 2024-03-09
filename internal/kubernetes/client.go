@@ -10,6 +10,7 @@ import (
 	"k8s.io/client-go/kubernetes"
 	batchv1 "k8s.io/client-go/kubernetes/typed/batch/v1"
 	v1 "k8s.io/client-go/kubernetes/typed/core/v1"
+	networkingv1 "k8s.io/client-go/kubernetes/typed/networking/v1"
 	"k8s.io/client-go/rest"
 	"k8s.io/client-go/tools/clientcmd"
 )
@@ -36,6 +37,10 @@ func (client KubeClient) Secrets() v1.SecretInterface {
 
 func (client KubeClient) Jobs() batchv1.JobInterface {
 	return client.ClientSet.BatchV1().Jobs(client.Namespace)
+}
+
+func (client KubeClient) NetworkPolicies() networkingv1.NetworkPolicyInterface {
+	return client.ClientSet.NetworkingV1().NetworkPolicies(client.Namespace)
 }
 
 func (client KubeClient) ConfigMaps() v1.ConfigMapInterface {

@@ -59,6 +59,7 @@ Cloud Upload:
 
 	flags.JobPodLabels(cmd)
 	flags.NoJob(cmd)
+	flags.CreateNetworkPolicy(cmd)
 	flags.Port(cmd)
 	flags.Database(cmd)
 	flags.Username(cmd)
@@ -107,6 +108,7 @@ func validArgs(cmd *cobra.Command, args []string, toComplete string) ([]string, 
 func preRun(cmd *cobra.Command, args []string) (err error) {
 	flags.BindJobPodLabels(cmd)
 	flags.BindNoJob(cmd)
+	flags.BindCreateNetworkPolicy(cmd)
 	flags.BindRemoteGzip(cmd)
 	action.RemoteGzip = viper.GetBool(consts.RemoteGzipKey)
 	flags.BindSpinner(cmd)

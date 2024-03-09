@@ -41,6 +41,7 @@ Supported Input Filetypes:
 
 	flags.JobPodLabels(cmd)
 	flags.NoJob(cmd)
+	flags.CreateNetworkPolicy(cmd)
 	flags.Format(cmd, &action.Format)
 	flags.Port(cmd)
 	flags.Database(cmd)
@@ -94,6 +95,7 @@ func preRun(cmd *cobra.Command, args []string) (err error) {
 	action.Analyze = viper.GetBool(consts.AnalyzeKey)
 	flags.BindJobPodLabels(cmd)
 	flags.BindNoJob(cmd)
+	flags.BindCreateNetworkPolicy(cmd)
 	flags.BindSpinner(cmd)
 	flags.BindHaltOnError(cmd)
 	flags.BindOpts(cmd)
