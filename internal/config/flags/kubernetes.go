@@ -111,12 +111,12 @@ func BindJobPodLabels(cmd *cobra.Command) {
 	}
 }
 
-func NoJob(cmd *cobra.Command) {
-	cmd.Flags().Bool(consts.NoJobFlag, false, "Database commands will be run in the database pod instead of a dedicated job")
+func CreateJob(cmd *cobra.Command) {
+	cmd.Flags().Bool(consts.CreateJobFlag, true, "Create a job that will run the database client")
 }
 
-func BindNoJob(cmd *cobra.Command) {
-	if err := viper.BindPFlag(consts.NoJobKey, cmd.Flags().Lookup(consts.NoJobFlag)); err != nil {
+func BindCreateJob(cmd *cobra.Command) {
+	if err := viper.BindPFlag(consts.CreateJobKey, cmd.Flags().Lookup(consts.CreateJobFlag)); err != nil {
 		panic(err)
 	}
 }

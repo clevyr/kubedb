@@ -34,6 +34,7 @@ kubedb dump [filename | bucket URI] [flags]
 
 ```
   -c, --clean                           Clean (drop) database objects before recreating (default true)
+      --create-job                      Create a job that will run the database client (default true)
       --create-network-policy           Creates a network policy allowing the KubeDB job to talk to the database. (default true)
   -d, --dbname string                   Database name to use (default discovered)
   -C, --directory string                Directory to dump to (default ".")
@@ -43,7 +44,6 @@ kubedb dump [filename | bucket URI] [flags]
   -h, --help                            help for dump
       --if-exists                       Use IF EXISTS when dropping objects (default true)
       --job-pod-labels stringToString   Pod labels to add to the job (default [])
-      --no-job                          Database commands will be run in the database pod instead of a dedicated job
   -O, --no-owner                        Skip restoration of object ownership in plain-text format (default true)
       --opts string                     Additional options to pass to the database client command
   -p, --password string                 Database password (default discovered)

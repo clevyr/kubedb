@@ -20,6 +20,7 @@ kubedb restore filename [flags]
 ```
       --analyze                         Run an analyze query after restore (default true)
   -c, --clean                           Clean (drop) database objects before recreating (default true)
+      --create-job                      Create a job that will run the database client (default true)
       --create-network-policy           Creates a network policy allowing the KubeDB job to talk to the database. (default true)
   -d, --dbname string                   Database name to use (default discovered)
   -f, --force                           Do not prompt before restore
@@ -27,7 +28,6 @@ kubedb restore filename [flags]
       --halt-on-error                   Halt on error (Postgres only) (default true)
   -h, --help                            help for restore
       --job-pod-labels stringToString   Pod labels to add to the job (default [])
-      --no-job                          Database commands will be run in the database pod instead of a dedicated job
   -O, --no-owner                        Skip restoration of object ownership in plain-text format (default true)
       --opts string                     Additional options to pass to the database client command
   -p, --password string                 Database password (default discovered)

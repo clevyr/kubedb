@@ -10,11 +10,11 @@ kubedb exec [flags]
 
 ```
   -c, --command string                  Run a single command and exit
+      --create-job                      Create a job that will run the database client (default true)
       --create-network-policy           Creates a network policy allowing the KubeDB job to talk to the database. (default true)
   -d, --dbname string                   Database name to use (default discovered)
   -h, --help                            help for exec
       --job-pod-labels stringToString   Pod labels to add to the job (default [])
-      --no-job                          Database commands will be run in the database pod instead of a dedicated job
       --opts string                     Additional options to pass to the database client command
   -p, --password string                 Database password (default discovered)
       --port uint16                     Database port (default discovered)

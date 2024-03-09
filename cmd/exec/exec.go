@@ -22,7 +22,7 @@ func New() *cobra.Command {
 	}
 
 	flags.JobPodLabels(cmd)
-	flags.NoJob(cmd)
+	flags.CreateJob(cmd)
 	flags.CreateNetworkPolicy(cmd)
 	flags.Port(cmd)
 	flags.Database(cmd)
@@ -36,7 +36,7 @@ func New() *cobra.Command {
 
 func preRun(cmd *cobra.Command, args []string) error {
 	flags.BindJobPodLabels(cmd)
-	flags.BindNoJob(cmd)
+	flags.BindCreateJob(cmd)
 	flags.BindCreateNetworkPolicy(cmd)
 	flags.BindOpts(cmd)
 

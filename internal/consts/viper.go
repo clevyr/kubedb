@@ -7,7 +7,7 @@ const (
 	SpinnerKey             = "spinner.name"
 	KubeconfigKey          = "kubernetes.kubeconfig"
 	JobPodLabelsKey        = "kubernetes.job-pod-labels"
-	NoJobKey               = "kubernetes.no-job"
+	CreateJobKey           = "kubernetes.create-job"
 	CreateNetworkPolicyKey = "kubernetes.create-network-policy"
 	LogLevelKey            = "log.level"
 	LogFormatKey           = "log.format"

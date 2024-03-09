@@ -222,9 +222,9 @@ func DefaultSetup(cmd *cobra.Command, conf *config.Global, opts SetupOptions) (e
 
 	group.Go(func() error {
 		if db, ok := conf.Dialect.(config.DatabaseDisableJob); ok && db.DisableJob() {
-			viper.Set(consts.NoJobKey, true)
+			viper.Set(consts.CreateJobKey, false)
 		}
-		if viper.GetBool(consts.NoJobKey) {
+		if !viper.GetBool(consts.CreateJobKey) {
 			conf.Host = "127.0.0.1"
 			conf.JobPod = conf.DbPod
 		}
@@ -235,7 +235,7 @@ func DefaultSetup(cmd *cobra.Command, conf *config.Global, opts SetupOptions) (e
 }
 
 func CreateJob(ctx context.Context, conf *config.Global, opts SetupOptions) error {
-	if !viper.GetBool(consts.NoJobKey) {
+	if viper.GetBool(consts.CreateJobKey) {
 		if err := createJob(ctx, conf, opts.Name); err != nil {
 			return err
 		}

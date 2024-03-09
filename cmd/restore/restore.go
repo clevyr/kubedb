@@ -40,7 +40,7 @@ Supported Input Filetypes:
 	}
 
 	flags.JobPodLabels(cmd)
-	flags.NoJob(cmd)
+	flags.CreateJob(cmd)
 	flags.CreateNetworkPolicy(cmd)
 	flags.Format(cmd, &action.Format)
 	flags.Port(cmd)
@@ -66,7 +66,7 @@ func validArgs(cmd *cobra.Command, args []string, toComplete string) ([]string, 
 		return nil, cobra.ShellCompDirectiveNoFileComp
 	}
 
-	viper.Set(consts.NoJobKey, true)
+	viper.Set(consts.CreateJobKey, false)
 	action.Force = true
 	action.Filename = "-"
 
@@ -94,7 +94,7 @@ func preRun(cmd *cobra.Command, args []string) (err error) {
 	flags.BindAnalyze(cmd)
 	action.Analyze = viper.GetBool(consts.AnalyzeKey)
 	flags.BindJobPodLabels(cmd)
-	flags.BindNoJob(cmd)
+	flags.BindCreateJob(cmd)
 	flags.BindCreateNetworkPolicy(cmd)
 	flags.BindSpinner(cmd)
 	flags.BindHaltOnError(cmd)

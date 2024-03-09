@@ -27,7 +27,7 @@ const (
 	NamespaceFlag           = "namespace"
 	PodFlag                 = "pod"
 	JobPodLabelsFlag        = "job-pod-labels"
-	NoJobFlag               = "no-job"
+	CreateJobFlag           = "create-job"
 	CreateNetworkPolicyFlag = "create-network-policy"
 
 	QuietFlag               = "quiet"
