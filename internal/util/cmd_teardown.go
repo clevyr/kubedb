@@ -19,9 +19,11 @@ func Teardown(conf *config.Global) {
 
 		opts := metav1.DeleteOptions{PropagationPolicy: ptr.To(metav1.DeletePropagationForeground)}
 
-		log.WithField("name", conf.Job.ObjectMeta.Name).Info("cleaning up job")
-		if err := conf.Client.Jobs().Delete(ctx, conf.Job.ObjectMeta.Name, opts); err != nil {
-			log.WithField("name", conf.Job.ObjectMeta.Name).WithError(err).Error("failed to delete job")
+		if viper.GetBool(consts.CreateJobKey) {
+			log.WithField("name", conf.Job.ObjectMeta.Name).Info("cleaning up job")
+			if err := conf.Client.Jobs().Delete(ctx, conf.Job.ObjectMeta.Name, opts); err != nil {
+				log.WithField("name", conf.Job.ObjectMeta.Name).WithError(err).Error("failed to delete job")
+			}
 		}
 
 		if viper.GetBool(consts.CreateNetworkPolicyKey) {
