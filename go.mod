@@ -3,7 +3,7 @@ module github.com/clevyr/kubedb
 go 1.22.1
 
 require (
-	cloud.google.com/go/storage v1.39.0
+	cloud.google.com/go/storage v1.39.1
 	github.com/AlecAivazis/survey/v2 v2.3.7
 	github.com/alessio/shellescape v1.4.2
 	github.com/aws/aws-sdk-go-v2/config v1.27.6
