@@ -8,6 +8,7 @@ import (
 
 	"github.com/clevyr/kubedb/internal/config"
 	"github.com/clevyr/kubedb/internal/database/mariadb"
+	"github.com/clevyr/kubedb/internal/database/meilisearch"
 	"github.com/clevyr/kubedb/internal/database/mongodb"
 	"github.com/clevyr/kubedb/internal/database/postgres"
 	"github.com/clevyr/kubedb/internal/database/redis"
@@ -20,6 +21,7 @@ func All() []config.Database {
 		mariadb.MariaDB{},
 		mongodb.MongoDB{},
 		redis.Redis{},
+		meilisearch.Meilisearch{},
 	}
 }
 

@@ -33,6 +33,8 @@ to configure itself via the Kubernetes EnvVar API.
   - [bitnami/mongodb](https://artifacthub.io/packages/helm/bitnami/mongodb)
 - Redis
   - [bitnami/redis](https://artifacthub.io/packages/helm/bitnami/redis)
+- Meilisearch [beta]
+  - [meilisearch/meilisearch](https://github.com/meilisearch/meilisearch-kubernetes)
 
 ## Installation
 
