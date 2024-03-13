@@ -37,18 +37,3 @@ func TestFilename_Generate(t *testing.T) {
 		})
 	}
 }
-
-func TestHelpFilename(t *testing.T) {
-	tests := []struct {
-		name string
-		want string
-	}{
-		{"default", "clevyr_2022-01-09_094100.sql.gz"},
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			got := HelpFilename()
-			assert.Equal(t, tt.want, got)
-		})
-	}
-}
