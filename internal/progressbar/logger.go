@@ -7,8 +7,9 @@ import (
 
 func NewBarSafeLogger(w io.Writer, bar *ProgressBar) *BarSafeLogger {
 	return &BarSafeLogger{
-		out: w,
-		bar: bar,
+		out:          w,
+		bar:          bar,
+		canOverwrite: true,
 	}
 }
 
