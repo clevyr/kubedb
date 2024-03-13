@@ -17,6 +17,10 @@ type ConfigLookup interface {
 type ConfigLookups []ConfigLookup
 
 func (c ConfigLookups) Search(ctx context.Context, client KubeClient, pod corev1.Pod) (string, error) {
+	if len(c) == 0 {
+		return "", nil
+	}
+
 	var errs []error
 	for _, search := range c {
 		found, err := search.GetValue(ctx, client, pod)
