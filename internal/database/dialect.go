@@ -50,6 +50,17 @@ func New(name string) (config.Database, error) {
 	return nil, fmt.Errorf("%v: %s", ErrUnsupportedDatabase, name)
 }
 
+func NamesForInterface[T any]() []string {
+	all := All()
+	names := make([]string, 0, len(all))
+	for _, db := range all {
+		if _, ok := db.(T); ok {
+			names = append(names, db.Name())
+		}
+	}
+	return names
+}
+
 func DetectFormat(db config.DatabaseFile, path string) sqlformat.Format {
 	for format, ext := range db.Formats() {
 		if strings.HasSuffix(path, ext) {

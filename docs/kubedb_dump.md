@@ -6,6 +6,8 @@ Dump a database to a sql file
 
 Dump a database to a sql file.
 
+Databases: postgres, mariadb, mongodb, meilisearch
+
 Filenames:  
   If a filename is provided, and it does not end with a "/", then it will be used verbatim.
   Otherwise, the filename will be generated and appended to the given path.

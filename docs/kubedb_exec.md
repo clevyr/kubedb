@@ -2,6 +2,12 @@
 
 Connect to an interactive shell
 
+### Synopsis
+
+Connect to an interactive shell
+
+Databases: postgres, mariadb, mongodb, redis
+
 ```
 kubedb exec [flags]
 ```

@@ -20,6 +20,7 @@ func New() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:     "port-forward [local_port]",
 		Short:   "Set up a local port forward",
+		Long:    newDescription(),
 		Args:    cobra.MaximumNArgs(1),
 		GroupID: "rw",
 		RunE:    run,

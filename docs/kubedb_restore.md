@@ -6,6 +6,8 @@ Restore a sql file to a database
 
 Restore a sql file to a database.
 
+Databases: postgres, mariadb, mongodb, meilisearch
+
 Supported Input Filetypes:
   - Raw sql file. Typically with the `.sql` extension
   - Gzipped sql file. Typically with the ".sql.gz" extension

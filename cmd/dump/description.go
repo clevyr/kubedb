@@ -1,9 +1,12 @@
 package dump
 
 import (
+	"strings"
 	"time"
 
 	"github.com/clevyr/kubedb/internal/actions/dump"
+	"github.com/clevyr/kubedb/internal/config"
+	"github.com/clevyr/kubedb/internal/database"
 )
 
 func newDescription() string {
@@ -13,7 +16,11 @@ func newDescription() string {
 		Date:      time.Date(2022, 1, 9, 9, 41, 0, 0, time.UTC),
 	}.Generate()
 
+	dbs := database.NamesForInterface[config.DatabaseDump]()
+
 	return `Dump a database to a sql file.
+
+Databases: ` + strings.Join(dbs, ", ") + `
 
 Filenames:  
   If a filename is provided, and it does not end with a "/", then it will be used verbatim.

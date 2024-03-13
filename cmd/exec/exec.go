@@ -16,6 +16,7 @@ func New() *cobra.Command {
 		Use:     "exec",
 		Aliases: []string{"e", "shell"},
 		Short:   "Connect to an interactive shell",
+		Long:    newDescription(),
 		GroupID: "rw",
 		RunE:    run,
 		PreRunE: preRun,
