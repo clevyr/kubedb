@@ -139,3 +139,9 @@ func (f LookupVolumeSecret) GetValue(ctx context.Context, client KubeClient, pod
 
 	return "", fmt.Errorf("%w: %s", ErrVolumeNoExist, f.Name)
 }
+
+type LookupNop struct{}
+
+func (l LookupNop) GetValue(_ context.Context, _ KubeClient, _ corev1.Pod) (string, error) {
+	return "", nil
+}
