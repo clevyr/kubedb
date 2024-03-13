@@ -15,6 +15,10 @@ func (r Redact) Levels() []log.Level {
 }
 
 func (r Redact) Fire(entry *log.Entry) error {
+	if r == "" {
+		return nil
+	}
+
 	entry.Message = strings.ReplaceAll(entry.Message, string(r), "***")
 
 	for i, field := range entry.Data {
