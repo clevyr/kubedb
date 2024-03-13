@@ -10,11 +10,6 @@ import (
 	v1meta "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
-var (
-	ErrEnvVarNotFound  = errors.New("env var not found")
-	ErrNoDiscoveryEnvs = errors.New("failed to find config")
-)
-
 type ConfigFinder interface {
 	GetValue(context.Context, KubeClient, corev1.Pod) (string, error)
 }
@@ -22,19 +17,22 @@ type ConfigFinder interface {
 type ConfigFinders []ConfigFinder
 
 func (c ConfigFinders) Search(ctx context.Context, client KubeClient, pod corev1.Pod) (string, error) {
+	var errs []error
 	for _, search := range c {
 		found, err := search.GetValue(ctx, client, pod)
 		if err == nil {
 			return found, nil
 		}
+		errs = append(errs, err)
 	}
-	return "", ErrNoDiscoveryEnvs
+	return "", errors.Join(errs...)
 }
 
 type ConfigFromEnv []string
 
 var (
 	ErrNoEnvNames              = errors.New("dialect does not contain any env names")
+	ErrEnvNoExist              = errors.New("env is not set")
 	ErrSecretDoesNotHaveKey    = errors.New("secret does not have key")
 	ErrConfigMapDoesNotHaveKey = errors.New("config map does not have key")
 )
@@ -105,13 +103,15 @@ func (e ConfigFromEnv) GetValue(ctx context.Context, client KubeClient, pod core
 		}
 	}
 
-	return "", fmt.Errorf("%w: %s", ErrNoDiscoveryEnvs, strings.Join(e, ", "))
+	return "", fmt.Errorf("%w: %s", ErrEnvNoExist, strings.Join(e, ", "))
 }
 
 type ConfigFromVolumeSecret struct {
 	Name string
 	Key  string
 }
+
+var ErrVolumeNoExist = errors.New("volume does not exist")
 
 func (f ConfigFromVolumeSecret) GetValue(ctx context.Context, client KubeClient, pod corev1.Pod) (string, error) {
 	if f.Name == "" || f.Key == "" {
@@ -127,15 +127,11 @@ func (f ConfigFromVolumeSecret) GetValue(ctx context.Context, client KubeClient,
 
 			if value, ok := secret.Data[f.Key]; ok {
 				return string(value), nil
+			} else {
+				return "", fmt.Errorf("%w: %s", ErrSecretDoesNotHaveKey, f.Key)
 			}
 		}
 	}
 
-	return "", ErrNoDiscoveryEnvs
-}
-
-type ConfigFromEnvFrom struct {
-	Type string
-	Name string
-	Key  string
+	return "", fmt.Errorf("%w: %s", ErrVolumeNoExist, f.Name)
 }
