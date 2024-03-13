@@ -136,10 +136,10 @@ func TestMariaDB_PasswordEnvNames(t *testing.T) {
 	tests := []struct {
 		name string
 		args args
-		want kubernetes.ConfigFinders
+		want kubernetes.ConfigLookups
 	}{
-		{"default", args{}, kubernetes.ConfigFinders{kubernetes.ConfigFromEnv{"MARIADB_PASSWORD", "MYSQL_PASSWORD"}}},
-		{"root", args{config.Global{Username: "root"}}, kubernetes.ConfigFinders{kubernetes.ConfigFromEnv{"MARIADB_ROOT_PASSWORD", "MYSQL_ROOT_PASSWORD"}}},
+		{"default", args{}, kubernetes.ConfigLookups{kubernetes.LookupEnv{"MARIADB_PASSWORD", "MYSQL_PASSWORD"}}},
+		{"root", args{config.Global{Username: "root"}}, kubernetes.ConfigLookups{kubernetes.LookupEnv{"MARIADB_ROOT_PASSWORD", "MYSQL_ROOT_PASSWORD"}}},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {

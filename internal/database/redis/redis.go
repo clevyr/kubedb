@@ -21,16 +21,16 @@ func (Redis) Name() string {
 	return "redis"
 }
 
-func (Redis) PortEnvNames() kubernetes.ConfigFinders {
-	return kubernetes.ConfigFinders{kubernetes.ConfigFromEnv{"REDIS_PORT"}}
+func (Redis) PortEnvNames() kubernetes.ConfigLookups {
+	return kubernetes.ConfigLookups{kubernetes.LookupEnv{"REDIS_PORT"}}
 }
 
 func (Redis) DefaultPort() uint16 {
 	return 6379
 }
 
-func (Redis) DatabaseEnvNames() kubernetes.ConfigFinders {
-	return kubernetes.ConfigFinders{kubernetes.ConfigFromEnv{"REDIS_DB"}}
+func (Redis) DatabaseEnvNames() kubernetes.ConfigLookups {
+	return kubernetes.ConfigLookups{kubernetes.LookupEnv{"REDIS_DB"}}
 }
 
 func (Redis) PodLabels() []kubernetes.LabelQueryable {
@@ -46,9 +46,9 @@ func (Redis) PodLabels() []kubernetes.LabelQueryable {
 	}
 }
 
-func (db Redis) PasswordEnvNames(c config.Global) kubernetes.ConfigFinders {
-	return kubernetes.ConfigFinders{
-		kubernetes.ConfigFromEnv{"REDIS_PASSWORD"},
+func (db Redis) PasswordEnvNames(c config.Global) kubernetes.ConfigLookups {
+	return kubernetes.ConfigLookups{
+		kubernetes.LookupEnv{"REDIS_PASSWORD"},
 	}
 }
 

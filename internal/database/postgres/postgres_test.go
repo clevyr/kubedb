@@ -184,24 +184,24 @@ func TestPostgres_PasswordEnvNames(t *testing.T) {
 	tests := []struct {
 		name string
 		args args
-		want kubernetes.ConfigFinders
+		want kubernetes.ConfigLookups
 	}{
-		{"default", args{}, kubernetes.ConfigFinders{
-			kubernetes.ConfigFromEnv{
+		{"default", args{}, kubernetes.ConfigLookups{
+			kubernetes.LookupEnv{
 				"POSTGRES_PASSWORD",
 				"PGPOOL_POSTGRES_PASSWORD",
 				"PGPASSWORD_SUPERUSER",
 			},
-			kubernetes.ConfigFromVolumeSecret{Name: "app-secret", Key: "password"},
+			kubernetes.LookupVolumeSecret{Name: "app-secret", Key: "password"},
 		}},
-		{"postgres", args{config.Global{Username: "postgres"}}, kubernetes.ConfigFinders{
-			kubernetes.ConfigFromEnv{
+		{"postgres", args{config.Global{Username: "postgres"}}, kubernetes.ConfigLookups{
+			kubernetes.LookupEnv{
 				"POSTGRES_POSTGRES_PASSWORD",
 				"POSTGRES_PASSWORD",
 				"PGPOOL_POSTGRES_PASSWORD",
 				"PGPASSWORD_SUPERUSER",
 			},
-			kubernetes.ConfigFromVolumeSecret{Name: "superuser-secret", Key: "password"},
+			kubernetes.LookupVolumeSecret{Name: "superuser-secret", Key: "password"},
 		}},
 	}
 	for _, tt := range tests {

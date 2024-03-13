@@ -56,10 +56,10 @@ func (Postgres) Aliases() []string {
 	return []string{"postgresql", "psql", "pg"}
 }
 
-func (Postgres) PortEnvNames() kubernetes.ConfigFinders {
-	return kubernetes.ConfigFinders{
-		kubernetes.ConfigFromEnv{"POSTGRESQL_PORT_NUMBER"},
-		kubernetes.ConfigFromVolumeSecret{Name: "app-secret", Key: "port"},
+func (Postgres) PortEnvNames() kubernetes.ConfigLookups {
+	return kubernetes.ConfigLookups{
+		kubernetes.LookupEnv{"POSTGRESQL_PORT_NUMBER"},
+		kubernetes.LookupVolumeSecret{Name: "app-secret", Key: "port"},
 	}
 }
 
@@ -67,10 +67,10 @@ func (Postgres) DefaultPort() uint16 {
 	return 5432
 }
 
-func (Postgres) DatabaseEnvNames() kubernetes.ConfigFinders {
-	return kubernetes.ConfigFinders{
-		kubernetes.ConfigFromEnv{"POSTGRES_DATABASE", "POSTGRES_DB"},
-		kubernetes.ConfigFromVolumeSecret{Name: "app-secret", Key: "dbname"},
+func (Postgres) DatabaseEnvNames() kubernetes.ConfigLookups {
+	return kubernetes.ConfigLookups{
+		kubernetes.LookupEnv{"POSTGRES_DATABASE", "POSTGRES_DB"},
+		kubernetes.LookupVolumeSecret{Name: "app-secret", Key: "dbname"},
 	}
 }
 
@@ -82,10 +82,10 @@ func (Postgres) ListTablesQuery() string {
 	return "SELECT table_name FROM information_schema.tables WHERE table_schema='public' AND table_type='BASE TABLE'"
 }
 
-func (Postgres) UserEnvNames() kubernetes.ConfigFinders {
-	return kubernetes.ConfigFinders{
-		kubernetes.ConfigFromEnv{"POSTGRES_USER", "PGPOOL_POSTGRES_USERNAME", "PGUSER_SUPERUSER"},
-		kubernetes.ConfigFromVolumeSecret{Name: "app-secret", Key: "username"},
+func (Postgres) UserEnvNames() kubernetes.ConfigLookups {
+	return kubernetes.ConfigLookups{
+		kubernetes.LookupEnv{"POSTGRES_USER", "PGPOOL_POSTGRES_USERNAME", "PGUSER_SUPERUSER"},
+		kubernetes.LookupVolumeSecret{Name: "app-secret", Key: "username"},
 	}
 }
 
@@ -193,9 +193,9 @@ func (Postgres) FilterPods(ctx context.Context, client kubernetes.KubeClient, po
 	return preferred, nil
 }
 
-func (db Postgres) PasswordEnvNames(c config.Global) kubernetes.ConfigFinders {
-	var searchEnvs kubernetes.ConfigFromEnv
-	searchUser := kubernetes.ConfigFromVolumeSecret{Key: "password"}
+func (db Postgres) PasswordEnvNames(c config.Global) kubernetes.ConfigLookups {
+	var searchEnvs kubernetes.LookupEnv
+	searchUser := kubernetes.LookupVolumeSecret{Key: "password"}
 	if c.Username == db.DefaultUser() {
 		searchEnvs = append(searchEnvs, "POSTGRES_POSTGRES_PASSWORD")
 		searchUser.Name = "superuser-secret"
@@ -203,7 +203,7 @@ func (db Postgres) PasswordEnvNames(c config.Global) kubernetes.ConfigFinders {
 		searchUser.Name = "app-secret"
 	}
 	searchEnvs = append(searchEnvs, "POSTGRES_PASSWORD", "PGPOOL_POSTGRES_PASSWORD", "PGPASSWORD_SUPERUSER")
-	return kubernetes.ConfigFinders{searchEnvs, searchUser}
+	return kubernetes.ConfigLookups{searchEnvs, searchUser}
 }
 
 func (Postgres) ExecCommand(conf config.Exec) *command.Builder {

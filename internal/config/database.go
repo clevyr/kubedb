@@ -46,21 +46,21 @@ type DatabaseFile interface {
 }
 
 type DatabaseUsername interface {
-	UserEnvNames() kubernetes.ConfigFinders
+	UserEnvNames() kubernetes.ConfigLookups
 	DefaultUser() string
 }
 
 type DatabasePort interface {
 	DefaultPort() uint16
-	PortEnvNames() kubernetes.ConfigFinders
+	PortEnvNames() kubernetes.ConfigLookups
 }
 
 type DatabasePassword interface {
-	PasswordEnvNames(conf Global) kubernetes.ConfigFinders
+	PasswordEnvNames(conf Global) kubernetes.ConfigLookups
 }
 
 type DatabaseDb interface {
-	DatabaseEnvNames() kubernetes.ConfigFinders
+	DatabaseEnvNames() kubernetes.ConfigLookups
 }
 
 type DatabaseDbList interface {

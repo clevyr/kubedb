@@ -10,13 +10,13 @@ import (
 	v1meta "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
-type ConfigFinder interface {
+type ConfigLookup interface {
 	GetValue(context.Context, KubeClient, corev1.Pod) (string, error)
 }
 
-type ConfigFinders []ConfigFinder
+type ConfigLookups []ConfigLookup
 
-func (c ConfigFinders) Search(ctx context.Context, client KubeClient, pod corev1.Pod) (string, error) {
+func (c ConfigLookups) Search(ctx context.Context, client KubeClient, pod corev1.Pod) (string, error) {
 	var errs []error
 	for _, search := range c {
 		found, err := search.GetValue(ctx, client, pod)
@@ -28,7 +28,7 @@ func (c ConfigFinders) Search(ctx context.Context, client KubeClient, pod corev1
 	return "", errors.Join(errs...)
 }
 
-type ConfigFromEnv []string
+type LookupEnv []string
 
 var (
 	ErrNoEnvNames              = errors.New("dialect does not contain any env names")
@@ -37,7 +37,7 @@ var (
 	ErrConfigMapDoesNotHaveKey = errors.New("config map does not have key")
 )
 
-func (e ConfigFromEnv) GetValue(ctx context.Context, client KubeClient, pod corev1.Pod) (string, error) {
+func (e LookupEnv) GetValue(ctx context.Context, client KubeClient, pod corev1.Pod) (string, error) {
 	if len(e) == 0 {
 		return "", ErrNoEnvNames
 	}
@@ -106,14 +106,14 @@ func (e ConfigFromEnv) GetValue(ctx context.Context, client KubeClient, pod core
 	return "", fmt.Errorf("%w: %s", ErrEnvNoExist, strings.Join(e, ", "))
 }
 
-type ConfigFromVolumeSecret struct {
+type LookupVolumeSecret struct {
 	Name string
 	Key  string
 }
 
 var ErrVolumeNoExist = errors.New("volume does not exist")
 
-func (f ConfigFromVolumeSecret) GetValue(ctx context.Context, client KubeClient, pod corev1.Pod) (string, error) {
+func (f LookupVolumeSecret) GetValue(ctx context.Context, client KubeClient, pod corev1.Pod) (string, error) {
 	if f.Name == "" || f.Key == "" {
 		return "", ErrNoEnvNames
 	}

@@ -105,10 +105,10 @@ func TestMongoDB_PasswordEnvNames(t *testing.T) {
 	tests := []struct {
 		name string
 		args args
-		want kubernetes.ConfigFinders
+		want kubernetes.ConfigLookups
 	}{
-		{"default", args{}, kubernetes.ConfigFinders{kubernetes.ConfigFromEnv{"MONGODB_EXTRA_PASSWORDS"}}},
-		{"root", args{config.Global{Username: "root"}}, kubernetes.ConfigFinders{kubernetes.ConfigFromEnv{"MONGODB_ROOT_PASSWORD"}}},
+		{"default", args{}, kubernetes.ConfigLookups{kubernetes.LookupEnv{"MONGODB_EXTRA_PASSWORDS"}}},
+		{"root", args{config.Global{Username: "root"}}, kubernetes.ConfigLookups{kubernetes.LookupEnv{"MONGODB_ROOT_PASSWORD"}}},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
