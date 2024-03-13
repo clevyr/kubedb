@@ -312,20 +312,3 @@ func (Postgres) Formats() map[sqlformat.Format]string {
 		sqlformat.Custom: ".dmp",
 	}
 }
-
-func (db Postgres) FormatFromFilename(filename string) sqlformat.Format {
-	for format, ext := range db.Formats() {
-		if strings.HasSuffix(filename, ext) {
-			return format
-		}
-	}
-	return sqlformat.Unknown
-}
-
-func (db Postgres) DumpExtension(format sqlformat.Format) string {
-	ext, ok := db.Formats()[format]
-	if ok {
-		return ext
-	}
-	return ""
-}

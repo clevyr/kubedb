@@ -157,23 +157,6 @@ func (MariaDB) Formats() map[sqlformat.Format]string {
 	}
 }
 
-func (db MariaDB) FormatFromFilename(filename string) sqlformat.Format {
-	for format, ext := range db.Formats() {
-		if strings.HasSuffix(filename, ext) {
-			return format
-		}
-	}
-	return sqlformat.Unknown
-}
-
-func (db MariaDB) DumpExtension(format sqlformat.Format) string {
-	ext, ok := db.Formats()[format]
-	if ok {
-		return ext
-	}
-	return ""
-}
-
 func (db MariaDB) quoteIdentifier(param string) string {
 	param = strings.ReplaceAll(param, "`", "``")
 	param = "`" + param + "`"

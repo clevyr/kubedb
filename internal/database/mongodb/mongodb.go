@@ -2,7 +2,6 @@ package mongodb
 
 import (
 	"strconv"
-	"strings"
 
 	"github.com/clevyr/kubedb/internal/command"
 	"github.com/clevyr/kubedb/internal/config"
@@ -169,21 +168,4 @@ func (MongoDB) Formats() map[sqlformat.Format]string {
 		sqlformat.Plain: ".archive",
 		sqlformat.Gzip:  ".archive.gz",
 	}
-}
-
-func (db MongoDB) FormatFromFilename(filename string) sqlformat.Format {
-	for format, ext := range db.Formats() {
-		if strings.HasSuffix(filename, ext) {
-			return format
-		}
-	}
-	return sqlformat.Unknown
-}
-
-func (db MongoDB) DumpExtension(format sqlformat.Format) string {
-	ext, ok := db.Formats()[format]
-	if ok {
-		return ext
-	}
-	return ""
 }

@@ -10,6 +10,7 @@ import (
 	"github.com/clevyr/kubedb/internal/config"
 	"github.com/clevyr/kubedb/internal/config/flags"
 	"github.com/clevyr/kubedb/internal/consts"
+	"github.com/clevyr/kubedb/internal/database"
 	"github.com/clevyr/kubedb/internal/util"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
@@ -123,7 +124,7 @@ func preRun(cmd *cobra.Command, args []string) (err error) {
 			return fmt.Errorf("%w: %s", util.ErrNoRestore, action.Dialect.Name())
 		}
 
-		action.Format = db.FormatFromFilename(action.Filename)
+		action.Format = database.DetectFormat(db, action.Filename)
 	}
 
 	if !action.Force {

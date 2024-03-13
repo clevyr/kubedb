@@ -13,6 +13,7 @@ import (
 	"github.com/clevyr/kubedb/internal/config"
 	"github.com/clevyr/kubedb/internal/config/flags"
 	"github.com/clevyr/kubedb/internal/consts"
+	"github.com/clevyr/kubedb/internal/database"
 	"github.com/clevyr/kubedb/internal/storage"
 	"github.com/clevyr/kubedb/internal/util"
 	"github.com/spf13/cobra"
@@ -140,7 +141,7 @@ func preRun(cmd *cobra.Command, args []string) (err error) {
 		generated := dump.Filename{
 			Database:  action.Database,
 			Namespace: action.Client.Namespace,
-			Ext:       db.DumpExtension(action.Format),
+			Ext:       database.GetExtension(db, action.Format),
 			Date:      time.Now(),
 		}.Generate()
 		if storage.IsCloud(action.Filename) {
@@ -154,7 +155,7 @@ func preRun(cmd *cobra.Command, args []string) (err error) {
 			action.Filename = filepath.Join(action.Filename, generated)
 		}
 	} else if !cmd.Flags().Lookup(consts.FormatFlag).Changed {
-		action.Format = db.FormatFromFilename(action.Filename)
+		action.Format = database.DetectFormat(db, action.Filename)
 	}
 
 	if err := util.CreateJob(cmd.Context(), &action.Global, setupOptions); err != nil {

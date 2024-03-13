@@ -41,8 +41,6 @@ type DatabaseFilter interface {
 
 type DatabaseFile interface {
 	Formats() map[sqlformat.Format]string
-	FormatFromFilename(filename string) sqlformat.Format
-	DumpExtension(format sqlformat.Format) string
 }
 
 type DatabaseUsername interface {

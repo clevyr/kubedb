@@ -169,51 +169,6 @@ func TestMongoDB_RestoreCommand(t *testing.T) {
 	}
 }
 
-func TestMongoDB_DumpExtension(t *testing.T) {
-	type args struct {
-		format sqlformat.Format
-	}
-	tests := []struct {
-		name string
-		args args
-		want string
-	}{
-		{"plain", args{sqlformat.Plain}, ".archive"},
-		{"gzip", args{sqlformat.Gzip}, ".archive.gz"},
-		{"custom", args{sqlformat.Custom}, ""},
-		{"unknown", args{sqlformat.Unknown}, ""},
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			po := MongoDB{}
-			got := po.DumpExtension(tt.args.format)
-			assert.Equal(t, tt.want, got)
-		})
-	}
-}
-
-func TestMongoDB_FormatFromFilename(t *testing.T) {
-	type args struct {
-		filename string
-	}
-	tests := []struct {
-		name string
-		args args
-		want sqlformat.Format
-	}{
-		{"gzip", args{"test.archive.gz"}, sqlformat.Gzip},
-		{"plain", args{"test.archive"}, sqlformat.Plain},
-		{"unknown", args{"test.png"}, sqlformat.Unknown},
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			ma := MongoDB{}
-			got := ma.FormatFromFilename(tt.args.filename)
-			assert.Equal(t, tt.want, got)
-		})
-	}
-}
-
 func TestMongoDB_AuthenticationDatabase(t *testing.T) {
 	type args struct {
 		c config.Global

@@ -4,12 +4,14 @@ import (
 	"errors"
 	"fmt"
 	"slices"
+	"strings"
 
 	"github.com/clevyr/kubedb/internal/config"
 	"github.com/clevyr/kubedb/internal/database/mariadb"
 	"github.com/clevyr/kubedb/internal/database/mongodb"
 	"github.com/clevyr/kubedb/internal/database/postgres"
 	"github.com/clevyr/kubedb/internal/database/redis"
+	"github.com/clevyr/kubedb/internal/database/sqlformat"
 )
 
 func All() []config.Database {
@@ -44,4 +46,20 @@ func New(name string) (config.Database, error) {
 		}
 	}
 	return nil, fmt.Errorf("%v: %s", ErrUnsupportedDatabase, name)
+}
+
+func DetectFormat(db config.DatabaseFile, path string) sqlformat.Format {
+	for format, ext := range db.Formats() {
+		if strings.HasSuffix(path, ext) {
+			return format
+		}
+	}
+	return sqlformat.Unknown
+}
+
+func GetExtension(db config.DatabaseFile, format sqlformat.Format) string {
+	if ext, ok := db.Formats()[format]; ok {
+		return ext
+	}
+	return ""
 }
