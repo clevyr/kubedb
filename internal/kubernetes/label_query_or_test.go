@@ -20,8 +20,8 @@ func TestLabelQueryOr_FindPods(t *testing.T) {
 		{
 			"1 found",
 			LabelQueryOr{
-				{Name: "key", Value: "wrong"},
-				{Name: "key2", Value: "value2"},
+				LabelQuery{Name: "key", Value: "wrong"},
+				LabelQuery{Name: "key2", Value: "value2"},
 			},
 			args{pods},
 			[]v1.Pod{pod},
@@ -29,8 +29,8 @@ func TestLabelQueryOr_FindPods(t *testing.T) {
 		{
 			"0 found",
 			LabelQueryOr{
-				{Name: "key", Value: "wrong"},
-				{Name: "key2", Value: "also wrong"},
+				LabelQuery{Name: "key", Value: "wrong"},
+				LabelQuery{Name: "key2", Value: "also wrong"},
 			},
 			args{pods},
 			[]v1.Pod{},
@@ -56,8 +56,8 @@ func TestLabelQueryOr_Matches(t *testing.T) {
 		{
 			"1 found",
 			LabelQueryOr{
-				{Name: "key", Value: "wrong"},
-				{Name: "key2", Value: "value2"},
+				LabelQuery{Name: "key", Value: "wrong"},
+				LabelQuery{Name: "key2", Value: "value2"},
 			},
 			args{pod},
 			true,
@@ -65,8 +65,8 @@ func TestLabelQueryOr_Matches(t *testing.T) {
 		{
 			"0 found",
 			LabelQueryOr{
-				{Name: "key", Value: "wrong"},
-				{Name: "key2", Value: "also wrong"},
+				LabelQuery{Name: "key", Value: "wrong"},
+				LabelQuery{Name: "key2", Value: "also wrong"},
 			},
 			args{pod},
 			false,

@@ -4,7 +4,7 @@ import (
 	v1 "k8s.io/api/core/v1"
 )
 
-type LabelQueryOr []LabelQuery
+type LabelQueryOr []LabelQueryable
 
 func (queries LabelQueryOr) Matches(pod v1.Pod) bool {
 	for _, query := range queries {

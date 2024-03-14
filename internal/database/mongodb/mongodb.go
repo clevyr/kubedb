@@ -63,12 +63,12 @@ func (MongoDB) DefaultUser() string {
 func (MongoDB) PodLabels() []kubernetes.LabelQueryable {
 	return []kubernetes.LabelQueryable{
 		kubernetes.LabelQueryAnd{
-			{Name: "app.kubernetes.io/name", Value: "mongodb"},
-			{Name: "app.kubernetes.io/component", Value: "mongodb"},
+			kubernetes.LabelQuery{Name: "app.kubernetes.io/name", Value: "mongodb"},
+			kubernetes.LabelQuery{Name: "app.kubernetes.io/component", Value: "mongodb"},
 		},
 		kubernetes.LabelQueryAnd{
-			{Name: "app.kubernetes.io/name", Value: "mongodb-sharded"},
-			{Name: "app.kubernetes.io/component", Value: "mongos"},
+			kubernetes.LabelQuery{Name: "app.kubernetes.io/name", Value: "mongodb-sharded"},
+			kubernetes.LabelQuery{Name: "app.kubernetes.io/component", Value: "mongos"},
 		},
 		kubernetes.LabelQuery{Name: "app", Value: "mongodb"},
 		kubernetes.LabelQuery{Name: "app", Value: "mongodb-replicaset"},

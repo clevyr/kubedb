@@ -70,15 +70,15 @@ func (db MariaDB) DropDatabaseQuery(database string) string {
 func (MariaDB) PodLabels() []kubernetes.LabelQueryable {
 	return []kubernetes.LabelQueryable{
 		kubernetes.LabelQueryAnd{
-			{Name: "app.kubernetes.io/name", Value: "mariadb"},
-			{Name: "app.kubernetes.io/component", Value: "primary"},
+			kubernetes.LabelQuery{Name: "app.kubernetes.io/name", Value: "mariadb"},
+			kubernetes.LabelQuery{Name: "app.kubernetes.io/component", Value: "primary"},
 		},
 		kubernetes.LabelQueryAnd{
-			{Name: "app.kubernetes.io/name", Value: "mariadb-galera"},
+			kubernetes.LabelQuery{Name: "app.kubernetes.io/name", Value: "mariadb-galera"},
 		},
 		kubernetes.LabelQueryAnd{
-			{Name: "app.kubernetes.io/name", Value: "mysql"},
-			{Name: "app.kubernetes.io/component", Value: "primary"},
+			kubernetes.LabelQuery{Name: "app.kubernetes.io/name", Value: "mysql"},
+			kubernetes.LabelQuery{Name: "app.kubernetes.io/component", Value: "primary"},
 		},
 		kubernetes.LabelQuery{Name: "app", Value: "mariadb"},
 		kubernetes.LabelQuery{Name: "app", Value: "mysql"},

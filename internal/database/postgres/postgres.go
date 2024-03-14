@@ -93,8 +93,8 @@ func (Postgres) AnalyzeQuery() string {
 func (db Postgres) PodLabels() []kubernetes.LabelQueryable {
 	return []kubernetes.LabelQueryable{
 		kubernetes.LabelQueryAnd{
-			{Name: "app.kubernetes.io/name", Value: "postgresql"},
-			{Name: "app.kubernetes.io/component", Value: "primary"},
+			kubernetes.LabelQuery{Name: "app.kubernetes.io/name", Value: "postgresql"},
+			kubernetes.LabelQuery{Name: "app.kubernetes.io/component", Value: "primary"},
 		},
 		db.postgresqlHaQuery(),
 		db.cnpgQuery(),
@@ -304,8 +304,8 @@ func (Postgres) Formats() map[sqlformat.Format]string {
 
 func (Postgres) postgresqlHaQuery() kubernetes.LabelQueryable {
 	return kubernetes.LabelQueryAnd{
-		{Name: "app.kubernetes.io/name", Value: "postgresql-ha"},
-		{Name: "app.kubernetes.io/component", Value: "postgresql"},
+		kubernetes.LabelQuery{Name: "app.kubernetes.io/name", Value: "postgresql-ha"},
+		kubernetes.LabelQuery{Name: "app.kubernetes.io/component", Value: "postgresql"},
 	}
 }
 
