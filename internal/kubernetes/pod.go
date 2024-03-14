@@ -36,6 +36,7 @@ func (client KubeClient) GetNamespacedPods(ctx context.Context) (*v1.PodList, er
 
 type ExecOptions struct {
 	Pod            v1.Pod
+	Container      string
 	Cmd            string
 	Stdin          io.Reader
 	Stdout, Stderr io.Writer
@@ -51,11 +52,12 @@ func (client KubeClient) Exec(ctx context.Context, opt ExecOptions) error {
 		Name(opt.Pod.Name).
 		SubResource("exec").
 		VersionedParams(&v1.PodExecOptions{
-			Command: []string{"sh", "-c", opt.Cmd},
-			Stdin:   opt.Stdin != nil,
-			Stdout:  opt.Stdout != nil,
-			Stderr:  opt.Stderr != nil,
-			TTY:     opt.TTY,
+			Command:   []string{"sh", "-c", opt.Cmd},
+			Container: opt.Container,
+			Stdin:     opt.Stdin != nil,
+			Stdout:    opt.Stdout != nil,
+			Stderr:    opt.Stderr != nil,
+			TTY:       opt.TTY,
 		}, scheme.ParameterCodec)
 
 	tlsConfig, err := rest.TLSConfigFor(client.ClientConfig)
