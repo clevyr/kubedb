@@ -40,8 +40,8 @@ func (Redis) DatabaseEnvNames() kubernetes.ConfigLookups {
 	return kubernetes.ConfigLookups{kubernetes.LookupEnv{"REDIS_DB"}}
 }
 
-func (db Redis) PodLabels() []kubernetes.LabelQueryable {
-	return []kubernetes.LabelQueryable{
+func (db Redis) PodLabels() kubernetes.LabelQueryable {
+	return kubernetes.LabelQueryOr{
 		kubernetes.LabelQueryAnd{
 			kubernetes.LabelQuery{Name: "app.kubernetes.io/name", Value: "redis"},
 			kubernetes.LabelQuery{Name: "app.kubernetes.io/component", Value: "master"},

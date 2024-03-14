@@ -67,8 +67,8 @@ func (db MariaDB) DropDatabaseQuery(database string) string {
 	return "set FOREIGN_KEY_CHECKS=0; create or replace database " + database + "; set FOREIGN_KEY_CHECKS=1; use " + database + ";"
 }
 
-func (MariaDB) PodLabels() []kubernetes.LabelQueryable {
-	return []kubernetes.LabelQueryable{
+func (MariaDB) PodLabels() kubernetes.LabelQueryable {
+	return kubernetes.LabelQueryOr{
 		kubernetes.LabelQueryAnd{
 			kubernetes.LabelQuery{Name: "app.kubernetes.io/name", Value: "mariadb"},
 			kubernetes.LabelQuery{Name: "app.kubernetes.io/component", Value: "primary"},

@@ -32,10 +32,8 @@ func (Meilisearch) DefaultPort() uint16 {
 	return 7700
 }
 
-func (Meilisearch) PodLabels() []kubernetes.LabelQueryable {
-	return []kubernetes.LabelQueryable{
-		kubernetes.LabelQuery{Name: "app.kubernetes.io/name", Value: "meilisearch"},
-	}
+func (Meilisearch) PodLabels() kubernetes.LabelQueryable {
+	return kubernetes.LabelQuery{Name: "app.kubernetes.io/name", Value: "meilisearch"}
 }
 
 func (Meilisearch) PasswordEnvNames(c config.Global) kubernetes.ConfigLookups {

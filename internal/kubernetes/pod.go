@@ -104,7 +104,7 @@ func (client KubeClient) Exec(ctx context.Context, opt ExecOptions) error {
 	return err
 }
 
-func (client KubeClient) GetPodsFiltered(ctx context.Context, queries []LabelQueryable) ([]v1.Pod, error) {
+func (client KubeClient) GetPodsFiltered(ctx context.Context, queries LabelQueryable) ([]v1.Pod, error) {
 	podList, err := client.GetNamespacedPods(ctx)
 	if err != nil {
 		return []v1.Pod{}, err
@@ -112,21 +112,18 @@ func (client KubeClient) GetPodsFiltered(ctx context.Context, queries []LabelQue
 	return FilterPodList(podList.Items, queries), nil
 }
 
-func FilterPodList(pods []v1.Pod, queries []LabelQueryable) []v1.Pod {
+func FilterPodList(pods []v1.Pod, query LabelQueryable) []v1.Pod {
 	matched := make([]v1.Pod, 0, len(pods))
 
-	for _, query := range queries {
-		p := query.FindPods(pods)
-		if len(p) == 0 {
-			log.WithField("query", query).Trace(ErrPodNotFound)
-			continue
-		}
-		log.WithFields(log.Fields{
-			"query": query,
-			"count": len(p),
-		}).Trace("query returned podlist")
-		matched = append(matched, p...)
+	p := query.FindPods(pods)
+	if len(p) == 0 {
+		log.WithField("query", query).Trace(ErrPodNotFound)
 	}
+	log.WithFields(log.Fields{
+		"query": query,
+		"count": len(p),
+	}).Trace("query returned podlist")
+	matched = append(matched, p...)
 
 	return matched
 }

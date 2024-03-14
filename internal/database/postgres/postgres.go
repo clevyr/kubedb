@@ -90,8 +90,8 @@ func (Postgres) AnalyzeQuery() string {
 	return "analyze;"
 }
 
-func (db Postgres) PodLabels() []kubernetes.LabelQueryable {
-	return []kubernetes.LabelQueryable{
+func (db Postgres) PodLabels() kubernetes.LabelQueryable {
+	return kubernetes.LabelQueryOr{
 		db.query(),
 		db.postgresqlHaQuery(),
 		db.cnpgQuery(),

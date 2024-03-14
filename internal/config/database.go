@@ -11,7 +11,7 @@ import (
 
 type Database interface {
 	Name() string
-	PodLabels() []kubernetes.LabelQueryable
+	PodLabels() kubernetes.LabelQueryable
 }
 
 type DatabaseAliases interface {

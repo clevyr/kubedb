@@ -60,8 +60,8 @@ func (MongoDB) DefaultUser() string {
 	return "root"
 }
 
-func (MongoDB) PodLabels() []kubernetes.LabelQueryable {
-	return []kubernetes.LabelQueryable{
+func (MongoDB) PodLabels() kubernetes.LabelQueryable {
+	return kubernetes.LabelQueryOr{
 		kubernetes.LabelQueryAnd{
 			kubernetes.LabelQuery{Name: "app.kubernetes.io/name", Value: "mongodb"},
 			kubernetes.LabelQuery{Name: "app.kubernetes.io/component", Value: "mongodb"},
