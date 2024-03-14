@@ -120,7 +120,8 @@ func TestPostgres_FilterPods(t *testing.T) {
 	postgresPod := v1.Pod{
 		ObjectMeta: metav1.ObjectMeta{
 			Labels: map[string]string{
-				"app.kubernetes.io/name": "postgresql",
+				"app.kubernetes.io/name":      "postgresql",
+				"app.kubernetes.io/component": "primary",
 			},
 		},
 	}

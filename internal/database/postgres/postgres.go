@@ -92,23 +92,20 @@ func (Postgres) AnalyzeQuery() string {
 
 func (db Postgres) PodLabels() []kubernetes.LabelQueryable {
 	return []kubernetes.LabelQueryable{
-		kubernetes.LabelQueryAnd{
-			kubernetes.LabelQuery{Name: "app.kubernetes.io/name", Value: "postgresql"},
-			kubernetes.LabelQuery{Name: "app.kubernetes.io/component", Value: "primary"},
-		},
+		db.query(),
 		db.postgresqlHaQuery(),
 		db.cnpgQuery(),
 		db.zalandoQuery(),
-		kubernetes.LabelQuery{Name: "app", Value: "postgresql"},
 	}
 }
 
 func (db Postgres) FilterPods(ctx context.Context, client kubernetes.KubeClient, pods []v1.Pod) ([]v1.Pod, error) {
-	if len(pods) <= 1 {
-		return pods, nil
-	}
-
 	preferred := make([]v1.Pod, 0, len(pods))
+
+	// bitnami/postgres
+	if matched := db.query().FindPods(pods); len(pods) != 0 {
+		preferred = append(preferred, matched...)
+	}
 
 	// bitnami/postgresql-ha
 	if matched := db.postgresqlHaQuery().FindPods(pods); len(matched) != 0 {
@@ -299,6 +296,16 @@ func (Postgres) Formats() map[sqlformat.Format]string {
 		sqlformat.Plain:  ".sql",
 		sqlformat.Gzip:   ".sql.gz",
 		sqlformat.Custom: ".dmp",
+	}
+}
+
+func (Postgres) query() kubernetes.LabelQueryOr {
+	return kubernetes.LabelQueryOr{
+		kubernetes.LabelQueryAnd{
+			kubernetes.LabelQuery{Name: "app.kubernetes.io/name", Value: "postgresql"},
+			kubernetes.LabelQuery{Name: "app.kubernetes.io/component", Value: "primary"},
+		},
+		kubernetes.LabelQuery{Name: "app", Value: "postgresql"},
 	}
 }
 

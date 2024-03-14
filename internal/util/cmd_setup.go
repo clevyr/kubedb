@@ -114,10 +114,16 @@ func DefaultSetup(cmd *cobra.Command, conf *config.Global, opts SetupOptions) (e
 		}
 	}
 
-	if db, ok := conf.Dialect.(config.DatabaseFilter); ok && podFlag == "" {
-		pods, err = db.FilterPods(ctx, conf.Client, pods)
-		if err != nil {
-			log.WithError(err).Warn("could not query primary instance")
+	if len(pods) > 1 {
+		if db, ok := conf.Dialect.(config.DatabaseFilter); ok && podFlag == "" {
+			filtered, err := db.FilterPods(ctx, conf.Client, pods)
+			if err != nil {
+				log.WithError(err).Warn("could not query primary instance")
+			}
+
+			if len(filtered) != 0 {
+				pods = filtered
+			}
 		}
 	}
 
