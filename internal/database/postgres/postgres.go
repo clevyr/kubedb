@@ -145,11 +145,10 @@ func (db Postgres) FilterPods(ctx context.Context, client kubernetes.KubeClient,
 			}
 		}
 
-		if primaryName != "" {
-			for _, pod := range matched {
-				if pod.Name == primaryName {
-					preferred = append(preferred, pod)
-				}
+		for _, pod := range matched {
+			if pod.Name == primaryName {
+				preferred = append(preferred, pod)
+				break
 			}
 		}
 	}
