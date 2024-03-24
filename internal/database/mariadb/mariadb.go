@@ -1,3 +1,4 @@
+//nolint:goconst
 package mariadb
 
 import (

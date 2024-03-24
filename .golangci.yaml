@@ -30,7 +30,7 @@ linters:
     # - gochecknoglobals
     - gochecknoinits
     - gochecksumtype
-    # - goconst
+    - goconst
     # - gocritic
     # - gocyclo
     - godox
