@@ -3,3 +3,86 @@ run:
 
 issues:
   max-same-issues: 50
+  exclude-rules:
+    - path: "_test\\.go"
+      linters:
+        - dupl
+
+linters:
+  enable:
+    - asasalint
+    - asciicheck
+    - bidichk
+    # - bodyclose
+    - copyloopvar
+    - decorder
+    - dupl
+    - durationcheck
+    - errcheck
+    # - errname
+    # - errorlint
+    - execinquery
+    - exportloopref
+    # - forbidigo
+    # - gci
+    - ginkgolinter
+    - gocheckcompilerdirectives
+    # - gochecknoglobals
+    - gochecknoinits
+    - gochecksumtype
+    # - goconst
+    # - gocritic
+    # - gocyclo
+    - godox
+    # - goerr113
+    - gofumpt
+    - goheader
+    # - goimports
+    - gomoddirectives
+    - gomodguard
+    - goprintffuncname
+    - gosec
+    - gosimple
+    - gosmopolitan
+    - govet
+    - importas
+    # - inamedparam
+    - ineffassign
+    - interfacebloat
+    - intrange
+    - loggercheck
+    - makezero
+    - mirror
+    - musttag
+    - nakedret
+    - nilerr
+    - nilnil
+    # - noctx
+    - nolintlint
+    # - nonamedreturns
+    - nosprintfhostport
+    # - paralleltest
+    - perfsprint
+    # - prealloc
+    - predeclared
+    - promlinter
+    - protogetter
+    - reassign
+    # - revive
+    - rowserrcheck
+    - sloglint
+    - spancheck
+    - sqlclosecheck
+    - staticcheck
+    # - stylecheck
+    # - tenv
+    - testableexamples
+    # - testifylint
+    - typecheck
+    - unconvert
+    # - unparam
+    - unused
+    - usestdlibvars
+    - wastedassign
+    - whitespace
+    - zerologlint
