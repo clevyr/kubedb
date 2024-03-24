@@ -47,7 +47,7 @@ func New(name string) (config.Database, error) {
 			}
 		}
 	}
-	return nil, fmt.Errorf("%v: %s", ErrUnsupportedDatabase, name)
+	return nil, fmt.Errorf("%w: %s", ErrUnsupportedDatabase, name)
 }
 
 func NamesForInterface[T any]() []string {

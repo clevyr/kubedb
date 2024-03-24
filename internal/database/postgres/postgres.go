@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"context"
 	"encoding/csv"
+	"errors"
 	"fmt"
 	"io"
 	"strconv"
@@ -134,10 +135,10 @@ func (db Postgres) FilterPods(ctx context.Context, client kubernetes.KubeClient,
 		r := csv.NewReader(&buf)
 		for {
 			row, err := r.Read()
-			if err == io.EOF {
-				break
-			}
 			if err != nil {
+				if errors.Is(err, io.EOF) {
+					break
+				}
 				return pods, err
 			}
 			if row[2] == "primary" {
