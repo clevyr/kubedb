@@ -46,7 +46,7 @@ linters:
     - gosmopolitan
     - govet
     - importas
-    # - inamedparam
+    - inamedparam
     - ineffassign
     - interfacebloat
     - intrange

@@ -11,7 +11,7 @@ import (
 )
 
 type ConfigLookup interface {
-	GetValue(context.Context, KubeClient, corev1.Pod) (string, error)
+	GetValue(ctx context.Context, client KubeClient, pod corev1.Pod) (string, error)
 }
 
 type ConfigLookups []ConfigLookup
