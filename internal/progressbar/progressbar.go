@@ -8,7 +8,7 @@ import (
 	"time"
 
 	"github.com/clevyr/kubedb/internal/config/flags"
-	"github.com/gabe565/go-spinners"
+	spinner "github.com/gabe565/go-spinners"
 	"github.com/mattn/go-isatty"
 	"github.com/schollz/progressbar/v3"
 	log "github.com/sirupsen/logrus"
