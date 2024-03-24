@@ -32,7 +32,7 @@ linters:
     - gochecksumtype
     - goconst
     - gocritic
-    # - gocyclo
+    - gocyclo
     - godox
     # - goerr113
     - gofumpt
