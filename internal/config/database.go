@@ -6,12 +6,13 @@ import (
 	"github.com/clevyr/kubedb/internal/command"
 	"github.com/clevyr/kubedb/internal/database/sqlformat"
 	"github.com/clevyr/kubedb/internal/kubernetes"
+	"github.com/clevyr/kubedb/internal/kubernetes/filter"
 	v1 "k8s.io/api/core/v1"
 )
 
 type Database interface {
 	Name() string
-	PodLabels() kubernetes.LabelQueryable
+	PodFilters() filter.Filter
 }
 
 type DatabaseAliases interface {

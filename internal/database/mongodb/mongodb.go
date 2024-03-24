@@ -7,6 +7,7 @@ import (
 	"github.com/clevyr/kubedb/internal/config"
 	"github.com/clevyr/kubedb/internal/database/sqlformat"
 	"github.com/clevyr/kubedb/internal/kubernetes"
+	"github.com/clevyr/kubedb/internal/kubernetes/filter"
 )
 
 var (
@@ -60,18 +61,18 @@ func (MongoDB) DefaultUser() string {
 	return "root"
 }
 
-func (MongoDB) PodLabels() kubernetes.LabelQueryable {
-	return kubernetes.LabelQueryOr{
-		kubernetes.LabelQueryAnd{
-			kubernetes.LabelQuery{Name: "app.kubernetes.io/name", Value: "mongodb"},
-			kubernetes.LabelQuery{Name: "app.kubernetes.io/component", Value: "mongodb"},
+func (MongoDB) PodFilters() filter.Filter {
+	return filter.Or{
+		filter.And{
+			filter.Label{Name: "app.kubernetes.io/name", Value: "mongodb"},
+			filter.Label{Name: "app.kubernetes.io/component", Value: "mongodb"},
 		},
-		kubernetes.LabelQueryAnd{
-			kubernetes.LabelQuery{Name: "app.kubernetes.io/name", Value: "mongodb-sharded"},
-			kubernetes.LabelQuery{Name: "app.kubernetes.io/component", Value: "mongos"},
+		filter.And{
+			filter.Label{Name: "app.kubernetes.io/name", Value: "mongodb-sharded"},
+			filter.Label{Name: "app.kubernetes.io/component", Value: "mongos"},
 		},
-		kubernetes.LabelQuery{Name: "app", Value: "mongodb"},
-		kubernetes.LabelQuery{Name: "app", Value: "mongodb-replicaset"},
+		filter.Label{Name: "app", Value: "mongodb"},
+		filter.Label{Name: "app", Value: "mongodb-replicaset"},
 	}
 }
 

@@ -8,6 +8,7 @@ import (
 	"net/http"
 	"time"
 
+	"github.com/clevyr/kubedb/internal/kubernetes/filter"
 	log "github.com/sirupsen/logrus"
 	v1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -104,7 +105,7 @@ func (client KubeClient) Exec(ctx context.Context, opt ExecOptions) error {
 	return err
 }
 
-func (client KubeClient) GetPodsFiltered(ctx context.Context, queries LabelQueryable) ([]v1.Pod, error) {
+func (client KubeClient) GetPodsFiltered(ctx context.Context, queries filter.Filter) ([]v1.Pod, error) {
 	podList, err := client.GetNamespacedPods(ctx)
 	if err != nil {
 		return []v1.Pod{}, err
@@ -112,10 +113,10 @@ func (client KubeClient) GetPodsFiltered(ctx context.Context, queries LabelQuery
 	return FilterPodList(podList.Items, queries), nil
 }
 
-func FilterPodList(pods []v1.Pod, query LabelQueryable) []v1.Pod {
+func FilterPodList(pods []v1.Pod, query filter.Filter) []v1.Pod {
 	matched := make([]v1.Pod, 0, len(pods))
 
-	p := query.FindPods(pods)
+	p := filter.Pods(pods, query)
 	if len(p) == 0 {
 		log.WithField("query", query).Trace(ErrPodNotFound)
 	}

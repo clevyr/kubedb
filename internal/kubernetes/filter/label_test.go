@@ -1,4 +1,4 @@
-package kubernetes
+package filter
 
 import (
 	"testing"
@@ -17,37 +17,7 @@ var pod = v1.Pod{
 	},
 }
 
-var pods = []v1.Pod{pod}
-
-func TestLabelQuery_FindPods(t *testing.T) {
-	type fields struct {
-		Name  string
-		Value string
-	}
-	type args struct {
-		list []v1.Pod
-	}
-	tests := []struct {
-		name     string
-		fields   fields
-		args     args
-		wantPods []v1.Pod
-	}{
-		{"1 found", fields{"key", "value"}, args{pods}, []v1.Pod{pod}},
-		{"0 found", fields{"key", "wrong"}, args{pods}, []v1.Pod{}},
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			query := LabelQuery{
-				Name:  tt.fields.Name,
-				Value: tt.fields.Value,
-			}
-			assert.Equal(t, tt.wantPods, query.FindPods(tt.args.list))
-		})
-	}
-}
-
-func TestLabelQuery_Matches(t *testing.T) {
+func TestLabel_Matches(t *testing.T) {
 	type fields struct {
 		Name  string
 		Value string
@@ -66,7 +36,7 @@ func TestLabelQuery_Matches(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			query := LabelQuery{
+			query := Label{
 				Name:  tt.fields.Name,
 				Value: tt.fields.Value,
 			}

@@ -13,6 +13,7 @@ import (
 	"github.com/clevyr/kubedb/internal/config"
 	"github.com/clevyr/kubedb/internal/database/sqlformat"
 	"github.com/clevyr/kubedb/internal/kubernetes"
+	"github.com/clevyr/kubedb/internal/kubernetes/filter"
 	log "github.com/sirupsen/logrus"
 	"k8s.io/apimachinery/pkg/selection"
 
@@ -90,8 +91,8 @@ func (Postgres) AnalyzeQuery() string {
 	return "analyze;"
 }
 
-func (db Postgres) PodLabels() kubernetes.LabelQueryable {
-	return kubernetes.LabelQueryOr{
+func (db Postgres) PodFilters() filter.Filter {
+	return filter.Or{
 		db.query(),
 		db.postgresqlHaQuery(),
 		db.cnpgQuery(),
@@ -103,12 +104,12 @@ func (db Postgres) FilterPods(ctx context.Context, client kubernetes.KubeClient,
 	preferred := make([]v1.Pod, 0, len(pods))
 
 	// bitnami/postgres
-	if matched := db.query().FindPods(pods); len(pods) != 0 {
+	if matched := filter.Pods(pods, db.query()); len(pods) != 0 {
 		preferred = append(preferred, matched...)
 	}
 
 	// bitnami/postgresql-ha
-	if matched := db.postgresqlHaQuery().FindPods(pods); len(matched) != 0 {
+	if matched := filter.Pods(pods, db.postgresqlHaQuery()); len(matched) != 0 {
 		// HA chart. Need to detect primary.
 		log.Debug("querying Bitnami repmgr for primary instance")
 		cmd := command.NewBuilder(
@@ -154,7 +155,7 @@ func (db Postgres) FilterPods(ctx context.Context, client kubernetes.KubeClient,
 	}
 
 	// CloudNativePG
-	if matched := db.cnpgQuery().FindPods(pods); len(matched) != 0 {
+	if matched := filter.Pods(pods, db.cnpgQuery()); len(matched) != 0 {
 		log.Debug("filtering CloudNativePG Pods for Leader")
 
 		for _, pod := range matched {
@@ -165,7 +166,7 @@ func (db Postgres) FilterPods(ctx context.Context, client kubernetes.KubeClient,
 	}
 
 	// Zalando Postgres Operator
-	if matched := db.zalandoQuery().FindPods(pods); len(matched) != 0 {
+	if matched := filter.Pods(pods, db.zalandoQuery()); len(matched) != 0 {
 		log.Debug("filtering Zalando Pods for Leader")
 
 		for _, pod := range matched {
@@ -298,27 +299,27 @@ func (Postgres) Formats() map[sqlformat.Format]string {
 	}
 }
 
-func (Postgres) query() kubernetes.LabelQueryOr {
-	return kubernetes.LabelQueryOr{
-		kubernetes.LabelQueryAnd{
-			kubernetes.LabelQuery{Name: "app.kubernetes.io/name", Value: "postgresql"},
-			kubernetes.LabelQuery{Name: "app.kubernetes.io/component", Value: "primary"},
+func (Postgres) query() filter.Or {
+	return filter.Or{
+		filter.And{
+			filter.Label{Name: "app.kubernetes.io/name", Value: "postgresql"},
+			filter.Label{Name: "app.kubernetes.io/component", Value: "primary"},
 		},
-		kubernetes.LabelQuery{Name: "app", Value: "postgresql"},
+		filter.Label{Name: "app", Value: "postgresql"},
 	}
 }
 
-func (Postgres) postgresqlHaQuery() kubernetes.LabelQueryable {
-	return kubernetes.LabelQueryAnd{
-		kubernetes.LabelQuery{Name: "app.kubernetes.io/name", Value: "postgresql-ha"},
-		kubernetes.LabelQuery{Name: "app.kubernetes.io/component", Value: "postgresql"},
+func (Postgres) postgresqlHaQuery() filter.Filter {
+	return filter.And{
+		filter.Label{Name: "app.kubernetes.io/name", Value: "postgresql-ha"},
+		filter.Label{Name: "app.kubernetes.io/component", Value: "postgresql"},
 	}
 }
 
-func (Postgres) cnpgQuery() kubernetes.LabelQueryable {
-	return kubernetes.LabelQuery{Name: "cnpg.io/cluster", Operator: selection.Exists}
+func (Postgres) cnpgQuery() filter.Filter {
+	return filter.Label{Name: "cnpg.io/cluster", Operator: selection.Exists}
 }
 
-func (Postgres) zalandoQuery() kubernetes.LabelQueryable {
-	return kubernetes.LabelQuery{Name: "application", Value: "spilo"}
+func (Postgres) zalandoQuery() filter.Filter {
+	return filter.Label{Name: "application", Value: "spilo"}
 }

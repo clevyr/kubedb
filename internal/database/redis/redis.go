@@ -11,6 +11,7 @@ import (
 	"github.com/clevyr/kubedb/internal/command"
 	"github.com/clevyr/kubedb/internal/config"
 	"github.com/clevyr/kubedb/internal/kubernetes"
+	"github.com/clevyr/kubedb/internal/kubernetes/filter"
 	log "github.com/sirupsen/logrus"
 	v1 "k8s.io/api/core/v1"
 )
@@ -40,16 +41,16 @@ func (Redis) DatabaseEnvNames() kubernetes.ConfigLookups {
 	return kubernetes.ConfigLookups{kubernetes.LookupEnv{"REDIS_DB"}}
 }
 
-func (db Redis) PodLabels() kubernetes.LabelQueryable {
-	return kubernetes.LabelQueryOr{
-		kubernetes.LabelQueryAnd{
-			kubernetes.LabelQuery{Name: "app.kubernetes.io/name", Value: "redis"},
-			kubernetes.LabelQuery{Name: "app.kubernetes.io/component", Value: "master"},
+func (db Redis) PodFilters() filter.Filter {
+	return filter.Or{
+		filter.And{
+			filter.Label{Name: "app.kubernetes.io/name", Value: "redis"},
+			filter.Label{Name: "app.kubernetes.io/component", Value: "master"},
 		},
 		db.sentinelQuery(),
-		kubernetes.LabelQueryAnd{
-			kubernetes.LabelQuery{Name: "app", Value: "redis"},
-			kubernetes.LabelQuery{Name: "role", Value: "master"},
+		filter.And{
+			filter.Label{Name: "app", Value: "redis"},
+			filter.Label{Name: "role", Value: "master"},
 		},
 	}
 }
@@ -57,7 +58,7 @@ func (db Redis) PodLabels() kubernetes.LabelQueryable {
 func (db Redis) FilterPods(ctx context.Context, client kubernetes.KubeClient, pods []v1.Pod) ([]v1.Pod, error) {
 	preferred := make([]v1.Pod, 0, len(pods))
 
-	if matched := db.sentinelQuery().FindPods(pods); len(matched) != 0 {
+	if matched := filter.Pods(pods, db.sentinelQuery()); len(matched) != 0 {
 		log.Debug("querying Sentinel for primary instance")
 		cmd := command.NewBuilder(
 			command.Raw(`REDISCLI_AUTH="$REDIS_PASSWORD"`),
@@ -126,9 +127,9 @@ func (Redis) ExecCommand(conf config.Exec) *command.Builder {
 	return cmd
 }
 
-func (Redis) sentinelQuery() kubernetes.LabelQueryAnd {
-	return kubernetes.LabelQueryAnd{
-		kubernetes.LabelQuery{Name: "app.kubernetes.io/name", Value: "redis"},
-		kubernetes.LabelQuery{Name: "app.kubernetes.io/component", Value: "node"},
+func (Redis) sentinelQuery() filter.And {
+	return filter.And{
+		filter.Label{Name: "app.kubernetes.io/name", Value: "redis"},
+		filter.Label{Name: "app.kubernetes.io/component", Value: "node"},
 	}
 }

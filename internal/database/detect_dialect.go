@@ -18,7 +18,7 @@ func DetectDialect(ctx context.Context, client kubernetes.KubeClient) (config.Da
 	}
 
 	for _, db := range All() {
-		pods := kubernetes.FilterPodList(podList.Items, db.PodLabels())
+		pods := kubernetes.FilterPodList(podList.Items, db.PodFilters())
 		if len(pods) != 0 {
 			return db, pods, nil
 		}
@@ -28,7 +28,7 @@ func DetectDialect(ctx context.Context, client kubernetes.KubeClient) (config.Da
 
 func DetectDialectFromPod(pod v1.Pod) (config.Database, error) {
 	for _, db := range All() {
-		if db.PodLabels().Matches(pod) {
+		if db.PodFilters().Matches(pod) {
 			return db, nil
 		}
 	}

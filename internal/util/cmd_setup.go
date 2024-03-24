@@ -103,7 +103,7 @@ func DefaultSetup(cmd *cobra.Command, conf *config.Global, opts SetupOptions) (e
 		log.WithField("dialect", conf.Dialect.Name()).Debug("configured database")
 
 		if len(pods) == 0 {
-			pods, err = conf.Client.GetPodsFiltered(ctx, conf.Dialect.PodLabels())
+			pods, err = conf.Client.GetPodsFiltered(ctx, conf.Dialect.PodFilters())
 			if err != nil {
 				return err
 			}

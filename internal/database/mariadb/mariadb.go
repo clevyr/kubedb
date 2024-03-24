@@ -8,6 +8,7 @@ import (
 	"github.com/clevyr/kubedb/internal/config"
 	"github.com/clevyr/kubedb/internal/database/sqlformat"
 	"github.com/clevyr/kubedb/internal/kubernetes"
+	"github.com/clevyr/kubedb/internal/kubernetes/filter"
 )
 
 var (
@@ -67,21 +68,21 @@ func (db MariaDB) DropDatabaseQuery(database string) string {
 	return "set FOREIGN_KEY_CHECKS=0; create or replace database " + database + "; set FOREIGN_KEY_CHECKS=1; use " + database + ";"
 }
 
-func (MariaDB) PodLabels() kubernetes.LabelQueryable {
-	return kubernetes.LabelQueryOr{
-		kubernetes.LabelQueryAnd{
-			kubernetes.LabelQuery{Name: "app.kubernetes.io/name", Value: "mariadb"},
-			kubernetes.LabelQuery{Name: "app.kubernetes.io/component", Value: "primary"},
+func (MariaDB) PodFilters() filter.Filter {
+	return filter.Or{
+		filter.And{
+			filter.Label{Name: "app.kubernetes.io/name", Value: "mariadb"},
+			filter.Label{Name: "app.kubernetes.io/component", Value: "primary"},
 		},
-		kubernetes.LabelQueryAnd{
-			kubernetes.LabelQuery{Name: "app.kubernetes.io/name", Value: "mariadb-galera"},
+		filter.And{
+			filter.Label{Name: "app.kubernetes.io/name", Value: "mariadb-galera"},
 		},
-		kubernetes.LabelQueryAnd{
-			kubernetes.LabelQuery{Name: "app.kubernetes.io/name", Value: "mysql"},
-			kubernetes.LabelQuery{Name: "app.kubernetes.io/component", Value: "primary"},
+		filter.And{
+			filter.Label{Name: "app.kubernetes.io/name", Value: "mysql"},
+			filter.Label{Name: "app.kubernetes.io/component", Value: "primary"},
 		},
-		kubernetes.LabelQuery{Name: "app", Value: "mariadb"},
-		kubernetes.LabelQuery{Name: "app", Value: "mysql"},
+		filter.Label{Name: "app", Value: "mariadb"},
+		filter.Label{Name: "app", Value: "mysql"},
 	}
 }
 

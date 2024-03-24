@@ -8,6 +8,7 @@ import (
 	"github.com/clevyr/kubedb/internal/config"
 	"github.com/clevyr/kubedb/internal/database/sqlformat"
 	"github.com/clevyr/kubedb/internal/kubernetes"
+	"github.com/clevyr/kubedb/internal/kubernetes/filter"
 )
 
 var (
@@ -32,8 +33,8 @@ func (Meilisearch) DefaultPort() uint16 {
 	return 7700
 }
 
-func (Meilisearch) PodLabels() kubernetes.LabelQueryable {
-	return kubernetes.LabelQuery{Name: "app.kubernetes.io/name", Value: "meilisearch"}
+func (Meilisearch) PodFilters() filter.Filter {
+	return filter.Label{Name: "app.kubernetes.io/name", Value: "meilisearch"}
 }
 
 func (Meilisearch) PasswordEnvNames(c config.Global) kubernetes.ConfigLookups {
