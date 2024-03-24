@@ -26,7 +26,7 @@ func (i *Format) Set(s string) (err error) {
 	return err
 }
 
-var UnknownFileFormat = errors.New("unknown file format")
+var ErrUnknown = errors.New("unknown file format")
 
 func ParseFormat(format string) (Format, error) {
 	format = strings.ToLower(format)
@@ -38,5 +38,5 @@ func ParseFormat(format string) (Format, error) {
 	case Custom.String(), "c":
 		return Custom, nil
 	}
-	return Unknown, fmt.Errorf("%w: %s", UnknownFileFormat, format)
+	return Unknown, fmt.Errorf("%w: %s", ErrUnknown, format)
 }
