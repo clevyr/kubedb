@@ -70,6 +70,7 @@ func (a PortForward) Run(ctx context.Context) error {
 		}
 		t.SetStyle(table.StyleLight)
 		t.Render()
+		//nolint:forbidigo
 		fmt.Println(`Tip: If you're connecting from a Docker container, set the hostname to "host.docker.internal"`)
 	}()
 
