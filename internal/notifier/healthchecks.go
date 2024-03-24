@@ -2,12 +2,11 @@ package notifier
 
 import (
 	"fmt"
+	"io"
 	"net/http"
 	"net/url"
 	"path"
 	"strings"
-
-	"github.com/clevyr/kubedb/internal/util"
 )
 
 func NewHealthchecks(url string) (Notifier, error) {
@@ -49,7 +48,8 @@ func (h Healthchecks) SendStatus(status Status, log string) error {
 	if err != nil {
 		return err
 	}
-	defer util.ReadAndClose(resp.Body)
+	_, _ = io.Copy(io.Discard, resp.Body)
+	_ = resp.Body.Close()
 
 	switch resp.StatusCode {
 	case http.StatusOK:

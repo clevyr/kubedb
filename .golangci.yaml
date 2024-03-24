@@ -13,7 +13,7 @@ linters:
     - asasalint
     - asciicheck
     - bidichk
-    # - bodyclose
+    - bodyclose
     - copyloopvar
     - decorder
     - dupl
