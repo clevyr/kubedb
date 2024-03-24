@@ -126,14 +126,6 @@ func TestPostgres_FilterPods(t *testing.T) {
 		},
 	}
 
-	//postgresHaPod := v1.Pod{
-	//	ObjectMeta: metav1.ObjectMeta{
-	//		Labels: map[string]string{
-	//			"app.kubernetes.io/name": "postgresql-ha",
-	//		},
-	//	},
-	//}
-
 	type args struct {
 		client kubernetes.KubeClient
 		pods   []v1.Pod
@@ -153,15 +145,6 @@ func TestPostgres_FilterPods(t *testing.T) {
 			[]v1.Pod{postgresPod},
 			false,
 		},
-		//{
-		//	"postgresql-ha",
-		//	args{
-		//		kubernetes.KubeClient{ClientSet: testclient.NewSimpleClientset(&postgresHaPod)},
-		//		[]v1.Pod{postgresHaPod},
-		//	},
-		//	[]v1.Pod{postgresHaPod},
-		//	false,
-		//},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
