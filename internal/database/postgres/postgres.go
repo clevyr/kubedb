@@ -16,9 +16,8 @@ import (
 	"github.com/clevyr/kubedb/internal/kubernetes"
 	"github.com/clevyr/kubedb/internal/kubernetes/filter"
 	log "github.com/sirupsen/logrus"
-	"k8s.io/apimachinery/pkg/selection"
-
 	v1 "k8s.io/api/core/v1"
+	"k8s.io/apimachinery/pkg/selection"
 )
 
 var (

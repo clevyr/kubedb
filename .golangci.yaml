@@ -24,7 +24,7 @@ linters:
     - execinquery
     - exportloopref
     - forbidigo
-    # - gci
+    - gci
     - ginkgolinter
     - gocheckcompilerdirectives
     # - gochecknoglobals
