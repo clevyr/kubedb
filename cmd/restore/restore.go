@@ -53,6 +53,9 @@ func New() *cobra.Command {
 	flags.Spinner(cmd, &action.Spinner)
 	flags.Opts(cmd)
 	cmd.Flags().BoolVarP(&action.Force, consts.ForceFlag, "f", false, "Do not prompt before restore")
+	if err := cmd.RegisterFlagCompletionFunc(consts.ForceFlag, util.BoolCompletion); err != nil {
+		panic(err)
+	}
 
 	return cmd
 }

@@ -25,6 +25,8 @@ func New() *cobra.Command {
 		GroupID: "rw",
 		RunE:    run,
 		PreRunE: preRun,
+
+		ValidArgsFunction: localPortCompletion,
 	}
 
 	flags.Port(cmd)
@@ -39,30 +41,30 @@ func New() *cobra.Command {
 	}
 
 	cmd.Flags().Uint16(consts.ListenPortFlag, 0, "Local listen port (default discovered)")
-	if err := cmd.RegisterFlagCompletionFunc(
-		consts.ListenPortFlag,
-		func(cmd *cobra.Command, args []string, _ string) ([]string, cobra.ShellCompDirective) {
-			err := preRun(cmd, args)
-			if err != nil {
-				return nil, cobra.ShellCompDirectiveNoFileComp
-			}
-
-			db, ok := action.Dialect.(config.DatabasePort)
-			if !ok {
-				return nil, cobra.ShellCompDirectiveError
-			}
-
-			defaultPort := db.DefaultPort()
-			return []string{
-				strconv.Itoa(int(action.LocalPort)),
-				strconv.Itoa(int(defaultPort)),
-				strconv.Itoa(int(defaultPort + 1)),
-			}, cobra.ShellCompDirectiveNoFileComp
-		}); err != nil {
+	if err := cmd.RegisterFlagCompletionFunc(consts.ListenPortFlag, localPortCompletion); err != nil {
 		panic(err)
 	}
 
 	return cmd
+}
+
+func localPortCompletion(cmd *cobra.Command, args []string, _ string) ([]string, cobra.ShellCompDirective) {
+	err := preRun(cmd, args)
+	if err != nil {
+		return nil, cobra.ShellCompDirectiveNoFileComp
+	}
+
+	db, ok := action.Dialect.(config.DatabasePort)
+	if !ok {
+		return nil, cobra.ShellCompDirectiveError
+	}
+
+	defaultPort := db.DefaultPort()
+	return []string{
+		strconv.Itoa(int(action.LocalPort)),
+		strconv.Itoa(int(defaultPort)),
+		strconv.Itoa(int(defaultPort + 1)),
+	}, cobra.ShellCompDirectiveNoFileComp
 }
 
 func preRun(cmd *cobra.Command, args []string) error {

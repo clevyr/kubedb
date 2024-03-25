@@ -2,18 +2,14 @@ package flags
 
 import (
 	"github.com/clevyr/kubedb/internal/consts"
+	"github.com/clevyr/kubedb/internal/util"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 )
 
 func RemoteGzip(cmd *cobra.Command) {
 	cmd.Flags().Bool(consts.RemoteGzipFlag, true, "Compress data over the wire. Results in lower bandwidth usage, but higher database load. May improve speed on slow connections.")
-	err := cmd.RegisterFlagCompletionFunc(
-		consts.RemoteGzipFlag,
-		func(_ *cobra.Command, _ []string, _ string) ([]string, cobra.ShellCompDirective) {
-			return []string{"true", "false"}, cobra.ShellCompDirectiveNoFileComp
-		})
-	if err != nil {
+	if err := cmd.RegisterFlagCompletionFunc(consts.RemoteGzipFlag, util.BoolCompletion); err != nil {
 		panic(err)
 	}
 }

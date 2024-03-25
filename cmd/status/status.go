@@ -29,6 +29,9 @@ func New() *cobra.Command {
 		GroupID: "ro",
 		PreRunE: preRun,
 		RunE:    run,
+
+		Args:              cobra.NoArgs,
+		ValidArgsFunction: cobra.NoFileCompletions,
 	}
 	flags.JobPodLabels(cmd)
 	flags.Port(cmd)

@@ -18,6 +18,7 @@ func New() *cobra.Command {
 		Short:   "Connect to an interactive shell",
 		Long:    newDescription(),
 		GroupID: "rw",
+		Args:    cobra.NoArgs,
 		RunE:    run,
 		PreRunE: preRun,
 	}
@@ -31,6 +32,9 @@ func New() *cobra.Command {
 	flags.Password(cmd)
 	flags.Opts(cmd)
 	cmd.Flags().StringVarP(&action.Command, consts.CommandFlag, "c", "", "Run a single command and exit")
+	if err := cmd.RegisterFlagCompletionFunc(consts.CommandFlag, cobra.NoFileCompletions); err != nil {
+		panic(err)
+	}
 
 	return cmd
 }

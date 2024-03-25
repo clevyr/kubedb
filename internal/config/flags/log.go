@@ -2,6 +2,7 @@ package flags
 
 import (
 	"github.com/clevyr/kubedb/internal/consts"
+	"github.com/clevyr/kubedb/internal/util"
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
@@ -9,6 +10,9 @@ import (
 
 func Quiet(cmd *cobra.Command, p *bool) {
 	cmd.PersistentFlags().BoolVarP(p, consts.QuietFlag, "q", false, "Silence remote log output")
+	if err := cmd.RegisterFlagCompletionFunc(consts.QuietFlag, util.BoolCompletion); err != nil {
+		panic(err)
+	}
 }
 
 func LogLevel(cmd *cobra.Command) {
@@ -70,6 +74,9 @@ func BindRedact(cmd *cobra.Command) {
 
 func Healthchecks(cmd *cobra.Command) {
 	cmd.PersistentFlags().String(consts.HealthchecksPingURLFlag, "", "Notification handler URL")
+	if err := cmd.RegisterFlagCompletionFunc(consts.HealthchecksPingURLFlag, cobra.NoFileCompletions); err != nil {
+		panic(err)
+	}
 }
 
 func BindHealthchecks(cmd *cobra.Command) {

@@ -6,6 +6,7 @@ import (
 
 	"github.com/clevyr/kubedb/internal/consts"
 	"github.com/clevyr/kubedb/internal/kubernetes"
+	"github.com/clevyr/kubedb/internal/util"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -103,6 +104,9 @@ func Pod(cmd *cobra.Command) {
 
 func JobPodLabels(cmd *cobra.Command) {
 	cmd.Flags().StringToString(consts.JobPodLabelsFlag, map[string]string{}, "Pod labels to add to the job")
+	if err := cmd.RegisterFlagCompletionFunc(consts.JobPodLabelsFlag, cobra.NoFileCompletions); err != nil {
+		panic(err)
+	}
 }
 
 func BindJobPodLabels(cmd *cobra.Command) {
@@ -113,6 +117,9 @@ func BindJobPodLabels(cmd *cobra.Command) {
 
 func CreateJob(cmd *cobra.Command) {
 	cmd.Flags().Bool(consts.CreateJobFlag, true, "Create a job that will run the database client")
+	if err := cmd.RegisterFlagCompletionFunc(consts.CreateJobFlag, util.BoolCompletion); err != nil {
+		panic(err)
+	}
 }
 
 func BindCreateJob(cmd *cobra.Command) {
@@ -123,6 +130,9 @@ func BindCreateJob(cmd *cobra.Command) {
 
 func CreateNetworkPolicy(cmd *cobra.Command) {
 	cmd.Flags().Bool(consts.CreateNetworkPolicyFlag, true, "Creates a network policy allowing the KubeDB job to talk to the database.")
+	if err := cmd.RegisterFlagCompletionFunc(consts.CreateNetworkPolicyFlag, util.BoolCompletion); err != nil {
+		panic(err)
+	}
 }
 
 func BindCreateNetworkPolicy(cmd *cobra.Command) {

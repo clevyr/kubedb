@@ -45,6 +45,9 @@ func Format(cmd *cobra.Command, p *sqlformat.Format) {
 
 func Port(cmd *cobra.Command) {
 	cmd.PersistentFlags().Uint16(consts.PortFlag, 0, "Database port (default discovered)")
+	if err := cmd.RegisterFlagCompletionFunc(consts.PortFlag, cobra.NoFileCompletions); err != nil {
+		panic(err)
+	}
 }
 
 func Database(cmd *cobra.Command) {
@@ -57,10 +60,16 @@ func Database(cmd *cobra.Command) {
 
 func Username(cmd *cobra.Command) {
 	cmd.Flags().StringP(consts.UsernameFlag, "U", "", "Database username (default discovered)")
+	if err := cmd.RegisterFlagCompletionFunc(consts.UsernameFlag, cobra.NoFileCompletions); err != nil {
+		panic(err)
+	}
 }
 
 func Password(cmd *cobra.Command) {
 	cmd.Flags().StringP(consts.PasswordFlag, "p", "", "Database password (default discovered)")
+	if err := cmd.RegisterFlagCompletionFunc(consts.PasswordFlag, cobra.NoFileCompletions); err != nil {
+		panic(err)
+	}
 }
 
 func SingleTransaction(cmd *cobra.Command, p *bool) {
@@ -69,14 +78,23 @@ func SingleTransaction(cmd *cobra.Command, p *bool) {
 
 func Clean(cmd *cobra.Command, p *bool) {
 	cmd.Flags().BoolVarP(p, consts.CleanFlag, "c", true, "Clean (drop) database objects before recreating")
+	if err := cmd.RegisterFlagCompletionFunc(consts.CleanFlag, util.BoolCompletion); err != nil {
+		panic(err)
+	}
 }
 
 func IfExists(cmd *cobra.Command, p *bool) {
 	cmd.Flags().BoolVar(p, consts.IfExistsFlag, true, "Use IF EXISTS when dropping objects")
+	if err := cmd.RegisterFlagCompletionFunc(consts.IfExistsFlag, util.BoolCompletion); err != nil {
+		panic(err)
+	}
 }
 
 func NoOwner(cmd *cobra.Command, p *bool) {
 	cmd.Flags().BoolVarP(p, consts.NoOwnerFlag, "O", true, "Skip restoration of object ownership in plain-text format")
+	if err := cmd.RegisterFlagCompletionFunc(consts.NoOwnerFlag, util.BoolCompletion); err != nil {
+		panic(err)
+	}
 }
 
 func Tables(cmd *cobra.Command, p *[]string) {
@@ -105,6 +123,9 @@ func ExcludeTableData(cmd *cobra.Command, p *[]string) {
 
 func Analyze(cmd *cobra.Command) {
 	cmd.Flags().Bool(consts.AnalyzeFlag, true, "Run an analyze query after restore")
+	if err := cmd.RegisterFlagCompletionFunc(consts.AnalyzeFlag, util.BoolCompletion); err != nil {
+		panic(err)
+	}
 }
 
 func BindAnalyze(cmd *cobra.Command) {
@@ -115,6 +136,9 @@ func BindAnalyze(cmd *cobra.Command) {
 
 func HaltOnError(cmd *cobra.Command) {
 	cmd.Flags().Bool(consts.HaltOnErrorFlag, true, "Halt on error (Postgres only)")
+	if err := cmd.RegisterFlagCompletionFunc(consts.HaltOnErrorFlag, util.BoolCompletion); err != nil {
+		panic(err)
+	}
 }
 
 func BindHaltOnError(cmd *cobra.Command) {
@@ -125,6 +149,9 @@ func BindHaltOnError(cmd *cobra.Command) {
 
 func Opts(cmd *cobra.Command) {
 	cmd.Flags().String(consts.OptsFlag, "", "Additional options to pass to the database client command")
+	if err := cmd.RegisterFlagCompletionFunc(consts.OptsFlag, cobra.NoFileCompletions); err != nil {
+		panic(err)
+	}
 }
 
 func BindOpts(cmd *cobra.Command) {
