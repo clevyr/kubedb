@@ -155,7 +155,7 @@ func (action Restore) Run(ctx context.Context) error {
 			return err
 		}
 
-		bar.Describe("finishing")
+		bar.Describe("uploaded")
 		return nil
 	})
 
