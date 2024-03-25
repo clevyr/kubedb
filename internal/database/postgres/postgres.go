@@ -232,12 +232,12 @@ func (db Postgres) DumpCommand(conf config.Dump) *command.Builder {
 	}
 	if conf.Clean {
 		cmd.Push("--clean")
+		if conf.IfExists {
+			cmd.Push("--if-exists")
+		}
 	}
 	if conf.NoOwner {
 		cmd.Push("--no-owner")
-	}
-	if conf.IfExists {
-		cmd.Push("--if-exists")
 	}
 	for _, table := range conf.Tables {
 		cmd.Push("--table=" + db.quoteParam(table))

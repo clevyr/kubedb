@@ -41,8 +41,13 @@ func TestPostgres_DumpCommand(t *testing.T) {
 		},
 		{
 			"if-exists",
+			args{config.Dump{Clean: true, IfExists: true, Global: config.Global{Host: "1.1.1.1", Database: "d", Username: "u"}}},
+			command.NewBuilder(command.NewEnv("PGPASSWORD", ""), "pg_dump", "--host=1.1.1.1", "--username=u", "--dbname=d", "--clean", "--if-exists", "--verbose"),
+		},
+		{
+			"if-exists without clean",
 			args{config.Dump{IfExists: true, Global: config.Global{Host: "1.1.1.1", Database: "d", Username: "u"}}},
-			command.NewBuilder(command.NewEnv("PGPASSWORD", ""), "pg_dump", "--host=1.1.1.1", "--username=u", "--dbname=d", "--if-exists", "--verbose"),
+			command.NewBuilder(command.NewEnv("PGPASSWORD", ""), "pg_dump", "--host=1.1.1.1", "--username=u", "--dbname=d", "--verbose"),
 		},
 		{
 			"tables",
