@@ -20,7 +20,7 @@ var (
 	_ config.DatabaseExec     = Redis{}
 	_ config.DatabasePort     = Redis{}
 	_ config.DatabasePassword = Redis{}
-	_ config.DatabaseDb       = Redis{}
+	_ config.DatabaseDB       = Redis{}
 )
 
 type Redis struct{}

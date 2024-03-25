@@ -148,7 +148,7 @@ func initConfig() error {
 			log.Debug("Could not find config file")
 		} else {
 			// Config file was found but another error was produced
-			return fmt.Errorf("Fatal error reading config file: %w", err)
+			return fmt.Errorf("fatal error reading config file: %w", err)
 		}
 	}
 

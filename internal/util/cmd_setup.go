@@ -130,7 +130,7 @@ func DefaultSetup(cmd *cobra.Command, conf *config.Global, opts SetupOptions) er
 	}
 
 	if len(pods) == 1 || opts.NoSurvey {
-		conf.DbPod = pods[0]
+		conf.DBPod = pods[0]
 	} else {
 		names := make([]string, 0, len(pods))
 		for _, pod := range pods {
@@ -144,7 +144,7 @@ func DefaultSetup(cmd *cobra.Command, conf *config.Global, opts SetupOptions) er
 		if err != nil {
 			return err
 		}
-		conf.DbPod = pods[idx]
+		conf.DBPod = pods[idx]
 	}
 
 	group, ctx := errgroup.WithContext(ctx)
@@ -156,7 +156,7 @@ func DefaultSetup(cmd *cobra.Command, conf *config.Global, opts SetupOptions) er
 		}
 
 		if db, ok := conf.Dialect.(config.DatabasePort); ok && conf.Port == 0 {
-			port, err := db.PortEnvNames().Search(ctx, conf.Client, conf.DbPod)
+			port, err := db.PortEnvNames().Search(ctx, conf.Client, conf.DBPod)
 			if err != nil {
 				log.Debug("could not detect port from pod env")
 			} else {
@@ -182,8 +182,8 @@ func DefaultSetup(cmd *cobra.Command, conf *config.Global, opts SetupOptions) er
 			panic(err)
 		}
 
-		if db, ok := conf.Dialect.(config.DatabaseDb); ok && conf.Database == "" {
-			conf.Database, err = db.DatabaseEnvNames().Search(ctx, conf.Client, conf.DbPod)
+		if db, ok := conf.Dialect.(config.DatabaseDB); ok && conf.Database == "" {
+			conf.Database, err = db.DatabaseEnvNames().Search(ctx, conf.Client, conf.DBPod)
 			if err != nil {
 				log.Debug("could not detect database from pod env")
 			} else {
@@ -200,7 +200,7 @@ func DefaultSetup(cmd *cobra.Command, conf *config.Global, opts SetupOptions) er
 		}
 
 		if db, ok := conf.Dialect.(config.DatabaseUsername); ok && conf.Username == "" {
-			conf.Username, err = db.UserEnvNames().Search(ctx, conf.Client, conf.DbPod)
+			conf.Username, err = db.UserEnvNames().Search(ctx, conf.Client, conf.DBPod)
 			if err != nil {
 				conf.Username = db.DefaultUser()
 				log.WithField("user", conf.Username).Debug("could not detect user from pod env, using default")
@@ -215,7 +215,7 @@ func DefaultSetup(cmd *cobra.Command, conf *config.Global, opts SetupOptions) er
 		}
 
 		if db, ok := conf.Dialect.(config.DatabasePassword); ok && conf.Password == "" {
-			conf.Password, err = db.PasswordEnvNames(*conf).Search(ctx, conf.Client, conf.DbPod)
+			conf.Password, err = db.PasswordEnvNames(*conf).Search(ctx, conf.Client, conf.DBPod)
 			if err != nil {
 				return err
 			}
@@ -234,7 +234,7 @@ func DefaultSetup(cmd *cobra.Command, conf *config.Global, opts SetupOptions) er
 		}
 		if !viper.GetBool(consts.CreateJobKey) {
 			conf.Host = "127.0.0.1"
-			conf.JobPod = conf.DbPod
+			conf.JobPod = conf.DBPod
 		}
 		return nil
 	})
@@ -259,7 +259,7 @@ func CreateJob(ctx context.Context, conf *config.Global, opts SetupOptions) erro
 }
 
 func createJob(ctx context.Context, conf *config.Global, actionName string) error {
-	image := conf.DbPod.Spec.Containers[0].Image
+	image := conf.DBPod.Spec.Containers[0].Image
 
 	name := "kubedb-"
 	if actionName != "" {
@@ -307,7 +307,7 @@ func createJob(ctx context.Context, conf *config.Global, actionName string) erro
 									PodAffinityTerm: corev1.PodAffinityTerm{
 										TopologyKey: "kubernetes.io/hostname",
 										LabelSelector: &metav1.LabelSelector{
-											MatchLabels: conf.DbPod.ObjectMeta.Labels,
+											MatchLabels: conf.DBPod.ObjectMeta.Labels,
 										},
 									},
 								},
@@ -316,7 +316,7 @@ func createJob(ctx context.Context, conf *config.Global, actionName string) erro
 									PodAffinityTerm: corev1.PodAffinityTerm{
 										TopologyKey: "topology.kubernetes.io/zone",
 										LabelSelector: &metav1.LabelSelector{
-											MatchLabels: conf.DbPod.ObjectMeta.Labels,
+											MatchLabels: conf.DBPod.ObjectMeta.Labels,
 										},
 									},
 								},
@@ -325,7 +325,7 @@ func createJob(ctx context.Context, conf *config.Global, actionName string) erro
 									PodAffinityTerm: corev1.PodAffinityTerm{
 										TopologyKey: "topology.kubernetes.io/region",
 										LabelSelector: &metav1.LabelSelector{
-											MatchLabels: conf.DbPod.ObjectMeta.Labels,
+											MatchLabels: conf.DBPod.ObjectMeta.Labels,
 										},
 									},
 								},
@@ -373,7 +373,7 @@ func createJob(ctx context.Context, conf *config.Global, actionName string) erro
 				Egress: []networkingv1.NetworkPolicyEgressRule{
 					{
 						To: []networkingv1.NetworkPolicyPeer{{
-							PodSelector: ptr.To(metav1.LabelSelector{MatchLabels: conf.DbPod.Labels}),
+							PodSelector: ptr.To(metav1.LabelSelector{MatchLabels: conf.DBPod.Labels}),
 						}},
 						Ports: []networkingv1.NetworkPolicyPort{{
 							Port: ptr.To(intstr.FromInt32(int32(conf.Port))),
@@ -420,7 +420,7 @@ func watchJobPod(ctx context.Context, conf *config.Global) error {
 			if pod, ok := event.Object.(*corev1.Pod); ok {
 				switch pod.Status.Phase {
 				case corev1.PodRunning:
-					conf.Host = conf.DbPod.Status.PodIP
+					conf.Host = conf.DBPod.Status.PodIP
 					pod.DeepCopyInto(&conf.JobPod)
 					return nil
 				case corev1.PodFailed:
@@ -451,7 +451,7 @@ func pollJobPod(ctx context.Context, conf *config.Global) error {
 
 			switch list.Items[0].Status.Phase {
 			case corev1.PodRunning:
-				conf.Host = conf.DbPod.Status.PodIP
+				conf.Host = conf.DBPod.Status.PodIP
 				conf.JobPod = list.Items[0]
 				return true, nil
 			case corev1.PodFailed:

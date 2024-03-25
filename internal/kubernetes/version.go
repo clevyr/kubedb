@@ -6,8 +6,8 @@ import (
 	"strings"
 )
 
-func (c *KubeClient) MinServerVersion(wantMajor, wantMinor int) (bool, error) {
-	serverVersion, err := c.Discovery.ServerVersion()
+func (client *KubeClient) MinServerVersion(wantMajor, wantMinor int) (bool, error) {
+	serverVersion, err := client.Discovery.ServerVersion()
 	if err != nil {
 		return false, err
 	}

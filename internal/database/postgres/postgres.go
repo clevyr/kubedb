@@ -30,9 +30,9 @@ var (
 	_ config.DatabaseUsername = Postgres{}
 	_ config.DatabasePort     = Postgres{}
 	_ config.DatabasePassword = Postgres{}
-	_ config.DatabaseDb       = Postgres{}
-	_ config.DatabaseDbList   = Postgres{}
-	_ config.DatabaseDbDrop   = Postgres{}
+	_ config.DatabaseDB       = Postgres{}
+	_ config.DatabaseDBList   = Postgres{}
+	_ config.DatabaseDBDrop   = Postgres{}
 	_ config.DatabaseTables   = Postgres{}
 	_ config.DatabaseAnalyze  = Postgres{}
 )

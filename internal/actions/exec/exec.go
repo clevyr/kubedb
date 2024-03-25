@@ -23,7 +23,7 @@ type Exec struct {
 func (action Exec) Run(ctx context.Context) error {
 	log.WithFields(log.Fields{
 		"namespace": action.Client.Namespace,
-		"name":      "pod/" + action.DbPod.Name,
+		"name":      "pod/" + action.DBPod.Name,
 	}).Info("exec into database")
 
 	t := term.TTY{

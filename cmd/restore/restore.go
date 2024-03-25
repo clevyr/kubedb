@@ -126,7 +126,7 @@ func preRun(cmd *cobra.Command, args []string) error {
 		if tty {
 			var response bool
 			err := survey.AskOne(&survey.Confirm{
-				Message: "Restore to " + action.DbPod.Name + " in " + action.Client.Namespace + "?",
+				Message: "Restore to " + action.DBPod.Name + " in " + action.Client.Namespace + "?",
 			}, &response)
 			if err != nil {
 				return err

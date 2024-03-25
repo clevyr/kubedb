@@ -19,8 +19,8 @@ var (
 	_ config.DatabaseUsername = MongoDB{}
 	_ config.DatabasePort     = MongoDB{}
 	_ config.DatabasePassword = MongoDB{}
-	_ config.DatabaseDb       = MongoDB{}
-	_ config.DatabaseDbList   = MongoDB{}
+	_ config.DatabaseDB       = MongoDB{}
+	_ config.DatabaseDBList   = MongoDB{}
 	_ config.DatabaseTables   = MongoDB{}
 )
 

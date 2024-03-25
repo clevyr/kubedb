@@ -160,7 +160,7 @@ func listDatabases(cmd *cobra.Command, _ []string, _ string) ([]string, cobra.Sh
 		return nil, cobra.ShellCompDirectiveError
 	}
 
-	db, ok := conf.Dialect.(config.DatabaseDbList)
+	db, ok := conf.Dialect.(config.DatabaseDBList)
 	if !ok {
 		return nil, cobra.ShellCompDirectiveError
 	}
@@ -177,7 +177,7 @@ func queryInDatabase(cmd *cobra.Command, conf config.Exec) ([]string, cobra.Shel
 
 	var buf strings.Builder
 	if err := conf.Client.Exec(cmd.Context(), kubernetes.ExecOptions{
-		Pod:    conf.DbPod,
+		Pod:    conf.DBPod,
 		Cmd:    db.ExecCommand(conf).String(),
 		Stdout: &buf,
 		Stderr: os.Stderr,

@@ -20,9 +20,9 @@ var (
 	_ config.DatabaseUsername = MariaDB{}
 	_ config.DatabasePort     = MariaDB{}
 	_ config.DatabasePassword = MariaDB{}
-	_ config.DatabaseDb       = MariaDB{}
-	_ config.DatabaseDbList   = MariaDB{}
-	_ config.DatabaseDbDrop   = MariaDB{}
+	_ config.DatabaseDB       = MariaDB{}
+	_ config.DatabaseDBList   = MariaDB{}
+	_ config.DatabaseDBDrop   = MariaDB{}
 	_ config.DatabaseTables   = MariaDB{}
 )
 

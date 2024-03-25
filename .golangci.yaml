@@ -74,7 +74,7 @@ linters:
     - spancheck
     - sqlclosecheck
     - staticcheck
-    # - stylecheck
+    - stylecheck
     # - tenv
     - testableexamples
     # - testifylint

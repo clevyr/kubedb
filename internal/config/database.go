@@ -58,15 +58,15 @@ type DatabasePassword interface {
 	PasswordEnvNames(conf Global) kubernetes.ConfigLookups
 }
 
-type DatabaseDb interface {
+type DatabaseDB interface {
 	DatabaseEnvNames() kubernetes.ConfigLookups
 }
 
-type DatabaseDbList interface {
+type DatabaseDBList interface {
 	ListDatabasesQuery() string
 }
 
-type DatabaseDbDrop interface {
+type DatabaseDBDrop interface {
 	DropDatabaseQuery(database string) string
 }
 

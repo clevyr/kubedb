@@ -45,7 +45,7 @@ func (action Restore) Run(ctx context.Context) error {
 	log.WithFields(log.Fields{
 		"file":      action.Filename,
 		"namespace": action.Client.Namespace,
-		"name":      "pod/" + action.DbPod.Name,
+		"name":      "pod/" + action.DBPod.Name,
 	}).Info("ready to restore database")
 
 	startTime := time.Now()
@@ -73,7 +73,7 @@ func (action Restore) Run(ctx context.Context) error {
 
 		// Clean database
 		if action.Clean && action.Format != sqlformat.Custom {
-			if db, ok := action.Dialect.(config.DatabaseDbDrop); ok {
+			if db, ok := action.Dialect.(config.DatabaseDBDrop); ok {
 				dropQuery := db.DropDatabaseQuery(action.Database)
 				log.Info("cleaning existing data")
 				if action.RemoteGzip {

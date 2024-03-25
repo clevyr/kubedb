@@ -13,7 +13,7 @@ type Global struct {
 
 	Job    *batchv1.Job
 	JobPod v1.Pod `mapstructure:"-"`
-	DbPod  v1.Pod `mapstructure:"-"`
+	DBPod  v1.Pod `mapstructure:"-"`
 
 	Host       string
 	Port       uint16

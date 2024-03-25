@@ -88,7 +88,7 @@ func run(cmd *cobra.Command, _ []string) error {
 			"Found",
 			bold(conf.Dialect.Name()),
 			"database",
-			bold(conf.DbPod.ObjectMeta.Name),
+			bold(conf.DBPod.ObjectMeta.Name),
 		)
 	} else {
 		if errors.Is(defaultSetupErr, database.ErrDatabaseNotFound) {

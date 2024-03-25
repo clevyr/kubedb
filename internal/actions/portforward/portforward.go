@@ -24,14 +24,14 @@ type PortForward struct {
 func (a PortForward) Run(ctx context.Context) error {
 	log.WithFields(log.Fields{
 		"namespace": a.Client.Namespace,
-		"name":      "pod/" + a.DbPod.Name,
+		"name":      "pod/" + a.DBPod.Name,
 	}).Debug("setting up port forward")
 
 	hostURL, err := url.Parse(a.Client.ClientConfig.Host)
 	if err != nil {
 		return err
 	}
-	hostURL.Path = path.Join("api", "v1", "namespaces", a.Client.Namespace, "pods", a.DbPod.Name, "portforward")
+	hostURL.Path = path.Join("api", "v1", "namespaces", a.Client.Namespace, "pods", a.DBPod.Name, "portforward")
 
 	transport, upgrader, err := spdy.RoundTripperFor(a.Client.ClientConfig)
 	if err != nil {
