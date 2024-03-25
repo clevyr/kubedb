@@ -85,7 +85,7 @@ func validArgs(cmd *cobra.Command, args []string, toComplete string) ([]string, 
 	return exts, cobra.ShellCompDirectiveFilterFileExt
 }
 
-func preRun(cmd *cobra.Command, args []string) (err error) {
+func preRun(cmd *cobra.Command, args []string) error {
 	flags.BindJobPodLabels(cmd)
 	flags.BindCreateJob(cmd)
 	flags.BindCreateNetworkPolicy(cmd)
@@ -101,7 +101,7 @@ func preRun(cmd *cobra.Command, args []string) (err error) {
 
 	if action.Directory != "" {
 		cmd.SilenceUsage = true
-		if err = os.Chdir(action.Directory); err != nil {
+		if err := os.Chdir(action.Directory); err != nil {
 			return err
 		}
 		cmd.SilenceUsage = false
@@ -145,6 +145,6 @@ func preRun(cmd *cobra.Command, args []string) (err error) {
 	return nil
 }
 
-func run(cmd *cobra.Command, args []string) (err error) {
+func run(cmd *cobra.Command, args []string) error {
 	return action.Run(cmd.Context())
 }

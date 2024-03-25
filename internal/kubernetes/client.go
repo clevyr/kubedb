@@ -59,40 +59,38 @@ func NewConfigLoader(kubeconfig, context string) clientcmd.ClientConfig {
 	)
 }
 
-func NewClient(kubeconfig, context, namespace string) (config KubeClient, err error) {
+func NewClient(kubeconfig, context, namespace string) (KubeClient, error) {
 	configLoader := NewConfigLoader(kubeconfig, context)
+	var client KubeClient
 
 	if rawConfig, err := configLoader.RawConfig(); err == nil {
-		config.Context = rawConfig.CurrentContext
+		client.Context = rawConfig.CurrentContext
 	}
 
-	config.ClientConfig, err = configLoader.ClientConfig()
-	if err != nil {
-		return config, err
+	var err error
+	if client.ClientConfig, err = configLoader.ClientConfig(); err != nil {
+		return client, err
 	}
 
-	config.ClientConfig.UserAgent = rest.DefaultKubernetesUserAgent()
+	client.ClientConfig.UserAgent = rest.DefaultKubernetesUserAgent()
 
 	if namespace == "" {
-		config.Namespace, _, err = configLoader.Namespace()
-		if err != nil {
-			return config, err
+		if client.Namespace, _, err = configLoader.Namespace(); err != nil {
+			return client, err
 		}
 	} else {
-		config.Namespace = namespace
+		client.Namespace = namespace
 	}
 
-	config.ClientSet, err = kubernetes.NewForConfig(config.ClientConfig)
-	if err != nil {
-		return config, err
+	if client.ClientSet, err = kubernetes.NewForConfig(client.ClientConfig); err != nil {
+		return client, err
 	}
 
-	config.Discovery, err = discovery.NewDiscoveryClientForConfig(config.ClientConfig)
-	if err != nil {
-		return config, err
+	if client.Discovery, err = discovery.NewDiscoveryClientForConfig(client.ClientConfig); err != nil {
+		return client, err
 	}
 
-	return config, err
+	return client, err
 }
 
 func NewClientFromCmd(cmd *cobra.Command) (KubeClient, error) {

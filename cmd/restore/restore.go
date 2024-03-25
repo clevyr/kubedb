@@ -84,7 +84,7 @@ func validArgs(cmd *cobra.Command, args []string, toComplete string) ([]string, 
 	return exts, cobra.ShellCompDirectiveFilterFileExt
 }
 
-func preRun(cmd *cobra.Command, args []string) (err error) {
+func preRun(cmd *cobra.Command, args []string) error {
 	flags.BindRemoteGzip(cmd)
 	action.RemoteGzip = viper.GetBool(consts.RemoteGzipKey)
 	flags.BindAnalyze(cmd)
@@ -147,6 +147,6 @@ func preRun(cmd *cobra.Command, args []string) (err error) {
 	return nil
 }
 
-func run(cmd *cobra.Command, args []string) (err error) {
+func run(cmd *cobra.Command, args []string) error {
 	return action.Run(cmd.Context())
 }

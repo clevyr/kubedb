@@ -14,7 +14,7 @@ type Writer struct {
 	level  log.Level
 }
 
-func (l Writer) Write(p []byte) (n int, err error) {
+func (l Writer) Write(p []byte) (int, error) {
 	l.logger.Log(l.level, string(p))
 	return len(p), nil
 }

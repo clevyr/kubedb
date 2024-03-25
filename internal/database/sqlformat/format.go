@@ -21,9 +21,13 @@ func (i *Format) Type() string {
 	return "string"
 }
 
-func (i *Format) Set(s string) (err error) {
-	*i, err = ParseFormat(s)
-	return err
+func (i *Format) Set(s string) error {
+	format, err := ParseFormat(s)
+	if err != nil {
+		return err
+	}
+	*i = format
+	return nil
 }
 
 var ErrUnknown = errors.New("unknown file format")

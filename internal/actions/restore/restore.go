@@ -27,14 +27,14 @@ type Restore struct {
 	Analyze bool
 }
 
-func (action Restore) Run(ctx context.Context) (err error) {
+func (action Restore) Run(ctx context.Context) error {
 	var f io.ReadCloser
 	switch action.Filename {
 	case "-":
 		f = os.Stdin
 	default:
-		f, err = os.Open(action.Filename)
-		if err != nil {
+		var err error
+		if f, err = os.Open(action.Filename); err != nil {
 			return err
 		}
 		defer func(f io.ReadCloser) {
@@ -77,12 +77,13 @@ func (action Restore) Run(ctx context.Context) (err error) {
 				dropQuery := db.DropDatabaseQuery(action.Database)
 				log.Info("cleaning existing data")
 				if action.RemoteGzip {
-					err = gzipCopy(w, strings.NewReader(dropQuery))
+					if err := gzipCopy(w, strings.NewReader(dropQuery)); err != nil {
+						return err
+					}
 				} else {
-					_, err = io.Copy(w, strings.NewReader(dropQuery))
-				}
-				if err != nil {
-					return err
+					if _, err := io.Copy(w, strings.NewReader(dropQuery)); err != nil {
+						return err
+					}
 				}
 			}
 		}
@@ -92,8 +93,8 @@ func (action Restore) Run(ctx context.Context) (err error) {
 		switch action.Format {
 		case sqlformat.Gzip, sqlformat.Unknown:
 			if !action.RemoteGzip {
-				f, err = gzip.NewReader(f)
-				if err != nil {
+				var err error
+				if f, err = gzip.NewReader(f); err != nil {
 					return err
 				}
 				defer func(f io.ReadCloser) {
@@ -101,18 +102,18 @@ func (action Restore) Run(ctx context.Context) (err error) {
 				}(f)
 			}
 
-			_, err = io.Copy(w, f)
-			if err != nil {
+			if _, err := io.Copy(w, f); err != nil {
 				return err
 			}
 		case sqlformat.Plain, sqlformat.Custom:
 			if action.RemoteGzip {
-				err = gzipCopy(w, f)
+				if err := gzipCopy(w, f); err != nil {
+					return err
+				}
 			} else {
-				_, err = io.Copy(w, f)
-			}
-			if err != nil {
-				return err
+				if _, err := io.Copy(w, f); err != nil {
+					return err
+				}
 			}
 		}
 
@@ -139,12 +140,13 @@ func (action Restore) Run(ctx context.Context) (err error) {
 				}
 
 				if action.RemoteGzip {
-					err = gzipCopy(w, strings.NewReader(analyzeQuery))
+					if err := gzipCopy(w, strings.NewReader(analyzeQuery)); err != nil {
+						return err
+					}
 				} else {
-					_, err = io.Copy(w, strings.NewReader(analyzeQuery))
-				}
-				if err != nil {
-					return err
+					if _, err := io.Copy(w, strings.NewReader(analyzeQuery)); err != nil {
+						return err
+					}
 				}
 			}
 		}
@@ -188,20 +190,12 @@ func (action Restore) buildCommand(inputFormat sqlformat.Format) (*command.Build
 	return cmd, nil
 }
 
-func gzipCopy(w io.Writer, r io.Reader) (err error) {
+func gzipCopy(w io.Writer, r io.Reader) error {
 	gzw := gzip.NewWriter(w)
-
-	_, err = io.Copy(gzw, r)
-	if err != nil {
+	if _, err := io.Copy(gzw, r); err != nil {
 		return err
 	}
-
-	err = gzw.Close()
-	if err != nil {
-		return err
-	}
-
-	return nil
+	return gzw.Close()
 }
 
 func (action Restore) runInDatabasePod(ctx context.Context, r *io.PipeReader, stdout, stderr io.Writer, inputFormat sqlformat.Format) error {

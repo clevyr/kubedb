@@ -28,7 +28,7 @@ type Dump struct {
 	config.Dump `mapstructure:",squash"`
 }
 
-func (action Dump) Run(ctx context.Context) (err error) {
+func (action Dump) Run(ctx context.Context) error {
 	errGroup, ctx := errgroup.WithContext(ctx)
 
 	var f io.WriteCloser
@@ -46,8 +46,8 @@ func (action Dump) Run(ctx context.Context) (err error) {
 			return storage.CreateS3Upload(ctx, pr, action.Filename)
 		})
 	case storage.IsGCS(action.Filename):
-		f, err = storage.CreateGCSUpload(ctx, action.Filename)
-		if err != nil {
+		var err error
+		if f, err = storage.CreateGCSUpload(ctx, action.Filename); err != nil {
 			return err
 		}
 		defer func(f io.WriteCloser) {
@@ -61,8 +61,8 @@ func (action Dump) Run(ctx context.Context) (err error) {
 			}
 		}
 
-		f, err = os.Create(action.Filename)
-		if err != nil {
+		var err error
+		if f, err = os.Create(action.Filename); err != nil {
 			return err
 		}
 		defer func(f io.WriteCloser) {
@@ -139,8 +139,8 @@ func (action Dump) Run(ctx context.Context) (err error) {
 
 		if action.RemoteGzip {
 			if action.Format == sqlformat.Plain {
-				r, err = gzip.NewReader(r)
-				if err != nil {
+				var err error
+				if r, err = gzip.NewReader(r); err != nil {
 					return err
 				}
 			}

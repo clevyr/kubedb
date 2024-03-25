@@ -34,12 +34,13 @@ type SetupOptions struct {
 	NoSurvey         bool
 }
 
-func DefaultSetup(cmd *cobra.Command, conf *config.Global, opts SetupOptions) (err error) {
+func DefaultSetup(cmd *cobra.Command, conf *config.Global, opts SetupOptions) error {
 	cmd.SilenceUsage = true
 
 	ctx := cmd.Context()
 
 	conf.Kubeconfig = viper.GetString(consts.KubeconfigKey)
+	var err error
 	conf.Context, err = cmd.Flags().GetString(consts.ContextFlag)
 	if err != nil {
 		panic(err)
@@ -257,7 +258,7 @@ func CreateJob(ctx context.Context, conf *config.Global, opts SetupOptions) erro
 	return nil
 }
 
-func createJob(ctx context.Context, conf *config.Global, actionName string) (err error) {
+func createJob(ctx context.Context, conf *config.Global, actionName string) error {
 	image := conf.DbPod.Spec.Containers[0].Image
 
 	name := "kubedb-"
@@ -351,6 +352,7 @@ func createJob(ctx context.Context, conf *config.Global, actionName string) (err
 	defer cancel()
 
 	log.WithField("namespace", conf.Namespace).Info("creating job")
+	var err error
 	if conf.Job, err = conf.Client.Jobs().Create(ctx, &job, metav1.CreateOptions{}); err != nil {
 		return err
 	}
@@ -435,7 +437,7 @@ func watchJobPod(ctx context.Context, conf *config.Global) error {
 
 func pollJobPod(ctx context.Context, conf *config.Global) error {
 	return wait.PollUntilContextCancel(
-		ctx, time.Second, true, func(ctx context.Context) (done bool, err error) {
+		ctx, time.Second, true, func(ctx context.Context) (bool, error) {
 			list, err := conf.Client.Pods().List(ctx, metav1.ListOptions{
 				LabelSelector: jobPodLabelSelector(conf, conf.Job),
 			})
