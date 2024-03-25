@@ -21,7 +21,7 @@ func (c ConfigLookups) Search(ctx context.Context, client KubeClient, pod corev1
 		return "", nil
 	}
 
-	var errs []error
+	errs := make([]error, 0, len(c))
 	for _, search := range c {
 		found, err := search.GetValue(ctx, client, pod)
 		if err == nil {

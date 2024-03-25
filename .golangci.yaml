@@ -63,7 +63,7 @@ linters:
     - nosprintfhostport
     - paralleltest
     - perfsprint
-    # - prealloc
+    - prealloc
     - predeclared
     - promlinter
     - protogetter
