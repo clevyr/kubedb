@@ -83,6 +83,11 @@ func validArgs(cmd *cobra.Command, args []string, _ string) ([]string, cobra.She
 	return exts, cobra.ShellCompDirectiveFilterFileExt
 }
 
+var (
+	ErrRestoreCanceled = errors.New("restore canceled")
+	ErrRestoreRefused  = errors.New("refusing to restore a database non-interactively without the --force flag")
+)
+
 func preRun(cmd *cobra.Command, args []string) error {
 	flags.BindRemoteGzip(cmd)
 	action.RemoteGzip = viper.GetBool(consts.RemoteGzipKey)
@@ -132,10 +137,10 @@ func preRun(cmd *cobra.Command, args []string) error {
 				return err
 			}
 			if !response {
-				return errors.New("restore canceled")
+				return ErrRestoreCanceled
 			}
 		} else {
-			return errors.New("refusing to restore a database non-interactively without the --force flag")
+			return ErrRestoreRefused
 		}
 	}
 

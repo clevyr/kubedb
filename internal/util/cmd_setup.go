@@ -393,6 +393,12 @@ func createJob(ctx context.Context, conf *config.Global, actionName string) erro
 	return nil
 }
 
+var (
+	ErrJobPodFailed    = errors.New("job pod failed")
+	ErrJobPodEarlyExit = errors.New("job pod exited early")
+	ErrJobPodInvalid   = errors.New("unexpected job pod object type")
+)
+
 func watchJobPod(ctx context.Context, conf *config.Global) error {
 	log.WithFields(log.Fields{
 		"namespace": conf.Namespace,
@@ -424,12 +430,12 @@ func watchJobPod(ctx context.Context, conf *config.Global) error {
 					pod.DeepCopyInto(&conf.JobPod)
 					return nil
 				case corev1.PodFailed:
-					return errors.New("pod failed")
+					return ErrJobPodFailed
 				case corev1.PodSucceeded:
-					return errors.New("pod exited early")
+					return ErrJobPodEarlyExit
 				}
 			} else {
-				return errors.New("unexpected runtime object type")
+				return ErrJobPodInvalid
 			}
 		}
 	}
@@ -455,9 +461,9 @@ func pollJobPod(ctx context.Context, conf *config.Global) error {
 				conf.JobPod = list.Items[0]
 				return true, nil
 			case corev1.PodFailed:
-				return false, errors.New("pod failed")
+				return false, ErrJobPodFailed
 			case corev1.PodSucceeded:
-				return false, errors.New("pod exited early")
+				return false, ErrJobPodEarlyExit
 			default:
 				return false, nil
 			}
