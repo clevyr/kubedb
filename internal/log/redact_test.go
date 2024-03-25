@@ -1,4 +1,4 @@
-package log_hooks
+package log
 
 import (
 	"testing"

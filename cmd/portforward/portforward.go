@@ -1,20 +1,19 @@
-package port_forward
+package portforward
 
 import (
 	"fmt"
 	"strconv"
 
-	"github.com/clevyr/kubedb/internal/actions/port_forward"
+	"github.com/clevyr/kubedb/internal/actions/portforward"
 	"github.com/clevyr/kubedb/internal/config"
 	"github.com/clevyr/kubedb/internal/config/flags"
 	"github.com/clevyr/kubedb/internal/consts"
 	"github.com/clevyr/kubedb/internal/util"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
-	_ "k8s.io/client-go/plugin/pkg/client/auth"
 )
 
-var action port_forward.PortForward
+var action portforward.PortForward
 
 func New() *cobra.Command {
 	cmd := &cobra.Command{
@@ -32,7 +31,7 @@ func New() *cobra.Command {
 	cmd.Flags().StringSlice(consts.AddrFlag, []string{"127.0.0.1", "::1"}, "Local listen address")
 	if err := cmd.RegisterFlagCompletionFunc(
 		consts.AddrFlag,
-		func(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
+		func(_ *cobra.Command, _ []string, _ string) ([]string, cobra.ShellCompDirective) {
 			return []string{"127.0.0.1\tprivate", "::1\tprivate", "0.0.0.0\tpublic", "::\tpublic"}, cobra.ShellCompDirectiveNoFileComp
 		}); err != nil {
 		panic(err)
@@ -41,7 +40,7 @@ func New() *cobra.Command {
 	cmd.Flags().Uint16(consts.ListenPortFlag, 0, "Local listen port (default discovered)")
 	if err := cmd.RegisterFlagCompletionFunc(
 		consts.ListenPortFlag,
-		func(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
+		func(cmd *cobra.Command, args []string, _ string) ([]string, cobra.ShellCompDirective) {
 			err := preRun(cmd, args)
 			if err != nil {
 				return nil, cobra.ShellCompDirectiveNoFileComp
@@ -99,6 +98,6 @@ func preRun(cmd *cobra.Command, args []string) error {
 	return nil
 }
 
-func run(cmd *cobra.Command, args []string) error {
+func run(cmd *cobra.Command, _ []string) error {
 	return action.Run(cmd.Context())
 }

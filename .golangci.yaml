@@ -68,7 +68,7 @@ linters:
     - promlinter
     - protogetter
     - reassign
-    # - revive
+    - revive
     - rowserrcheck
     - sloglint
     - spancheck
@@ -80,7 +80,7 @@ linters:
     # - testifylint
     - typecheck
     - unconvert
-    # - unparam
+    - unparam
     - unused
     - usestdlibvars
     - wastedassign

@@ -14,7 +14,7 @@ import (
 	"github.com/clevyr/kubedb/internal/consts"
 	"github.com/clevyr/kubedb/internal/database"
 	"github.com/clevyr/kubedb/internal/kubernetes"
-	"github.com/clevyr/kubedb/internal/log_hooks"
+	kdblog "github.com/clevyr/kubedb/internal/log"
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
@@ -222,7 +222,7 @@ func DefaultSetup(cmd *cobra.Command, conf *config.Global, opts SetupOptions) er
 		}
 
 		if viper.GetBool(consts.LogRedactKey) {
-			log.AddHook(log_hooks.Redact(conf.Password))
+			log.AddHook(kdblog.Redact(conf.Password))
 		}
 
 		return nil

@@ -17,7 +17,7 @@ const (
 var (
 	ErrInvalidResponse = errors.New("invalid http response")
 	ErrUnknownHandler  = errors.New("unknown handler")
-	ErrEmptyUrl        = errors.New("url must be set")
+	ErrEmptyURL        = errors.New("url must be set")
 )
 
 type Notifier interface {

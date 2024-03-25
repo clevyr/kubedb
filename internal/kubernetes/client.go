@@ -11,6 +11,7 @@ import (
 	batchv1 "k8s.io/client-go/kubernetes/typed/batch/v1"
 	v1 "k8s.io/client-go/kubernetes/typed/core/v1"
 	networkingv1 "k8s.io/client-go/kubernetes/typed/networking/v1"
+	_ "k8s.io/client-go/plugin/pkg/client/auth" // Loads auth plugins
 	"k8s.io/client-go/rest"
 	"k8s.io/client-go/tools/clientcmd"
 )

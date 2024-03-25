@@ -34,7 +34,7 @@ const (
 	LogLevelFlag            = "log-level"
 	LogFormatFlag           = "log-format"
 	RedactFlag              = "redact"
-	HealthchecksPingUrlFlag = "healthchecks-ping-url"
+	HealthchecksPingURLFlag = "healthchecks-ping-url"
 
 	RemoteGzipFlag = "remote-gzip"
 

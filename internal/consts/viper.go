@@ -14,5 +14,5 @@ const (
 	LogRedactKey           = "log.redact"
 	RemoteGzipKey          = "remote-gzip"
 	PortForwardAddrKey     = "port-forward.address"
-	HealthchecksPingUrlKey = "healthchecks.ping-url"
+	HealthchecksPingURLKey = "healthchecks.ping-url"
 )

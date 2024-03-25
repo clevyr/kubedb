@@ -37,7 +37,7 @@ func (Meilisearch) PodFilters() filter.Filter {
 	return filter.Label{Name: "app.kubernetes.io/name", Value: "meilisearch"}
 }
 
-func (Meilisearch) PasswordEnvNames(c config.Global) kubernetes.ConfigLookups {
+func (Meilisearch) PasswordEnvNames(_ config.Global) kubernetes.ConfigLookups {
 	return kubernetes.ConfigLookups{
 		kubernetes.LookupEnv{"MEILI_MASTER_KEY"},
 		kubernetes.LookupNop{},

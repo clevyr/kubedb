@@ -10,7 +10,7 @@ func RemoteGzip(cmd *cobra.Command) {
 	cmd.Flags().Bool(consts.RemoteGzipFlag, true, "Compress data over the wire. Results in lower bandwidth usage, but higher database load. May improve speed on slow connections.")
 	err := cmd.RegisterFlagCompletionFunc(
 		consts.RemoteGzipFlag,
-		func(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
+		func(_ *cobra.Command, _ []string, _ string) ([]string, cobra.ShellCompDirective) {
 			return []string{"true", "false"}, cobra.ShellCompDirectiveNoFileComp
 		})
 	if err != nil {

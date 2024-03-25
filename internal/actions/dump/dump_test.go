@@ -14,7 +14,7 @@ import (
 func Test_buildCommand(t *testing.T) {
 	t.Parallel()
 	pgpassword := command.NewEnv("PGPASSWORD", "")
-	mysql_pwd := command.NewEnv("MYSQL_PWD", "")
+	mysqlPwd := command.NewEnv("MYSQL_PWD", "")
 
 	type args struct {
 		conf Dump
@@ -52,7 +52,7 @@ func Test_buildCommand(t *testing.T) {
 		{
 			"mariadb-gzip",
 			args{Dump{Dump: config.Dump{Files: config.Files{Format: sqlformat.Gzip}, Global: config.Global{Dialect: mariadb.MariaDB{}, Host: "1.1.1.1", Database: "d", Username: "u", RemoteGzip: true}}}},
-			command.NewBuilder(mysql_pwd, command.Raw(`"$(which mariadb-dump || which mysqldump)"`), "--host=1.1.1.1", "--user=u", "d", "--verbose", command.Pipe, "gzip", "--force"),
+			command.NewBuilder(mysqlPwd, command.Raw(`"$(which mariadb-dump || which mysqldump)"`), "--host=1.1.1.1", "--user=u", "d", "--verbose", command.Pipe, "gzip", "--force"),
 			assert.NoError,
 		},
 	}

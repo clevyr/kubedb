@@ -84,7 +84,7 @@ func (Postgres) DefaultUser() string {
 	return "postgres"
 }
 
-func (Postgres) DropDatabaseQuery(database string) string {
+func (Postgres) DropDatabaseQuery(_ string) string {
 	return "drop schema public cascade; create schema public;"
 }
 

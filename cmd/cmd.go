@@ -10,7 +10,7 @@ import (
 
 	"github.com/clevyr/kubedb/cmd/dump"
 	"github.com/clevyr/kubedb/cmd/exec"
-	"github.com/clevyr/kubedb/cmd/port_forward"
+	"github.com/clevyr/kubedb/cmd/portforward"
 	"github.com/clevyr/kubedb/cmd/restore"
 	"github.com/clevyr/kubedb/cmd/status"
 	"github.com/clevyr/kubedb/internal/config/flags"
@@ -58,14 +58,14 @@ func NewCommand() *cobra.Command {
 		exec.New(),
 		dump.New(),
 		restore.New(),
-		port_forward.New(),
+		portforward.New(),
 		status.New(),
 	)
 
 	return cmd
 }
 
-func preRun(cmd *cobra.Command, args []string) error {
+func preRun(cmd *cobra.Command, _ []string) error {
 	flags.BindKubeconfig(cmd)
 	flags.BindLogLevel(cmd)
 	flags.BindLogFormat(cmd)
@@ -73,7 +73,7 @@ func preRun(cmd *cobra.Command, args []string) error {
 	flags.BindHealthchecks(cmd)
 
 	ctx, cancel := signal.NotifyContext(cmd.Context(), os.Interrupt, os.Kill, syscall.SIGTERM)
-	cmd.PersistentPostRun = func(cmd *cobra.Command, args []string) { cancel() }
+	cmd.PersistentPostRun = func(_ *cobra.Command, _ []string) { cancel() }
 	cmd.SetContext(ctx)
 
 	kubeconfig := viper.GetString(consts.KubeconfigKey)
@@ -86,13 +86,13 @@ func preRun(cmd *cobra.Command, args []string) error {
 		viper.Set(consts.KubeconfigKey, kubeconfig)
 	}
 
-	initLog(cmd)
+	initLog()
 	if err := initConfig(); err != nil {
 		return err
 	}
-	initLog(cmd)
+	initLog()
 
-	if url := viper.GetString(consts.HealthchecksPingUrlKey); url != "" {
+	if url := viper.GetString(consts.HealthchecksPingURLKey); url != "" {
 		if handler, err := notifier.NewHealthchecks(url); err != nil {
 			log.WithError(err).Error("Notifications creation failed")
 		} else {
@@ -111,7 +111,7 @@ func preRun(cmd *cobra.Command, args []string) error {
 	return nil
 }
 
-func initLog(cmd *cobra.Command) {
+func initLog() {
 	logLevel := viper.GetString(consts.LogLevelKey)
 	parsedLevel, err := log.ParseLevel(logLevel)
 	if err != nil {

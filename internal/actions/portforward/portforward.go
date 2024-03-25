@@ -1,4 +1,4 @@
-package port_forward
+package portforward
 
 import (
 	"context"
@@ -9,7 +9,7 @@ import (
 	"path"
 
 	"github.com/clevyr/kubedb/internal/config"
-	log2 "github.com/clevyr/kubedb/internal/log"
+	kdblog "github.com/clevyr/kubedb/internal/log"
 	"github.com/jedib0t/go-pretty/v6/table"
 	log "github.com/sirupsen/logrus"
 	"golang.org/x/sync/errgroup"
@@ -27,23 +27,23 @@ func (a PortForward) Run(ctx context.Context) error {
 		"name":      "pod/" + a.DbPod.Name,
 	}).Debug("setting up port forward")
 
-	hostUrl, err := url.Parse(a.Client.ClientConfig.Host)
+	hostURL, err := url.Parse(a.Client.ClientConfig.Host)
 	if err != nil {
 		return err
 	}
-	hostUrl.Path = path.Join("api", "v1", "namespaces", a.Client.Namespace, "pods", a.DbPod.Name, "portforward")
+	hostURL.Path = path.Join("api", "v1", "namespaces", a.Client.Namespace, "pods", a.DbPod.Name, "portforward")
 
 	transport, upgrader, err := spdy.RoundTripperFor(a.Client.ClientConfig)
 	if err != nil {
 		return err
 	}
 
-	dialer := spdy.NewDialer(upgrader, &http.Client{Transport: transport}, http.MethodPost, hostUrl)
+	dialer := spdy.NewDialer(upgrader, &http.Client{Transport: transport}, http.MethodPost, hostURL)
 	ports := []string{fmt.Sprintf("%d:%d", a.LocalPort, a.Port)}
 	stopCh := make(chan struct{}, 1)
 	readyCh := make(chan struct{}, 1)
-	outWriter := log2.NewWriter(log.StandardLogger(), log.InfoLevel)
-	errWriter := log2.NewWriter(log.StandardLogger(), log.ErrorLevel)
+	outWriter := kdblog.NewWriter(log.StandardLogger(), log.InfoLevel)
+	errWriter := kdblog.NewWriter(log.StandardLogger(), log.ErrorLevel)
 	fw, err := portforward.NewOnAddresses(dialer, a.Addresses, ports, stopCh, readyCh, outWriter, errWriter)
 	if err != nil {
 		return err

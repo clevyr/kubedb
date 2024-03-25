@@ -14,7 +14,6 @@ import (
 	"github.com/clevyr/kubedb/internal/util"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
-	_ "k8s.io/client-go/plugin/pkg/client/auth"
 	"k8s.io/kubectl/pkg/util/term"
 )
 
@@ -57,7 +56,7 @@ func New() *cobra.Command {
 	return cmd
 }
 
-func validArgs(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
+func validArgs(cmd *cobra.Command, args []string, _ string) ([]string, cobra.ShellCompDirective) {
 	if len(args) != 0 {
 		return nil, cobra.ShellCompDirectiveNoFileComp
 	}
@@ -147,6 +146,6 @@ func preRun(cmd *cobra.Command, args []string) error {
 	return nil
 }
 
-func run(cmd *cobra.Command, args []string) error {
+func run(cmd *cobra.Command, _ []string) error {
 	return action.Run(cmd.Context())
 }

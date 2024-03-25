@@ -15,7 +15,7 @@ func LogLevel(cmd *cobra.Command) {
 	cmd.PersistentFlags().String(consts.LogLevelFlag, "info", "Log level. One of (trace|debug|info|warning|error|fatal|panic)")
 	err := cmd.RegisterFlagCompletionFunc(
 		consts.LogLevelFlag,
-		func(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
+		func(_ *cobra.Command, _ []string, _ string) ([]string, cobra.ShellCompDirective) {
 			return []string{
 				log.TraceLevel.String(),
 				log.DebugLevel.String(),
@@ -41,7 +41,7 @@ func LogFormat(cmd *cobra.Command) {
 	cmd.PersistentFlags().String(consts.LogFormatFlag, "text", "Log formatter. One of (text|json)")
 	err := cmd.RegisterFlagCompletionFunc(
 		consts.LogFormatFlag,
-		func(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
+		func(_ *cobra.Command, _ []string, _ string) ([]string, cobra.ShellCompDirective) {
 			return []string{"text", "json"}, cobra.ShellCompDirectiveNoFileComp
 		})
 	if err != nil {
@@ -69,11 +69,11 @@ func BindRedact(cmd *cobra.Command) {
 }
 
 func Healthchecks(cmd *cobra.Command) {
-	cmd.PersistentFlags().String(consts.HealthchecksPingUrlFlag, "", "Notification handler URL")
+	cmd.PersistentFlags().String(consts.HealthchecksPingURLFlag, "", "Notification handler URL")
 }
 
 func BindHealthchecks(cmd *cobra.Command) {
-	if err := viper.BindPFlag(consts.HealthchecksPingUrlKey, cmd.Flags().Lookup(consts.HealthchecksPingUrlFlag)); err != nil {
+	if err := viper.BindPFlag(consts.HealthchecksPingURLKey, cmd.Flags().Lookup(consts.HealthchecksPingURLFlag)); err != nil {
 		panic(err)
 	}
 }

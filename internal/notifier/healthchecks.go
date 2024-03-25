@@ -11,7 +11,7 @@ import (
 
 func NewHealthchecks(url string) (Notifier, error) {
 	if url == "" {
-		return nil, fmt.Errorf("healthchecks %w", ErrEmptyUrl)
+		return nil, fmt.Errorf("healthchecks %w", ErrEmptyURL)
 	}
 
 	return &Healthchecks{
@@ -67,7 +67,6 @@ func (h Healthchecks) Started() error {
 func (h Healthchecks) Finished(err error) error {
 	if err == nil {
 		return h.SendStatus(StatusSuccess, "")
-	} else {
-		return h.SendStatus(StatusFailure, "Error: "+err.Error())
 	}
+	return h.SendStatus(StatusFailure, "Error: "+err.Error())
 }

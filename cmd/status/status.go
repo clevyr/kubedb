@@ -38,14 +38,14 @@ func New() *cobra.Command {
 
 var conf config.Global
 
-func preRun(cmd *cobra.Command, args []string) error {
+func preRun(cmd *cobra.Command, _ []string) error {
 	cmd.SilenceUsage = true
 	log.SetLevel(log.WarnLevel)
 	flags.BindJobPodLabels(cmd)
 	return nil
 }
 
-func run(cmd *cobra.Command, args []string) error {
+func run(cmd *cobra.Command, _ []string) error {
 	prefixOk := color.GreenString(" ✓")
 	prefixNeutral := color.YellowString(" -")
 	prefixErr := color.RedString(" ✗")

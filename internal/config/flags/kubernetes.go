@@ -32,7 +32,7 @@ func Context(cmd *cobra.Command) {
 	cmd.PersistentFlags().String(consts.ContextFlag, "", "Kubernetes context name")
 	err := cmd.RegisterFlagCompletionFunc(
 		consts.ContextFlag,
-		func(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
+		func(_ *cobra.Command, _ []string, _ string) ([]string, cobra.ShellCompDirective) {
 			kubeconfig := viper.GetString(consts.KubeconfigKey)
 			configLoader := clientcmd.NewNonInteractiveDeferredLoadingClientConfig(
 				&clientcmd.ClientConfigLoadingRules{Precedence: filepath.SplitList(kubeconfig)},
@@ -57,7 +57,7 @@ func Namespace(cmd *cobra.Command) {
 	cmd.PersistentFlags().StringP(consts.NamespaceFlag, "n", "", "Kubernetes namespace")
 	err := cmd.RegisterFlagCompletionFunc(
 		consts.NamespaceFlag,
-		func(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
+		func(cmd *cobra.Command, _ []string, _ string) ([]string, cobra.ShellCompDirective) {
 			client, err := kubernetes.NewClientFromCmd(cmd)
 			if err != nil {
 				return nil, cobra.ShellCompDirectiveError
@@ -81,7 +81,7 @@ func Pod(cmd *cobra.Command) {
 	cmd.PersistentFlags().String(consts.PodFlag, "", "Perform detection from a pod instead of searching the namespace")
 	err := cmd.RegisterFlagCompletionFunc(
 		"pod",
-		func(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
+		func(cmd *cobra.Command, _ []string, _ string) ([]string, cobra.ShellCompDirective) {
 			client, err := kubernetes.NewClientFromCmd(cmd)
 			if err != nil {
 				return nil, cobra.ShellCompDirectiveError

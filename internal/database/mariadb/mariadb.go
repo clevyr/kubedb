@@ -141,7 +141,7 @@ func (MariaDB) DumpCommand(conf config.Dump) *command.Builder {
 	return cmd
 }
 
-func (MariaDB) RestoreCommand(conf config.Restore, inputFormat sqlformat.Format) *command.Builder {
+func (MariaDB) RestoreCommand(conf config.Restore, _ sqlformat.Format) *command.Builder {
 	cmd := command.NewBuilder(
 		command.NewEnv("MYSQL_PWD", conf.Password),
 		command.Raw(`"$(which mariadb || which mysql)"`), "--host="+conf.Host, "--user="+conf.Username, "--database="+conf.Database,

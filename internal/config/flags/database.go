@@ -18,7 +18,7 @@ func Dialect(cmd *cobra.Command) {
 	cmd.PersistentFlags().String(consts.DialectFlag, "", "Database dialect. One of (postgres|mariadb|mongodb) (default discovered)")
 	err := cmd.RegisterFlagCompletionFunc(
 		consts.DialectFlag,
-		func(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
+		func(_ *cobra.Command, _ []string, _ string) ([]string, cobra.ShellCompDirective) {
 			return database.Names(), cobra.ShellCompDirectiveNoFileComp
 		})
 	if err != nil {
@@ -31,7 +31,7 @@ func Format(cmd *cobra.Command, p *sqlformat.Format) {
 	cmd.Flags().VarP(p, consts.FormatFlag, "F", `Output file format One of (gzip|custom|plain)`)
 	err := cmd.RegisterFlagCompletionFunc(
 		consts.FormatFlag,
-		func(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
+		func(_ *cobra.Command, _ []string, _ string) ([]string, cobra.ShellCompDirective) {
 			return []string{
 				sqlformat.Gzip.String(),
 				sqlformat.Plain.String(),
@@ -133,7 +133,7 @@ func BindOpts(cmd *cobra.Command) {
 	}
 }
 
-func listTables(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
+func listTables(cmd *cobra.Command, _ []string, _ string) ([]string, cobra.ShellCompDirective) {
 	conf := config.Exec{DisableHeaders: true}
 
 	viper.Set(consts.CreateJobKey, false)
@@ -148,10 +148,10 @@ func listTables(cmd *cobra.Command, args []string, toComplete string) ([]string,
 	}
 
 	conf.Command = db.ListTablesQuery()
-	return queryInDatabase(cmd, args, conf)
+	return queryInDatabase(cmd, conf)
 }
 
-func listDatabases(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
+func listDatabases(cmd *cobra.Command, _ []string, _ string) ([]string, cobra.ShellCompDirective) {
 	conf := config.Exec{DisableHeaders: true}
 
 	viper.Set(consts.CreateJobKey, false)
@@ -166,10 +166,10 @@ func listDatabases(cmd *cobra.Command, args []string, toComplete string) ([]stri
 	}
 
 	conf.Command = db.ListDatabasesQuery()
-	return queryInDatabase(cmd, args, conf)
+	return queryInDatabase(cmd, conf)
 }
 
-func queryInDatabase(cmd *cobra.Command, args []string, conf config.Exec) ([]string, cobra.ShellCompDirective) {
+func queryInDatabase(cmd *cobra.Command, conf config.Exec) ([]string, cobra.ShellCompDirective) {
 	db, ok := conf.Dialect.(config.DatabaseExec)
 	if !ok {
 		return nil, cobra.ShellCompDirectiveError

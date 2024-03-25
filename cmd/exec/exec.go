@@ -6,7 +6,6 @@ import (
 	"github.com/clevyr/kubedb/internal/consts"
 	"github.com/clevyr/kubedb/internal/util"
 	"github.com/spf13/cobra"
-	_ "k8s.io/client-go/plugin/pkg/client/auth"
 )
 
 var action exec.Exec
@@ -35,7 +34,7 @@ func New() *cobra.Command {
 	return cmd
 }
 
-func preRun(cmd *cobra.Command, args []string) error {
+func preRun(cmd *cobra.Command, _ []string) error {
 	flags.BindJobPodLabels(cmd)
 	flags.BindCreateJob(cmd)
 	flags.BindCreateNetworkPolicy(cmd)
@@ -52,6 +51,6 @@ func preRun(cmd *cobra.Command, args []string) error {
 	return nil
 }
 
-func run(cmd *cobra.Command, args []string) error {
+func run(cmd *cobra.Command, _ []string) error {
 	return action.Run(cmd.Context())
 }

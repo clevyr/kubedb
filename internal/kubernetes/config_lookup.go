@@ -131,9 +131,8 @@ func (f LookupVolumeSecret) GetValue(ctx context.Context, client KubeClient, pod
 
 			if value, ok := secret.Data[f.Key]; ok {
 				return string(value), nil
-			} else {
-				return "", fmt.Errorf("%w: %s", ErrSecretDoesNotHaveKey, f.Key)
 			}
+			return "", fmt.Errorf("%w: %s", ErrSecretDoesNotHaveKey, f.Key)
 		}
 	}
 

@@ -9,7 +9,7 @@ func Directory(cmd *cobra.Command, p *string) {
 	cmd.Flags().StringVarP(p, consts.DirectoryFlag, "C", ".", "Directory to dump to")
 	err := cmd.RegisterFlagCompletionFunc(
 		consts.DirectoryFlag,
-		func(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
+		func(_ *cobra.Command, _ []string, _ string) ([]string, cobra.ShellCompDirective) {
 			return nil, cobra.ShellCompDirectiveFilterDirs
 		})
 	if err != nil {

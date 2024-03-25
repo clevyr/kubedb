@@ -141,7 +141,7 @@ func (db MongoDB) DumpCommand(conf config.Dump) *command.Builder {
 	return cmd
 }
 
-func (db MongoDB) RestoreCommand(conf config.Restore, inputFormat sqlformat.Format) *command.Builder {
+func (db MongoDB) RestoreCommand(conf config.Restore, _ sqlformat.Format) *command.Builder {
 	cmd := command.NewBuilder(
 		"mongorestore",
 		"--archive",

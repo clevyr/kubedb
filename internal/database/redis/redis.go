@@ -101,7 +101,7 @@ func (db Redis) FilterPods(ctx context.Context, client kubernetes.KubeClient, po
 	return preferred, nil
 }
 
-func (db Redis) PasswordEnvNames(c config.Global) kubernetes.ConfigLookups {
+func (db Redis) PasswordEnvNames(_ config.Global) kubernetes.ConfigLookups {
 	return kubernetes.ConfigLookups{
 		kubernetes.LookupEnv{"REDIS_PASSWORD"},
 	}
