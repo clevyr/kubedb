@@ -24,7 +24,7 @@ func TestLabelQueryOr_Matches(t *testing.T) {
 				Label{Name: "key", Value: "wrong"},
 				Label{Name: "key2", Value: "value2"},
 			},
-			args{pod},
+			args{stubPod()},
 			true,
 		},
 		{
@@ -33,7 +33,7 @@ func TestLabelQueryOr_Matches(t *testing.T) {
 				Label{Name: "key", Value: "wrong"},
 				Label{Name: "key2", Value: "also wrong"},
 			},
-			args{pod},
+			args{stubPod()},
 			false,
 		},
 	}

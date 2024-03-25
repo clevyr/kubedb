@@ -24,7 +24,7 @@ func TestAnd_Matches(t *testing.T) {
 				Label{Name: "key", Value: "value"},
 				Label{Name: "key2", Value: "value2"},
 			},
-			args{pod},
+			args{stubPod()},
 			true,
 		},
 		{
@@ -33,7 +33,7 @@ func TestAnd_Matches(t *testing.T) {
 				Label{Name: "key", Value: "value"},
 				Label{Name: "key2", Value: "wrong"},
 			},
-			args{pod},
+			args{stubPod()},
 			false,
 		},
 	}

@@ -13,6 +13,7 @@ import (
 	"github.com/spf13/viper"
 )
 
+//nolint:gochecknoglobals
 var action portforward.PortForward
 
 func New() *cobra.Command {

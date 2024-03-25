@@ -5,17 +5,7 @@ import (
 
 	"github.com/stretchr/testify/assert"
 	v1 "k8s.io/api/core/v1"
-	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
-
-var pod = v1.Pod{
-	ObjectMeta: metav1.ObjectMeta{
-		Labels: map[string]string{
-			"key":  "value",
-			"key2": "value2",
-		},
-	},
-}
 
 func TestLabel_Matches(t *testing.T) {
 	t.Parallel()
@@ -32,8 +22,8 @@ func TestLabel_Matches(t *testing.T) {
 		args   args
 		want   bool
 	}{
-		{"1 found", fields{"key", "value"}, args{pod}, true},
-		{"0 found", fields{"key", "wrong"}, args{pod}, false},
+		{"1 found", fields{"key", "value"}, args{stubPod()}, true},
+		{"0 found", fields{"key", "wrong"}, args{stubPod()}, false},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {

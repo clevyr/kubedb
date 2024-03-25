@@ -27,7 +27,7 @@ linters:
     - gci
     - ginkgolinter
     - gocheckcompilerdirectives
-    # - gochecknoglobals
+    - gochecknoglobals
     - gochecknoinits
     - gochecksumtype
     - goconst

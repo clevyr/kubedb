@@ -1,5 +1,6 @@
 package cmd
 
+//nolint:gochecknoglobals
 var finalizers []func(err error)
 
 func OnFinalize(y ...func(err error)) {

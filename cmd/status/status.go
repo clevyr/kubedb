@@ -19,6 +19,9 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
+//nolint:gochecknoglobals
+var conf config.Global
+
 func New() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:     "status",
@@ -35,8 +38,6 @@ func New() *cobra.Command {
 
 	return cmd
 }
-
-var conf config.Global
 
 func preRun(cmd *cobra.Command, _ []string) error {
 	cmd.SilenceUsage = true

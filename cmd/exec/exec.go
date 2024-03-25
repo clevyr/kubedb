@@ -8,6 +8,7 @@ import (
 	"github.com/spf13/cobra"
 )
 
+//nolint:gochecknoglobals
 var action exec.Exec
 
 func New() *cobra.Command {

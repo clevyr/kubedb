@@ -20,6 +20,7 @@ import (
 	"github.com/spf13/viper"
 )
 
+//nolint:gochecknoglobals
 var action dump.Dump
 
 func New() *cobra.Command {

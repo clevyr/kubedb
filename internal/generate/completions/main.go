@@ -9,8 +9,6 @@ import (
 	"github.com/clevyr/kubedb/cmd"
 )
 
-var Shells = []string{"bash", "zsh", "fish"}
-
 func main() {
 	rootCmd := cmd.NewCommand()
 	var buf bytes.Buffer
@@ -20,7 +18,7 @@ func main() {
 		panic(err)
 	}
 
-	for _, shell := range Shells {
+	for _, shell := range []string{"bash", "zsh", "fish"} {
 		rootCmd.SetArgs([]string{"completion", shell})
 		if err := rootCmd.Execute(); err != nil {
 			panic(err)

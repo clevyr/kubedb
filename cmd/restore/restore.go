@@ -17,6 +17,7 @@ import (
 	"k8s.io/kubectl/pkg/util/term"
 )
 
+//nolint:gochecknoglobals
 var action restore.Restore
 
 func New() *cobra.Command {
