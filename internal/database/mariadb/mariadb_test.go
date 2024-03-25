@@ -73,7 +73,7 @@ func TestMariaDB_DumpCommand(t *testing.T) {
 			t.Parallel()
 			ma := MariaDB{}
 			got := ma.DumpCommand(tt.args.conf)
-			assert.Equal(t, got, tt.want)
+			assert.Equal(t, tt.want, got)
 		})
 	}
 }
@@ -114,7 +114,7 @@ func TestMariaDB_ExecCommand(t *testing.T) {
 			t.Parallel()
 			ma := MariaDB{}
 			got := ma.ExecCommand(tt.args.conf)
-			assert.Equal(t, got, tt.want)
+			assert.Equal(t, tt.want, got)
 		})
 	}
 }
@@ -197,7 +197,7 @@ func TestMariaDB_RestoreCommand(t *testing.T) {
 			t.Parallel()
 			ma := MariaDB{}
 			got := ma.RestoreCommand(tt.args.conf, tt.args.inputFormat)
-			assert.Equal(t, got, tt.want)
+			assert.Equal(t, tt.want, got)
 		})
 	}
 }

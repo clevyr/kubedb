@@ -8,6 +8,7 @@ import (
 	"github.com/clevyr/kubedb/internal/database/postgres"
 	"github.com/clevyr/kubedb/internal/kubernetes"
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 	v1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	kubernetesfake "k8s.io/client-go/kubernetes/fake"
@@ -41,7 +42,7 @@ func TestDetectDialect(t *testing.T) {
 		args    args
 		want    config.Database
 		want1   []v1.Pod
-		wantErr bool
+		wantErr require.ErrorAssertionFunc
 	}{
 		{
 			"postgres",
@@ -52,7 +53,7 @@ func TestDetectDialect(t *testing.T) {
 			},
 			postgres.Postgres{},
 			[]v1.Pod{postgresPod},
-			false,
+			require.NoError,
 		},
 		{
 			"mariadb",
@@ -63,7 +64,7 @@ func TestDetectDialect(t *testing.T) {
 			},
 			postgres.Postgres{},
 			[]v1.Pod{mariadbPod},
-			false,
+			require.NoError,
 		},
 		{
 			"no database",
@@ -74,7 +75,7 @@ func TestDetectDialect(t *testing.T) {
 			},
 			nil,
 			[]v1.Pod{},
-			true,
+			require.Error,
 		},
 		{
 			"no pods in namespace",
@@ -85,18 +86,14 @@ func TestDetectDialect(t *testing.T) {
 			},
 			nil,
 			[]v1.Pod{},
-			true,
+			require.Error,
 		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			t.Parallel()
 			got, got1, err := DetectDialect(context.Background(), tt.args.client)
-			if tt.wantErr {
-				assert.Error(t, err)
-			} else {
-				assert.NoError(t, err)
-			}
+			tt.wantErr(t, err)
 			assert.Equal(t, tt.want, got)
 			assert.Equal(t, tt.want1, got1)
 		})

@@ -12,6 +12,7 @@ import (
 	"github.com/clevyr/kubedb/internal/database/sqlformat"
 	gzip "github.com/klauspost/pgzip"
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 func TestRestore_buildCommand(t *testing.T) {
@@ -30,35 +31,35 @@ func TestRestore_buildCommand(t *testing.T) {
 		fields  fields
 		args    args
 		want    *command.Builder
-		wantErr assert.ErrorAssertionFunc
+		wantErr require.ErrorAssertionFunc
 	}{
 		{
 			"postgres-gzip",
 			fields{Restore: config.Restore{Global: config.Global{Dialect: postgres.Postgres{}, Host: "1.1.1.1", Database: "d", Username: "u", RemoteGzip: true}}},
 			args{sqlformat.Gzip},
 			command.NewBuilder("gunzip", "--force", command.Pipe, pgpassword, "psql", "--host=1.1.1.1", "--username=u", "--dbname=d"),
-			assert.NoError,
+			require.NoError,
 		},
 		{
 			"postgres-plain",
 			fields{Restore: config.Restore{Global: config.Global{Dialect: postgres.Postgres{}, Host: "1.1.1.1", Database: "d", Username: "u", RemoteGzip: true}}},
 			args{sqlformat.Gzip},
 			command.NewBuilder("gunzip", "--force", command.Pipe, pgpassword, "psql", "--host=1.1.1.1", "--username=u", "--dbname=d"),
-			assert.NoError,
+			require.NoError,
 		},
 		{
 			"postgres-custom",
 			fields{Restore: config.Restore{Global: config.Global{Dialect: postgres.Postgres{}, Host: "1.1.1.1", Database: "d", Username: "u", RemoteGzip: true}}},
 			args{sqlformat.Gzip},
 			command.NewBuilder("gunzip", "--force", command.Pipe, pgpassword, "psql", "--host=1.1.1.1", "--username=u", "--dbname=d"),
-			assert.NoError,
+			require.NoError,
 		},
 		{
 			"postgres-remote-gzip-disabled",
 			fields{Restore: config.Restore{Global: config.Global{Dialect: postgres.Postgres{}, Host: "1.1.1.1", Database: "d", Username: "u"}}},
 			args{sqlformat.Gzip},
 			command.NewBuilder(command.Env{Key: "PGPASSWORD", Value: ""}, "psql", "--host=1.1.1.1", "--username=u", "--dbname=d"),
-			assert.NoError,
+			require.NoError,
 		},
 	}
 	for _, tt := range tests {
@@ -69,9 +70,7 @@ func TestRestore_buildCommand(t *testing.T) {
 				Analyze: tt.fields.Analyze,
 			}
 			cmd, err := action.buildCommand(tt.args.inputFormat)
-			if !tt.wantErr(t, err) {
-				return
-			}
+			tt.wantErr(t, err)
 			assert.Equal(t, tt.want, cmd)
 		})
 	}
@@ -106,9 +105,9 @@ func Test_gzipCopy(t *testing.T) {
 			w := &bytes.Buffer{}
 			err := gzipCopy(w, tt.args.r)
 			if tt.wantErr {
-				assert.Error(t, err)
+				require.Error(t, err)
 			} else {
-				assert.NoError(t, err)
+				require.NoError(t, err)
 			}
 			assert.Equal(t, tt.wantW, w.String())
 		})

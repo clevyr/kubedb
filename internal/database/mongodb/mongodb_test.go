@@ -56,7 +56,7 @@ func TestMongoDB_DumpCommand(t *testing.T) {
 			t.Parallel()
 			ma := MongoDB{}
 			got := ma.DumpCommand(tt.args.conf)
-			assert.Equal(t, got, tt.want)
+			assert.Equal(t, tt.want, got)
 		})
 	}
 }
@@ -97,7 +97,7 @@ func TestMongoDB_ExecCommand(t *testing.T) {
 			t.Parallel()
 			ma := MongoDB{}
 			got := ma.ExecCommand(tt.args.conf)
-			assert.Equal(t, got, tt.want)
+			assert.Equal(t, tt.want, got)
 		})
 	}
 }
@@ -172,7 +172,7 @@ func TestMongoDB_RestoreCommand(t *testing.T) {
 			t.Parallel()
 			ma := MongoDB{}
 			got := ma.RestoreCommand(tt.args.conf, tt.args.inputFormat)
-			assert.Equal(t, got, tt.want)
+			assert.Equal(t, tt.want, got)
 		})
 	}
 }

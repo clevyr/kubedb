@@ -9,6 +9,7 @@ import (
 	"github.com/clevyr/kubedb/internal/database/sqlformat"
 	"github.com/clevyr/kubedb/internal/kubernetes"
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 	v1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
@@ -74,7 +75,7 @@ func TestPostgres_DumpCommand(t *testing.T) {
 			t.Parallel()
 			po := Postgres{}
 			got := po.DumpCommand(tt.args.conf)
-			assert.Equal(t, got, tt.want)
+			assert.Equal(t, tt.want, got)
 		})
 	}
 }
@@ -115,7 +116,7 @@ func TestPostgres_ExecCommand(t *testing.T) {
 			t.Parallel()
 			po := Postgres{}
 			got := po.ExecCommand(tt.args.conf)
-			assert.Equal(t, got, tt.want)
+			assert.Equal(t, tt.want, got)
 		})
 	}
 }
@@ -139,7 +140,7 @@ func TestPostgres_FilterPods(t *testing.T) {
 		name    string
 		args    args
 		want    []v1.Pod
-		wantErr bool
+		wantErr require.ErrorAssertionFunc
 	}{
 		{
 			"postgresql",
@@ -148,7 +149,7 @@ func TestPostgres_FilterPods(t *testing.T) {
 				[]v1.Pod{postgresPod},
 			},
 			[]v1.Pod{postgresPod},
-			false,
+			require.NoError,
 		},
 	}
 	for _, tt := range tests {
@@ -156,13 +157,9 @@ func TestPostgres_FilterPods(t *testing.T) {
 			t.Parallel()
 			po := Postgres{}
 			got, err := po.FilterPods(context.TODO(), tt.args.client, tt.args.pods)
-			if tt.wantErr {
-				assert.Error(t, err)
-			} else {
-				assert.NoError(t, err)
-			}
+			tt.wantErr(t, err)
 
-			assert.Equal(t, got, tt.want)
+			assert.Equal(t, tt.want, got)
 		})
 	}
 }
@@ -264,7 +261,7 @@ func TestPostgres_RestoreCommand(t *testing.T) {
 			t.Parallel()
 			po := Postgres{}
 			got := po.RestoreCommand(tt.args.conf, tt.args.inputFormat)
-			assert.Equal(t, got, tt.want)
+			assert.Equal(t, tt.want, got)
 		})
 	}
 }

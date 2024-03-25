@@ -5,13 +5,12 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 func TestSetOutput(t *testing.T) {
 	f, err := os.CreateTemp("", "")
-	if !assert.NoError(t, err) {
-		return
-	}
+	require.NoError(t, err)
 	defer func() {
 		_ = os.Remove(f.Name())
 	}()
@@ -19,14 +18,10 @@ func TestSetOutput(t *testing.T) {
 
 	t.Setenv("GITHUB_OUTPUT", f.Name())
 
-	if err := SetOutput("test", "passed"); !assert.NoError(t, err) {
-		return
-	}
+	require.NoError(t, SetOutput("test", "passed"))
 
 	got, err := os.ReadFile(f.Name())
-	if !assert.NoError(t, err) {
-		return
-	}
+	require.NoError(t, err)
 
 	assert.Equal(t, "test=passed\n", string(got))
 }

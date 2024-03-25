@@ -4,6 +4,7 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 func TestFormat_Set(t *testing.T) {
@@ -15,27 +16,23 @@ func TestFormat_Set(t *testing.T) {
 		name    string
 		i       Format
 		args    args
-		wantErr bool
+		wantErr require.ErrorAssertionFunc
 	}{
-		{"gzip", Format(0), args{"gzip"}, false},
-		{"gz", Format(0), args{"gz"}, false},
-		{"g", Format(0), args{"g"}, false},
-		{"plain", Format(0), args{"plain"}, false},
-		{"sql", Format(0), args{"sql"}, false},
-		{"p", Format(0), args{"p"}, false},
-		{"custom", Format(0), args{"custom"}, false},
-		{"c", Format(0), args{"c"}, false},
-		{"png", Format(0), args{"png"}, true},
+		{"gzip", Format(0), args{"gzip"}, require.NoError},
+		{"gz", Format(0), args{"gz"}, require.NoError},
+		{"g", Format(0), args{"g"}, require.NoError},
+		{"plain", Format(0), args{"plain"}, require.NoError},
+		{"sql", Format(0), args{"sql"}, require.NoError},
+		{"p", Format(0), args{"p"}, require.NoError},
+		{"custom", Format(0), args{"custom"}, require.NoError},
+		{"c", Format(0), args{"c"}, require.NoError},
+		{"png", Format(0), args{"png"}, require.Error},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			t.Parallel()
 			err := tt.i.Set(tt.args.s)
-			if tt.wantErr {
-				assert.Error(t, err)
-			} else {
-				assert.NoError(t, err)
-			}
+			tt.wantErr(t, err)
 		})
 	}
 }

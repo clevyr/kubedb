@@ -9,6 +9,7 @@ import (
 	"github.com/clevyr/kubedb/internal/database/postgres"
 	"github.com/clevyr/kubedb/internal/database/sqlformat"
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 func TestNew(t *testing.T) {
@@ -20,28 +21,24 @@ func TestNew(t *testing.T) {
 		name    string
 		args    args
 		want    config.Database
-		wantErr bool
+		wantErr require.ErrorAssertionFunc
 	}{
-		{"postgresql", args{"postgresql"}, postgres.Postgres{}, false},
-		{"postgres", args{"postgres"}, postgres.Postgres{}, false},
-		{"psql", args{"psql"}, postgres.Postgres{}, false},
-		{"pg", args{"pg"}, postgres.Postgres{}, false},
-		{"mariadb", args{"mariadb"}, mariadb.MariaDB{}, false},
-		{"maria", args{"maria"}, mariadb.MariaDB{}, false},
-		{"mysql", args{"mysql"}, mariadb.MariaDB{}, false},
-		{"mongodb", args{"mongodb"}, mongodb.MongoDB{}, false},
-		{"mongo", args{"mongo"}, mongodb.MongoDB{}, false},
-		{"invalid", args{"invalid"}, nil, true},
+		{"postgresql", args{"postgresql"}, postgres.Postgres{}, require.NoError},
+		{"postgres", args{"postgres"}, postgres.Postgres{}, require.NoError},
+		{"psql", args{"psql"}, postgres.Postgres{}, require.NoError},
+		{"pg", args{"pg"}, postgres.Postgres{}, require.NoError},
+		{"mariadb", args{"mariadb"}, mariadb.MariaDB{}, require.NoError},
+		{"maria", args{"maria"}, mariadb.MariaDB{}, require.NoError},
+		{"mysql", args{"mysql"}, mariadb.MariaDB{}, require.NoError},
+		{"mongodb", args{"mongodb"}, mongodb.MongoDB{}, require.NoError},
+		{"mongo", args{"mongo"}, mongodb.MongoDB{}, require.NoError},
+		{"invalid", args{"invalid"}, nil, require.Error},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			t.Parallel()
 			got, err := New(tt.args.name)
-			if tt.wantErr {
-				assert.Error(t, err)
-			} else {
-				assert.NoError(t, err)
-			}
+			tt.wantErr(t, err)
 			assert.Equal(t, tt.want, got)
 		})
 	}
