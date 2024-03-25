@@ -249,7 +249,7 @@ func (db Postgres) DumpCommand(conf config.Dump) *command.Builder {
 		cmd.Push("--exclude-table-data=" + db.quoteParam(table))
 	}
 	if conf.Format == sqlformat.Custom {
-		cmd.Push("--format=c")
+		cmd.Push("--format=custom")
 	}
 	if !conf.Quiet {
 		cmd.Push("--verbose")

@@ -47,7 +47,7 @@ func Test_buildCommand(t *testing.T) {
 		{
 			"postgres-custom",
 			args{Dump{Dump: config.Dump{Files: config.Files{Format: sqlformat.Custom}, Global: config.Global{Dialect: postgres.Postgres{}, Host: "1.1.1.1", Database: "d", Username: "u", RemoteGzip: true}}}},
-			command.NewBuilder(pgpassword, "pg_dump", "--host=1.1.1.1", "--username=u", "--dbname=d", "--format=c", "--verbose"),
+			command.NewBuilder(pgpassword, "pg_dump", "--host=1.1.1.1", "--username=u", "--dbname=d", "--format=custom", "--verbose"),
 			require.NoError,
 		},
 		{
