@@ -76,39 +76,42 @@ func TestRestore_buildCommand(t *testing.T) {
 	}
 }
 
-func Test_gzipCopy(t *testing.T) {
+func TestRestore_copy(t *testing.T) {
 	t.Parallel()
 	input := "hello world"
-	var output strings.Builder
-	gzw := gzip.NewWriter(&output)
-	if _, err := gzw.Write([]byte(input)); err != nil {
-		panic(err)
-	}
-	if err := gzw.Close(); err != nil {
-		panic(err)
-	}
+	var gzipped strings.Builder
+	gzw := gzip.NewWriter(&gzipped)
+	_, err := gzw.Write([]byte(input))
+	require.NoError(t, err)
+	require.NoError(t, gzw.Close())
 
+	type fields struct {
+		Restore config.Restore
+		Analyze bool
+	}
 	type args struct {
 		r io.Reader
 	}
 	tests := []struct {
 		name    string
+		fields  fields
 		args    args
 		wantW   string
-		wantErr bool
+		wantErr require.ErrorAssertionFunc
 	}{
-		{"", args{strings.NewReader(input)}, output.String(), false},
+		{"gzip", fields{Restore: config.Restore{Global: config.Global{RemoteGzip: true}}}, args{strings.NewReader(input)}, gzipped.String(), require.NoError},
+		{"raw", fields{}, args{strings.NewReader(input)}, "hello world", require.NoError},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			t.Parallel()
-			w := &bytes.Buffer{}
-			err := gzipCopy(w, tt.args.r)
-			if tt.wantErr {
-				require.Error(t, err)
-			} else {
-				require.NoError(t, err)
+			action := Restore{
+				Restore: tt.fields.Restore,
+				Analyze: tt.fields.Analyze,
 			}
+			w := &bytes.Buffer{}
+			err := action.copy(w, tt.args.r)
+			tt.wantErr(t, err)
 			assert.Equal(t, tt.wantW, w.String())
 		})
 	}

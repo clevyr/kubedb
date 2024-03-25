@@ -76,14 +76,8 @@ func (action Restore) Run(ctx context.Context) error {
 			if db, ok := action.Dialect.(config.DatabaseDBDrop); ok {
 				dropQuery := db.DropDatabaseQuery(action.Database)
 				log.Info("cleaning existing data")
-				if action.RemoteGzip {
-					if err := gzipCopy(w, strings.NewReader(dropQuery)); err != nil {
-						return err
-					}
-				} else {
-					if _, err := io.Copy(w, strings.NewReader(dropQuery)); err != nil {
-						return err
-					}
+				if err := action.copy(w, strings.NewReader(dropQuery)); err != nil {
+					return err
 				}
 			}
 		}
@@ -106,14 +100,8 @@ func (action Restore) Run(ctx context.Context) error {
 				return err
 			}
 		case sqlformat.Plain, sqlformat.Custom:
-			if action.RemoteGzip {
-				if err := gzipCopy(w, f); err != nil {
-					return err
-				}
-			} else {
-				if _, err := io.Copy(w, f); err != nil {
-					return err
-				}
+			if err := action.copy(w, f); err != nil {
+				return err
 			}
 		}
 
@@ -139,14 +127,8 @@ func (action Restore) Run(ctx context.Context) error {
 					})
 				}
 
-				if action.RemoteGzip {
-					if err := gzipCopy(w, strings.NewReader(analyzeQuery)); err != nil {
-						return err
-					}
-				} else {
-					if _, err := io.Copy(w, strings.NewReader(analyzeQuery)); err != nil {
-						return err
-					}
+				if err := action.copy(w, strings.NewReader(analyzeQuery)); err != nil {
+					return err
 				}
 			}
 		}
@@ -190,12 +172,17 @@ func (action Restore) buildCommand(inputFormat sqlformat.Format) (*command.Build
 	return cmd, nil
 }
 
-func gzipCopy(w io.Writer, r io.Reader) error {
-	gzw := gzip.NewWriter(w)
-	if _, err := io.Copy(gzw, r); err != nil {
-		return err
+func (action Restore) copy(w io.Writer, r io.Reader) error {
+	if action.RemoteGzip {
+		gzw := gzip.NewWriter(w)
+		if _, err := io.Copy(gzw, r); err != nil {
+			return err
+		}
+		return gzw.Close()
 	}
-	return gzw.Close()
+
+	_, err := io.Copy(w, r)
+	return err
 }
 
 func (action Restore) runInDatabasePod(ctx context.Context, r *io.PipeReader, stdout, stderr io.Writer, inputFormat sqlformat.Format) error {
