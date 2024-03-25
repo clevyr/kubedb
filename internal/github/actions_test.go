@@ -8,7 +8,6 @@ import (
 )
 
 func TestSetOutput(t *testing.T) {
-	t.Parallel()
 	f, err := os.CreateTemp("", "")
 	if !assert.NoError(t, err) {
 		return
@@ -18,12 +17,7 @@ func TestSetOutput(t *testing.T) {
 	}()
 	_ = f.Close()
 
-	defer func() {
-		_ = os.Unsetenv("GITHUB_OUTPUT")
-	}()
-	if err := os.Setenv("GITHUB_OUTPUT", f.Name()); !assert.NoError(t, err) {
-		return
-	}
+	t.Setenv("GITHUB_OUTPUT", f.Name())
 
 	if err := SetOutput("test", "passed"); !assert.NoError(t, err) {
 		return
