@@ -62,9 +62,13 @@ func (a PortForward) Run(ctx context.Context) error {
 			{"Type", a.Dialect.Name()},
 			{"Hostname", "localhost"},
 			{"Port", a.LocalPort},
-			{"Username", a.Username},
-			{"Password", a.Password},
 		})
+		if a.Username != "" {
+			t.AppendRow(table.Row{"Username", a.Username})
+		}
+		if a.Password != "" {
+			t.AppendRow(table.Row{"Password", a.Password})
+		}
 		if a.Database != "" {
 			t.AppendRow(table.Row{"Database", a.Database})
 		}
