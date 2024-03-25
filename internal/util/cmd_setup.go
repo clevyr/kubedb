@@ -369,7 +369,8 @@ func createJob(ctx context.Context, conf *config.Global, actionName string) erro
 				PodSelector: metav1.LabelSelector{MatchLabels: map[string]string{
 					jobPodKey: jobPodVal,
 				}},
-				PolicyTypes: []networkingv1.PolicyType{networkingv1.PolicyTypeEgress},
+				PolicyTypes: []networkingv1.PolicyType{networkingv1.PolicyTypeIngress, networkingv1.PolicyTypeEgress},
+				Ingress:     []networkingv1.NetworkPolicyIngressRule{{}},
 				Egress: []networkingv1.NetworkPolicyEgressRule{
 					{
 						To: []networkingv1.NetworkPolicyPeer{{
