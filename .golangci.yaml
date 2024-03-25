@@ -57,7 +57,7 @@ linters:
     - nakedret
     - nilerr
     - nilnil
-    # - noctx
+    - noctx
     - nolintlint
     - nonamedreturns
     - nosprintfhostport

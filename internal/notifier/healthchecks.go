@@ -1,12 +1,14 @@
 package notifier
 
 import (
+	"context"
 	"fmt"
 	"io"
 	"net/http"
 	"net/url"
 	"path"
 	"strings"
+	"time"
 )
 
 func NewHealthchecks(url string) (Notifier, error) {
@@ -39,7 +41,10 @@ func (h Healthchecks) SendStatus(status Status, log string) error {
 
 	u.Path = path.Join(u.Path, statusStr)
 
-	req, err := http.NewRequest(http.MethodPost, u.String(), strings.NewReader(log))
+	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
+	defer cancel()
+
+	req, err := http.NewRequestWithContext(ctx, http.MethodPost, u.String(), strings.NewReader(log))
 	if err != nil {
 		return err
 	}
