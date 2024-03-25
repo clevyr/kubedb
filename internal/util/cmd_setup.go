@@ -247,7 +247,7 @@ func CreateJob(ctx context.Context, conf *config.Global, opts SetupOptions) erro
 		if err := createJob(ctx, conf, opts.Name); err != nil {
 			return err
 		}
-		cobra.OnFinalize(func() {
+		OnFinalize(func(_ error) {
 			Teardown(conf)
 		})
 

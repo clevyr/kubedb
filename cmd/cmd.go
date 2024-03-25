@@ -100,7 +100,7 @@ func preRun(cmd *cobra.Command, _ []string) error {
 				log.WithError(err).Error("Notifications ping start failed")
 			}
 
-			OnFinalize(func(err error) {
+			util.OnFinalize(func(err error) {
 				if err := handler.Finished(err); err != nil {
 					log.WithError(err).Error("Notifications ping finished failed")
 				}

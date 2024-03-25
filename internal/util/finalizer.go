@@ -1,4 +1,4 @@
-package cmd
+package util
 
 //nolint:gochecknoglobals
 var finalizers []func(err error)
