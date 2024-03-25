@@ -233,17 +233,27 @@ func TestPostgres_RestoreCommand(t *testing.T) {
 		{
 			"custom",
 			args{config.Restore{Global: config.Global{Host: "1.1.1.1", Database: "d", Username: "u"}}, sqlformat.Custom},
-			command.NewBuilder(pgpassword, "pg_restore", "--format=custom", "--clean", "--exit-on-error", "--verbose", "--host=1.1.1.1", "--username=u", "--dbname=d"),
+			command.NewBuilder(pgpassword, "pg_restore", "--format=custom", "--verbose", "--host=1.1.1.1", "--username=u", "--dbname=d"),
 		},
 		{
 			"custom-no-owner",
 			args{config.Restore{NoOwner: true, Global: config.Global{Host: "1.1.1.1", Database: "d", Username: "u"}}, sqlformat.Custom},
-			command.NewBuilder(pgpassword, "pg_restore", "--format=custom", "--clean", "--exit-on-error", "--no-owner", "--verbose", "--host=1.1.1.1", "--username=u", "--dbname=d"),
+			command.NewBuilder(pgpassword, "pg_restore", "--format=custom", "--no-owner", "--verbose", "--host=1.1.1.1", "--username=u", "--dbname=d"),
 		},
 		{
 			"single-transaction",
 			args{config.Restore{SingleTransaction: true, Global: config.Global{Host: "1.1.1.1", Database: "d", Username: "u"}}, sqlformat.Custom},
-			command.NewBuilder(pgpassword, "pg_restore", "--format=custom", "--clean", "--exit-on-error", "--verbose", "--host=1.1.1.1", "--username=u", "--dbname=d", "--single-transaction"),
+			command.NewBuilder(pgpassword, "pg_restore", "--format=custom", "--verbose", "--host=1.1.1.1", "--username=u", "--dbname=d", "--single-transaction"),
+		},
+		{
+			"custom clean",
+			args{config.Restore{Clean: true, Global: config.Global{Host: "1.1.1.1", Database: "d", Username: "u"}}, sqlformat.Custom},
+			command.NewBuilder(pgpassword, "pg_restore", "--format=custom", "--clean", "--verbose", "--host=1.1.1.1", "--username=u", "--dbname=d"),
+		},
+		{
+			"custom halt",
+			args{config.Restore{HaltOnError: true, Global: config.Global{Host: "1.1.1.1", Database: "d", Username: "u"}}, sqlformat.Custom},
+			command.NewBuilder(pgpassword, "pg_restore", "--format=custom", "--exit-on-error", "--verbose", "--host=1.1.1.1", "--username=u", "--dbname=d"),
 		},
 		{
 			"sql-quiet",

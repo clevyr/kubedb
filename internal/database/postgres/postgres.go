@@ -274,7 +274,13 @@ func (Postgres) RestoreCommand(conf config.Restore, inputFormat sqlformat.Format
 			cmd.Push("--set=ON_ERROR_STOP=1")
 		}
 	case sqlformat.Custom:
-		cmd.Push("pg_restore", "--format=custom", "--clean", "--exit-on-error")
+		cmd.Push("pg_restore", "--format=custom")
+		if conf.Clean {
+			cmd.Push("--clean")
+		}
+		if conf.HaltOnError {
+			cmd.Push("--exit-on-error")
+		}
 		if conf.NoOwner {
 			cmd.Push("--no-owner")
 		}
