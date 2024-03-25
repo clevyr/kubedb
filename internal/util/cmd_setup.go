@@ -373,7 +373,9 @@ func createJob(ctx context.Context, conf *config.Global, actionName string) erro
 				Egress: []networkingv1.NetworkPolicyEgressRule{
 					{
 						To: []networkingv1.NetworkPolicyPeer{{
-							PodSelector: ptr.To(metav1.LabelSelector{MatchLabels: conf.DBPod.Labels}),
+							NamespaceSelector: ptr.To(metav1.LabelSelector{MatchLabels: map[string]string{
+								"kubernetes.io/metadata.name": conf.Client.Namespace,
+							}}),
 						}},
 						Ports: []networkingv1.NetworkPolicyPort{{
 							Port: ptr.To(intstr.FromInt32(int32(conf.Port))),
