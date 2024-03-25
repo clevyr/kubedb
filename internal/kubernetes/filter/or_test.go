@@ -8,6 +8,7 @@ import (
 )
 
 func TestLabelQueryOr_Matches(t *testing.T) {
+	t.Parallel()
 	type args struct {
 		pod v1.Pod
 	}
@@ -38,6 +39,7 @@ func TestLabelQueryOr_Matches(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
 			got := tt.queries.Matches(tt.args.pod)
 			assert.Equal(t, tt.want, got)
 		})

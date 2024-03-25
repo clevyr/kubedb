@@ -11,6 +11,7 @@ import (
 )
 
 func TestMongoDB_DumpCommand(t *testing.T) {
+	t.Parallel()
 	type args struct {
 		conf config.Dump
 	}
@@ -52,6 +53,7 @@ func TestMongoDB_DumpCommand(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
 			ma := MongoDB{}
 			got := ma.DumpCommand(tt.args.conf)
 			assert.Equal(t, got, tt.want)
@@ -60,6 +62,7 @@ func TestMongoDB_DumpCommand(t *testing.T) {
 }
 
 func TestMongoDB_ExecCommand(t *testing.T) {
+	t.Parallel()
 	type args struct {
 		conf config.Exec
 	}
@@ -91,6 +94,7 @@ func TestMongoDB_ExecCommand(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
 			ma := MongoDB{}
 			got := ma.ExecCommand(tt.args.conf)
 			assert.Equal(t, got, tt.want)
@@ -99,6 +103,7 @@ func TestMongoDB_ExecCommand(t *testing.T) {
 }
 
 func TestMongoDB_PasswordEnvNames(t *testing.T) {
+	t.Parallel()
 	type args struct {
 		c config.Global
 	}
@@ -112,6 +117,7 @@ func TestMongoDB_PasswordEnvNames(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
 			db := MongoDB{}
 			got := db.PasswordEnvNames(tt.args.c)
 			assert.Equal(t, tt.want, got)
@@ -120,6 +126,7 @@ func TestMongoDB_PasswordEnvNames(t *testing.T) {
 }
 
 func TestMongoDB_RestoreCommand(t *testing.T) {
+	t.Parallel()
 	type args struct {
 		conf        config.Restore
 		inputFormat sqlformat.Format
@@ -162,6 +169,7 @@ func TestMongoDB_RestoreCommand(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
 			ma := MongoDB{}
 			got := ma.RestoreCommand(tt.args.conf, tt.args.inputFormat)
 			assert.Equal(t, got, tt.want)
@@ -170,6 +178,7 @@ func TestMongoDB_RestoreCommand(t *testing.T) {
 }
 
 func TestMongoDB_AuthenticationDatabase(t *testing.T) {
+	t.Parallel()
 	type args struct {
 		c config.Global
 	}
@@ -182,6 +191,7 @@ func TestMongoDB_AuthenticationDatabase(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
 			db := MongoDB{}
 			got := db.AuthenticationDatabase(tt.args.c)
 			assert.Equal(t, tt.want, got)

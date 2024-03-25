@@ -7,6 +7,7 @@ import (
 )
 
 func TestEnv_Quote(t *testing.T) {
+	t.Parallel()
 	type fields struct {
 		Key   string
 		Value string
@@ -21,6 +22,7 @@ func TestEnv_Quote(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
 			e := Env{
 				Key:   tt.fields.Key,
 				Value: tt.fields.Value,
@@ -32,6 +34,7 @@ func TestEnv_Quote(t *testing.T) {
 }
 
 func TestNewEnv(t *testing.T) {
+	t.Parallel()
 	type args struct {
 		k string
 		v string
@@ -45,6 +48,7 @@ func TestNewEnv(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
 			got := NewEnv(tt.args.k, tt.args.v)
 			assert.Equal(t, tt.want, got)
 		})

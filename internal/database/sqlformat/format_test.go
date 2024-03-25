@@ -7,6 +7,7 @@ import (
 )
 
 func TestFormat_Set(t *testing.T) {
+	t.Parallel()
 	type args struct {
 		s string
 	}
@@ -28,6 +29,7 @@ func TestFormat_Set(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
 			err := tt.i.Set(tt.args.s)
 			if tt.wantErr {
 				assert.Error(t, err)
@@ -39,6 +41,7 @@ func TestFormat_Set(t *testing.T) {
 }
 
 func TestFormat_Type(t *testing.T) {
+	t.Parallel()
 	tests := []struct {
 		name string
 		i    Format
@@ -48,6 +51,7 @@ func TestFormat_Type(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
 			got := tt.i.Type()
 			assert.Equal(t, tt.want, got)
 		})

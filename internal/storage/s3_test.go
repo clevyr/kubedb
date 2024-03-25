@@ -3,6 +3,7 @@ package storage
 import "testing"
 
 func TestIsS3(t *testing.T) {
+	t.Parallel()
 	type args struct {
 		path string
 	}
@@ -18,6 +19,7 @@ func TestIsS3(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
 			if got := IsS3(tt.args.path); got != tt.want {
 				t.Errorf("IsS3() = %v, want %v", got, tt.want)
 			}
@@ -26,6 +28,7 @@ func TestIsS3(t *testing.T) {
 }
 
 func TestIsS3Dir(t *testing.T) {
+	t.Parallel()
 	type args struct {
 		path string
 	}
@@ -42,6 +45,7 @@ func TestIsS3Dir(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
 			if got := IsS3Dir(tt.args.path); got != tt.want {
 				t.Errorf("IsS3Dir() = %v, want %v", got, tt.want)
 			}

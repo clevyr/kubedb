@@ -8,6 +8,7 @@ import (
 )
 
 func TestSetOutput(t *testing.T) {
+	t.Parallel()
 	f, err := os.CreateTemp("", "")
 	if !assert.NoError(t, err) {
 		return

@@ -8,6 +8,7 @@ import (
 )
 
 func TestFilename_Generate(t *testing.T) {
+	t.Parallel()
 	type fields struct {
 		Database  string
 		Namespace string
@@ -26,6 +27,7 @@ func TestFilename_Generate(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
 			vars := Filename{
 				Database:  tt.fields.Database,
 				Namespace: tt.fields.Namespace,

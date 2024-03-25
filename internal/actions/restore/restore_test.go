@@ -15,6 +15,7 @@ import (
 )
 
 func TestRestore_buildCommand(t *testing.T) {
+	t.Parallel()
 	pgpassword := command.NewEnv("PGPASSWORD", "")
 
 	type fields struct {
@@ -62,6 +63,7 @@ func TestRestore_buildCommand(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
 			action := Restore{
 				Restore: tt.fields.Restore,
 				Analyze: tt.fields.Analyze,
@@ -76,6 +78,7 @@ func TestRestore_buildCommand(t *testing.T) {
 }
 
 func Test_gzipCopy(t *testing.T) {
+	t.Parallel()
 	input := "hello world"
 	var output strings.Builder
 	gzw := gzip.NewWriter(&output)
@@ -99,6 +102,7 @@ func Test_gzipCopy(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
 			w := &bytes.Buffer{}
 			err := gzipCopy(w, tt.args.r)
 			if tt.wantErr {

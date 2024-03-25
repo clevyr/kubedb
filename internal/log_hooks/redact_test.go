@@ -8,6 +8,7 @@ import (
 )
 
 func TestRedact_Fire(t *testing.T) {
+	t.Parallel()
 	type args struct {
 		key, value string
 	}
@@ -24,6 +25,7 @@ func TestRedact_Fire(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
 			entry := log.WithField(tt.args.key, tt.args.value)
 
 			err := tt.r.Fire(entry)
