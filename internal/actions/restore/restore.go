@@ -110,25 +110,27 @@ func (action Restore) Run(ctx context.Context) error {
 			if db, ok := action.Dialect.(config.DatabaseAnalyze); ok {
 				analyzeQuery := db.AnalyzeQuery()
 				if action.Format == sqlformat.Custom {
-					if err := pw.Close(); err != nil {
+					defer func() {
+						pr, pw := io.Pipe()
+
+						errGroup.Go(func() error {
+							defer func(pr io.ReadCloser) {
+								_ = pr.Close()
+							}(pr)
+							return action.runInDatabasePod(ctx, pr, errLog, errLog, sqlformat.Gzip)
+						})
+
+						errGroup.Go(func() error {
+							defer func() {
+								_ = pw.Close()
+							}()
+							return action.copy(pw, strings.NewReader(analyzeQuery))
+						})
+					}()
+				} else {
+					if err := action.copy(w, strings.NewReader(analyzeQuery)); err != nil {
 						return err
 					}
-
-					pr, pw = io.Pipe()
-					defer func(pw io.WriteCloser) {
-						_ = pw.Close()
-					}(pw)
-					w = io.MultiWriter(pw, bar)
-					errGroup.Go(func() error {
-						defer func(pr io.ReadCloser) {
-							_ = pr.Close()
-						}(pr)
-						return action.runInDatabasePod(ctx, pr, errLog, errLog, sqlformat.Gzip)
-					})
-				}
-
-				if err := action.copy(w, strings.NewReader(analyzeQuery)); err != nil {
-					return err
 				}
 			}
 		}
@@ -165,7 +167,7 @@ func (action Restore) buildCommand(inputFormat sqlformat.Format) (*command.Build
 		cmd.Push(command.Split(opts))
 	}
 
-	if action.RemoteGzip && action.Format != sqlformat.Custom {
+	if action.RemoteGzip {
 		cmd.Unshift("gunzip", "--force", command.Pipe)
 	}
 	log.WithField("cmd", cmd).Trace("finished building command")
