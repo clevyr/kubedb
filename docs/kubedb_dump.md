@@ -9,12 +9,12 @@ Dump a database to a sql file.
 Databases: postgres, mariadb, mongodb, meilisearch
 
 Filenames:  
-  If a filename is provided, and it does not end with a "/", then it will be used verbatim.
-  Otherwise, the filename will be generated and appended to the given path.
+  If a path is provided and it is not a directory, the database will be dumped to the given file.
+  If the path is a directory, the database will be dumped to a file within the directory.
   For example, if a dump is performed in the namespace "clevyr" with no extra flags,
   the generated filename might look like "clevyr_2022-01-09_094100.sql.gz".
-  Similarly, if the filename is passed as "backups/", then the generated path might look like
-  "backups/clevyr_2022-01-09_094100.sql.gz".
+  Similarly, if the path is an existing directory like "backups",
+  then the generated path might look like "backups/clevyr_2022-01-09_094100.sql.gz".
 
 Cloud Upload:  
   KubeDB will directly upload the dump to a cloud storage bucket if the output path starts with a URL scheme:
