@@ -52,6 +52,7 @@ func (db Redis) PodFilters() filter.Filter {
 			filter.Label{Name: "app", Value: "redis"},
 			filter.Label{Name: "role", Value: "master"},
 		},
+		filter.Label{Name: "app.kubernetes.io/component", Value: "keydb"},
 	}
 }
 
@@ -103,7 +104,7 @@ func (db Redis) FilterPods(ctx context.Context, client kubernetes.KubeClient, po
 
 func (db Redis) PasswordEnvNames(_ config.Global) kubernetes.ConfigLookups {
 	return kubernetes.ConfigLookups{
-		kubernetes.LookupEnv{"REDIS_PASSWORD"},
+		kubernetes.LookupEnv{"REDIS_PASSWORD", "KEYDB_PASSWORD"},
 	}
 }
 
