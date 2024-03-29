@@ -14,7 +14,7 @@ import (
 	"github.com/clevyr/kubedb/internal/kubernetes"
 	"github.com/clevyr/kubedb/internal/util"
 	"github.com/fatih/color"
-	log "github.com/sirupsen/logrus"
+	"github.com/rs/zerolog"
 	"github.com/spf13/cobra"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
@@ -44,7 +44,7 @@ func New() *cobra.Command {
 
 func preRun(cmd *cobra.Command, _ []string) error {
 	cmd.SilenceUsage = true
-	log.SetLevel(log.WarnLevel)
+	zerolog.SetGlobalLevel(zerolog.WarnLevel)
 	flags.BindJobPodLabels(cmd)
 	return nil
 }

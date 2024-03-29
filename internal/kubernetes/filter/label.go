@@ -1,7 +1,7 @@
 package filter
 
 import (
-	log "github.com/sirupsen/logrus"
+	"github.com/rs/zerolog/log"
 	v1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/selection"
 )
@@ -20,7 +20,7 @@ func (label Label) Matches(pod v1.Pod) bool {
 	case "":
 		return ok && labelValue == label.Value
 	default:
-		log.Panicf("Filter operator not implemented: %q", label.Operator)
+		log.Panic().Str("op", string(label.Operator)).Msg("Filter operator not implemented")
 	}
 	return false
 }

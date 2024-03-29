@@ -3,7 +3,7 @@ package flags
 import (
 	"github.com/clevyr/kubedb/internal/consts"
 	"github.com/clevyr/kubedb/internal/util"
-	log "github.com/sirupsen/logrus"
+	"github.com/rs/zerolog"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 )
@@ -16,18 +16,18 @@ func Quiet(cmd *cobra.Command, p *bool) {
 }
 
 func LogLevel(cmd *cobra.Command) {
-	cmd.PersistentFlags().String(consts.LogLevelFlag, "info", "Log level. One of (trace|debug|info|warning|error|fatal|panic)")
+	cmd.PersistentFlags().String(consts.LogLevelFlag, "info", "Log level. One of (trace|debug|info|warn|error|fatal|panic)")
 	err := cmd.RegisterFlagCompletionFunc(
 		consts.LogLevelFlag,
 		func(_ *cobra.Command, _ []string, _ string) ([]string, cobra.ShellCompDirective) {
 			return []string{
-				log.TraceLevel.String(),
-				log.DebugLevel.String(),
-				log.InfoLevel.String(),
-				log.WarnLevel.String(),
-				log.ErrorLevel.String(),
-				log.FatalLevel.String(),
-				log.PanicLevel.String(),
+				zerolog.TraceLevel.String(),
+				zerolog.DebugLevel.String(),
+				zerolog.InfoLevel.String(),
+				zerolog.WarnLevel.String(),
+				zerolog.ErrorLevel.String(),
+				zerolog.FatalLevel.String(),
+				zerolog.PanicLevel.String(),
 			}, cobra.ShellCompDirectiveNoFileComp
 		})
 	if err != nil {

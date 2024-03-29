@@ -17,7 +17,10 @@ import (
 	"github.com/clevyr/kubedb/internal/consts"
 	"github.com/clevyr/kubedb/internal/notifier"
 	"github.com/clevyr/kubedb/internal/util"
-	log "github.com/sirupsen/logrus"
+	"github.com/fatih/color"
+	"github.com/mattn/go-isatty"
+	"github.com/rs/zerolog"
+	"github.com/rs/zerolog/log"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 )
@@ -30,6 +33,7 @@ func NewCommand() *cobra.Command {
 		DisableAutoGenTag: true,
 
 		PersistentPreRunE: preRun,
+		SilenceErrors:     true,
 	}
 
 	flags.Kubeconfig(cmd)
@@ -86,23 +90,23 @@ func preRun(cmd *cobra.Command, _ []string) error {
 		viper.Set(consts.KubeconfigKey, kubeconfig)
 	}
 
-	initLog()
+	initLog(cmd)
 	if err := initConfig(); err != nil {
 		return err
 	}
-	initLog()
+	initLog(cmd)
 
 	if url := viper.GetString(consts.HealthchecksPingURLKey); url != "" {
 		if handler, err := notifier.NewHealthchecks(url); err != nil {
-			log.WithError(err).Error("Notifications creation failed")
+			log.Err(err).Msg("Notifications creation failed")
 		} else {
 			if err := handler.Started(); err != nil {
-				log.WithError(err).Error("Notifications ping start failed")
+				log.Err(err).Msg("Notifications ping start failed")
 			}
 
 			util.OnFinalize(func(err error) {
 				if err := handler.Finished(err); err != nil {
-					log.WithError(err).Error("Notifications ping finished failed")
+					log.Err(err).Msg("Notifications ping finished failed")
 				}
 			})
 		}
@@ -111,25 +115,46 @@ func preRun(cmd *cobra.Command, _ []string) error {
 	return nil
 }
 
-func initLog() {
+func initLog(cmd *cobra.Command) {
 	logLevel := viper.GetString(consts.LogLevelKey)
-	parsedLevel, err := log.ParseLevel(logLevel)
+	parsedLevel, err := zerolog.ParseLevel(logLevel)
 	if err != nil {
-		log.WithField("log-level", logLevel).Warn("invalid log level. defaulting to info.")
-		viper.Set(consts.LogLevelKey, "info")
-		parsedLevel = log.InfoLevel
+		if logLevel == "warning" {
+			parsedLevel = zerolog.WarnLevel
+		} else {
+			log.Warn().Str("level", logLevel).Msg("invalid log level. defaulting to info.")
+			viper.Set(consts.LogLevelKey, zerolog.InfoLevel.String())
+			parsedLevel = zerolog.InfoLevel
+		}
 	}
-	log.SetLevel(parsedLevel)
+	zerolog.SetGlobalLevel(parsedLevel)
 
 	logFormat := viper.GetString(consts.LogFormatKey)
 	switch logFormat {
 	case "text", "txt", "t":
-		log.SetFormatter(&log.TextFormatter{})
+		var useColor bool
+		sprintf := fmt.Sprintf
+		errOut := cmd.ErrOrStderr()
+		if w, ok := errOut.(*os.File); ok {
+			useColor = isatty.IsTerminal(w.Fd())
+			if useColor {
+				sprintf = color.New(color.Bold).Sprintf
+			}
+		}
+
+		log.Logger = log.Output(zerolog.ConsoleWriter{
+			Out:     errOut,
+			NoColor: !useColor,
+			FormatMessage: func(i interface{}) string {
+				return sprintf("%-45s", i)
+			},
+		})
 	case "json", "j":
-		log.SetFormatter(&log.JSONFormatter{})
+		// default
 	default:
-		log.WithField("log-format", logFormat).Warn("invalid log formatter. defaulting to text.")
+		log.Warn().Str("format", logFormat).Msg("invalid log formatter. defaulting to text.")
 		viper.Set(consts.LogFormatKey, "text")
+		initLog(cmd)
 	}
 }
 
@@ -145,14 +170,14 @@ func initConfig() error {
 		//nolint:errorlint
 		if _, ok := err.(viper.ConfigFileNotFoundError); ok {
 			// Config file not found; ignore error
-			log.Debug("Could not find config file")
+			log.Debug().Msg("could not find config file")
 		} else {
 			// Config file was found but another error was produced
 			return fmt.Errorf("fatal error reading config file: %w", err)
 		}
 	}
 
-	log.WithField("path", viper.ConfigFileUsed()).Debug("Loaded config file")
+	log.Debug().Str("path", viper.ConfigFileUsed()).Msg("Loaded config file")
 	return nil
 }
 

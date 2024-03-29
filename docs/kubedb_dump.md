@@ -64,7 +64,7 @@ kubedb dump [filename | bucket URI] [flags]
       --healthchecks-ping-url string   Notification handler URL
       --kubeconfig string              Paths to the kubeconfig file (default "$HOME/.kube/config")
       --log-format string              Log formatter. One of (text|json) (default "text")
-      --log-level string               Log level. One of (trace|debug|info|warning|error|fatal|panic) (default "info")
+      --log-level string               Log level. One of (trace|debug|info|warn|error|fatal|panic) (default "info")
   -n, --namespace string               Kubernetes namespace
       --pod string                     Perform detection from a pod instead of searching the namespace
 ```

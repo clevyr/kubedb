@@ -16,7 +16,7 @@ import (
 	"github.com/clevyr/kubedb/internal/database/sqlformat"
 	"github.com/clevyr/kubedb/internal/kubernetes"
 	"github.com/clevyr/kubedb/internal/kubernetes/filter"
-	log "github.com/sirupsen/logrus"
+	"github.com/rs/zerolog/log"
 	v1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/selection"
 )
@@ -109,10 +109,12 @@ func (db Postgres) FilterPods(ctx context.Context, client kubernetes.KubeClient,
 		preferred = append(preferred, matched...)
 	}
 
+	log := log.With().Str("dialect", db.Name()).Logger()
+
 	// bitnami/postgresql-ha
 	if matched := filter.Pods(pods, db.postgresqlHaQuery()); len(matched) != 0 {
 		// HA chart. Need to detect primary.
-		log.Debug("querying Bitnami repmgr for primary instance")
+		log.Debug().Msg("querying Bitnami repmgr for primary instance")
 		cmd := command.NewBuilder(
 			command.NewEnv("DISABLE_WELCOME_MESSAGE", "true"),
 			"/opt/bitnami/scripts/postgresql-repmgr/entrypoint.sh",
@@ -157,7 +159,7 @@ func (db Postgres) FilterPods(ctx context.Context, client kubernetes.KubeClient,
 
 	// CloudNativePG
 	if matched := filter.Pods(pods, db.cnpgQuery()); len(matched) != 0 {
-		log.Debug("filtering CloudNativePG Pods for Leader")
+		log.Debug().Msg("finding CloudNativePG Leader")
 
 		for _, pod := range matched {
 			if role, ok := pod.Labels["cnpg.io/instanceRole"]; ok && role == "primary" {
@@ -168,7 +170,7 @@ func (db Postgres) FilterPods(ctx context.Context, client kubernetes.KubeClient,
 
 	// Zalando Postgres Operator
 	if matched := filter.Pods(pods, db.zalandoQuery()); len(matched) != 0 {
-		log.Debug("filtering Zalando Pods for Leader")
+		log.Debug().Msg("finding Zalando Leader")
 
 		for _, pod := range matched {
 			if role, ok := pod.Labels["spilo-role"]; ok && role == "master" {

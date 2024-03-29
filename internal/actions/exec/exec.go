@@ -4,13 +4,14 @@ import (
 	"context"
 	"fmt"
 	"os"
+	"strings"
 
 	"github.com/clevyr/kubedb/internal/command"
 	"github.com/clevyr/kubedb/internal/config"
 	"github.com/clevyr/kubedb/internal/consts"
 	"github.com/clevyr/kubedb/internal/kubernetes"
 	"github.com/clevyr/kubedb/internal/util"
-	log "github.com/sirupsen/logrus"
+	"github.com/rs/zerolog/log"
 	"github.com/spf13/viper"
 	"k8s.io/client-go/tools/remotecommand"
 	"k8s.io/kubectl/pkg/util/term"
@@ -21,10 +22,10 @@ type Exec struct {
 }
 
 func (action Exec) Run(ctx context.Context) error {
-	log.WithFields(log.Fields{
-		"namespace": action.Client.Namespace,
-		"name":      "pod/" + action.DBPod.Name,
-	}).Info("exec into database")
+	log.Info().
+		Str("namespace", action.Client.Namespace).
+		Str("pod", action.DBPod.Name).
+		Msg("exec into database")
 
 	t := term.TTY{
 		In:  os.Stdin,
@@ -65,6 +66,7 @@ func (action Exec) buildCommand() (*command.Builder, error) {
 		cmd.Push(command.Split(opts))
 	}
 
-	log.WithField("cmd", cmd).Trace("finished building command")
+	sanitized := strings.ReplaceAll(cmd.String(), action.Password, "***")
+	log.Trace().Str("cmd", sanitized).Msg("finished building command")
 	return cmd, nil
 }

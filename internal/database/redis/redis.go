@@ -12,7 +12,7 @@ import (
 	"github.com/clevyr/kubedb/internal/config"
 	"github.com/clevyr/kubedb/internal/kubernetes"
 	"github.com/clevyr/kubedb/internal/kubernetes/filter"
-	log "github.com/sirupsen/logrus"
+	"github.com/rs/zerolog/log"
 	v1 "k8s.io/api/core/v1"
 )
 
@@ -60,7 +60,7 @@ func (db Redis) FilterPods(ctx context.Context, client kubernetes.KubeClient, po
 	preferred := make([]v1.Pod, 0, len(pods))
 
 	if matched := filter.Pods(pods, db.sentinelQuery()); len(matched) != 0 {
-		log.Debug("querying Sentinel for primary instance")
+		log.Debug().Msg("querying Sentinel for primary instance")
 		cmd := command.NewBuilder(
 			command.Raw(`REDISCLI_AUTH="$REDIS_PASSWORD"`),
 			"redis-cli", "-p", command.Raw(`"$REDIS_SENTINEL_PORT"`), "--raw",

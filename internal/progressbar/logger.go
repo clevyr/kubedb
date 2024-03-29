@@ -1,6 +1,7 @@
 package progressbar
 
 import (
+	"bytes"
 	"io"
 	"time"
 )
@@ -39,7 +40,7 @@ func (l *BarSafeLogger) Write(p []byte) (int, error) {
 		return n, err
 	}
 
-	if p[len(p)-1] == '\n' {
+	if bytes.HasSuffix(p, []byte("\n")) {
 		if _, err := l.out.Write([]byte(l.bar.String())); err != nil {
 			return n, err
 		}

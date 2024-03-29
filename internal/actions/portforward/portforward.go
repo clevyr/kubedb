@@ -11,7 +11,8 @@ import (
 	"github.com/clevyr/kubedb/internal/config"
 	kdblog "github.com/clevyr/kubedb/internal/log"
 	"github.com/jedib0t/go-pretty/v6/table"
-	log "github.com/sirupsen/logrus"
+	"github.com/rs/zerolog"
+	"github.com/rs/zerolog/log"
 	"golang.org/x/sync/errgroup"
 	"k8s.io/client-go/tools/portforward"
 	"k8s.io/client-go/transport/spdy"
@@ -22,10 +23,10 @@ type PortForward struct {
 }
 
 func (a PortForward) Run(ctx context.Context) error {
-	log.WithFields(log.Fields{
-		"namespace": a.Client.Namespace,
-		"name":      "pod/" + a.DBPod.Name,
-	}).Debug("setting up port forward")
+	log.Debug().
+		Str("namespace", a.Client.Namespace).
+		Str("pod", a.DBPod.Name).
+		Msg("setting up port forward")
 
 	hostURL, err := url.Parse(a.Client.ClientConfig.Host)
 	if err != nil {
@@ -42,8 +43,8 @@ func (a PortForward) Run(ctx context.Context) error {
 	ports := []string{fmt.Sprintf("%d:%d", a.LocalPort, a.Port)}
 	stopCh := make(chan struct{}, 1)
 	readyCh := make(chan struct{}, 1)
-	outWriter := kdblog.NewWriter(log.StandardLogger(), log.InfoLevel)
-	errWriter := kdblog.NewWriter(log.StandardLogger(), log.ErrorLevel)
+	outWriter := kdblog.NewWriter(log.Logger, zerolog.InfoLevel)
+	errWriter := kdblog.NewWriter(log.Logger, zerolog.ErrorLevel)
 	fw, err := portforward.NewOnAddresses(dialer, a.Addresses, ports, stopCh, readyCh, outWriter, errWriter)
 	if err != nil {
 		return err
@@ -51,10 +52,10 @@ func (a PortForward) Run(ctx context.Context) error {
 
 	go func() {
 		<-readyCh
-		log.WithFields(log.Fields{
-			"local":  a.LocalPort,
-			"remote": a.Port,
-		}).Debug("port forward is ready")
+		log.Debug().
+			Uint16("local", a.LocalPort).
+			Uint16("remote", a.Port).
+			Msg("port forward is ready")
 		t := table.NewWriter()
 		t.SetOutputMirror(os.Stdout)
 		t.SetTitle(a.Namespace + " database")

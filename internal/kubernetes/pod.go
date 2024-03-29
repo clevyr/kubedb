@@ -9,7 +9,7 @@ import (
 	"time"
 
 	"github.com/clevyr/kubedb/internal/kubernetes/filter"
-	log "github.com/sirupsen/logrus"
+	"github.com/rs/zerolog/log"
 	v1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/util/httpstream/spdy"
@@ -117,13 +117,11 @@ func FilterPodList(pods []v1.Pod, query filter.Filter) []v1.Pod {
 	matched := make([]v1.Pod, 0, len(pods))
 
 	p := filter.Pods(pods, query)
+	qLog := log.With().Interface("query", query).Logger()
 	if len(p) == 0 {
-		log.WithField("query", query).Trace(ErrPodNotFound)
+		qLog.Trace().Msg(ErrPodNotFound.Error())
 	}
-	log.WithFields(log.Fields{
-		"query": query,
-		"count": len(p),
-	}).Trace("query returned podlist")
+	qLog.Trace().Int("count", len(p)).Msg("query returned pod list")
 	matched = append(matched, p...)
 
 	return matched

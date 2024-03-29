@@ -7,6 +7,7 @@ import (
 	"io"
 	"os"
 	"path/filepath"
+	"strings"
 	"time"
 
 	"github.com/clevyr/kubedb/internal/command"
@@ -19,7 +20,7 @@ import (
 	"github.com/clevyr/kubedb/internal/storage"
 	"github.com/clevyr/kubedb/internal/util"
 	gzip "github.com/klauspost/pgzip"
-	log "github.com/sirupsen/logrus"
+	"github.com/rs/zerolog/log"
 	"github.com/spf13/viper"
 	"golang.org/x/sync/errgroup"
 )
@@ -70,11 +71,13 @@ func (action Dump) Run(ctx context.Context) error {
 		}(f)
 	}
 
-	log.WithFields(log.Fields{
-		"namespace": action.Client.Namespace,
-		"name":      "pod/" + action.DBPod.Name,
-		"file":      action.Filename,
-	}).Info("exporting database")
+	actionLog := log.With().
+		Str("namespace", action.Client.Namespace).
+		Str("pod", action.DBPod.Name).
+		Str("file", action.Filename).
+		Logger()
+
+	actionLog.Info().Msg("exporting database")
 
 	if err := github.SetOutput("filename", action.Filename); err != nil {
 		return err
@@ -163,10 +166,9 @@ func (action Dump) Run(ctx context.Context) error {
 
 	_ = bar.Finish()
 
-	log.WithFields(log.Fields{
-		"file": action.Filename,
-		"in":   time.Since(startTime).Truncate(10 * time.Millisecond),
-	}).Info("dump complete")
+	actionLog.Info().
+		Stringer("took", time.Since(startTime).Truncate(10*time.Millisecond)).
+		Msg("dump complete")
 
 	return nil
 }
@@ -185,6 +187,7 @@ func (action Dump) buildCommand() (*command.Builder, error) {
 	if action.RemoteGzip && action.Format != sqlformat.Custom {
 		cmd.Push(command.Pipe, "gzip", "--force")
 	}
-	log.WithField("cmd", cmd).Trace("finished building command")
+	sanitized := strings.ReplaceAll(cmd.String(), action.Password, "***")
+	log.Trace().Str("cmd", sanitized).Msg("finished building command")
 	return cmd, nil
 }

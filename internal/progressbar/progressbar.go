@@ -10,14 +10,14 @@ import (
 	"github.com/clevyr/kubedb/internal/config/flags"
 	spinner "github.com/gabe565/go-spinners"
 	"github.com/mattn/go-isatty"
+	"github.com/rs/zerolog/log"
 	"github.com/schollz/progressbar/v3"
-	log "github.com/sirupsen/logrus"
 )
 
 func New(w io.Writer, max int64, label string, spinnerKey string) (*ProgressBar, *BarSafeLogger) {
 	s, ok := spinner.Map[spinnerKey]
 	if !ok {
-		log.WithField("spinner", spinnerKey).Warn("invalid spinner")
+		log.Warn().Str("spinner", spinnerKey).Msg("invalid spinner")
 		s = spinner.Map[flags.DefaultSpinner]
 	}
 
@@ -76,9 +76,8 @@ func New(w io.Writer, max int64, label string, spinnerKey string) (*ProgressBar,
 		}
 	}()
 
-	logger := NewBarSafeLogger(w, bar)
-	log.SetOutput(logger)
-	return bar, logger
+	bar.logger = NewBarSafeLogger(w, bar)
+	return bar, bar.logger
 }
 
 type ProgressBar struct {
@@ -86,13 +85,12 @@ type ProgressBar struct {
 	mu         sync.Mutex
 	cancelChan chan struct{}
 	cancelOnce sync.Once
-	logger     BarSafeLogger
+	logger     *BarSafeLogger
 }
 
 func (p *ProgressBar) Finish() error {
 	defer func() {
 		p.Close()
-		log.SetOutput(os.Stderr)
 	}()
 	return p.ProgressBar.Finish()
 }

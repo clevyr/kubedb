@@ -16,7 +16,7 @@ import (
 	"github.com/clevyr/kubedb/internal/progressbar"
 	"github.com/clevyr/kubedb/internal/util"
 	gzip "github.com/klauspost/pgzip"
-	log "github.com/sirupsen/logrus"
+	"github.com/rs/zerolog/log"
 	"github.com/spf13/viper"
 	"golang.org/x/sync/errgroup"
 )
@@ -42,11 +42,13 @@ func (action Restore) Run(ctx context.Context) error {
 		}(f)
 	}
 
-	log.WithFields(log.Fields{
-		"file":      action.Filename,
-		"namespace": action.Client.Namespace,
-		"name":      "pod/" + action.DBPod.Name,
-	}).Info("ready to restore database")
+	actionLog := log.With().
+		Str("file", action.Filename).
+		Str("namespace", action.Client.Namespace).
+		Str("pod", action.DBPod.Name).
+		Logger()
+
+	actionLog.Info().Msg("ready to restore database")
 
 	startTime := time.Now()
 
@@ -75,7 +77,7 @@ func (action Restore) Run(ctx context.Context) error {
 		if action.Clean && action.Format != sqlformat.Custom {
 			if db, ok := action.Dialect.(config.DatabaseDBDrop); ok {
 				dropQuery := db.DropDatabaseQuery(action.Database)
-				log.Info("cleaning existing data")
+				actionLog.Info().Msg("cleaning existing data")
 				if err := action.copy(w, strings.NewReader(dropQuery)); err != nil {
 					return err
 				}
@@ -83,7 +85,7 @@ func (action Restore) Run(ctx context.Context) error {
 		}
 
 		// Main restore
-		log.Info("restoring database")
+		actionLog.Info().Msg("restoring database")
 		switch action.Format {
 		case sqlformat.Gzip, sqlformat.Unknown:
 			if !action.RemoteGzip {
@@ -149,10 +151,9 @@ func (action Restore) Run(ctx context.Context) error {
 
 	_ = bar.Finish()
 
-	log.WithFields(log.Fields{
-		"file": action.Filename,
-		"in":   time.Since(startTime).Truncate(10 * time.Millisecond),
-	}).Info("restore complete")
+	actionLog.Info().
+		Dur("took", time.Since(startTime).Truncate(10*time.Millisecond)).
+		Msg("restore complete")
 	return nil
 }
 
@@ -170,7 +171,8 @@ func (action Restore) buildCommand(inputFormat sqlformat.Format) (*command.Build
 	if action.RemoteGzip {
 		cmd.Unshift("gunzip", "--force", command.Pipe)
 	}
-	log.WithField("cmd", cmd).Trace("finished building command")
+	sanitized := strings.ReplaceAll(cmd.String(), action.Password, "***")
+	log.Trace().Str("cmd", sanitized).Msg("finished building command")
 	return cmd, nil
 }
 
