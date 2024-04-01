@@ -159,6 +159,9 @@ func initLog(cmd *cobra.Command) {
 }
 
 func initConfig() error {
+	if xdgConfigHome := os.Getenv("XDG_CONFIG_HOME"); xdgConfigHome != "" {
+		viper.AddConfigPath(filepath.Join(xdgConfigHome, "kubedb"))
+	}
 	viper.AddConfigPath(filepath.Join("$HOME", ".config", "kubedb"))
 	viper.AddConfigPath(filepath.Join("etc", "kubedb"))
 
