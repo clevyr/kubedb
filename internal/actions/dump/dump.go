@@ -132,6 +132,8 @@ func (action Dump) Run(ctx context.Context) error {
 		pr = gzPipeReader
 	}
 
+	sizeW := &util.SizeWriter{}
+
 	// Begin copying export to local file
 	errGroup.Go(func() error {
 		defer func(pr io.ReadCloser) {
@@ -149,7 +151,7 @@ func (action Dump) Run(ctx context.Context) error {
 			}
 		}
 
-		if _, err := io.Copy(io.MultiWriter(f, bar), r); err != nil {
+		if _, err := io.Copy(io.MultiWriter(f, bar, sizeW), r); err != nil {
 			return err
 		}
 
@@ -168,6 +170,7 @@ func (action Dump) Run(ctx context.Context) error {
 
 	actionLog.Info().
 		Stringer("took", time.Since(startTime).Truncate(10*time.Millisecond)).
+		Stringer("size", sizeW).
 		Msg("dump complete")
 
 	return nil

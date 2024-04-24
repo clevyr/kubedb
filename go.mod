@@ -10,6 +10,7 @@ require (
 	github.com/aws/aws-sdk-go-v2/service/s3 v1.53.1
 	github.com/charmbracelet/huh v0.3.0
 	github.com/charmbracelet/lipgloss v0.10.0
+	github.com/dustin/go-humanize v1.0.1
 	github.com/gabe565/go-spinners v1.0.1
 	github.com/klauspost/pgzip v1.2.6
 	github.com/mattn/go-isatty v0.0.20

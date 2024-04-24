@@ -66,12 +66,14 @@ func (action Restore) Run(ctx context.Context) error {
 		return action.runInDatabasePod(ctx, pr, errLog, errLog, action.Format)
 	})
 
+	sizeW := &util.SizeWriter{}
+
 	errGroup.Go(func() error {
 		defer func(pw io.WriteCloser) {
 			_ = pw.Close()
 		}(pw)
 
-		w := io.MultiWriter(pw, bar)
+		w := io.MultiWriter(pw, sizeW, bar)
 
 		// Clean database
 		if action.Clean && action.Format != sqlformat.Custom {
@@ -153,6 +155,7 @@ func (action Restore) Run(ctx context.Context) error {
 
 	actionLog.Info().
 		Dur("took", time.Since(startTime).Truncate(10*time.Millisecond)).
+		Stringer("size", sizeW).
 		Msg("restore complete")
 	return nil
 }
