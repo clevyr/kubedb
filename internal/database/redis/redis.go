@@ -25,9 +25,7 @@ var (
 
 type Redis struct{}
 
-func (Redis) Name() string {
-	return "redis"
-}
+func (Redis) Name() string { return "redis" }
 
 func (Redis) PrettyName() string { return "Redis" }
 
@@ -35,9 +33,7 @@ func (Redis) PortEnvNames() kubernetes.ConfigLookups {
 	return kubernetes.ConfigLookups{kubernetes.LookupEnv{"REDIS_PORT"}}
 }
 
-func (Redis) DefaultPort() uint16 {
-	return 6379
-}
+func (Redis) DefaultPort() uint16 { return 6379 }
 
 func (Redis) DatabaseEnvNames() kubernetes.ConfigLookups {
 	return kubernetes.ConfigLookups{kubernetes.LookupEnv{"REDIS_DB"}}

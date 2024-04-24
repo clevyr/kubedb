@@ -39,15 +39,11 @@ var (
 
 type Postgres struct{}
 
-func (Postgres) Name() string {
-	return "postgres"
-}
+func (Postgres) Name() string { return "postgres" }
 
 func (Postgres) PrettyName() string { return "Postgres" }
 
-func (Postgres) Aliases() []string {
-	return []string{"postgresql", "psql", "pg"}
-}
+func (Postgres) Aliases() []string { return []string{"postgresql", "psql", "pg"} }
 
 func (Postgres) Priority() uint8 { return 255 }
 
@@ -58,9 +54,7 @@ func (Postgres) PortEnvNames() kubernetes.ConfigLookups {
 	}
 }
 
-func (Postgres) DefaultPort() uint16 {
-	return 5432
-}
+func (Postgres) DefaultPort() uint16 { return 5432 }
 
 func (Postgres) DatabaseEnvNames() kubernetes.ConfigLookups {
 	return kubernetes.ConfigLookups{
@@ -84,17 +78,13 @@ func (Postgres) UserEnvNames() kubernetes.ConfigLookups {
 	}
 }
 
-func (Postgres) DefaultUser() string {
-	return "postgres"
-}
+func (Postgres) DefaultUser() string { return "postgres" }
 
 func (Postgres) DropDatabaseQuery(_ string) string {
 	return "drop schema public cascade; create schema public;"
 }
 
-func (Postgres) AnalyzeQuery() string {
-	return "analyze;"
-}
+func (Postgres) AnalyzeQuery() string { return "analyze;" }
 
 func (db Postgres) PodFilters() filter.Filter {
 	return filter.Or{

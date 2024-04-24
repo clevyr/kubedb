@@ -32,9 +32,7 @@ func (MongoDB) Name() string {
 
 func (MongoDB) PrettyName() string { return "MongoDB" }
 
-func (MongoDB) Aliases() []string {
-	return []string{"mongo"}
-}
+func (MongoDB) Aliases() []string { return []string{"mongo"} }
 
 func (MongoDB) Priority() uint8 { return 255 }
 
@@ -42,9 +40,7 @@ func (MongoDB) PortEnvNames() kubernetes.ConfigLookups {
 	return kubernetes.ConfigLookups{kubernetes.LookupEnv{"MONGODB_PORT_NUMBER"}}
 }
 
-func (MongoDB) DefaultPort() uint16 {
-	return 27017
-}
+func (MongoDB) DefaultPort() uint16 { return 27017 }
 
 func (MongoDB) DatabaseEnvNames() kubernetes.ConfigLookups {
 	return kubernetes.ConfigLookups{kubernetes.LookupEnv{"MONGODB_EXTRA_DATABASES"}}
@@ -62,9 +58,7 @@ func (MongoDB) UserEnvNames() kubernetes.ConfigLookups {
 	return kubernetes.ConfigLookups{kubernetes.LookupEnv{"MONGODB_EXTRA_USERNAMES", "MONGODB_ROOT_USER"}}
 }
 
-func (MongoDB) DefaultUser() string {
-	return "root"
-}
+func (MongoDB) DefaultUser() string { return "root" }
 
 func (MongoDB) PodFilters() filter.Filter {
 	return filter.Or{

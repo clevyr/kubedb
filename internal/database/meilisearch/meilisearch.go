@@ -21,19 +21,13 @@ var (
 
 type Meilisearch struct{}
 
-func (Meilisearch) Name() string {
-	return "meilisearch"
-}
+func (Meilisearch) Name() string { return "meilisearch" }
 
 func (Meilisearch) PrettyName() string { return "Meilisearch" }
 
-func (Meilisearch) PortEnvNames() kubernetes.ConfigLookups {
-	return kubernetes.ConfigLookups{}
-}
+func (Meilisearch) PortEnvNames() kubernetes.ConfigLookups { return kubernetes.ConfigLookups{} }
 
-func (Meilisearch) DefaultPort() uint16 {
-	return 7700
-}
+func (Meilisearch) DefaultPort() uint16 { return 7700 }
 
 func (Meilisearch) PodFilters() filter.Filter {
 	return filter.Label{Name: "app.kubernetes.io/name", Value: "meilisearch"}

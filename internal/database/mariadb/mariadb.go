@@ -28,15 +28,11 @@ var (
 
 type MariaDB struct{}
 
-func (MariaDB) Name() string {
-	return "mariadb"
-}
+func (MariaDB) Name() string { return "mariadb" }
 
 func (MariaDB) PrettyName() string { return "MariaDB" }
 
-func (MariaDB) Aliases() []string {
-	return []string{"maria", "mysql"}
-}
+func (MariaDB) Aliases() []string { return []string{"maria", "mysql"} }
 
 func (MariaDB) Priority() uint8 { return 255 }
 
@@ -52,21 +48,15 @@ func (MariaDB) DatabaseEnvNames() kubernetes.ConfigLookups {
 	return kubernetes.ConfigLookups{kubernetes.LookupEnv{"MARIADB_DATABASE", "MYSQL_DATABASE"}}
 }
 
-func (MariaDB) ListDatabasesQuery() string {
-	return "show databases"
-}
+func (MariaDB) ListDatabasesQuery() string { return "show databases" }
 
-func (MariaDB) ListTablesQuery() string {
-	return "show tables"
-}
+func (MariaDB) ListTablesQuery() string { return "show tables" }
 
 func (MariaDB) UserEnvNames() kubernetes.ConfigLookups {
 	return kubernetes.ConfigLookups{kubernetes.LookupEnv{"MARIADB_USER", "MYSQL_USER"}}
 }
 
-func (MariaDB) DefaultUser() string {
-	return "root"
-}
+func (MariaDB) DefaultUser() string { return "root" }
 
 func (db MariaDB) DropDatabaseQuery(database string) string {
 	database = db.quoteIdentifier(database)
