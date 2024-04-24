@@ -186,6 +186,8 @@ func (action Dump) buildCommand() (*command.Builder, error) {
 	if opts := viper.GetString(consts.OptsKey); opts != "" {
 		cmd.Push(command.Split(opts))
 	}
+	cmd.Unshift(command.Raw("{"))
+	cmd.Push(command.Raw("|| kill $$; }"))
 
 	if action.RemoteGzip && action.Format != sqlformat.Custom {
 		cmd.Push(command.Pipe, "gzip", "--force")

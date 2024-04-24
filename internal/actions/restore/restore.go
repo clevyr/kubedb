@@ -170,6 +170,8 @@ func (action Restore) buildCommand(inputFormat sqlformat.Format) (*command.Build
 	if opts := viper.GetString(consts.OptsKey); opts != "" {
 		cmd.Push(command.Split(opts))
 	}
+	cmd.Unshift(command.Raw("{"))
+	cmd.Push(command.Raw("|| { cat >/dev/null; kill $$; }; }"))
 
 	if action.RemoteGzip {
 		cmd.Unshift("gunzip", "--force", command.Pipe)
