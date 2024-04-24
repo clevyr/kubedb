@@ -20,7 +20,10 @@ import (
 )
 
 //nolint:gochecknoglobals
-var action dump.Dump
+var (
+	action       dump.Dump
+	setupOptions = util.SetupOptions{Name: "dump"}
+)
 
 func New() *cobra.Command {
 	cmd := &cobra.Command{
@@ -66,6 +69,7 @@ func validArgs(cmd *cobra.Command, args []string, _ string) ([]string, cobra.She
 	}
 
 	viper.Set(consts.CreateJobKey, false)
+	setupOptions.NoSurvey = true
 	err := preRun(cmd, args)
 	if err != nil {
 		return nil, cobra.ShellCompDirectiveError
@@ -106,7 +110,6 @@ func preRun(cmd *cobra.Command, args []string) error {
 		cmd.SilenceUsage = false
 	}
 
-	setupOptions := util.SetupOptions{Name: "dump"}
 	if err := util.DefaultSetup(cmd, &action.Global, setupOptions); err != nil {
 		return err
 	}

@@ -9,7 +9,10 @@ import (
 )
 
 //nolint:gochecknoglobals
-var action exec.Exec
+var (
+	action       exec.Exec
+	setupOptions = util.SetupOptions{Name: "exec"}
+)
 
 func New() *cobra.Command {
 	cmd := &cobra.Command{
@@ -45,7 +48,6 @@ func preRun(cmd *cobra.Command, _ []string) error {
 	flags.BindCreateNetworkPolicy(cmd)
 	flags.BindOpts(cmd)
 
-	setupOptions := util.SetupOptions{Name: "exec"}
 	if err := util.DefaultSetup(cmd, &action.Global, setupOptions); err != nil {
 		return err
 	}

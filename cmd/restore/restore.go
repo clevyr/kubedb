@@ -21,7 +21,10 @@ import (
 )
 
 //nolint:gochecknoglobals
-var action restore.Restore
+var (
+	action       restore.Restore
+	setupOptions = util.SetupOptions{Name: "restore"}
+)
 
 func New() *cobra.Command {
 	cmd := &cobra.Command{
@@ -71,6 +74,7 @@ func validArgs(cmd *cobra.Command, args []string, _ string) ([]string, cobra.She
 	viper.Set(consts.CreateJobKey, false)
 	action.Force = true
 	action.Filename = "-"
+	setupOptions.NoSurvey = true
 
 	err := preRun(cmd, args)
 	if err != nil {
@@ -113,7 +117,6 @@ func preRun(cmd *cobra.Command, args []string) error {
 		action.Filename = args[0]
 	}
 
-	setupOptions := util.SetupOptions{Name: "restore"}
 	if err := util.DefaultSetup(cmd, &action.Global, setupOptions); err != nil {
 		return err
 	}

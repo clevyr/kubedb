@@ -14,7 +14,10 @@ import (
 )
 
 //nolint:gochecknoglobals
-var action portforward.PortForward
+var (
+	action       portforward.PortForward
+	setupOptions = util.SetupOptions{DisableAuthFlags: true}
+)
 
 func New() *cobra.Command {
 	cmd := &cobra.Command{
@@ -49,6 +52,7 @@ func New() *cobra.Command {
 }
 
 func localPortCompletion(cmd *cobra.Command, args []string, _ string) ([]string, cobra.ShellCompDirective) {
+	setupOptions.NoSurvey = true
 	err := preRun(cmd, args)
 	if err != nil {
 		return nil, cobra.ShellCompDirectiveNoFileComp
@@ -73,7 +77,7 @@ func preRun(cmd *cobra.Command, args []string) error {
 	}
 	action.Addresses = viper.GetStringSlice(consts.PortForwardAddrKey)
 
-	err := util.DefaultSetup(cmd, &action.Global, util.SetupOptions{DisableAuthFlags: true})
+	err := util.DefaultSetup(cmd, &action.Global, setupOptions)
 	if err != nil {
 		return err
 	}
