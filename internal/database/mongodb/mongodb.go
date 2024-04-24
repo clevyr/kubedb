@@ -30,6 +30,8 @@ func (MongoDB) Name() string {
 	return "mongodb"
 }
 
+func (MongoDB) PrettyName() string { return "MongoDB" }
+
 func (MongoDB) Aliases() []string {
 	return []string{"mongo"}
 }

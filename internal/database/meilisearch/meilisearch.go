@@ -25,6 +25,8 @@ func (Meilisearch) Name() string {
 	return "meilisearch"
 }
 
+func (Meilisearch) PrettyName() string { return "Meilisearch" }
+
 func (Meilisearch) PortEnvNames() kubernetes.ConfigLookups {
 	return kubernetes.ConfigLookups{}
 }

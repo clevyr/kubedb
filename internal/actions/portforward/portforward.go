@@ -85,7 +85,7 @@ func (a PortForward) printTable() {
 		Row("Pod", a.DBPod.Name)
 
 	params := tui.MinimalTable().
-		Row("Type", a.Dialect.Name()).
+		Row("Type", a.Dialect.PrettyName()).
 		Row("Namespace", a.Namespace).
 		Row("Hostname", "localhost").
 		Row("Port", strconv.Itoa(int(a.LocalPort)))

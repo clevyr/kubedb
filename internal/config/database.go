@@ -12,6 +12,7 @@ import (
 
 type Database interface {
 	Name() string
+	PrettyName() string
 	PodFilters() filter.Filter
 }
 

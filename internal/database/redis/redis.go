@@ -29,6 +29,8 @@ func (Redis) Name() string {
 	return "redis"
 }
 
+func (Redis) PrettyName() string { return "Redis" }
+
 func (Redis) PortEnvNames() kubernetes.ConfigLookups {
 	return kubernetes.ConfigLookups{kubernetes.LookupEnv{"REDIS_PORT"}}
 }

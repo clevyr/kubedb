@@ -43,6 +43,8 @@ func (Postgres) Name() string {
 	return "postgres"
 }
 
+func (Postgres) PrettyName() string { return "Postgres" }
+
 func (Postgres) Aliases() []string {
 	return []string{"postgresql", "psql", "pg"}
 }

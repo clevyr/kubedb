@@ -32,6 +32,8 @@ func (MariaDB) Name() string {
 	return "mariadb"
 }
 
+func (MariaDB) PrettyName() string { return "MariaDB" }
+
 func (MariaDB) Aliases() []string {
 	return []string{"maria", "mysql"}
 }

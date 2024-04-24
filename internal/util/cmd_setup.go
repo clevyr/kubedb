@@ -97,7 +97,7 @@ func DefaultSetup(cmd *cobra.Command, conf *config.Global, opts SetupOptions) er
 			} else {
 				opts := make([]huh.Option[config.Database], 0, len(result))
 				for dialect := range result {
-					opts = append(opts, huh.NewOption(dialect.Name(), dialect))
+					opts = append(opts, huh.NewOption(dialect.PrettyName(), dialect))
 				}
 				var chosen config.Database
 				if err := huh.NewForm(huh.NewGroup(
@@ -161,7 +161,7 @@ func DefaultSetup(cmd *cobra.Command, conf *config.Global, opts SetupOptions) er
 		var idx int
 		if err := huh.NewForm(huh.NewGroup(
 			huh.NewSelect[int]().
-				Title("Select " + conf.Dialect.Name() + " instance").
+				Title("Select " + conf.Dialect.PrettyName() + " instance").
 				Options(opts...).
 				Value(&idx),
 		)).Run(); err != nil {
