@@ -4,7 +4,7 @@ import (
 	"context"
 	"testing"
 
-	"github.com/clevyr/kubedb/internal/config"
+	"github.com/clevyr/kubedb/internal/database/mariadb"
 	"github.com/clevyr/kubedb/internal/database/postgres"
 	"github.com/clevyr/kubedb/internal/kubernetes"
 	"github.com/stretchr/testify/assert"
@@ -28,7 +28,7 @@ func TestDetectDialect(t *testing.T) {
 	mariadbPod := v1.Pod{
 		ObjectMeta: metav1.ObjectMeta{
 			Labels: map[string]string{
-				"app.kubernetes.io/name":      "postgresql",
+				"app.kubernetes.io/name":      "mariadb",
 				"app.kubernetes.io/component": "primary",
 			},
 		},
@@ -40,8 +40,7 @@ func TestDetectDialect(t *testing.T) {
 	tests := []struct {
 		name    string
 		args    args
-		want    config.Database
-		want1   []v1.Pod
+		want    DetectResult
 		wantErr require.ErrorAssertionFunc
 	}{
 		{
@@ -51,8 +50,7 @@ func TestDetectDialect(t *testing.T) {
 					ClientSet: kubernetesfake.NewSimpleClientset(&postgresPod),
 				},
 			},
-			postgres.Postgres{},
-			[]v1.Pod{postgresPod},
+			DetectResult{postgres.Postgres{}: []v1.Pod{postgresPod}},
 			require.NoError,
 		},
 		{
@@ -62,8 +60,7 @@ func TestDetectDialect(t *testing.T) {
 					ClientSet: kubernetesfake.NewSimpleClientset(&mariadbPod),
 				},
 			},
-			postgres.Postgres{},
-			[]v1.Pod{mariadbPod},
+			DetectResult{mariadb.MariaDB{}: []v1.Pod{mariadbPod}},
 			require.NoError,
 		},
 		{
@@ -74,7 +71,6 @@ func TestDetectDialect(t *testing.T) {
 				},
 			},
 			nil,
-			[]v1.Pod{},
 			require.Error,
 		},
 		{
@@ -85,17 +81,15 @@ func TestDetectDialect(t *testing.T) {
 				},
 			},
 			nil,
-			[]v1.Pod{},
 			require.Error,
 		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			t.Parallel()
-			got, got1, err := DetectDialect(context.Background(), tt.args.client)
+			got, err := DetectDialect(context.Background(), tt.args.client)
 			tt.wantErr(t, err)
 			assert.Equal(t, tt.want, got)
-			assert.Equal(t, tt.want1, got1)
 		})
 	}
 }

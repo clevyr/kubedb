@@ -84,9 +84,32 @@ func DefaultSetup(cmd *cobra.Command, conf *config.Global, opts SetupOptions) er
 	if dialectFlag == "" {
 		// Configure via detection
 		if len(pods) == 0 {
-			conf.Dialect, pods, err = database.DetectDialect(ctx, conf.Client)
+			result, err := database.DetectDialect(ctx, conf.Client)
 			if err != nil {
 				return err
+			}
+			if len(result) == 1 || opts.NoSurvey {
+				for dialect, p := range result {
+					conf.Dialect = dialect
+					pods = p
+					break
+				}
+			} else {
+				opts := make([]huh.Option[config.Database], 0, len(result))
+				for dialect := range result {
+					opts = append(opts, huh.NewOption(dialect.Name(), dialect))
+				}
+				var chosen config.Database
+				if err := huh.NewForm(huh.NewGroup(
+					huh.NewSelect[config.Database]().
+						Title("Select database type").
+						Options(opts...).
+						Value(&chosen),
+				)).Run(); err != nil {
+					return err
+				}
+				conf.Dialect = chosen
+				pods = result[chosen]
 			}
 			log.Debug().Str("dialect", conf.Dialect.Name()).Msg("detected dialect")
 		} else {

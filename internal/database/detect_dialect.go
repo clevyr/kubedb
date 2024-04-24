@@ -11,19 +11,50 @@ import (
 
 var ErrDatabaseNotFound = errors.New("could not detect a database")
 
-func DetectDialect(ctx context.Context, client kubernetes.KubeClient) (config.Database, []v1.Pod, error) {
+type DetectResult map[config.Database][]v1.Pod
+
+func DetectDialect(ctx context.Context, client kubernetes.KubeClient) (DetectResult, error) {
 	podList, err := client.GetNamespacedPods(ctx)
 	if err != nil {
-		return nil, []v1.Pod{}, err
+		return nil, err
 	}
 
+	result := make(DetectResult)
 	for _, db := range All() {
 		pods := kubernetes.FilterPodList(podList.Items, db.PodFilters())
 		if len(pods) != 0 {
-			return db, pods, nil
+			result[db] = pods
 		}
 	}
-	return nil, []v1.Pod{}, ErrDatabaseNotFound
+	if len(result) == 0 {
+		return nil, ErrDatabaseNotFound
+	}
+	if len(result) > 1 {
+		// Find the highest priority dialects
+		var maxPriority uint8
+		for dialect := range result {
+			if dbPriority, ok := dialect.(config.DatabasePriority); ok {
+				priority := dbPriority.Priority()
+				if maxPriority < priority {
+					maxPriority = priority
+				}
+			}
+		}
+		if maxPriority != 0 {
+			// Filter out dialects that are lower than the max
+			for dialect := range result {
+				if dbPriority, ok := dialect.(config.DatabasePriority); ok {
+					priority := dbPriority.Priority()
+					if priority < maxPriority {
+						delete(result, dialect)
+					}
+				} else {
+					delete(result, dialect)
+				}
+			}
+		}
+	}
+	return result, nil
 }
 
 func DetectDialectFromPod(pod v1.Pod) (config.Database, error) {

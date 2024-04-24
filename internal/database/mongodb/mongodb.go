@@ -12,6 +12,7 @@ import (
 
 var (
 	_ config.DatabaseAliases  = MongoDB{}
+	_ config.DatabasePriority = MongoDB{}
 	_ config.DatabaseDump     = MongoDB{}
 	_ config.DatabaseExec     = MongoDB{}
 	_ config.DatabaseRestore  = MongoDB{}
@@ -32,6 +33,8 @@ func (MongoDB) Name() string {
 func (MongoDB) Aliases() []string {
 	return []string{"mongo"}
 }
+
+func (MongoDB) Priority() uint8 { return 255 }
 
 func (MongoDB) PortEnvNames() kubernetes.ConfigLookups {
 	return kubernetes.ConfigLookups{kubernetes.LookupEnv{"MONGODB_PORT_NUMBER"}}

@@ -13,6 +13,7 @@ import (
 
 var (
 	_ config.DatabaseAliases  = MariaDB{}
+	_ config.DatabasePriority = MariaDB{}
 	_ config.DatabaseDump     = MariaDB{}
 	_ config.DatabaseExec     = MariaDB{}
 	_ config.DatabaseRestore  = MariaDB{}
@@ -34,6 +35,8 @@ func (MariaDB) Name() string {
 func (MariaDB) Aliases() []string {
 	return []string{"maria", "mysql"}
 }
+
+func (MariaDB) Priority() uint8 { return 255 }
 
 func (MariaDB) PortEnvNames() kubernetes.ConfigLookups {
 	return kubernetes.ConfigLookups{kubernetes.LookupEnv{"MARIADB_PORT_NUMBER", "MYSQL_PORT_NUMBER"}}

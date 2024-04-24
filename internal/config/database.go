@@ -19,6 +19,10 @@ type DatabaseAliases interface {
 	Aliases() []string
 }
 
+type DatabasePriority interface {
+	Priority() uint8
+}
+
 type DatabaseDump interface {
 	Database
 	DumpCommand(conf Dump) *command.Builder

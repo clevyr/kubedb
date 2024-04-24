@@ -22,6 +22,7 @@ import (
 
 var (
 	_ config.DatabaseAliases  = Postgres{}
+	_ config.DatabasePriority = Postgres{}
 	_ config.DatabaseDump     = Postgres{}
 	_ config.DatabaseExec     = Postgres{}
 	_ config.DatabaseRestore  = Postgres{}
@@ -45,6 +46,8 @@ func (Postgres) Name() string {
 func (Postgres) Aliases() []string {
 	return []string{"postgresql", "psql", "pg"}
 }
+
+func (Postgres) Priority() uint8 { return 255 }
 
 func (Postgres) PortEnvNames() kubernetes.ConfigLookups {
 	return kubernetes.ConfigLookups{
