@@ -8,12 +8,12 @@ import (
 	"strconv"
 	"strings"
 
+	"github.com/charmbracelet/lipgloss"
 	"github.com/clevyr/kubedb/internal/config"
 	"github.com/clevyr/kubedb/internal/config/flags"
 	"github.com/clevyr/kubedb/internal/database"
 	"github.com/clevyr/kubedb/internal/kubernetes"
 	"github.com/clevyr/kubedb/internal/util"
-	"github.com/fatih/color"
 	"github.com/rs/zerolog"
 	"github.com/spf13/cobra"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -50,10 +50,11 @@ func preRun(cmd *cobra.Command, _ []string) error {
 }
 
 func run(cmd *cobra.Command, _ []string) error {
-	prefixOk := color.GreenString(" ✓")
-	prefixNeutral := color.YellowString(" -")
-	prefixErr := color.RedString(" ✗")
-	bold := color.New(color.Bold).Sprintf
+	statusStyle := lipgloss.NewStyle().PaddingLeft(1)
+	prefixOk := statusStyle.Foreground(lipgloss.Color("2")).Render("✓")
+	prefixNeutral := statusStyle.Foreground(lipgloss.Color("8")).Render("-")
+	prefixErr := statusStyle.Foreground(lipgloss.Color("1")).Render("✗")
+	bold := lipgloss.NewStyle().Bold(true).Render
 
 	defaultSetupErr := util.DefaultSetup(cmd, &conf, util.SetupOptions{Name: "status"})
 

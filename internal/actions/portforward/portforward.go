@@ -5,12 +5,15 @@ import (
 	"fmt"
 	"net/http"
 	"net/url"
-	"os"
 	"path"
+	"slices"
+	"strconv"
 
+	"github.com/charmbracelet/lipgloss"
+	"github.com/charmbracelet/lipgloss/table"
 	"github.com/clevyr/kubedb/internal/config"
 	kdblog "github.com/clevyr/kubedb/internal/log"
-	"github.com/jedib0t/go-pretty/v6/table"
+	"github.com/clevyr/kubedb/internal/tui"
 	"github.com/rs/zerolog"
 	"github.com/rs/zerolog/log"
 	"golang.org/x/sync/errgroup"
@@ -52,33 +55,8 @@ func (a PortForward) Run(ctx context.Context) error {
 
 	go func() {
 		<-readyCh
-		log.Debug().
-			Uint16("local", a.LocalPort).
-			Uint16("remote", a.Port).
-			Msg("port forward is ready")
-		t := table.NewWriter()
-		t.SetOutputMirror(os.Stdout)
-		t.SetTitle(a.Namespace + " database")
-		t.AppendRows([]table.Row{
-			{"Type", a.Dialect.Name()},
-			{"Hostname", "localhost"},
-			{"Port", a.LocalPort},
-		})
-		if a.Username != "" {
-			t.AppendRow(table.Row{"Username", a.Username})
-		}
-		if a.Password != "" {
-			t.AppendRow(table.Row{"Password", a.Password})
-		}
-		if a.Database != "" {
-			t.AppendRow(table.Row{"Database", a.Database})
-		}
-		t.SetStyle(table.StyleLight)
-		t.Render()
-		//nolint:forbidigo
-		fmt.Println(`Tip: If you're connecting from a Docker container, set the hostname to "host.docker.internal"`)
+		a.printTable()
 	}()
-
 	group, ctx := errgroup.WithContext(ctx)
 
 	group.Go(func() error {
@@ -92,4 +70,74 @@ func (a PortForward) Run(ctx context.Context) error {
 	})
 
 	return group.Wait()
+}
+
+//nolint:forbidigo
+func (a PortForward) printTable() {
+	log.Debug().
+		Uint16("local", a.LocalPort).
+		Uint16("remote", a.Port).
+		Msg("port forward is ready")
+
+	info := tui.MinimalTable().
+		Row("Context", a.Context).
+		Row("Namespace", a.Namespace).
+		Row("Pod", a.DBPod.Name)
+
+	params := tui.MinimalTable().
+		Row("Type", a.Dialect.Name()).
+		Row("Namespace", a.Namespace).
+		Row("Hostname", "localhost").
+		Row("Port", strconv.Itoa(int(a.LocalPort)))
+	if a.Username != "" {
+		params.Row("Username", a.Username)
+	}
+	if a.Password != "" {
+		params.Row("Password", a.Password[:17])
+	}
+	if a.Database != "" {
+		params.Row("Database", a.Database)
+	}
+
+	tables := []*table.Table{info, params}
+	widths := make([]int, 0, len(tables))
+	for _, t := range tables {
+		widths = append(widths, lipgloss.Width(t.Render()))
+	}
+	widest := slices.Max(widths)
+	differences := make([]int, 0, len(tables))
+	for _, width := range widths {
+		differences = append(differences, widest-width)
+	}
+	if slices.Max(differences) < 5 {
+		for _, t := range tables {
+			t.Width(widest)
+		}
+	}
+
+	headerStyle := lipgloss.NewStyle().Bold(true).Foreground(lipgloss.AdaptiveColor{Light: "#5A56E0", Dark: "#7571F9"})
+	italicStyle := tui.BorderStyle().Italic(true)
+	data := lipgloss.JoinVertical(lipgloss.Left,
+		lipgloss.JoinVertical(lipgloss.Center,
+			headerStyle.Render("Database Instance"),
+			info.Render(),
+		),
+		"",
+		lipgloss.JoinVertical(lipgloss.Center,
+			headerStyle.Render("Connection Parameters"),
+			params.Render(),
+		),
+		"",
+		headerStyle.Render("Tip:")+
+			tui.BorderStyle().Render(" If you're connecting from a Docker container, set the hostname to ")+
+			italicStyle.Render("host.docker.internal"),
+	)
+
+	baseStyle := lipgloss.NewStyle().
+		Margin(1, 0).
+		PaddingLeft(1).
+		BorderStyle(lipgloss.ThickBorder()).
+		BorderLeft(true).
+		BorderForeground(lipgloss.Color("238"))
+	fmt.Println(baseStyle.Render(data))
 }

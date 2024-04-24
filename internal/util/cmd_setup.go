@@ -9,7 +9,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/AlecAivazis/survey/v2"
+	"github.com/charmbracelet/huh"
 	"github.com/clevyr/kubedb/internal/config"
 	"github.com/clevyr/kubedb/internal/consts"
 	"github.com/clevyr/kubedb/internal/database"
@@ -131,16 +131,17 @@ func DefaultSetup(cmd *cobra.Command, conf *config.Global, opts SetupOptions) er
 	if len(pods) == 1 || opts.NoSurvey {
 		conf.DBPod = pods[0]
 	} else {
-		names := make([]string, 0, len(pods))
-		for _, pod := range pods {
-			names = append(names, pod.Name)
+		opts := make([]huh.Option[int], 0, len(pods))
+		for i, pod := range pods {
+			opts = append(opts, huh.NewOption(pod.Name, i))
 		}
 		var idx int
-		err = survey.AskOne(&survey.Select{
-			Message: "Found multiple database pods. Select the desired instance.",
-			Options: names,
-		}, &idx)
-		if err != nil {
+		if err := huh.NewForm(huh.NewGroup(
+			huh.NewSelect[int]().
+				Title("Select " + conf.Dialect.Name() + " instance").
+				Options(opts...).
+				Value(&idx),
+		)).Run(); err != nil {
 			return err
 		}
 		conf.DBPod = pods[idx]

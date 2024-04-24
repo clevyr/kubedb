@@ -8,6 +8,7 @@ import (
 	"strings"
 	"syscall"
 
+	"github.com/charmbracelet/lipgloss"
 	"github.com/clevyr/kubedb/cmd/dump"
 	"github.com/clevyr/kubedb/cmd/exec"
 	"github.com/clevyr/kubedb/cmd/portforward"
@@ -17,7 +18,6 @@ import (
 	"github.com/clevyr/kubedb/internal/consts"
 	"github.com/clevyr/kubedb/internal/notifier"
 	"github.com/clevyr/kubedb/internal/util"
-	"github.com/fatih/color"
 	"github.com/mattn/go-isatty"
 	"github.com/rs/zerolog"
 	"github.com/rs/zerolog/log"
@@ -133,21 +133,25 @@ func initLog(cmd *cobra.Command) {
 	switch logFormat {
 	case "text", "txt", "t":
 		var useColor bool
-		sprintf := fmt.Sprintf
+		baseFormatter := func(i interface{}) string {
+			return fmt.Sprintf("%-45s", i)
+		}
+		formatter := baseFormatter
 		errOut := cmd.ErrOrStderr()
 		if w, ok := errOut.(*os.File); ok {
 			useColor = isatty.IsTerminal(w.Fd())
 			if useColor {
-				sprintf = color.New(color.Bold).Sprintf
+				boldStyle := lipgloss.NewStyle().Bold(true)
+				formatter = func(i interface{}) string {
+					return boldStyle.Render(baseFormatter(i))
+				}
 			}
 		}
 
 		log.Logger = log.Output(zerolog.ConsoleWriter{
-			Out:     errOut,
-			NoColor: !useColor,
-			FormatMessage: func(i interface{}) string {
-				return sprintf("%-45s", i)
-			},
+			Out:           errOut,
+			NoColor:       !useColor,
+			FormatMessage: formatter,
 		})
 	case "json", "j":
 		// default
