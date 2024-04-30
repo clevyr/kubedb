@@ -1,10 +1,8 @@
 package cmd
 
 import (
-	"fmt"
 	"os"
 	"os/signal"
-	"path/filepath"
 	"strings"
 	"syscall"
 
@@ -89,7 +87,7 @@ func preRun(cmd *cobra.Command, _ []string) error {
 	}
 
 	config.InitLog(cmd)
-	if err := initConfig(); err != nil {
+	if err := config.LoadViper(); err != nil {
 		return err
 	}
 	config.InitLog(cmd)
@@ -110,32 +108,6 @@ func preRun(cmd *cobra.Command, _ []string) error {
 		}
 	}
 
-	return nil
-}
-
-func initConfig() error {
-	if xdgConfigHome := os.Getenv("XDG_CONFIG_HOME"); xdgConfigHome != "" {
-		viper.AddConfigPath(filepath.Join(xdgConfigHome, "kubedb"))
-	}
-	viper.AddConfigPath(filepath.Join("$HOME", ".config", "kubedb"))
-	viper.AddConfigPath(filepath.Join("etc", "kubedb"))
-
-	viper.AutomaticEnv()
-	viper.SetEnvPrefix("kubedb")
-	viper.SetEnvKeyReplacer(strings.NewReplacer(".", "_", "-", "_"))
-
-	if err := viper.ReadInConfig(); err != nil {
-		//nolint:errorlint
-		if _, ok := err.(viper.ConfigFileNotFoundError); ok {
-			// Config file not found; ignore error
-			log.Debug().Msg("could not find config file")
-		} else {
-			// Config file was found but another error was produced
-			return fmt.Errorf("fatal error reading config file: %w", err)
-		}
-	}
-
-	log.Debug().Str("path", viper.ConfigFileUsed()).Msg("Loaded config file")
 	return nil
 }
 
