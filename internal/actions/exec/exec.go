@@ -31,10 +31,13 @@ func (action Exec) Run(ctx context.Context) error {
 		In:  os.Stdin,
 		Out: os.Stdout,
 	}
+	stderr := os.Stderr
 	t.Raw = t.IsTerminalIn()
 	var sizeQueue remotecommand.TerminalSizeQueue
 	if t.Raw {
 		sizeQueue = t.MonitorSize(t.GetSize())
+		// unset stderr because both stdout and stderr go over t.Out in raw mode
+		stderr = nil
 	}
 
 	cmd, err := action.buildCommand()
@@ -48,7 +51,7 @@ func (action Exec) Run(ctx context.Context) error {
 			Cmd:       cmd.String(),
 			Stdin:     t.In,
 			Stdout:    t.Out,
-			Stderr:    os.Stderr,
+			Stderr:    stderr,
 			TTY:       t.IsTerminalIn(),
 			SizeQueue: sizeQueue,
 		})
