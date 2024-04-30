@@ -154,7 +154,7 @@ func (action Restore) Run(ctx context.Context) error {
 	_ = bar.Finish()
 
 	actionLog.Info().
-		Dur("took", time.Since(startTime).Truncate(10*time.Millisecond)).
+		Stringer("took", time.Since(startTime).Truncate(10*time.Millisecond)).
 		Stringer("size", sizeW).
 		Msg("restore complete")
 	return nil
