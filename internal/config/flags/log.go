@@ -42,11 +42,11 @@ func BindLogLevel(cmd *cobra.Command) {
 }
 
 func LogFormat(cmd *cobra.Command) {
-	cmd.PersistentFlags().String(consts.LogFormatFlag, "text", "Log formatter. One of (text|json)")
+	cmd.PersistentFlags().String(consts.LogFormatFlag, "auto", "Log formatter. One of (auto|color|plain|json)")
 	err := cmd.RegisterFlagCompletionFunc(
 		consts.LogFormatFlag,
 		func(_ *cobra.Command, _ []string, _ string) ([]string, cobra.ShellCompDirective) {
-			return []string{"text", "json"}, cobra.ShellCompDirectiveNoFileComp
+			return []string{"auto", "color", "plain", "json"}, cobra.ShellCompDirectiveNoFileComp
 		})
 	if err != nil {
 		panic(err)
