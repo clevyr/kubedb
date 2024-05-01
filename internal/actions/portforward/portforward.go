@@ -115,7 +115,7 @@ func (a PortForward) printTable() {
 		}
 	}
 
-	headerStyle := lipgloss.NewStyle().Bold(true).Foreground(lipgloss.AdaptiveColor{Light: "#5A56E0", Dark: "#7571F9"})
+	headerStyle := tui.HeaderStyle()
 	italicStyle := tui.BorderStyle().Italic(true)
 	data := lipgloss.JoinVertical(lipgloss.Left,
 		lipgloss.JoinVertical(lipgloss.Center,
