@@ -20,6 +20,7 @@ func main() {
 		var status int
 		if msg := recover(); msg != nil {
 			status = 1
+			log.Error().Interface("error", msg).Msg("recovered from panic")
 			err = fmt.Errorf("%w: %v\n\n%s", errPanic, msg, string(debug.Stack()))
 			_, _ = io.WriteString(os.Stderr, err.Error())
 		}
