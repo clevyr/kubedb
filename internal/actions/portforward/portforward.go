@@ -89,7 +89,7 @@ func (a PortForward) printTable() {
 		Row("Hostname", "localhost").
 		Row("Port", strconv.Itoa(int(a.LocalPort))).
 		RowIfNotEmpty("Username", a.Username).
-		RowIfNotEmpty("Password", a.Password[:17]).
+		RowIfNotEmpty("Password", a.Password).
 		RowIfNotEmpty("Database", a.Database)
 
 	tables := []*tui.Table{info, params}
