@@ -10,7 +10,6 @@ import (
 
 	"github.com/charmbracelet/huh"
 	"github.com/charmbracelet/lipgloss"
-	"github.com/charmbracelet/lipgloss/table"
 	"github.com/clevyr/kubedb/internal/command"
 	"github.com/clevyr/kubedb/internal/config"
 	"github.com/clevyr/kubedb/internal/consts"
@@ -226,19 +225,14 @@ func (action Restore) runInDatabasePod(ctx context.Context, r *io.PipeReader, st
 	return nil
 }
 
-func (action Restore) Table() *table.Table {
-	t := tui.MinimalTable(nil).
+func (action Restore) Table() *tui.Table {
+	return tui.MinimalTable(nil).
 		Row("Context", action.Context).
 		Row("Namespace", action.Namespace).
-		Row("Pod", action.DBPod.Name)
-	if action.Username != "" {
-		t.Row("Username", action.Username)
-	}
-	if action.Database != "" {
-		t.Row("Database", action.Database)
-	}
-	t.Row("File", tui.InPath(action.Filename, nil))
-	return t
+		Row("Pod", action.DBPod.Name).
+		RowIfNotEmpty("Username", action.Username).
+		RowIfNotEmpty("Database", action.Database).
+		Row("File", tui.InPath(action.Filename, nil))
 }
 
 func (action Restore) Confirm() (bool, error) {

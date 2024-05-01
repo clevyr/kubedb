@@ -10,7 +10,6 @@ import (
 	"strconv"
 
 	"github.com/charmbracelet/lipgloss"
-	"github.com/charmbracelet/lipgloss/table"
 	"github.com/clevyr/kubedb/internal/config"
 	kdblog "github.com/clevyr/kubedb/internal/log"
 	"github.com/clevyr/kubedb/internal/tui"
@@ -88,18 +87,12 @@ func (a PortForward) printTable() {
 		Row("Type", a.Dialect.PrettyName()).
 		Row("Namespace", a.Namespace).
 		Row("Hostname", "localhost").
-		Row("Port", strconv.Itoa(int(a.LocalPort)))
-	if a.Username != "" {
-		params.Row("Username", a.Username)
-	}
-	if a.Password != "" {
-		params.Row("Password", a.Password[:17])
-	}
-	if a.Database != "" {
-		params.Row("Database", a.Database)
-	}
+		Row("Port", strconv.Itoa(int(a.LocalPort))).
+		RowIfNotEmpty("Username", a.Username).
+		RowIfNotEmpty("Password", a.Password[:17]).
+		RowIfNotEmpty("Database", a.Database)
 
-	tables := []*table.Table{info, params}
+	tables := []*tui.Table{info, params}
 	widths := make([]int, 0, len(tables))
 	for _, t := range tables {
 		widths = append(widths, lipgloss.Width(t.Render()))

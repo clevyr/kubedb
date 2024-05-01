@@ -221,14 +221,10 @@ func (action Dump) summary(err error, took time.Duration, size *util.SizeWriter,
 	t := tui.MinimalTable(r).
 		Row("Context", action.Context).
 		Row("Namespace", action.Namespace).
-		Row("Pod", action.DBPod.Name)
-	if action.Username != "" {
-		t.Row("Username", action.Username)
-	}
-	if action.Database != "" {
-		t.Row("Database", action.Database)
-	}
-	t.Row("File", tui.OutPath(action.Filename, r)).
+		Row("Pod", action.DBPod.Name).
+		RowIfNotEmpty("Username", action.Username).
+		RowIfNotEmpty("Database", action.Database).
+		Row("File", tui.OutPath(action.Filename, r)).
 		Row("Took", took.String())
 	if err != nil {
 		t.Row("Error", lipgloss.NewStyle().Renderer(r).Foreground(lipgloss.Color("1")).Render(err.Error()))
