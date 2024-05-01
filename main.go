@@ -17,11 +17,14 @@ var errPanic = errors.New("panic")
 func main() {
 	defer func() {
 		var err error
+		var status int
 		if msg := recover(); msg != nil {
+			status = 1
 			err = fmt.Errorf("%w: %v\n\n%s", errPanic, msg, string(debug.Stack()))
 			_, _ = io.WriteString(os.Stderr, err.Error())
 		}
 		util.PostRun(err)
+		os.Exit(status)
 	}()
 
 	rootCmd := cmd.NewCommand()
