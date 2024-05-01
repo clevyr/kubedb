@@ -5,4 +5,4 @@ WORKDIR /data
 COPY kubedb /usr/local/bin
 
 ENV KUBECONFIG /.kube/config
-CMD ["kubedb"]
+ENTRYPOINT ["kubedb"]
