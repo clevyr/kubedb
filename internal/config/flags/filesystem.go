@@ -15,4 +15,8 @@ func Directory(cmd *cobra.Command, p *string) {
 	if err != nil {
 		panic(err)
 	}
+
+	if err := cmd.Flags().MarkHidden(consts.DirectoryFlag); err != nil {
+		panic(err)
+	}
 }

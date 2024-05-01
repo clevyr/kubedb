@@ -39,7 +39,6 @@ kubedb dump [filename | bucket URI] [flags]
       --create-job                      Create a job that will run the database client (default true)
       --create-network-policy           Creates a network policy allowing the KubeDB job to talk to the database. (default true)
   -d, --dbname string                   Database name to use (default discovered)
-  -C, --directory string                Directory to dump to (default ".")
   -T, --exclude-table strings           Do NOT dump the specified table(s)
   -D, --exclude-table-data strings      Do NOT dump data for the specified table(s)
   -F, --format string                   Output file format One of (gzip|custom|plain) (default "gzip")
