@@ -79,7 +79,7 @@ func (a PortForward) printTable() {
 		Msg("port forward is ready")
 
 	info := tui.MinimalTable(nil).
-		Row("Context", a.Context).
+		RowIfNotEmpty("Context", a.Context).
 		Row("Namespace", a.Namespace).
 		Row("Pod", a.DBPod.Name)
 
