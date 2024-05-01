@@ -5,11 +5,13 @@ import (
 	"io"
 	"os"
 
+	"github.com/clevyr/kubedb/internal/consts"
 	"github.com/fatih/color"
 	"github.com/mattn/go-isatty"
 	"github.com/rs/zerolog"
 	"github.com/rs/zerolog/log"
 	"github.com/spf13/cobra"
+	"github.com/spf13/viper"
 )
 
 func LogLevel(level string) zerolog.Level {
@@ -60,15 +62,9 @@ func LogFormat(out io.Writer, format string) io.Writer {
 }
 
 func InitLog(cmd *cobra.Command) {
-	level, err := cmd.Flags().GetString("log-level")
-	if err != nil {
-		panic(err)
-	}
+	level := viper.GetString(consts.LogLevelKey)
 	zerolog.SetGlobalLevel(LogLevel(level))
 
-	format, err := cmd.Flags().GetString("log-format")
-	if err != nil {
-		panic(err)
-	}
+	format := viper.GetString(consts.LogFormatKey)
 	log.Logger = log.Output(LogFormat(cmd.ErrOrStderr(), format))
 }
