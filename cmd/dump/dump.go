@@ -15,6 +15,7 @@ import (
 	"github.com/clevyr/kubedb/internal/database"
 	"github.com/clevyr/kubedb/internal/storage"
 	"github.com/clevyr/kubedb/internal/util"
+	"github.com/rs/zerolog/log"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 )
@@ -101,13 +102,9 @@ func preRun(cmd *cobra.Command, args []string) error {
 	if len(args) > 0 {
 		action.Filename = args[0]
 	}
-
-	if action.Directory != "" {
-		cmd.SilenceUsage = true
-		if err := os.Chdir(action.Directory); err != nil {
-			return err
-		}
-		cmd.SilenceUsage = false
+	if action.Directory != "" && action.Directory != "." {
+		log.Warn().Msg("Flag --directory has been deprecated, please pass the directory as a positional arg instead.")
+		action.Filename = filepath.Join(action.Directory, action.Filename)
 	}
 
 	if err := util.DefaultSetup(cmd, &action.Global, setupOptions); err != nil {
