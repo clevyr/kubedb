@@ -227,7 +227,7 @@ func (action Restore) runInDatabasePod(ctx context.Context, r *io.PipeReader, st
 }
 
 func (action Restore) Table() *table.Table {
-	t := tui.MinimalTable().
+	t := tui.MinimalTable(nil).
 		Row("Context", action.Context).
 		Row("Namespace", action.Namespace).
 		Row("Pod", action.DBPod.Name)
@@ -237,7 +237,7 @@ func (action Restore) Table() *table.Table {
 	if action.Database != "" {
 		t.Row("Database", action.Database)
 	}
-	t.Row("File", tui.InPath(action.Filename))
+	t.Row("File", tui.InPath(action.Filename, nil))
 	return t
 }
 
@@ -263,7 +263,7 @@ func (action Restore) printSummary(err error, took time.Duration, size *util.Siz
 
 	fmt.Println( //nolint:forbidigo
 		lipgloss.JoinVertical(lipgloss.Center,
-			tui.HeaderStyle().PaddingTop(1).Render("Restore Summary"),
+			tui.HeaderStyle(nil).PaddingTop(1).Render("Restore Summary"),
 			t.Render(),
 		),
 	)

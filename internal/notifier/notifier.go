@@ -25,6 +25,10 @@ type Notifier interface {
 	Finished(err error) error
 }
 
+type Logs interface {
+	SetLog(log string)
+}
+
 func New(handler, url string) (Notifier, error) {
 	switch strings.ToLower(handler) {
 	case "healthchecks":

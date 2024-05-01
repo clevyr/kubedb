@@ -105,6 +105,8 @@ func preRun(cmd *cobra.Command, _ []string) error {
 					log.Err(err).Msg("Notifications ping finished failed")
 				}
 			})
+
+			cmd.SetContext(notifier.NewContext(cmd.Context(), handler))
 		}
 	}
 

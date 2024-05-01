@@ -11,21 +11,22 @@ import (
 	"time"
 )
 
+var _ Logs = &Healthchecks{}
+
 func NewHealthchecks(url string) (Notifier, error) {
 	if url == "" {
 		return nil, fmt.Errorf("healthchecks %w", ErrEmptyURL)
 	}
 
-	return &Healthchecks{
-		url: url,
-	}, nil
+	return &Healthchecks{url: url}, nil
 }
 
 type Healthchecks struct {
 	url string
+	log string
 }
 
-func (h Healthchecks) SendStatus(status Status, log string) error {
+func (h *Healthchecks) SendStatus(status Status, log string) error {
 	var statusStr string
 	switch status {
 	case StatusStart:
@@ -65,13 +66,22 @@ func (h Healthchecks) SendStatus(status Status, log string) error {
 	return nil
 }
 
-func (h Healthchecks) Started() error {
+func (h *Healthchecks) Started() error {
 	return h.SendStatus(StatusStart, "")
 }
 
-func (h Healthchecks) Finished(err error) error {
+func (h *Healthchecks) SetLog(log string) {
+	h.log = log
+}
+
+func (h *Healthchecks) Finished(err error) error {
 	if err == nil {
-		return h.SendStatus(StatusSuccess, "")
+		return h.SendStatus(StatusSuccess, h.log)
 	}
-	return h.SendStatus(StatusFailure, "Error: "+err.Error())
+
+	msg := "Error: " + err.Error()
+	if h.log != "" {
+		msg += "\n\n" + h.log
+	}
+	return h.SendStatus(StatusFailure, msg)
 }

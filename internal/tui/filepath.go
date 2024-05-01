@@ -7,16 +7,16 @@ import (
 	"github.com/charmbracelet/lipgloss"
 )
 
-func InPath(path string) string {
-	style := lipgloss.NewStyle().Italic(true)
+func InPath(path string, r *lipgloss.Renderer) string {
+	style := lipgloss.NewStyle().Renderer(r).Italic(true)
 	if path == "-" {
 		return "stdin"
 	}
 	return style.Render(CleanPath(path))
 }
 
-func OutPath(path string) string {
-	style := lipgloss.NewStyle().Italic(true)
+func OutPath(path string, r *lipgloss.Renderer) string {
+	style := lipgloss.NewStyle().Renderer(r).Italic(true)
 	if path == "-" {
 		return "stdout"
 	}
