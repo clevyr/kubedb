@@ -29,7 +29,6 @@ func NewCommand() *cobra.Command {
 		DisableAutoGenTag: true,
 
 		PersistentPreRunE: preRun,
-		SilenceErrors:     true,
 	}
 
 	flags.Kubeconfig(cmd)
@@ -91,6 +90,7 @@ func preRun(cmd *cobra.Command, _ []string) error {
 		return err
 	}
 	config.InitLog(cmd)
+	cmd.Root().SilenceErrors = true
 
 	if url := viper.GetString(consts.HealthchecksPingURLKey); url != "" {
 		if handler, err := notifier.NewHealthchecks(url); err != nil {

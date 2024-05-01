@@ -30,7 +30,9 @@ func main() {
 
 	rootCmd := cmd.NewCommand()
 	if err := rootCmd.Execute(); err != nil {
-		log.Error().Msg(err.Error())
+		if rootCmd.SilenceErrors {
+			log.Error().Msg(err.Error())
+		}
 		util.PostRun(err)
 		//nolint:gocritic
 		os.Exit(1)
