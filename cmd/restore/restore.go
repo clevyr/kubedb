@@ -4,16 +4,12 @@ import (
 	"errors"
 	"fmt"
 	"os"
-	"strings"
 
-	"github.com/charmbracelet/huh"
-	"github.com/charmbracelet/lipgloss"
 	"github.com/clevyr/kubedb/internal/actions/restore"
 	"github.com/clevyr/kubedb/internal/config"
 	"github.com/clevyr/kubedb/internal/config/flags"
 	"github.com/clevyr/kubedb/internal/consts"
 	"github.com/clevyr/kubedb/internal/database"
-	"github.com/clevyr/kubedb/internal/tui"
 	"github.com/clevyr/kubedb/internal/util"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
@@ -139,7 +135,7 @@ func preRun(cmd *cobra.Command, args []string) error {
 	if !action.Force {
 		tty := term.TTY{In: os.Stdin}.IsTerminalIn()
 		if tty {
-			if response, err := confirm(); err != nil {
+			if response, err := action.Confirm(); err != nil {
 				return err
 			} else if !response {
 				return ErrRestoreCanceled
@@ -158,31 +154,4 @@ func preRun(cmd *cobra.Command, args []string) error {
 
 func run(cmd *cobra.Command, _ []string) error {
 	return action.Run(cmd.Context())
-}
-
-func confirm() (bool, error) {
-	t := tui.MinimalTable().
-		Row("Context", action.Context).
-		Row("Namespace", action.Namespace).
-		Row("Pod", action.DBPod.Name)
-	if action.Username != "" {
-		t.Row("Username", action.Username)
-	}
-	if action.Database != "" {
-		t.Row("Database", action.Database)
-	}
-	path := action.Filename
-	if home, err := os.UserHomeDir(); err == nil {
-		path = strings.Replace(path, home, "~", 1)
-	}
-	t.Row("File", lipgloss.NewStyle().Italic(true).Render(path))
-
-	var response bool
-	err := huh.NewForm(huh.NewGroup(
-		huh.NewConfirm().
-			Title("Ready to restore?").
-			Description(t.Render()).
-			Value(&response),
-	)).Run()
-	return response, err
 }

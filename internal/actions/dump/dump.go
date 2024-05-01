@@ -10,6 +10,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/charmbracelet/lipgloss"
 	"github.com/clevyr/kubedb/internal/command"
 	"github.com/clevyr/kubedb/internal/config"
 	"github.com/clevyr/kubedb/internal/consts"
@@ -18,6 +19,7 @@ import (
 	"github.com/clevyr/kubedb/internal/kubernetes"
 	"github.com/clevyr/kubedb/internal/progressbar"
 	"github.com/clevyr/kubedb/internal/storage"
+	"github.com/clevyr/kubedb/internal/tui"
 	"github.com/clevyr/kubedb/internal/util"
 	gzip "github.com/klauspost/pgzip"
 	"github.com/rs/zerolog/log"
@@ -162,6 +164,10 @@ func (action Dump) Run(ctx context.Context) error {
 		return nil
 	})
 
+	util.OnFinalize(func(err error) {
+		action.printSummary(err, time.Since(startTime).Truncate(10*time.Millisecond), sizeW)
+	})
+
 	if err := errGroup.Wait(); err != nil {
 		return err
 	}
@@ -172,7 +178,6 @@ func (action Dump) Run(ctx context.Context) error {
 		Stringer("took", time.Since(startTime).Truncate(10*time.Millisecond)).
 		Stringer("size", sizeW).
 		Msg("dump complete")
-
 	return nil
 }
 
@@ -195,4 +200,36 @@ func (action Dump) buildCommand() (*command.Builder, error) {
 	sanitized := strings.ReplaceAll(cmd.String(), action.Password, "***")
 	log.Trace().Str("cmd", sanitized).Msg("finished building command")
 	return cmd, nil
+}
+
+func (action Dump) printSummary(err error, took time.Duration, size *util.SizeWriter) {
+	out := os.Stdout
+	if action.Filename == "-" {
+		out = os.Stderr
+	}
+
+	t := tui.MinimalTable().
+		Row("Context", action.Context).
+		Row("Namespace", action.Namespace).
+		Row("Pod", action.DBPod.Name)
+	if action.Username != "" {
+		t.Row("Username", action.Username)
+	}
+	if action.Database != "" {
+		t.Row("Database", action.Database)
+	}
+	t.Row("File", tui.OutPath(action.Filename)).
+		Row("Took", took.String())
+	if err != nil {
+		t.Row("Error", lipgloss.NewStyle().Foreground(lipgloss.Color("1")).Render(err.Error()))
+	} else if size != nil {
+		t.Row("Size", size.String())
+	}
+
+	_, _ = io.WriteString(out,
+		lipgloss.JoinVertical(lipgloss.Center,
+			tui.HeaderStyle().PaddingTop(1).Render("Dump Summary"),
+			t.Render(),
+		)+"\n",
+	)
 }
