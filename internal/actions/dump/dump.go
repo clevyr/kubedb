@@ -17,11 +17,13 @@ import (
 	"github.com/clevyr/kubedb/internal/database/sqlformat"
 	"github.com/clevyr/kubedb/internal/github"
 	"github.com/clevyr/kubedb/internal/kubernetes"
+	"github.com/clevyr/kubedb/internal/notifier"
 	"github.com/clevyr/kubedb/internal/progressbar"
 	"github.com/clevyr/kubedb/internal/storage"
 	"github.com/clevyr/kubedb/internal/tui"
 	"github.com/clevyr/kubedb/internal/util"
 	gzip "github.com/klauspost/pgzip"
+	"github.com/muesli/termenv"
 	"github.com/rs/zerolog/log"
 	"github.com/spf13/viper"
 	"golang.org/x/sync/errgroup"
@@ -178,6 +180,12 @@ func (action Dump) Run(ctx context.Context) error {
 		Stringer("took", time.Since(startTime).Truncate(10*time.Millisecond)).
 		Stringer("size", sizeW).
 		Msg("dump complete")
+
+	if handler, ok := notifier.FromContext(ctx); ok {
+		if logger, ok := handler.(notifier.Logs); ok {
+			logger.SetLog(action.summary(nil, time.Since(startTime).Truncate(10*time.Millisecond), sizeW, true))
+		}
+	}
 	return nil
 }
 
@@ -202,13 +210,15 @@ func (action Dump) buildCommand() (*command.Builder, error) {
 	return cmd, nil
 }
 
-func (action Dump) printSummary(err error, took time.Duration, size *util.SizeWriter) {
-	out := os.Stdout
-	if action.Filename == "-" {
-		out = os.Stderr
+func (action Dump) summary(err error, took time.Duration, size *util.SizeWriter, plain bool) string {
+	var r *lipgloss.Renderer
+	if plain {
+		r = lipgloss.NewRenderer(os.Stdout, termenv.WithTTY(false))
+		r.SetColorProfile(termenv.Ascii)
+		r.SetHasDarkBackground(lipgloss.HasDarkBackground())
 	}
 
-	t := tui.MinimalTable().
+	t := tui.MinimalTable(r).
 		Row("Context", action.Context).
 		Row("Namespace", action.Namespace).
 		Row("Pod", action.DBPod.Name)
@@ -218,18 +228,24 @@ func (action Dump) printSummary(err error, took time.Duration, size *util.SizeWr
 	if action.Database != "" {
 		t.Row("Database", action.Database)
 	}
-	t.Row("File", tui.OutPath(action.Filename)).
+	t.Row("File", tui.OutPath(action.Filename, r)).
 		Row("Took", took.String())
 	if err != nil {
-		t.Row("Error", lipgloss.NewStyle().Foreground(lipgloss.Color("1")).Render(err.Error()))
+		t.Row("Error", lipgloss.NewStyle().Renderer(r).Foreground(lipgloss.Color("1")).Render(err.Error()))
 	} else if size != nil {
 		t.Row("Size", size.String())
 	}
 
-	_, _ = io.WriteString(out,
-		lipgloss.JoinVertical(lipgloss.Center,
-			tui.HeaderStyle().PaddingTop(1).Render("Dump Summary"),
-			t.Render(),
-		)+"\n",
+	return lipgloss.JoinVertical(lipgloss.Center,
+		tui.HeaderStyle(r).Render("Dump Summary"),
+		t.Render(),
 	)
+}
+
+func (action Dump) printSummary(err error, took time.Duration, size *util.SizeWriter) {
+	out := os.Stdout
+	if action.Filename == "-" {
+		out = os.Stderr
+	}
+	_, _ = io.WriteString(out, "\n"+action.summary(err, took, size, false)+"\n")
 }

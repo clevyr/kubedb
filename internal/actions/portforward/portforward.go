@@ -79,12 +79,12 @@ func (a PortForward) printTable() {
 		Uint16("remote", a.Port).
 		Msg("port forward is ready")
 
-	info := tui.MinimalTable().
+	info := tui.MinimalTable(nil).
 		Row("Context", a.Context).
 		Row("Namespace", a.Namespace).
 		Row("Pod", a.DBPod.Name)
 
-	params := tui.MinimalTable().
+	params := tui.MinimalTable(nil).
 		Row("Type", a.Dialect.PrettyName()).
 		Row("Namespace", a.Namespace).
 		Row("Hostname", "localhost").
@@ -115,8 +115,8 @@ func (a PortForward) printTable() {
 		}
 	}
 
-	headerStyle := tui.HeaderStyle()
-	italicStyle := tui.BorderStyle().Italic(true)
+	headerStyle := tui.HeaderStyle(nil)
+	italicStyle := tui.BorderStyle(nil).Italic(true)
 	data := lipgloss.JoinVertical(lipgloss.Left,
 		lipgloss.JoinVertical(lipgloss.Center,
 			headerStyle.Render("Database Instance"),
@@ -129,7 +129,7 @@ func (a PortForward) printTable() {
 		),
 		"",
 		headerStyle.Render("Tip:")+
-			tui.BorderStyle().Render(" If you're connecting from a Docker container, set the hostname to ")+
+			tui.BorderStyle(nil).Render(" If you're connecting from a Docker container, set the hostname to ")+
 			italicStyle.Render("host.docker.internal"),
 	)
 
