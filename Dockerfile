@@ -3,8 +3,6 @@
 FROM --platform=$BUILDPLATFORM golang:1.22.2-alpine AS builder
 WORKDIR /app
 
-RUN apk add --no-cache git
-
 COPY go.mod go.sum ./
 RUN go mod download
 
@@ -28,8 +26,6 @@ EOT
 FROM alpine:3.19
 LABEL org.opencontainers.image.source="https://github.com/clevyr/kubedb"
 WORKDIR /data
-
-RUN apk add --no-cache git
 
 COPY --from=builder /app/kubedb /usr/local/bin/
 
