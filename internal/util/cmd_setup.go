@@ -380,7 +380,7 @@ func createJob(ctx context.Context, conf *config.Global, actionName string) erro
 	}
 
 	if viper.GetBool(consts.CreateNetworkPolicyKey) {
-		jobPodKey, jobPodVal := jobPodLabel(conf, conf.Job)
+		jobPodKey, jobPodVal := jobPodNameLabel(conf, conf.Job)
 		policy := networkingv1.NetworkPolicy{
 			ObjectMeta: metav1.ObjectMeta{
 				Name:      conf.Job.Name,
@@ -496,7 +496,7 @@ func pollJobPod(ctx context.Context, conf *config.Global) error {
 	)
 }
 
-func jobPodLabel(conf *config.Global, job *batchv1.Job) (string, string) {
+func jobPodUIDLabel(conf *config.Global, job *batchv1.Job) (string, string) {
 	useNewLabel, err := conf.Client.MinServerVersion(1, 27)
 	if err != nil {
 		log.Warn().Err(err).Msg("failed to query server version; assuming v1.27+")
@@ -513,6 +513,22 @@ func jobPodLabel(conf *config.Global, job *batchv1.Job) (string, string) {
 }
 
 func jobPodLabelSelector(conf *config.Global, job *batchv1.Job) string {
-	k, v := jobPodLabel(conf, job)
+	k, v := jobPodUIDLabel(conf, job)
 	return k + "=" + v
+}
+
+func jobPodNameLabel(conf *config.Global, job *batchv1.Job) (string, string) {
+	useNewLabel, err := conf.Client.MinServerVersion(1, 27)
+	if err != nil {
+		log.Warn().Err(err).Msg("failed to query server version; assuming v1.27+")
+		useNewLabel = true
+	}
+
+	var key string
+	if useNewLabel {
+		key = "batch.kubernetes.io/job-name"
+	} else {
+		key = "job-name"
+	}
+	return key, job.Name
 }
