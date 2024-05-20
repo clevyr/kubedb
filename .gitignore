@@ -1,8 +1,9 @@
+.DS_Store
 .idea
+/completions/
+/manpages/
 coverage.out
 dist
 kubedb
 out
 vendor
-/completions/
-/manpages/
