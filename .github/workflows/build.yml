@@ -77,7 +77,7 @@ jobs:
       - name: Run GoReleaser
         uses: goreleaser/goreleaser-action@v5
         with:
-          version: latest
+          version: v1
           args: ${{ steps.vars.outputs.args }}
         env:
           GITHUB_TOKEN: ${{ steps.app-token.outputs.token }}
