@@ -31,7 +31,7 @@ func BorderStyle(r *lipgloss.Renderer) lipgloss.Style {
 
 func MinimalTable(r *lipgloss.Renderer) *Table {
 	colStyle := BorderStyle(r).Padding(0, 1)
-	firstColStyle := colStyle.Copy().Align(lipgloss.Right).Bold(true)
+	firstColStyle := colStyle.Align(lipgloss.Right).Bold(true)
 
 	return &Table{
 		Table: table.New().
