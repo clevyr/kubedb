@@ -75,7 +75,7 @@ jobs:
           private-key: ${{ secrets.BOT_APP_PRIVATE_KEY }}
           repositories: kubedb,homebrew-tap
       - name: Run GoReleaser
-        uses: goreleaser/goreleaser-action@v5
+        uses: goreleaser/goreleaser-action@v6
         with:
           version: v1
           args: ${{ steps.vars.outputs.args }}
