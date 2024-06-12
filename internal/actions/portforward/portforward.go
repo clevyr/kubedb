@@ -80,7 +80,7 @@ func (a PortForward) printTable() {
 
 	info := tui.MinimalTable(nil).
 		RowIfNotEmpty("Context", a.Context).
-		Row("Namespace", a.Namespace).
+		Row("Namespace", tui.NamespaceStyle(nil, a.Namespace).Render()).
 		Row("Pod", a.DBPod.Name)
 
 	params := tui.MinimalTable(nil).

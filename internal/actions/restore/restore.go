@@ -228,7 +228,7 @@ func (action Restore) runInDatabasePod(ctx context.Context, r *io.PipeReader, st
 func (action Restore) Table() *tui.Table {
 	return tui.MinimalTable(nil).
 		RowIfNotEmpty("Context", action.Context).
-		Row("Namespace", action.Namespace).
+		Row("Namespace", tui.NamespaceStyle(nil, action.Namespace).Render()).
 		Row("Pod", action.DBPod.Name).
 		RowIfNotEmpty("Username", action.Username).
 		RowIfNotEmpty("Database", action.Database).

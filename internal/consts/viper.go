@@ -15,4 +15,5 @@ const (
 	RemoteGzipKey          = "remote-gzip"
 	PortForwardAddrKey     = "port-forward.address"
 	HealthchecksPingURLKey = "healthchecks.ping-url"
+	NamespaceColorKey      = "ui.colors.namespace"
 )

@@ -6,11 +6,14 @@ import (
 	"path/filepath"
 	"strings"
 
+	"github.com/clevyr/kubedb/internal/consts"
 	"github.com/rs/zerolog/log"
 	"github.com/spf13/viper"
 )
 
 func LoadViper() error {
+	SetViperDefaults()
+
 	if xdgConfigHome := os.Getenv("XDG_CONFIG_HOME"); xdgConfigHome != "" {
 		viper.AddConfigPath(filepath.Join(xdgConfigHome, "kubedb"))
 	}
@@ -34,4 +37,10 @@ func LoadViper() error {
 
 	log.Debug().Str("path", viper.ConfigFileUsed()).Msg("Loaded config file")
 	return nil
+}
+
+func SetViperDefaults() {
+	viper.SetDefault(consts.NamespaceColorKey, map[string]string{
+		"[-_]pro?d(uction)?([-_]|$)": "9",
+	})
 }

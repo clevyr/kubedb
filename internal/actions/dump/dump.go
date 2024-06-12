@@ -220,7 +220,7 @@ func (action Dump) summary(err error, took time.Duration, size *util.SizeWriter,
 
 	t := tui.MinimalTable(r).
 		RowIfNotEmpty("Context", action.Context).
-		Row("Namespace", action.Namespace).
+		Row("Namespace", tui.NamespaceStyle(r, action.Namespace).Render()).
 		Row("Pod", action.DBPod.Name).
 		RowIfNotEmpty("Username", action.Username).
 		RowIfNotEmpty("Database", action.Database).
