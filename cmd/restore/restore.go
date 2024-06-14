@@ -5,14 +5,17 @@ import (
 	"fmt"
 	"os"
 
+	"github.com/charmbracelet/huh"
 	"github.com/clevyr/kubedb/internal/actions/restore"
 	"github.com/clevyr/kubedb/internal/config"
 	"github.com/clevyr/kubedb/internal/config/flags"
 	"github.com/clevyr/kubedb/internal/consts"
 	"github.com/clevyr/kubedb/internal/database"
+	"github.com/clevyr/kubedb/internal/tui"
 	"github.com/clevyr/kubedb/internal/util"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
+	"golang.org/x/exp/maps"
 	"k8s.io/kubectl/pkg/util/term"
 )
 
@@ -29,7 +32,7 @@ func New() *cobra.Command {
 		Short:   "Restore a sql file to a database",
 		Long:    newDescription(),
 
-		Args:              cobra.ExactArgs(1),
+		Args:              cobra.MaximumNArgs(1),
 		ValidArgsFunction: validArgs,
 		GroupID:           "rw",
 
@@ -109,15 +112,44 @@ func preRun(cmd *cobra.Command, args []string) error {
 	action.HaltOnError = viper.GetBool(consts.HaltOnErrorKey)
 	action.Spinner = viper.GetString(consts.SpinnerKey)
 
-	if len(args) > 0 {
-		action.Filename = args[0]
-	}
-
 	if err := util.DefaultSetup(cmd, &action.Global, setupOptions); err != nil {
 		return err
 	}
 
-	if action.Filename != "-" {
+	if len(args) > 0 {
+		action.Filename = args[0]
+	}
+
+	switch action.Filename {
+	case "-":
+	case "":
+		db, ok := action.Dialect.(config.DatabaseRestore)
+		if !ok {
+			return fmt.Errorf("%w: %s", util.ErrNoRestore, action.Dialect.Name())
+		}
+
+		wd, err := os.Getwd()
+		if err != nil {
+			return err
+		}
+
+		form := tui.NewForm(huh.NewGroup(
+			huh.NewFilePicker().
+				Title("Choose a file to restore").
+				Picking(true).
+				CurrentDirectory(wd).
+				ShowSize(true).
+				ShowPermissions(false).
+				Height(15).
+				AllowedTypes(maps.Values(db.Formats())).
+				Value(&action.Filename),
+		))
+
+		if err := form.Run(); err != nil {
+			return err
+		}
+		fallthrough
+	default:
 		if _, err := os.Stat(action.Filename); errors.Is(err, os.ErrNotExist) {
 			return err
 		}
