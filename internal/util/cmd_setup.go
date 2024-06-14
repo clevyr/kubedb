@@ -14,6 +14,7 @@ import (
 	"github.com/clevyr/kubedb/internal/consts"
 	"github.com/clevyr/kubedb/internal/database"
 	"github.com/clevyr/kubedb/internal/kubernetes"
+	"github.com/clevyr/kubedb/internal/tui"
 	"github.com/rs/zerolog/log"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
@@ -100,7 +101,7 @@ func DefaultSetup(cmd *cobra.Command, conf *config.Global, opts SetupOptions) er
 					opts = append(opts, huh.NewOption(dialect.PrettyName(), dialect))
 				}
 				var chosen config.Database
-				if err := huh.NewForm(huh.NewGroup(
+				if err := tui.NewForm(huh.NewGroup(
 					huh.NewSelect[config.Database]().
 						Title("Select database type").
 						Options(opts...).
@@ -159,7 +160,7 @@ func DefaultSetup(cmd *cobra.Command, conf *config.Global, opts SetupOptions) er
 			opts = append(opts, huh.NewOption(pod.Name, i))
 		}
 		var idx int
-		if err := huh.NewForm(huh.NewGroup(
+		if err := tui.NewForm(huh.NewGroup(
 			huh.NewSelect[int]().
 				Title("Select " + conf.Dialect.PrettyName() + " instance").
 				Options(opts...).

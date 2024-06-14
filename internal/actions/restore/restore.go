@@ -237,7 +237,7 @@ func (action Restore) Table() *tui.Table {
 
 func (action Restore) Confirm() (bool, error) {
 	var response bool
-	err := huh.NewForm(huh.NewGroup(
+	err := tui.NewForm(huh.NewGroup(
 		huh.NewConfirm().
 			Title("Ready to restore?").
 			Description(action.Table().Render()).
