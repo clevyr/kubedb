@@ -1,4 +1,5 @@
 project_name: kubedb
+version: 2
 before:
   hooks:
     - go run ./internal/generate/completions
