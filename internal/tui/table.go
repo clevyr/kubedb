@@ -26,11 +26,16 @@ func (t *Table) RowIfNotEmpty(row ...string) *Table {
 
 func BorderStyle(r *lipgloss.Renderer) lipgloss.Style {
 	return lipgloss.NewStyle().Renderer(r).
-		Foreground(lipgloss.AdaptiveColor{Light: "", Dark: "243"})
+		Foreground(lipgloss.AdaptiveColor{Light: "246", Dark: "241"})
+}
+
+func TextStyle(r *lipgloss.Renderer) lipgloss.Style {
+	return lipgloss.NewStyle().Renderer(r).
+		Foreground(lipgloss.AdaptiveColor{Light: "234", Dark: "250"})
 }
 
 func MinimalTable(r *lipgloss.Renderer) *Table {
-	colStyle := BorderStyle(r).Padding(0, 1)
+	colStyle := TextStyle(r).Padding(0, 1)
 	firstColStyle := colStyle.Align(lipgloss.Right).Bold(true)
 
 	return &Table{

@@ -243,7 +243,8 @@ func (action Restore) Confirm() (bool, error) {
 
 		description = lipgloss.JoinVertical(lipgloss.Left,
 			table.Render(),
-			warnStyle.Render("WARNING: ")+"Filename does not contain the current namespace.",
+			warnStyle.Render("WARNING: ")+
+				tui.TextStyle(nil).Render("Filename does not contain the current namespace."),
 			"Please verify you are restoring to the correct namespace.",
 		)
 	} else {
@@ -251,7 +252,7 @@ func (action Restore) Confirm() (bool, error) {
 	}
 
 	theme := huh.ThemeCharm()
-	theme.Focused.Description = lipgloss.NewStyle()
+	theme.Focused.Description = tui.TextStyle(nil)
 
 	var response bool
 	err := tui.NewForm(huh.NewGroup(

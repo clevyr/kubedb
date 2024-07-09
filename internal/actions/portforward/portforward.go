@@ -109,7 +109,7 @@ func (a PortForward) printTable() {
 	}
 
 	headerStyle := tui.HeaderStyle(nil)
-	italicStyle := tui.BorderStyle(nil).Italic(true)
+	italicStyle := tui.TextStyle(nil).Italic(true)
 	data := lipgloss.JoinVertical(lipgloss.Left,
 		lipgloss.JoinVertical(lipgloss.Center,
 			headerStyle.Render("Database Instance"),
@@ -122,7 +122,7 @@ func (a PortForward) printTable() {
 		),
 		"",
 		headerStyle.Render("Tip:")+
-			tui.BorderStyle(nil).Render(" If you're connecting from a Docker container, set the hostname to ")+
+			tui.TextStyle(nil).Render(" If you're connecting from a Docker container, set the hostname to ")+
 			italicStyle.Render("host.docker.internal"),
 	)
 
