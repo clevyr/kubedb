@@ -8,6 +8,8 @@ import (
 	"github.com/spf13/viper"
 )
 
+const ColorYellow = lipgloss.Color("3")
+
 func HeaderStyle(r *lipgloss.Renderer) lipgloss.Style {
 	return lipgloss.NewStyle().Renderer(r).
 		Bold(true).
@@ -26,4 +28,8 @@ func NamespaceStyle(r *lipgloss.Renderer, namespace string) lipgloss.Style {
 	}
 
 	return style
+}
+
+func WarnStyle(r *lipgloss.Renderer) lipgloss.Style {
+	return lipgloss.NewStyle().Renderer(r).Foreground(ColorYellow)
 }

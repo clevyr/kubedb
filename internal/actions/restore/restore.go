@@ -231,23 +231,41 @@ func (action Restore) Table() *tui.Table {
 		Row("Namespace", tui.NamespaceStyle(nil, action.Namespace).Render()).
 		Row("Pod", action.DBPod.Name).
 		RowIfNotEmpty("Username", action.Username).
-		RowIfNotEmpty("Database", action.Database).
-		Row("File", tui.InPath(action.Filename, nil))
+		RowIfNotEmpty("Database", action.Database)
 }
 
 func (action Restore) Confirm() (bool, error) {
+	table := action.Table()
+	var description string
+	if action.Filename != "-" && !strings.Contains(action.Filename, action.Namespace) {
+		warnStyle := tui.WarnStyle(nil)
+		table.Row("File", warnStyle.Render(tui.InPath(action.Filename, nil)))
+
+		description = lipgloss.JoinVertical(lipgloss.Left,
+			table.Render(),
+			warnStyle.Render("WARNING: ")+"Filename does not contain the current namespace.",
+			"Please verify you are restoring to the correct namespace.",
+		)
+	} else {
+		description = table.Row("File", tui.InPath(action.Filename, nil)).Render()
+	}
+
+	theme := huh.ThemeCharm()
+	theme.Focused.Description = lipgloss.NewStyle()
+
 	var response bool
 	err := tui.NewForm(huh.NewGroup(
 		huh.NewConfirm().
 			Title("Ready to restore?").
-			Description(action.Table().Render()).
+			Description(description).
 			Value(&response),
-	)).Run()
+	)).WithTheme(theme).Run()
 	return response, err
 }
 
 func (action Restore) printSummary(err error, took time.Duration, size *util.SizeWriter) {
 	t := action.Table().
+		Row("File", tui.InPath(action.Filename, nil)).
 		Row("Took", took.String())
 	if err != nil {
 		t.Row("Error", lipgloss.NewStyle().Foreground(lipgloss.Color("1")).Render(err.Error()))
