@@ -13,6 +13,7 @@ import (
 	"github.com/clevyr/kubedb/internal/config/flags"
 	"github.com/clevyr/kubedb/internal/database"
 	"github.com/clevyr/kubedb/internal/kubernetes"
+	"github.com/clevyr/kubedb/internal/tui"
 	"github.com/clevyr/kubedb/internal/util"
 	"github.com/rs/zerolog"
 	"github.com/spf13/cobra"
@@ -53,7 +54,7 @@ func run(cmd *cobra.Command, _ []string) error {
 	statusStyle := lipgloss.NewStyle().PaddingLeft(1)
 	prefixOk := statusStyle.Foreground(lipgloss.Color("2")).Render("✓")
 	prefixNeutral := statusStyle.Foreground(lipgloss.Color("8")).Render("-")
-	prefixErr := statusStyle.Foreground(lipgloss.Color("1")).Render("✗")
+	prefixErr := statusStyle.Foreground(tui.ColorRed).Render("✗")
 	bold := lipgloss.NewStyle().Bold(true).Render
 
 	defaultSetupErr := util.DefaultSetup(cmd, &conf, util.SetupOptions{Name: "status"})

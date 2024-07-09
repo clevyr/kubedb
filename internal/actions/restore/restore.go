@@ -268,7 +268,7 @@ func (action Restore) printSummary(err error, took time.Duration, size *util.Siz
 		Row("File", tui.InPath(action.Filename, nil)).
 		Row("Took", took.String())
 	if err != nil {
-		t.Row("Error", lipgloss.NewStyle().Foreground(lipgloss.Color("1")).Render(err.Error()))
+		t.Row("Error", tui.ErrStyle(nil).Render(err.Error()))
 	} else if size != nil {
 		t.Row("Size", size.String())
 	}

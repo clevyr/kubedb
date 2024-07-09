@@ -7,6 +7,7 @@ import (
 	"strings"
 
 	"github.com/clevyr/kubedb/internal/consts"
+	"github.com/clevyr/kubedb/internal/tui"
 	"github.com/rs/zerolog/log"
 	"github.com/spf13/viper"
 )
@@ -41,6 +42,6 @@ func LoadViper() error {
 
 func SetViperDefaults() {
 	viper.SetDefault(consts.NamespaceColorKey, map[string]string{
-		"[-_]pro?d(uction)?([-_]|$)": "9",
+		"[-_]pro?d(uction)?([-_]|$)": string(tui.ColorRed),
 	})
 }

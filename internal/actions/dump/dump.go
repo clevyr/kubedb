@@ -227,7 +227,7 @@ func (action Dump) summary(err error, took time.Duration, size *util.SizeWriter,
 		Row("File", tui.OutPath(action.Filename, r)).
 		Row("Took", took.String())
 	if err != nil {
-		t.Row("Error", lipgloss.NewStyle().Renderer(r).Foreground(lipgloss.Color("1")).Render(err.Error()))
+		t.Row("Error", tui.ErrStyle(r).Render(err.Error()))
 	} else if size != nil {
 		t.Row("Size", size.String())
 	}
