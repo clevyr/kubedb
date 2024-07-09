@@ -8,7 +8,7 @@ require (
 	github.com/aws/aws-sdk-go-v2/config v1.27.24
 	github.com/aws/aws-sdk-go-v2/feature/s3/manager v1.17.5
 	github.com/aws/aws-sdk-go-v2/service/s3 v1.58.0
-	github.com/charmbracelet/huh v0.4.2
+	github.com/charmbracelet/huh v0.5.1
 	github.com/charmbracelet/lipgloss v0.11.0
 	github.com/dustin/go-humanize v1.0.1
 	github.com/fatih/color v1.17.0
@@ -58,10 +58,10 @@ require (
 	github.com/aymanbagabas/go-osc52/v2 v2.0.1 // indirect
 	github.com/catppuccin/go v0.2.0 // indirect
 	github.com/charmbracelet/bubbles v0.18.0 // indirect
-	github.com/charmbracelet/bubbletea v0.26.3 // indirect
-	github.com/charmbracelet/x/ansi v0.1.1 // indirect
-	github.com/charmbracelet/x/exp/strings v0.0.0-20240524151031-ff83003bf67a // indirect
-	github.com/charmbracelet/x/input v0.1.1 // indirect
+	github.com/charmbracelet/bubbletea v0.26.4 // indirect
+	github.com/charmbracelet/x/ansi v0.1.2 // indirect
+	github.com/charmbracelet/x/exp/strings v0.0.0-20240617190524-788ec55faed1 // indirect
+	github.com/charmbracelet/x/input v0.1.2 // indirect
 	github.com/charmbracelet/x/term v0.1.1 // indirect
 	github.com/charmbracelet/x/windows v0.1.2 // indirect
 	github.com/cpuguy83/go-md2man/v2 v2.0.4 // indirect
@@ -102,6 +102,7 @@ require (
 	github.com/mattn/go-runewidth v0.0.15 // indirect
 	github.com/mitchellh/colorstring v0.0.0-20190213212951-d06e56a500db // indirect
 	github.com/mitchellh/go-wordwrap v1.0.1 // indirect
+	github.com/mitchellh/hashstructure/v2 v2.0.2 // indirect
 	github.com/mitchellh/mapstructure v1.5.0 // indirect
 	github.com/moby/spdystream v0.2.0 // indirect
 	github.com/moby/term v0.5.0 // indirect
