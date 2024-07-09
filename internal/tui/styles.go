@@ -9,8 +9,10 @@ import (
 )
 
 const (
-	ColorRed    = lipgloss.Color("1")
-	ColorYellow = lipgloss.Color("3")
+	ColorRed     = lipgloss.Color("1")
+	ColorGreen   = lipgloss.Color("2")
+	ColorYellow  = lipgloss.Color("3")
+	ColorHiBlack = lipgloss.Color("8")
 )
 
 func HeaderStyle(r *lipgloss.Renderer) lipgloss.Style {
