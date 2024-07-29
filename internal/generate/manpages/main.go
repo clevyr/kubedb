@@ -55,8 +55,8 @@ func main() {
 		panic(err)
 	}
 
-	if err := filepath.Walk("manpages", func(path string, info fs.FileInfo, err error) error {
-		if err != nil || info.IsDir() {
+	if err := filepath.WalkDir("manpages", func(path string, d fs.DirEntry, err error) error {
+		if err != nil || d.IsDir() {
 			return err
 		}
 
