@@ -30,7 +30,7 @@ func (l *BarSafeLogger) Write(p []byte) (int, error) {
 	defer l.bar.mu.Unlock()
 
 	if l.canOverwrite {
-		if _, err := l.out.Write([]byte("\r\x1B[K")); err != nil {
+		if _, err := io.WriteString(l.out, "\r\x1B[K"); err != nil {
 			return 0, err
 		}
 	}
@@ -41,7 +41,7 @@ func (l *BarSafeLogger) Write(p []byte) (int, error) {
 	}
 
 	if bytes.HasSuffix(p, []byte("\n")) {
-		if _, err := l.out.Write([]byte(l.bar.String())); err != nil {
+		if _, err := io.WriteString(l.out, l.bar.String()); err != nil {
 			return n, err
 		}
 		l.canOverwrite = true

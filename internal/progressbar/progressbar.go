@@ -1,7 +1,6 @@
 package progressbar
 
 import (
-	"fmt"
 	"io"
 	"os"
 	"sync"
@@ -37,7 +36,7 @@ func New(w io.Writer, max int64, label string, spinnerKey string) (*ProgressBar,
 		options = append(options,
 			progressbar.OptionSetRenderBlankState(true),
 			progressbar.OptionOnCompletion(func() {
-				_, _ = fmt.Fprint(os.Stderr, "\r\x1B[K")
+				_, _ = io.WriteString(os.Stderr, "\r\x1B[K")
 			}),
 		)
 	} else {
