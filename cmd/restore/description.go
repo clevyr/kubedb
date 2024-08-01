@@ -8,7 +8,7 @@ import (
 )
 
 func newDescription() string {
-	dbs := database.NamesForInterface[config.DatabaseRestore]()
+	dbs := database.NamesForInterface[config.DBRestorer]()
 
 	return `Restore a sql file to a database.
 

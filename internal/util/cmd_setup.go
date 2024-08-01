@@ -140,7 +140,7 @@ func DefaultSetup(cmd *cobra.Command, conf *config.Global, opts SetupOptions) er
 	}
 
 	if len(pods) > 1 {
-		if db, ok := conf.Dialect.(config.DatabaseFilter); ok && podFlag == "" {
+		if db, ok := conf.Dialect.(config.DBFilterer); ok && podFlag == "" {
 			filtered, err := db.FilterPods(ctx, conf.Client, pods)
 			if err != nil {
 				log.Warn().Err(err).Msg("could not query primary instance")
@@ -179,8 +179,8 @@ func DefaultSetup(cmd *cobra.Command, conf *config.Global, opts SetupOptions) er
 			panic(err)
 		}
 
-		if db, ok := conf.Dialect.(config.DatabasePort); ok && conf.Port == 0 {
-			port, err := db.PortEnvNames().Search(ctx, conf.Client, conf.DBPod)
+		if db, ok := conf.Dialect.(config.DBHasPort); ok && conf.Port == 0 {
+			port, err := db.PortEnvs().Search(ctx, conf.Client, conf.DBPod)
 			if err != nil {
 				log.Debug().Msg("could not detect port from pod env")
 			} else {
@@ -194,7 +194,7 @@ func DefaultSetup(cmd *cobra.Command, conf *config.Global, opts SetupOptions) er
 			}
 
 			if conf.Port == 0 {
-				conf.Port = db.DefaultPort()
+				conf.Port = db.PortDefault()
 			}
 		}
 		return nil
@@ -206,8 +206,8 @@ func DefaultSetup(cmd *cobra.Command, conf *config.Global, opts SetupOptions) er
 			panic(err)
 		}
 
-		if db, ok := conf.Dialect.(config.DatabaseDB); ok && conf.Database == "" {
-			conf.Database, err = db.DatabaseEnvNames().Search(ctx, conf.Client, conf.DBPod)
+		if db, ok := conf.Dialect.(config.DBHasDatabase); ok && conf.Database == "" {
+			conf.Database, err = db.DatabaseEnvs().Search(ctx, conf.Client, conf.DBPod)
 			if err != nil {
 				log.Debug().Msg("could not detect database from pod env")
 			} else {
@@ -223,10 +223,10 @@ func DefaultSetup(cmd *cobra.Command, conf *config.Global, opts SetupOptions) er
 			panic(err)
 		}
 
-		if db, ok := conf.Dialect.(config.DatabaseUsername); ok && conf.Username == "" {
-			conf.Username, err = db.UserEnvNames().Search(ctx, conf.Client, conf.DBPod)
+		if db, ok := conf.Dialect.(config.DBHasUser); ok && conf.Username == "" {
+			conf.Username, err = db.UserEnvs().Search(ctx, conf.Client, conf.DBPod)
 			if err != nil {
-				conf.Username = db.DefaultUser()
+				conf.Username = db.UserDefault()
 				log.Debug().Str("user", conf.Username).Msg("could not detect user from pod env, using default")
 			} else {
 				log.Debug().Str("user", conf.Username).Msg("found user in pod env")
@@ -238,8 +238,8 @@ func DefaultSetup(cmd *cobra.Command, conf *config.Global, opts SetupOptions) er
 			panic(err)
 		}
 
-		if db, ok := conf.Dialect.(config.DatabasePassword); ok && conf.Password == "" {
-			conf.Password, err = db.PasswordEnvNames(*conf).Search(ctx, conf.Client, conf.DBPod)
+		if db, ok := conf.Dialect.(config.DBHasPassword); ok && conf.Password == "" {
+			conf.Password, err = db.PasswordEnvs(*conf).Search(ctx, conf.Client, conf.DBPod)
 			if err != nil {
 				log.Err(err).Str("password", conf.Password).Msg("could not detect password from pod env")
 				return err
@@ -251,7 +251,7 @@ func DefaultSetup(cmd *cobra.Command, conf *config.Global, opts SetupOptions) er
 	})
 
 	group.Go(func() error {
-		if db, ok := conf.Dialect.(config.DatabaseDisableJob); ok && db.DisableJob() {
+		if db, ok := conf.Dialect.(config.DBCanDisableJob); ok && db.DisableJob() {
 			viper.Set(consts.CreateJobKey, false)
 		}
 		if !viper.GetBool(consts.CreateJobKey) {

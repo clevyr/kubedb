@@ -169,12 +169,12 @@ func listTables(cmd *cobra.Command, _ []string, _ string) ([]string, cobra.Shell
 		return nil, cobra.ShellCompDirectiveError
 	}
 
-	db, ok := conf.Dialect.(config.DatabaseTables)
+	db, ok := conf.Dialect.(config.DBTableLister)
 	if !ok {
 		return nil, cobra.ShellCompDirectiveError
 	}
 
-	conf.Command = db.ListTablesQuery()
+	conf.Command = db.TableListQuery()
 	return queryInDatabase(cmd, conf)
 }
 
@@ -187,17 +187,17 @@ func listDatabases(cmd *cobra.Command, _ []string, _ string) ([]string, cobra.Sh
 		return nil, cobra.ShellCompDirectiveError
 	}
 
-	db, ok := conf.Dialect.(config.DatabaseDBList)
+	db, ok := conf.Dialect.(config.DBDatabaseLister)
 	if !ok {
 		return nil, cobra.ShellCompDirectiveError
 	}
 
-	conf.Command = db.ListDatabasesQuery()
+	conf.Command = db.DatabaseListQuery()
 	return queryInDatabase(cmd, conf)
 }
 
 func queryInDatabase(cmd *cobra.Command, conf config.Exec) ([]string, cobra.ShellCompDirective) {
-	db, ok := conf.Dialect.(config.DatabaseExec)
+	db, ok := conf.Dialect.(config.DBExecer)
 	if !ok {
 		return nil, cobra.ShellCompDirectiveError
 	}

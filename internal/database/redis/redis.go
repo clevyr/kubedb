@@ -17,10 +17,10 @@ import (
 )
 
 var (
-	_ config.DatabaseExec     = Redis{}
-	_ config.DatabasePort     = Redis{}
-	_ config.DatabasePassword = Redis{}
-	_ config.DatabaseDB       = Redis{}
+	_ config.DBExecer      = Redis{}
+	_ config.DBHasPort     = Redis{}
+	_ config.DBHasPassword = Redis{}
+	_ config.DBHasDatabase = Redis{}
 )
 
 type Redis struct{}
@@ -29,13 +29,13 @@ func (Redis) Name() string { return "redis" }
 
 func (Redis) PrettyName() string { return "Redis" }
 
-func (Redis) PortEnvNames() kubernetes.ConfigLookups {
+func (Redis) PortEnvs() kubernetes.ConfigLookups {
 	return kubernetes.ConfigLookups{kubernetes.LookupEnv{"REDIS_PORT"}}
 }
 
-func (Redis) DefaultPort() uint16 { return 6379 }
+func (Redis) PortDefault() uint16 { return 6379 }
 
-func (Redis) DatabaseEnvNames() kubernetes.ConfigLookups {
+func (Redis) DatabaseEnvs() kubernetes.ConfigLookups {
 	return kubernetes.ConfigLookups{kubernetes.LookupEnv{"REDIS_DB"}}
 }
 
@@ -100,7 +100,7 @@ func (db Redis) FilterPods(ctx context.Context, client kubernetes.KubeClient, po
 	return preferred, nil
 }
 
-func (db Redis) PasswordEnvNames(_ config.Global) kubernetes.ConfigLookups {
+func (db Redis) PasswordEnvs(_ config.Global) kubernetes.ConfigLookups {
 	return kubernetes.ConfigLookups{
 		kubernetes.LookupEnv{"REDIS_PASSWORD", "KEYDB_PASSWORD"},
 	}

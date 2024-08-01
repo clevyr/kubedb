@@ -190,7 +190,7 @@ func (action Dump) Run(ctx context.Context) error {
 }
 
 func (action Dump) buildCommand() (*command.Builder, error) {
-	db, ok := action.Dialect.(config.DatabaseDump)
+	db, ok := action.Dialect.(config.DBDumper)
 	if !ok {
 		return nil, fmt.Errorf("%w: %s", util.ErrNoDump, action.Dialect.Name())
 	}

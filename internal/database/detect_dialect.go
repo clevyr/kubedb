@@ -33,7 +33,7 @@ func DetectDialect(ctx context.Context, client kubernetes.KubeClient) (DetectRes
 		// Find the highest priority dialects
 		var maxPriority uint8
 		for dialect := range result {
-			if dbPriority, ok := dialect.(config.DatabasePriority); ok {
+			if dbPriority, ok := dialect.(config.DBOrderer); ok {
 				priority := dbPriority.Priority()
 				if maxPriority < priority {
 					maxPriority = priority
@@ -43,7 +43,7 @@ func DetectDialect(ctx context.Context, client kubernetes.KubeClient) (DetectRes
 		if maxPriority != 0 {
 			// Filter out dialects that are lower than the max
 			for dialect := range result {
-				if dbPriority, ok := dialect.(config.DatabasePriority); ok {
+				if dbPriority, ok := dialect.(config.DBOrderer); ok {
 					priority := dbPriority.Priority()
 					if priority < maxPriority {
 						delete(result, dialect)

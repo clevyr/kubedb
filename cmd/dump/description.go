@@ -16,7 +16,7 @@ func newDescription() string {
 		Date:      time.Date(2022, 1, 9, 9, 41, 0, 0, time.UTC),
 	}.Generate()
 
-	dbs := database.NamesForInterface[config.DatabaseDump]()
+	dbs := database.NamesForInterface[config.DBDumper]()
 
 	return `Dump a database to a sql file.
 

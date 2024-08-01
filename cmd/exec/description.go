@@ -8,7 +8,7 @@ import (
 )
 
 func newDescription() string {
-	dbs := database.NamesForInterface[config.DatabaseExec]()
+	dbs := database.NamesForInterface[config.DBExecer]()
 
 	return `Connect to an interactive shell
 

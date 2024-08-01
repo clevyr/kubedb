@@ -76,7 +76,7 @@ func validArgs(cmd *cobra.Command, args []string, _ string) ([]string, cobra.She
 		return nil, cobra.ShellCompDirectiveError
 	}
 
-	db, ok := action.Dialect.(config.DatabaseDump)
+	db, ok := action.Dialect.(config.DBDumper)
 	if !ok {
 		return nil, cobra.ShellCompDirectiveError
 	}
@@ -111,7 +111,7 @@ func preRun(cmd *cobra.Command, args []string) error {
 		return err
 	}
 
-	db, ok := action.Dialect.(config.DatabaseDump)
+	db, ok := action.Dialect.(config.DBDumper)
 	if !ok {
 		return fmt.Errorf("%w: %s", util.ErrNoDump, action.Dialect.Name())
 	}

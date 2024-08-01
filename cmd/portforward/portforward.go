@@ -58,12 +58,12 @@ func localPortCompletion(cmd *cobra.Command, args []string, _ string) ([]string,
 		return nil, cobra.ShellCompDirectiveNoFileComp
 	}
 
-	db, ok := action.Dialect.(config.DatabasePort)
+	db, ok := action.Dialect.(config.DBHasPort)
 	if !ok {
 		return nil, cobra.ShellCompDirectiveError
 	}
 
-	defaultPort := db.DefaultPort()
+	defaultPort := db.PortDefault()
 	return []string{
 		strconv.Itoa(int(action.LocalPort)),
 		strconv.Itoa(int(defaultPort)),
@@ -94,12 +94,12 @@ func preRun(cmd *cobra.Command, args []string) error {
 	}
 
 	if action.LocalPort == 0 {
-		db, ok := action.Dialect.(config.DatabasePort)
+		db, ok := action.Dialect.(config.DBHasPort)
 		if !ok {
 			return fmt.Errorf("%w: %s", util.ErrNoPortForward, action.Dialect.Name())
 		}
 
-		action.LocalPort = 30000 + db.DefaultPort()
+		action.LocalPort = 30000 + db.PortDefault()
 	}
 
 	return nil

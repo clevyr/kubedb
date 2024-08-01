@@ -21,20 +21,20 @@ import (
 )
 
 var (
-	_ config.DatabaseAliases  = Postgres{}
-	_ config.DatabasePriority = Postgres{}
-	_ config.DatabaseDump     = Postgres{}
-	_ config.DatabaseExec     = Postgres{}
-	_ config.DatabaseRestore  = Postgres{}
-	_ config.DatabaseFilter   = Postgres{}
-	_ config.DatabaseUsername = Postgres{}
-	_ config.DatabasePort     = Postgres{}
-	_ config.DatabasePassword = Postgres{}
-	_ config.DatabaseDB       = Postgres{}
-	_ config.DatabaseDBList   = Postgres{}
-	_ config.DatabaseDBDrop   = Postgres{}
-	_ config.DatabaseTables   = Postgres{}
-	_ config.DatabaseAnalyze  = Postgres{}
+	_ config.DBAliaser         = Postgres{}
+	_ config.DBOrderer         = Postgres{}
+	_ config.DBDumper          = Postgres{}
+	_ config.DBExecer          = Postgres{}
+	_ config.DBRestorer        = Postgres{}
+	_ config.DBFilterer        = Postgres{}
+	_ config.DBHasUser         = Postgres{}
+	_ config.DBHasPort         = Postgres{}
+	_ config.DBHasPassword     = Postgres{}
+	_ config.DBHasDatabase     = Postgres{}
+	_ config.DBDatabaseLister  = Postgres{}
+	_ config.DBDatabaseDropper = Postgres{}
+	_ config.DBTableLister     = Postgres{}
+	_ config.DBAnalyzer        = Postgres{}
 )
 
 type Postgres struct{}
@@ -47,40 +47,40 @@ func (Postgres) Aliases() []string { return []string{"postgresql", "psql", "pg"}
 
 func (Postgres) Priority() uint8 { return 255 }
 
-func (Postgres) PortEnvNames() kubernetes.ConfigLookups {
+func (Postgres) PortEnvs() kubernetes.ConfigLookups {
 	return kubernetes.ConfigLookups{
 		kubernetes.LookupEnv{"POSTGRESQL_PORT_NUMBER"},
 		kubernetes.LookupVolumeSecret{Name: "app-secret", Key: "port"},
 	}
 }
 
-func (Postgres) DefaultPort() uint16 { return 5432 }
+func (Postgres) PortDefault() uint16 { return 5432 }
 
-func (Postgres) DatabaseEnvNames() kubernetes.ConfigLookups {
+func (Postgres) DatabaseEnvs() kubernetes.ConfigLookups {
 	return kubernetes.ConfigLookups{
 		kubernetes.LookupEnv{"POSTGRES_DATABASE", "POSTGRES_DB"},
 		kubernetes.LookupVolumeSecret{Name: "app-secret", Key: "dbname"},
 	}
 }
 
-func (Postgres) ListDatabasesQuery() string {
+func (Postgres) DatabaseListQuery() string {
 	return "SELECT datname FROM pg_database WHERE datistemplate = false"
 }
 
-func (Postgres) ListTablesQuery() string {
+func (Postgres) TableListQuery() string {
 	return "SELECT table_name FROM information_schema.tables WHERE table_schema='public' AND table_type='BASE TABLE'"
 }
 
-func (Postgres) UserEnvNames() kubernetes.ConfigLookups {
+func (Postgres) UserEnvs() kubernetes.ConfigLookups {
 	return kubernetes.ConfigLookups{
 		kubernetes.LookupEnv{"POSTGRES_USER", "PGPOOL_POSTGRES_USERNAME", "PGUSER_SUPERUSER"},
 		kubernetes.LookupVolumeSecret{Name: "app-secret", Key: "username"},
 	}
 }
 
-func (Postgres) DefaultUser() string { return "postgres" }
+func (Postgres) UserDefault() string { return "postgres" }
 
-func (Postgres) DropDatabaseQuery(_ string) string {
+func (Postgres) DatabaseDropQuery(_ string) string {
 	return "drop schema public cascade; create schema public;"
 }
 
@@ -176,10 +176,10 @@ func (db Postgres) FilterPods(ctx context.Context, client kubernetes.KubeClient,
 	return preferred, nil
 }
 
-func (db Postgres) PasswordEnvNames(c config.Global) kubernetes.ConfigLookups {
+func (db Postgres) PasswordEnvs(c config.Global) kubernetes.ConfigLookups {
 	var searchEnvs kubernetes.LookupEnv
 	searchUser := kubernetes.LookupVolumeSecret{Key: "password"}
-	if c.Username == db.DefaultUser() {
+	if c.Username == db.UserDefault() {
 		searchEnvs = append(searchEnvs, "POSTGRES_POSTGRES_PASSWORD")
 		searchUser.Name = "superuser-secret"
 	} else {

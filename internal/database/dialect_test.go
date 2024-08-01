@@ -47,7 +47,7 @@ func TestNew(t *testing.T) {
 func TestDetectFormat(t *testing.T) {
 	t.Parallel()
 	type args struct {
-		db   config.DatabaseFile
+		db   config.DBFiler
 		path string
 	}
 	tests := []struct {
@@ -76,7 +76,7 @@ func TestDetectFormat(t *testing.T) {
 func TestGetExtension(t *testing.T) {
 	t.Parallel()
 	type args struct {
-		db     config.DatabaseFile
+		db     config.DBFiler
 		format sqlformat.Format
 	}
 	tests := []struct {

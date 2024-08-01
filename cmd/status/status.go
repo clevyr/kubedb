@@ -117,7 +117,7 @@ func run(cmd *cobra.Command, _ []string) error {
 		listTablesCmd := db.ExecCommand(config.Exec{
 			Global:         conf,
 			DisableHeaders: true,
-			Command:        db.ListTablesQuery(),
+			Command:        db.TableListQuery(),
 		})
 		execOpts := kubernetes.ExecOptions{
 			Pod:    conf.JobPod,
@@ -140,6 +140,6 @@ func run(cmd *cobra.Command, _ []string) error {
 }
 
 type dbExecList interface {
-	config.DatabaseExec
-	config.DatabaseTables
+	config.DBExecer
+	config.DBTableLister
 }

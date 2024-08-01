@@ -8,7 +8,7 @@ import (
 )
 
 func newDescription() string {
-	dbs := database.NamesForInterface[config.DatabasePort]()
+	dbs := database.NamesForInterface[config.DBHasPort]()
 
 	return `Set up a local port forward
 

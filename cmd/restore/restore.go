@@ -80,7 +80,7 @@ func validArgs(cmd *cobra.Command, args []string, _ string) ([]string, cobra.She
 		return nil, cobra.ShellCompDirectiveError
 	}
 
-	db, ok := action.Dialect.(config.DatabaseRestore)
+	db, ok := action.Dialect.(config.DBRestorer)
 	if !ok {
 		return nil, cobra.ShellCompDirectiveError
 	}
@@ -123,7 +123,7 @@ func preRun(cmd *cobra.Command, args []string) error {
 	switch action.Filename {
 	case "-":
 	case "":
-		db, ok := action.Dialect.(config.DatabaseRestore)
+		db, ok := action.Dialect.(config.DBRestorer)
 		if !ok {
 			return fmt.Errorf("%w: %s", util.ErrNoRestore, action.Dialect.Name())
 		}
@@ -156,7 +156,7 @@ func preRun(cmd *cobra.Command, args []string) error {
 	}
 
 	if !cmd.Flags().Lookup(consts.FormatFlag).Changed {
-		db, ok := action.Dialect.(config.DatabaseRestore)
+		db, ok := action.Dialect.(config.DBRestorer)
 		if !ok {
 			return fmt.Errorf("%w: %s", util.ErrNoRestore, action.Dialect.Name())
 		}

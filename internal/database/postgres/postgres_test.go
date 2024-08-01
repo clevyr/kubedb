@@ -169,7 +169,7 @@ func TestPostgres_FilterPods(t *testing.T) {
 	}
 }
 
-func TestPostgres_PasswordEnvNames(t *testing.T) {
+func TestPostgres_PasswordEnvs(t *testing.T) {
 	t.Parallel()
 	type args struct {
 		c config.Global
@@ -201,7 +201,7 @@ func TestPostgres_PasswordEnvNames(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			t.Parallel()
 			db := Postgres{}
-			got := db.PasswordEnvNames(tt.args.c)
+			got := db.PasswordEnvs(tt.args.c)
 			assert.Equal(t, tt.want, got)
 		})
 	}

@@ -12,18 +12,18 @@ import (
 )
 
 var (
-	_ config.DatabaseAliases  = MariaDB{}
-	_ config.DatabasePriority = MariaDB{}
-	_ config.DatabaseDump     = MariaDB{}
-	_ config.DatabaseExec     = MariaDB{}
-	_ config.DatabaseRestore  = MariaDB{}
-	_ config.DatabaseUsername = MariaDB{}
-	_ config.DatabasePort     = MariaDB{}
-	_ config.DatabasePassword = MariaDB{}
-	_ config.DatabaseDB       = MariaDB{}
-	_ config.DatabaseDBList   = MariaDB{}
-	_ config.DatabaseDBDrop   = MariaDB{}
-	_ config.DatabaseTables   = MariaDB{}
+	_ config.DBAliaser         = MariaDB{}
+	_ config.DBOrderer         = MariaDB{}
+	_ config.DBDumper          = MariaDB{}
+	_ config.DBExecer          = MariaDB{}
+	_ config.DBRestorer        = MariaDB{}
+	_ config.DBHasUser         = MariaDB{}
+	_ config.DBHasPort         = MariaDB{}
+	_ config.DBHasPassword     = MariaDB{}
+	_ config.DBHasDatabase     = MariaDB{}
+	_ config.DBDatabaseLister  = MariaDB{}
+	_ config.DBDatabaseDropper = MariaDB{}
+	_ config.DBTableLister     = MariaDB{}
 )
 
 type MariaDB struct{}
@@ -36,29 +36,29 @@ func (MariaDB) Aliases() []string { return []string{"maria", "mysql"} }
 
 func (MariaDB) Priority() uint8 { return 255 }
 
-func (MariaDB) PortEnvNames() kubernetes.ConfigLookups {
+func (MariaDB) PortEnvs() kubernetes.ConfigLookups {
 	return kubernetes.ConfigLookups{kubernetes.LookupEnv{"MARIADB_PORT_NUMBER", "MYSQL_PORT_NUMBER"}}
 }
 
-func (MariaDB) DefaultPort() uint16 {
+func (MariaDB) PortDefault() uint16 {
 	return 3306
 }
 
-func (MariaDB) DatabaseEnvNames() kubernetes.ConfigLookups {
+func (MariaDB) DatabaseEnvs() kubernetes.ConfigLookups {
 	return kubernetes.ConfigLookups{kubernetes.LookupEnv{"MARIADB_DATABASE", "MYSQL_DATABASE"}}
 }
 
-func (MariaDB) ListDatabasesQuery() string { return "show databases" }
+func (MariaDB) DatabaseListQuery() string { return "show databases" }
 
-func (MariaDB) ListTablesQuery() string { return "show tables" }
+func (MariaDB) TableListQuery() string { return "show tables" }
 
-func (MariaDB) UserEnvNames() kubernetes.ConfigLookups {
+func (MariaDB) UserEnvs() kubernetes.ConfigLookups {
 	return kubernetes.ConfigLookups{kubernetes.LookupEnv{"MARIADB_USER", "MYSQL_USER"}}
 }
 
-func (MariaDB) DefaultUser() string { return "root" }
+func (MariaDB) UserDefault() string { return "root" }
 
-func (db MariaDB) DropDatabaseQuery(database string) string {
+func (db MariaDB) DatabaseDropQuery(database string) string {
 	database = db.quoteIdentifier(database)
 	return "set FOREIGN_KEY_CHECKS=0; create or replace database " + database + "; set FOREIGN_KEY_CHECKS=1; use " + database + ";"
 }
@@ -81,8 +81,8 @@ func (MariaDB) PodFilters() filter.Filter {
 	}
 }
 
-func (db MariaDB) PasswordEnvNames(c config.Global) kubernetes.ConfigLookups {
-	if c.Username == db.DefaultUser() {
+func (db MariaDB) PasswordEnvs(c config.Global) kubernetes.ConfigLookups {
+	if c.Username == db.UserDefault() {
 		return kubernetes.ConfigLookups{
 			kubernetes.LookupEnv{"MARIADB_ROOT_PASSWORD", "MYSQL_ROOT_PASSWORD"},
 		}

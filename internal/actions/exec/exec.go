@@ -59,7 +59,7 @@ func (action Exec) Run(ctx context.Context) error {
 }
 
 func (action Exec) buildCommand() (*command.Builder, error) {
-	db, ok := action.Dialect.(config.DatabaseExec)
+	db, ok := action.Dialect.(config.DBExecer)
 	if !ok {
 		return nil, fmt.Errorf("%w: %s", util.ErrNoExec, action.Dialect.Name())
 	}

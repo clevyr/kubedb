@@ -12,11 +12,11 @@ import (
 )
 
 var (
-	_ config.DatabaseDump       = Meilisearch{}
-	_ config.DatabaseRestore    = Meilisearch{}
-	_ config.DatabasePort       = Meilisearch{}
-	_ config.DatabasePassword   = Meilisearch{}
-	_ config.DatabaseDisableJob = Meilisearch{}
+	_ config.DBDumper        = Meilisearch{}
+	_ config.DBRestorer      = Meilisearch{}
+	_ config.DBHasPort       = Meilisearch{}
+	_ config.DBHasPassword   = Meilisearch{}
+	_ config.DBCanDisableJob = Meilisearch{}
 )
 
 type Meilisearch struct{}
@@ -25,15 +25,15 @@ func (Meilisearch) Name() string { return "meilisearch" }
 
 func (Meilisearch) PrettyName() string { return "Meilisearch" }
 
-func (Meilisearch) PortEnvNames() kubernetes.ConfigLookups { return kubernetes.ConfigLookups{} }
+func (Meilisearch) PortEnvs() kubernetes.ConfigLookups { return kubernetes.ConfigLookups{} }
 
-func (Meilisearch) DefaultPort() uint16 { return 7700 }
+func (Meilisearch) PortDefault() uint16 { return 7700 }
 
 func (Meilisearch) PodFilters() filter.Filter {
 	return filter.Label{Name: "app.kubernetes.io/name", Value: "meilisearch"}
 }
 
-func (Meilisearch) PasswordEnvNames(_ config.Global) kubernetes.ConfigLookups {
+func (Meilisearch) PasswordEnvs(_ config.Global) kubernetes.ConfigLookups {
 	return kubernetes.ConfigLookups{
 		kubernetes.LookupEnv{"MEILI_MASTER_KEY"},
 		kubernetes.LookupNop{},

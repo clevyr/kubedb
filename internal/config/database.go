@@ -16,73 +16,73 @@ type Database interface {
 	PodFilters() filter.Filter
 }
 
-type DatabaseAliases interface {
+type DBAliaser interface {
 	Aliases() []string
 }
 
-type DatabasePriority interface {
+type DBOrderer interface {
 	Priority() uint8
 }
 
-type DatabaseDump interface {
+type DBDumper interface {
 	Database
 	DumpCommand(conf Dump) *command.Builder
-	DatabaseFile
+	DBFiler
 }
 
-type DatabaseExec interface {
+type DBExecer interface {
 	Database
 	ExecCommand(conf Exec) *command.Builder
 }
 
-type DatabaseRestore interface {
+type DBRestorer interface {
 	Database
 	RestoreCommand(conf Restore, inputFormat sqlformat.Format) *command.Builder
-	DatabaseFile
+	DBFiler
 }
 
-type DatabaseFilter interface {
+type DBFilterer interface {
 	FilterPods(ctx context.Context, client kubernetes.KubeClient, pods []v1.Pod) ([]v1.Pod, error)
 }
 
-type DatabaseFile interface {
+type DBFiler interface {
 	Formats() map[sqlformat.Format]string
 }
 
-type DatabaseUsername interface {
-	UserEnvNames() kubernetes.ConfigLookups
-	DefaultUser() string
+type DBHasUser interface {
+	UserEnvs() kubernetes.ConfigLookups
+	UserDefault() string
 }
 
-type DatabasePort interface {
-	DefaultPort() uint16
-	PortEnvNames() kubernetes.ConfigLookups
+type DBHasPort interface {
+	PortEnvs() kubernetes.ConfigLookups
+	PortDefault() uint16
 }
 
-type DatabasePassword interface {
-	PasswordEnvNames(conf Global) kubernetes.ConfigLookups
+type DBHasPassword interface {
+	PasswordEnvs(conf Global) kubernetes.ConfigLookups
 }
 
-type DatabaseDB interface {
-	DatabaseEnvNames() kubernetes.ConfigLookups
+type DBHasDatabase interface {
+	DatabaseEnvs() kubernetes.ConfigLookups
 }
 
-type DatabaseDBList interface {
-	ListDatabasesQuery() string
+type DBDatabaseLister interface {
+	DatabaseListQuery() string
 }
 
-type DatabaseDBDrop interface {
-	DropDatabaseQuery(database string) string
+type DBDatabaseDropper interface {
+	DatabaseDropQuery(database string) string
 }
 
-type DatabaseTables interface {
-	ListTablesQuery() string
+type DBTableLister interface {
+	TableListQuery() string
 }
 
-type DatabaseAnalyze interface {
+type DBAnalyzer interface {
 	AnalyzeQuery() string
 }
 
-type DatabaseDisableJob interface {
+type DBCanDisableJob interface {
 	DisableJob() bool
 }

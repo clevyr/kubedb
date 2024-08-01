@@ -80,8 +80,8 @@ func (action Restore) Run(ctx context.Context) error {
 
 		// Clean database
 		if action.Clean && action.Format != sqlformat.Custom {
-			if db, ok := action.Dialect.(config.DatabaseDBDrop); ok {
-				dropQuery := db.DropDatabaseQuery(action.Database)
+			if db, ok := action.Dialect.(config.DBDatabaseDropper); ok {
+				dropQuery := db.DatabaseDropQuery(action.Database)
 				actionLog.Info().Msg("cleaning existing data")
 				if err := action.copy(w, strings.NewReader(dropQuery)); err != nil {
 					return err
@@ -114,7 +114,7 @@ func (action Restore) Run(ctx context.Context) error {
 
 		// Analyze query
 		if action.Analyze {
-			if db, ok := action.Dialect.(config.DatabaseAnalyze); ok {
+			if db, ok := action.Dialect.(config.DBAnalyzer); ok {
 				analyzeQuery := db.AnalyzeQuery()
 				if action.Format == sqlformat.Custom {
 					defer func() {
@@ -168,7 +168,7 @@ func (action Restore) Run(ctx context.Context) error {
 }
 
 func (action Restore) buildCommand(inputFormat sqlformat.Format) (*command.Builder, error) {
-	db, ok := action.Dialect.(config.DatabaseRestore)
+	db, ok := action.Dialect.(config.DBRestorer)
 	if !ok {
 		return nil, fmt.Errorf("%w: %s", util.ErrNoRestore, action.Dialect.Name())
 	}

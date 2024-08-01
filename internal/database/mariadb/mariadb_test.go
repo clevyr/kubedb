@@ -10,7 +10,7 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func TestMariaDB_DropDatabaseQuery(t *testing.T) {
+func TestMariaDB_DatabaseDropQuery(t *testing.T) {
 	t.Parallel()
 	type args struct {
 		database string
@@ -26,7 +26,7 @@ func TestMariaDB_DropDatabaseQuery(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			t.Parallel()
 			ma := MariaDB{}
-			got := ma.DropDatabaseQuery(tt.args.database)
+			got := ma.DatabaseDropQuery(tt.args.database)
 			assert.Equal(t, tt.want, got)
 		})
 	}
@@ -119,7 +119,7 @@ func TestMariaDB_ExecCommand(t *testing.T) {
 	}
 }
 
-func TestMariaDB_ListDatabasesQuery(t *testing.T) {
+func TestMariaDB_DatabaseListQuery(t *testing.T) {
 	t.Parallel()
 	tests := []struct {
 		name string
@@ -131,13 +131,13 @@ func TestMariaDB_ListDatabasesQuery(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			t.Parallel()
 			ma := MariaDB{}
-			got := ma.ListDatabasesQuery()
+			got := ma.DatabaseListQuery()
 			assert.Equal(t, tt.want, got)
 		})
 	}
 }
 
-func TestMariaDB_PasswordEnvNames(t *testing.T) {
+func TestMariaDB_PasswordEnvs(t *testing.T) {
 	t.Parallel()
 	type args struct {
 		c config.Global
@@ -154,7 +154,7 @@ func TestMariaDB_PasswordEnvNames(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			t.Parallel()
 			db := MariaDB{}
-			got := db.PasswordEnvNames(tt.args.c)
+			got := db.PasswordEnvs(tt.args.c)
 			assert.Equal(t, tt.want, got)
 		})
 	}

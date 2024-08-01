@@ -41,7 +41,7 @@ func New(name string) (config.Database, error) {
 		if name == db.Name() {
 			return db, nil
 		}
-		if dbAlias, ok := db.(config.DatabaseAliases); ok {
+		if dbAlias, ok := db.(config.DBAliaser); ok {
 			if slices.Contains(dbAlias.Aliases(), name) {
 				return db, nil
 			}
@@ -61,7 +61,7 @@ func NamesForInterface[T any]() []string {
 	return names
 }
 
-func DetectFormat(db config.DatabaseFile, path string) sqlformat.Format {
+func DetectFormat(db config.DBFiler, path string) sqlformat.Format {
 	for format, ext := range db.Formats() {
 		if strings.HasSuffix(path, ext) {
 			return format
@@ -70,7 +70,7 @@ func DetectFormat(db config.DatabaseFile, path string) sqlformat.Format {
 	return sqlformat.Unknown
 }
 
-func GetExtension(db config.DatabaseFile, format sqlformat.Format) string {
+func GetExtension(db config.DBFiler, format sqlformat.Format) string {
 	if ext, ok := db.Formats()[format]; ok {
 		return ext
 	}
