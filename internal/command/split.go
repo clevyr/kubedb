@@ -3,7 +3,7 @@ package command
 import (
 	"strings"
 
-	"github.com/alessio/shellescape"
+	"al.essio.dev/pkg/shellescape"
 )
 
 type Split string
