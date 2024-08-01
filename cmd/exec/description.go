@@ -10,7 +10,8 @@ import (
 func newDescription() string {
 	dbs := database.NamesForInterface[config.DBExecer]()
 
-	return `Connect to an interactive shell
+	return `Connect to an interactive shell.
 
-Databases: ` + strings.Join(dbs, ", ")
+Supported Databases:
+  ` + strings.Join(dbs, ", ")
 }

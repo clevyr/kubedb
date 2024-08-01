@@ -25,6 +25,7 @@ func NewCommand() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:               "kubedb",
 		Short:             "Painlessly work with databases in Kubernetes.",
+		Long:              newDescription(),
 		Version:           buildVersion(),
 		DisableAutoGenTag: true,
 

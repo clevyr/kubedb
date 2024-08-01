@@ -4,9 +4,10 @@ Connect to an interactive shell
 
 ### Synopsis
 
-Connect to an interactive shell
+Connect to an interactive shell.
 
-Databases: postgres, mariadb, mongodb, redis
+Supported Databases:
+  postgres, mariadb, mongodb, redis
 
 ```
 kubedb exec [flags]

@@ -2,6 +2,13 @@
 
 Painlessly work with databases in Kubernetes.
 
+### Synopsis
+
+Painlessly work with databases in Kubernetes.
+
+Supported Databases:
+  postgres, mariadb, mongodb, redis, meilisearch
+
 ### Options
 
 ```

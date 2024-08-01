@@ -1,16 +1,15 @@
-package portforward
+package cmd
 
 import (
 	"strings"
 
-	"github.com/clevyr/kubedb/internal/config"
 	"github.com/clevyr/kubedb/internal/database"
 )
 
 func newDescription() string {
-	dbs := database.NamesForInterface[config.DBHasPort]()
+	dbs := database.Names()
 
-	return `Set up a local port forward.
+	return `Painlessly work with databases in Kubernetes.
 
 Supported Databases:
   ` + strings.Join(dbs, ", ")

@@ -6,12 +6,13 @@ Restore a sql file to a database
 
 Restore a sql file to a database.
 
-Databases: postgres, mariadb, mongodb, meilisearch
+Supported Databases:
+  postgres, mariadb, mongodb, meilisearch
 
 Supported Input Filetypes:
-  - Raw sql file. Typically with the `.sql` extension
-  - Gzipped sql file. Typically with the ".sql.gz" extension
-  - For Postgres: custom dump file. Typically with the ".dmp" extension
+  - Raw sql file. Typically with a ".sql" file extension
+  - Gzipped sql file. Typically with a ".sql.gz" file extension
+  - For Postgres: custom dump file. Typically with a ".dmp" file extension
 
 ```
 kubedb restore filename [flags]

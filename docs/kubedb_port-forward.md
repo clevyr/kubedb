@@ -4,9 +4,10 @@ Set up a local port forward
 
 ### Synopsis
 
-Set up a local port forward
+Set up a local port forward.
 
-Databases: postgres, mariadb, mongodb, redis, meilisearch
+Supported Databases:
+  postgres, mariadb, mongodb, redis, meilisearch
 
 ```
 kubedb port-forward [local_port] [flags]
