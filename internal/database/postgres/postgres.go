@@ -308,6 +308,10 @@ func (Postgres) query() filter.Or {
 			filter.Label{Name: "app.kubernetes.io/name", Value: "postgresql"},
 			filter.Label{Name: "app.kubernetes.io/component", Value: "primary"},
 		},
+		filter.And{
+			filter.Label{Name: "app.kubernetes.io/name", Value: "postgres"},
+			filter.Label{Name: "app.kubernetes.io/component", Value: "primary"},
+		},
 		filter.Label{Name: "app", Value: "postgresql"},
 	}
 }
