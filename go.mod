@@ -12,7 +12,7 @@ require (
 	github.com/charmbracelet/lipgloss v0.11.0
 	github.com/dustin/go-humanize v1.0.1
 	github.com/fatih/color v1.17.0
-	github.com/gabe565/go-spinners v1.0.1
+	github.com/gabe565/go-spinners v1.1.0
 	github.com/klauspost/pgzip v1.2.6
 	github.com/mattn/go-isatty v0.0.20
 	github.com/muesli/termenv v0.15.2
