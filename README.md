@@ -135,7 +135,33 @@ KubeDB requires an existing Kubeconfig. See below for details.
 
 ## Usage
 
-[View the generated docs for usage information.](docs/kubedb.md)
+All of the KubeDB subcommands and flags are documented in the [docs](./docs/kubedb.md) directory.
+
+### Examples
+
+- Verify cluster/database connection
+  ```shell
+  kubedb status
+  ```
+- Dump a database (filename will be generated)
+  ```shell
+  kubedb dump
+- Dump a database to a specific filename
+  ```shell
+  kubedb dump example.sql.gz
+  ```
+- Restore a SQL file to a database
+  ```shell
+  kubedb restore example.sql.gz
+  ```
+- Set up a local port-forward
+  ```shell
+  kubedb port-forward
+  ```
+- Open an interactive prompt
+  ```shell
+  kubedb exec
+  ```
 
 ### Connecting to GKE
 
