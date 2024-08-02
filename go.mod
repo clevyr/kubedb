@@ -6,8 +6,8 @@ require (
 	al.essio.dev/pkg/shellescape v1.5.0
 	cloud.google.com/go/storage v1.43.0
 	github.com/aws/aws-sdk-go-v2/config v1.27.27
-	github.com/aws/aws-sdk-go-v2/feature/s3/manager v1.17.9
-	github.com/aws/aws-sdk-go-v2/service/s3 v1.58.2
+	github.com/aws/aws-sdk-go-v2/feature/s3/manager v1.17.10
+	github.com/aws/aws-sdk-go-v2/service/s3 v1.58.3
 	github.com/charmbracelet/huh v0.5.2
 	github.com/charmbracelet/lipgloss v0.12.1
 	github.com/dustin/go-humanize v1.0.1
