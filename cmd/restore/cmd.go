@@ -11,6 +11,7 @@ import (
 	"github.com/clevyr/kubedb/internal/config/flags"
 	"github.com/clevyr/kubedb/internal/consts"
 	"github.com/clevyr/kubedb/internal/database"
+	"github.com/clevyr/kubedb/internal/storage"
 	"github.com/clevyr/kubedb/internal/tui"
 	"github.com/clevyr/kubedb/internal/util"
 	"github.com/spf13/cobra"
@@ -120,9 +121,9 @@ func preRun(cmd *cobra.Command, args []string) error {
 		action.Filename = args[0]
 	}
 
-	switch action.Filename {
-	case "-":
-	case "":
+	switch {
+	case action.Filename == "-", storage.IsCloud(action.Filename):
+	case action.Filename == "":
 		db, ok := action.Dialect.(config.DBRestorer)
 		if !ok {
 			return fmt.Errorf("%w: %s", util.ErrNoRestore, action.Dialect.Name())

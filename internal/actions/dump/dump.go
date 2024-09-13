@@ -48,11 +48,11 @@ func (action Dump) Run(ctx context.Context) error {
 		}(pw)
 
 		errGroup.Go(func() error {
-			return storage.CreateS3Upload(ctx, pr, action.Filename)
+			return storage.UploadS3(ctx, pr, action.Filename)
 		})
 	case storage.IsGCS(action.Filename):
 		var err error
-		if f, err = storage.CreateGCSUpload(ctx, action.Filename); err != nil {
+		if f, err = storage.UploadGCS(ctx, action.Filename); err != nil {
 			return err
 		}
 		defer func(f io.WriteCloser) {

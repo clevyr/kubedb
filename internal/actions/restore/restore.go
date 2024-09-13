@@ -16,6 +16,7 @@ import (
 	"github.com/clevyr/kubedb/internal/database/sqlformat"
 	"github.com/clevyr/kubedb/internal/kubernetes"
 	"github.com/clevyr/kubedb/internal/progressbar"
+	"github.com/clevyr/kubedb/internal/storage"
 	"github.com/clevyr/kubedb/internal/tui"
 	"github.com/clevyr/kubedb/internal/util"
 	gzip "github.com/klauspost/pgzip"
@@ -31,10 +32,30 @@ type Restore struct {
 }
 
 func (action Restore) Run(ctx context.Context) error {
+	errGroup, ctx := errgroup.WithContext(ctx)
+
 	var f io.ReadCloser
-	switch action.Filename {
-	case "-":
+	switch {
+	case action.Filename == "-":
 		f = os.Stdin
+	case storage.IsS3(action.Filename):
+		pipe := storage.NewS3DownloadPipe()
+		f = pipe
+		defer func(pipe *storage.S3DownloadPipe) {
+			_ = pipe.Close()
+		}(pipe)
+
+		errGroup.Go(func() error {
+			return storage.DownloadS3(ctx, pipe, action.Filename)
+		})
+	case storage.IsGCS(action.Filename):
+		var err error
+		if f, err = storage.DownloadGCS(ctx, action.Filename); err != nil {
+			return err
+		}
+		defer func(f io.ReadCloser) {
+			_ = f.Close()
+		}(f)
 	default:
 		var err error
 		if f, err = os.Open(action.Filename); err != nil {
@@ -57,8 +78,6 @@ func (action Restore) Run(ctx context.Context) error {
 
 	bar, errLog := progressbar.New(os.Stderr, -1, "uploading", action.Spinner)
 	defer bar.Close()
-
-	errGroup, ctx := errgroup.WithContext(ctx)
 
 	pr, pw := io.Pipe()
 	errGroup.Go(func() error {

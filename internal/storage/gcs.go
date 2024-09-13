@@ -25,7 +25,7 @@ func IsGCSDir(path string) bool {
 	return !strings.Contains(trimmed, "/")
 }
 
-func CreateGCSUpload(ctx context.Context, key string) (*storage.Writer, error) {
+func UploadGCS(ctx context.Context, key string) (*storage.Writer, error) {
 	client, err := storage.NewClient(ctx)
 	if err != nil {
 		return nil, err
@@ -39,4 +39,23 @@ func CreateGCSUpload(ctx context.Context, key string) (*storage.Writer, error) {
 
 	w := client.Bucket(u.Host).Object(u.Path).NewWriter(ctx)
 	return w, nil
+}
+
+func DownloadGCS(ctx context.Context, key string) (*storage.Reader, error) {
+	client, err := storage.NewClient(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	u, err := url.Parse(key)
+	if err != nil {
+		return nil, err
+	}
+	u.Path = strings.TrimLeft(u.Path, "/")
+
+	r, err := client.Bucket(u.Host).Object(u.Path).NewReader(ctx)
+	if err != nil {
+		return nil, err
+	}
+	return r, nil
 }
