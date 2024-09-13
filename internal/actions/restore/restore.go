@@ -15,11 +15,13 @@ import (
 	"github.com/clevyr/kubedb/internal/consts"
 	"github.com/clevyr/kubedb/internal/database/sqlformat"
 	"github.com/clevyr/kubedb/internal/kubernetes"
+	"github.com/clevyr/kubedb/internal/notifier"
 	"github.com/clevyr/kubedb/internal/progressbar"
 	"github.com/clevyr/kubedb/internal/storage"
 	"github.com/clevyr/kubedb/internal/tui"
 	"github.com/clevyr/kubedb/internal/util"
 	gzip "github.com/klauspost/pgzip"
+	"github.com/muesli/termenv"
 	"github.com/rs/zerolog/log"
 	"github.com/spf13/viper"
 	"golang.org/x/sync/errgroup"
@@ -183,6 +185,12 @@ func (action Restore) Run(ctx context.Context) error {
 		Stringer("took", time.Since(startTime).Truncate(10*time.Millisecond)).
 		Stringer("size", sizeW).
 		Msg("restore complete")
+
+	if handler, ok := notifier.FromContext(ctx); ok {
+		if logger, ok := handler.(notifier.Logs); ok {
+			logger.SetLog(action.summary(nil, time.Since(startTime).Truncate(10*time.Millisecond), sizeW, true))
+		}
+	}
 	return nil
 }
 
@@ -244,17 +252,17 @@ func (action Restore) runInDatabasePod(ctx context.Context, r *io.PipeReader, st
 	return nil
 }
 
-func (action Restore) Table() *tui.Table {
-	return tui.MinimalTable(nil).
+func (action Restore) Table(r *lipgloss.Renderer) *tui.Table {
+	return tui.MinimalTable(r).
 		RowIfNotEmpty("Context", action.Context).
-		Row("Namespace", tui.NamespaceStyle(nil, action.Namespace).Render()).
+		Row("Namespace", tui.NamespaceStyle(r, action.Namespace).Render()).
 		Row("Pod", action.DBPod.Name).
 		RowIfNotEmpty("Username", action.Username).
 		RowIfNotEmpty("Database", action.Database)
 }
 
 func (action Restore) Confirm() (bool, error) {
-	table := action.Table()
+	table := action.Table(nil)
 	var description string
 	if action.Filename != "-" && !strings.Contains(action.Filename, action.Namespace) {
 		warnStyle := tui.WarnStyle(nil)
@@ -283,20 +291,33 @@ func (action Restore) Confirm() (bool, error) {
 	return response, err
 }
 
-func (action Restore) printSummary(err error, took time.Duration, size *util.SizeWriter) {
-	t := action.Table().
-		Row("File", tui.InPath(action.Filename, nil)).
+func (action Restore) summary(err error, took time.Duration, size *util.SizeWriter, plain bool) string {
+	var r *lipgloss.Renderer
+	if plain {
+		r = lipgloss.NewRenderer(os.Stdout, termenv.WithTTY(false))
+		r.SetColorProfile(termenv.Ascii)
+		r.SetHasDarkBackground(lipgloss.HasDarkBackground())
+	}
+
+	t := action.Table(r).
+		Row("File", tui.InPath(action.Filename, r)).
 		Row("Took", took.String())
 	if err != nil {
-		t.Row("Error", tui.ErrStyle(nil).Render(err.Error()))
+		t.Row("Error", tui.ErrStyle(r).Render(err.Error()))
 	} else if size != nil {
 		t.Row("Size", size.String())
 	}
 
-	fmt.Println( //nolint:forbidigo
-		lipgloss.JoinVertical(lipgloss.Center,
-			tui.HeaderStyle(nil).PaddingTop(1).Render("Restore Summary"),
-			t.Render(),
-		),
+	return lipgloss.JoinVertical(lipgloss.Center,
+		tui.HeaderStyle(nil).PaddingTop(1).Render("Restore Summary"),
+		t.Render(),
 	)
+}
+
+func (action Restore) printSummary(err error, took time.Duration, size *util.SizeWriter) {
+	out := os.Stdout
+	if action.Filename == "-" {
+		out = os.Stderr
+	}
+	_, _ = io.WriteString(out, "\n"+action.summary(err, took, size, false)+"\n")
 }
