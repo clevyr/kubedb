@@ -13,7 +13,7 @@ import (
 	"github.com/schollz/progressbar/v3"
 )
 
-func New(w io.Writer, max int64, label string, spinnerKey string) (*ProgressBar, *BarSafeLogger) {
+func New(w io.Writer, total int64, label string, spinnerKey string) (*ProgressBar, *BarSafeLogger) {
 	s, ok := spinner.Map[spinnerKey]
 	if !ok {
 		log.Warn().Str("spinner", spinnerKey).Msg("invalid spinner")
@@ -48,7 +48,7 @@ func New(w io.Writer, max int64, label string, spinnerKey string) (*ProgressBar,
 
 	cancelChan := make(chan struct{})
 	bar := &ProgressBar{
-		ProgressBar: progressbar.NewOptions64(max, options...),
+		ProgressBar: progressbar.NewOptions64(total, options...),
 		cancelChan:  cancelChan,
 	}
 	go func() {
