@@ -4,6 +4,7 @@ import (
 	"log/slog"
 	"os"
 	"os/signal"
+	"path/filepath"
 	"strings"
 	"syscall"
 
@@ -23,12 +24,23 @@ import (
 )
 
 func NewCommand() *cobra.Command {
+	name := "kubedb"
+	var annotations map[string]string
+	if filepath.Base(os.Args[0]) == "kubectl-db" {
+		// Installed as a kubectl plugin
+		name = "kubectl-db"
+		annotations = map[string]string{
+			cobra.CommandDisplayNameAnnotation: "kubectl db",
+		}
+	}
+
 	cmd := &cobra.Command{
-		Use:               "kubedb",
+		Use:               name,
 		Short:             "Painlessly work with databases in Kubernetes.",
 		Long:              newDescription(),
 		Version:           buildVersion(),
 		DisableAutoGenTag: true,
+		Annotations:       annotations,
 
 		PersistentPreRunE: preRun,
 	}
