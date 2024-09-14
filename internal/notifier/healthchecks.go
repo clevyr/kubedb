@@ -79,6 +79,7 @@ func (h *Healthchecks) SendStatus(ctx context.Context, status Status, log string
 }
 
 func (h *Healthchecks) Started(ctx context.Context) error {
+	slog.Info("Pinging Healthchecks start")
 	return h.SendStatus(ctx, StatusStart, "")
 }
 
@@ -87,6 +88,7 @@ func (h *Healthchecks) SetLog(log string) {
 }
 
 func (h *Healthchecks) Finished(ctx context.Context, err error) error {
+	slog.Info("Pinging Healthchecks finish")
 	if err == nil {
 		return h.SendStatus(ctx, StatusSuccess, h.log)
 	}
