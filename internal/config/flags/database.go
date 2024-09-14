@@ -15,7 +15,7 @@ import (
 )
 
 func Dialect(cmd *cobra.Command) {
-	cmd.PersistentFlags().String(consts.DialectFlag, "", "Database dialect. (one of postgres, mariadb, mongodb) (default discovered)")
+	cmd.PersistentFlags().String(consts.DialectFlag, "", "Database dialect. (one of "+strings.Join(database.Names(), ", ")+") (default discovered)")
 	err := cmd.RegisterFlagCompletionFunc(
 		consts.DialectFlag,
 		func(_ *cobra.Command, _ []string, _ string) ([]string, cobra.ShellCompDirective) {

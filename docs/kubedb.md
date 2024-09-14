@@ -13,7 +13,7 @@ Supported Databases:
 
 ```
       --context string                 Kubernetes context name
-      --dialect string                 Database dialect. (one of postgres, mariadb, mongodb) (default discovered)
+      --dialect string                 Database dialect. (one of postgres, mariadb, mongodb, redis, meilisearch) (default discovered)
       --healthchecks-ping-url string   Notification handler URL
   -h, --help                           help for kubedb
       --kubeconfig string              Paths to the kubeconfig file (default "$HOME/.kube/config")

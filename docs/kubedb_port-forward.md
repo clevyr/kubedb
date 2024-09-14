@@ -26,7 +26,7 @@ kubedb port-forward [local_port] [flags]
 
 ```
       --context string                 Kubernetes context name
-      --dialect string                 Database dialect. (one of postgres, mariadb, mongodb) (default discovered)
+      --dialect string                 Database dialect. (one of postgres, mariadb, mongodb, redis, meilisearch) (default discovered)
       --healthchecks-ping-url string   Notification handler URL
       --kubeconfig string              Paths to the kubeconfig file (default "$HOME/.kube/config")
       --log-format string              Log format (one of auto, color, plain, json) (default "auto")
