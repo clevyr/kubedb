@@ -57,10 +57,6 @@ func DefaultSetup(cmd *cobra.Command, conf *config.Global, opts SetupOptions) er
 	conf.Context = conf.Client.Context
 	conf.Namespace = conf.Client.Namespace
 
-	if _, err := conf.Client.Namespaces().Get(ctx, conf.Namespace, metav1.GetOptions{}); err != nil {
-		slog.Warn("Namespace may not exist", "error", err)
-	}
-
 	podFlag, err := cmd.Flags().GetString(consts.PodFlag)
 	if err != nil {
 		panic(err)
@@ -73,6 +69,7 @@ func DefaultSetup(cmd *cobra.Command, conf *config.Global, opts SetupOptions) er
 		}
 		pod, err := conf.Client.Pods().Get(ctx, podFlag, metav1.GetOptions{})
 		if err != nil {
+			checkNamespaceExists(ctx, conf)
 			return err
 		}
 		pods = []corev1.Pod{*pod}
@@ -87,6 +84,7 @@ func DefaultSetup(cmd *cobra.Command, conf *config.Global, opts SetupOptions) er
 		if len(pods) == 0 {
 			result, err := database.DetectDialect(ctx, conf.Client)
 			if err != nil {
+				checkNamespaceExists(ctx, conf)
 				return err
 			}
 			if len(result) == 1 || opts.NoSurvey {
@@ -116,6 +114,7 @@ func DefaultSetup(cmd *cobra.Command, conf *config.Global, opts SetupOptions) er
 		} else {
 			conf.Dialect, err = database.DetectDialectFromPod(pods[0])
 			if err != nil {
+				checkNamespaceExists(ctx, conf)
 				return err
 			}
 		}
@@ -532,4 +531,10 @@ func jobPodNameLabel(conf *config.Global, job *batchv1.Job) (string, string) {
 		key = "job-name"
 	}
 	return key, job.Name
+}
+
+func checkNamespaceExists(ctx context.Context, conf *config.Global) {
+	if _, err := conf.Client.Namespaces().Get(ctx, conf.Namespace, metav1.GetOptions{}); err != nil {
+		slog.Warn("Namespace may not exist", "error", err)
+	}
 }
