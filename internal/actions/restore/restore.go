@@ -308,6 +308,10 @@ func (action Restore) summary(err error, took time.Duration, size *util.SizeWrit
 		t.Row("Size", size.String())
 	}
 
+	if plain {
+		t.Border(lipgloss.NormalBorder())
+	}
+
 	return lipgloss.JoinVertical(lipgloss.Center,
 		tui.HeaderStyle(nil).PaddingTop(1).Render("Restore Summary"),
 		t.Render(),

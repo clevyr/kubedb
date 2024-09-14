@@ -231,6 +231,10 @@ func (action Dump) summary(err error, took time.Duration, size *util.SizeWriter,
 		t.Row("Size", size.String())
 	}
 
+	if plain {
+		t.Border(lipgloss.NormalBorder())
+	}
+
 	return lipgloss.JoinVertical(lipgloss.Center,
 		tui.HeaderStyle(r).Render("Dump Summary"),
 		t.Render(),
