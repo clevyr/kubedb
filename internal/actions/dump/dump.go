@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"io"
+	"log/slog"
 	"os"
 	"path/filepath"
 	"strings"
@@ -17,6 +18,7 @@ import (
 	"github.com/clevyr/kubedb/internal/database/sqlformat"
 	"github.com/clevyr/kubedb/internal/github"
 	"github.com/clevyr/kubedb/internal/kubernetes"
+	"github.com/clevyr/kubedb/internal/log"
 	"github.com/clevyr/kubedb/internal/notifier"
 	"github.com/clevyr/kubedb/internal/progressbar"
 	"github.com/clevyr/kubedb/internal/storage"
@@ -24,7 +26,6 @@ import (
 	"github.com/clevyr/kubedb/internal/util"
 	gzip "github.com/klauspost/pgzip"
 	"github.com/muesli/termenv"
-	"github.com/rs/zerolog/log"
 	"github.com/spf13/viper"
 	"golang.org/x/sync/errgroup"
 )
@@ -75,13 +76,13 @@ func (action Dump) Run(ctx context.Context) error {
 		}(f)
 	}
 
-	actionLog := log.With().
-		Str("namespace", action.Client.Namespace).
-		Str("pod", action.DBPod.Name).
-		Str("file", action.Filename).
-		Logger()
+	actionLog := slog.With(
+		"namespace", action.Client.Namespace,
+		"pod", action.DBPod.Name,
+		"file", action.Filename,
+	)
 
-	actionLog.Info().Msg("exporting database")
+	actionLog.Info("Exporting database")
 
 	if err := github.SetOutput("filename", action.Filename); err != nil {
 		return err
@@ -176,10 +177,10 @@ func (action Dump) Run(ctx context.Context) error {
 
 	_ = bar.Finish()
 
-	actionLog.Info().
-		Stringer("took", time.Since(startTime).Truncate(10*time.Millisecond)).
-		Stringer("size", sizeW).
-		Msg("dump complete")
+	actionLog.Info("Dump complete",
+		"took", time.Since(startTime).Truncate(10*time.Millisecond),
+		"size", sizeW,
+	)
 
 	if handler, ok := notifier.FromContext(ctx); ok {
 		if logger, ok := handler.(notifier.Logs); ok {
@@ -206,7 +207,7 @@ func (action Dump) buildCommand() (*command.Builder, error) {
 		cmd.Push(command.Pipe, "gzip", "--force")
 	}
 	sanitized := strings.ReplaceAll(cmd.String(), action.Password, "***")
-	log.Trace().Str("cmd", sanitized).Msg("finished building command")
+	slog.Log(context.Background(), log.LevelTrace, "Finished building command", "cmd", sanitized)
 	return cmd, nil
 }
 

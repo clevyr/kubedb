@@ -31,7 +31,7 @@ kubedb restore filename [flags]
       --create-network-policy           Creates a network policy allowing the KubeDB job to talk to the database. (default true)
   -d, --dbname string                   Database name to use (default discovered)
   -f, --force                           Do not prompt before restore
-  -F, --format string                   Output file format One of (gzip|custom|plain) (default "gzip")
+  -F, --format string                   Output file format (one of gzip, custom, plain) (default "gzip")
       --halt-on-error                   Halt on error (Postgres only) (default true)
   -h, --help                            help for restore
       --job-pod-labels stringToString   Pod labels to add to the job (default [])
@@ -49,11 +49,11 @@ kubedb restore filename [flags]
 
 ```
       --context string                 Kubernetes context name
-      --dialect string                 Database dialect. One of (postgres|mariadb|mongodb) (default discovered)
+      --dialect string                 Database dialect. (one of postgres, mariadb, mongodb) (default discovered)
       --healthchecks-ping-url string   Notification handler URL
       --kubeconfig string              Paths to the kubeconfig file (default "$HOME/.kube/config")
-      --log-format string              Log formatter. One of (auto|color|plain|json) (default "auto")
-      --log-level string               Log level. One of (trace|debug|info|warn|error|fatal|panic) (default "info")
+      --log-format string              Log format (one of auto, color, plain, json) (default "auto")
+      --log-level string               Log level (one of trace, debug, info, warn, error) (default "info")
   -n, --namespace string               Kubernetes namespace
       --pod string                     Perform detection from a pod instead of searching the namespace
 ```

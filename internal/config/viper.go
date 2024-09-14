@@ -2,13 +2,13 @@ package config
 
 import (
 	"fmt"
+	"log/slog"
 	"os"
 	"path/filepath"
 	"strings"
 
 	"github.com/clevyr/kubedb/internal/consts"
 	"github.com/clevyr/kubedb/internal/tui"
-	"github.com/rs/zerolog/log"
 	"github.com/spf13/viper"
 )
 
@@ -29,14 +29,14 @@ func LoadViper() error {
 		//nolint:errorlint
 		if _, ok := err.(viper.ConfigFileNotFoundError); ok {
 			// Config file not found; ignore error
-			log.Debug().Msg("could not find config file")
+			slog.Debug("Could not find config file")
 		} else {
 			// Config file was found but another error was produced
 			return fmt.Errorf("fatal error reading config file: %w", err)
 		}
 	}
 
-	log.Debug().Str("path", viper.ConfigFileUsed()).Msg("Loaded config file")
+	slog.Debug("Loaded config file", "path", viper.ConfigFileUsed())
 	return nil
 }
 

@@ -1,7 +1,8 @@
 package filter
 
 import (
-	"github.com/rs/zerolog/log"
+	"log/slog"
+
 	v1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/selection"
 )
@@ -20,7 +21,7 @@ func (label Label) Matches(pod v1.Pod) bool {
 	case "":
 		return ok && labelValue == label.Value
 	default:
-		log.Panic().Str("op", string(label.Operator)).Msg("Filter operator not implemented")
+		slog.Error("Filter operator not implemented", "op", string(label.Operator))
+		panic("Filter operator not implemented")
 	}
-	return false
 }

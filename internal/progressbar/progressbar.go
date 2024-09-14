@@ -2,6 +2,7 @@ package progressbar
 
 import (
 	"io"
+	"log/slog"
 	"os"
 	"sync"
 	"time"
@@ -9,14 +10,13 @@ import (
 	"github.com/clevyr/kubedb/internal/config/flags"
 	spinner "github.com/gabe565/go-spinners"
 	"github.com/mattn/go-isatty"
-	"github.com/rs/zerolog/log"
 	"github.com/schollz/progressbar/v3"
 )
 
 func New(w io.Writer, total int64, label string, spinnerKey string) (*ProgressBar, *BarSafeLogger) {
 	s, ok := spinner.Map[spinnerKey]
 	if !ok {
-		log.Warn().Str("spinner", spinnerKey).Msg("invalid spinner")
+		slog.Warn("Invalid spinner", "spinner", spinnerKey)
 		s = spinner.Map[flags.DefaultSpinner]
 	}
 

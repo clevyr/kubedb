@@ -15,7 +15,7 @@ import (
 )
 
 func Dialect(cmd *cobra.Command) {
-	cmd.PersistentFlags().String(consts.DialectFlag, "", "Database dialect. One of (postgres|mariadb|mongodb) (default discovered)")
+	cmd.PersistentFlags().String(consts.DialectFlag, "", "Database dialect. (one of postgres, mariadb, mongodb) (default discovered)")
 	err := cmd.RegisterFlagCompletionFunc(
 		consts.DialectFlag,
 		func(_ *cobra.Command, _ []string, _ string) ([]string, cobra.ShellCompDirective) {
@@ -28,7 +28,7 @@ func Dialect(cmd *cobra.Command) {
 
 func Format(cmd *cobra.Command, p *sqlformat.Format) {
 	*p = sqlformat.Gzip
-	cmd.Flags().VarP(p, consts.FormatFlag, "F", `Output file format One of (gzip|custom|plain)`)
+	cmd.Flags().VarP(p, consts.FormatFlag, "F", `Output file format (one of gzip, custom, plain)`)
 	err := cmd.RegisterFlagCompletionFunc(
 		consts.FormatFlag,
 		func(_ *cobra.Command, _ []string, _ string) ([]string, cobra.ShellCompDirective) {

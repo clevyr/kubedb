@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"io"
+	"log/slog"
 	"os"
 	"strings"
 	"time"
@@ -15,6 +16,7 @@ import (
 	"github.com/clevyr/kubedb/internal/consts"
 	"github.com/clevyr/kubedb/internal/database/sqlformat"
 	"github.com/clevyr/kubedb/internal/kubernetes"
+	"github.com/clevyr/kubedb/internal/log"
 	"github.com/clevyr/kubedb/internal/notifier"
 	"github.com/clevyr/kubedb/internal/progressbar"
 	"github.com/clevyr/kubedb/internal/storage"
@@ -22,7 +24,6 @@ import (
 	"github.com/clevyr/kubedb/internal/util"
 	gzip "github.com/klauspost/pgzip"
 	"github.com/muesli/termenv"
-	"github.com/rs/zerolog/log"
 	"github.com/spf13/viper"
 	"golang.org/x/sync/errgroup"
 )
@@ -68,13 +69,13 @@ func (action Restore) Run(ctx context.Context) error {
 		}(f)
 	}
 
-	actionLog := log.With().
-		Str("file", action.Filename).
-		Str("namespace", action.Client.Namespace).
-		Str("pod", action.DBPod.Name).
-		Logger()
+	actionLog := slog.With(
+		"file", action.Filename,
+		"namespace", action.Client.Namespace,
+		"pod", action.DBPod.Name,
+	)
 
-	actionLog.Info().Msg("ready to restore database")
+	actionLog.Info("Ready to restore database")
 
 	startTime := time.Now()
 
@@ -103,7 +104,7 @@ func (action Restore) Run(ctx context.Context) error {
 		if action.Clean && action.Format != sqlformat.Custom {
 			if db, ok := action.Dialect.(config.DBDatabaseDropper); ok {
 				dropQuery := db.DatabaseDropQuery(action.Database)
-				actionLog.Info().Msg("cleaning existing data")
+				actionLog.Info("Cleaning existing data")
 				if err := action.copy(w, strings.NewReader(dropQuery)); err != nil {
 					return err
 				}
@@ -111,7 +112,7 @@ func (action Restore) Run(ctx context.Context) error {
 		}
 
 		// Main restore
-		actionLog.Info().Msg("restoring database")
+		actionLog.Info("Restoring database")
 		switch action.Format {
 		case sqlformat.Gzip, sqlformat.Unknown:
 			if !action.RemoteGzip {
@@ -181,10 +182,10 @@ func (action Restore) Run(ctx context.Context) error {
 
 	_ = bar.Finish()
 
-	actionLog.Info().
-		Stringer("took", time.Since(startTime).Truncate(10*time.Millisecond)).
-		Stringer("size", sizeW).
-		Msg("restore complete")
+	actionLog.Info("Restore complete",
+		"took", time.Since(startTime).Truncate(10*time.Millisecond),
+		"size", sizeW,
+	)
 
 	if handler, ok := notifier.FromContext(ctx); ok {
 		if logger, ok := handler.(notifier.Logs); ok {
@@ -211,7 +212,7 @@ func (action Restore) buildCommand(inputFormat sqlformat.Format) (*command.Build
 		cmd.Unshift("gunzip", "--force", command.Pipe)
 	}
 	sanitized := strings.ReplaceAll(cmd.String(), action.Password, "***")
-	log.Trace().Str("cmd", sanitized).Msg("finished building command")
+	slog.Log(context.Background(), log.LevelTrace, "Finished building command", "cmd", sanitized)
 	return cmd, nil
 }
 

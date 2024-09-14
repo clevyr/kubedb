@@ -34,7 +34,7 @@ kubedb dump [filename | bucket URI] [flags]
   -d, --dbname string                   Database name to use (default discovered)
   -T, --exclude-table strings           Do NOT dump the specified table(s)
   -D, --exclude-table-data strings      Do NOT dump data for the specified table(s)
-  -F, --format string                   Output file format One of (gzip|custom|plain) (default "gzip")
+  -F, --format string                   Output file format (one of gzip, custom, plain) (default "gzip")
   -h, --help                            help for dump
       --if-exists                       Use IF EXISTS when dropping objects (default true)
       --job-pod-labels stringToString   Pod labels to add to the job (default [])
@@ -52,11 +52,11 @@ kubedb dump [filename | bucket URI] [flags]
 
 ```
       --context string                 Kubernetes context name
-      --dialect string                 Database dialect. One of (postgres|mariadb|mongodb) (default discovered)
+      --dialect string                 Database dialect. (one of postgres, mariadb, mongodb) (default discovered)
       --healthchecks-ping-url string   Notification handler URL
       --kubeconfig string              Paths to the kubeconfig file (default "$HOME/.kube/config")
-      --log-format string              Log formatter. One of (auto|color|plain|json) (default "auto")
-      --log-level string               Log level. One of (trace|debug|info|warn|error|fatal|panic) (default "info")
+      --log-format string              Log format (one of auto, color, plain, json) (default "auto")
+      --log-level string               Log level (one of trace, debug, info, warn, error) (default "info")
   -n, --namespace string               Kubernetes namespace
       --pod string                     Perform detection from a pod instead of searching the namespace
 ```

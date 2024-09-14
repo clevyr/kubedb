@@ -60,7 +60,6 @@ linters:
     - nolintlint
     - nonamedreturns
     - nosprintfhostport
-    - paralleltest
     - perfsprint
     - prealloc
     - predeclared
@@ -84,4 +83,3 @@ linters:
     - usestdlibvars
     - wastedassign
     - whitespace
-    - zerologlint

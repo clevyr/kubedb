@@ -2,6 +2,7 @@ package dump
 
 import (
 	"fmt"
+	"log/slog"
 	"net/url"
 	"os"
 	"path"
@@ -15,7 +16,6 @@ import (
 	"github.com/clevyr/kubedb/internal/database"
 	"github.com/clevyr/kubedb/internal/storage"
 	"github.com/clevyr/kubedb/internal/util"
-	"github.com/rs/zerolog/log"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 )
@@ -103,7 +103,7 @@ func preRun(cmd *cobra.Command, args []string) error {
 		action.Filename = args[0]
 	}
 	if action.Directory != "" && action.Directory != "." {
-		log.Warn().Msg("Flag --directory has been deprecated, please pass the directory as a positional arg instead.")
+		slog.Warn("Flag --directory has been deprecated, please pass the directory as a positional arg instead.")
 		action.Filename = filepath.Join(action.Directory, action.Filename)
 	}
 

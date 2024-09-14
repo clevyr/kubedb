@@ -4,6 +4,7 @@ package util
 import (
 	"context"
 	"errors"
+	"log/slog"
 	"maps"
 	"strconv"
 	"strings"
@@ -15,7 +16,6 @@ import (
 	"github.com/clevyr/kubedb/internal/database"
 	"github.com/clevyr/kubedb/internal/kubernetes"
 	"github.com/clevyr/kubedb/internal/tui"
-	"github.com/rs/zerolog/log"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 	"golang.org/x/sync/errgroup"
@@ -53,12 +53,12 @@ func DefaultSetup(cmd *cobra.Command, conf *config.Global, opts SetupOptions) er
 	if err != nil {
 		return err
 	}
-	log.Debug().Str("namespace", conf.Client.Namespace).Msg("created kube client")
+	slog.Debug("Created kube client", "namespace", conf.Client.Namespace)
 	conf.Context = conf.Client.Context
 	conf.Namespace = conf.Client.Namespace
 
 	if _, err := conf.Client.Namespaces().Get(ctx, conf.Namespace, metav1.GetOptions{}); err != nil {
-		log.Warn().Err(err).Msg("namespace may not exist")
+		slog.Warn("Namespace may not exist", "error", err)
 	}
 
 	podFlag, err := cmd.Flags().GetString(consts.PodFlag)
@@ -112,7 +112,7 @@ func DefaultSetup(cmd *cobra.Command, conf *config.Global, opts SetupOptions) er
 				conf.Dialect = chosen
 				pods = result[chosen]
 			}
-			log.Debug().Str("dialect", conf.Dialect.Name()).Msg("detected dialect")
+			slog.Debug("Detected dialect", "dialect", conf.Dialect.Name())
 		} else {
 			conf.Dialect, err = database.DetectDialectFromPod(pods[0])
 			if err != nil {
@@ -125,7 +125,7 @@ func DefaultSetup(cmd *cobra.Command, conf *config.Global, opts SetupOptions) er
 		if err != nil {
 			return err
 		}
-		log.Debug().Str("dialect", conf.Dialect.Name()).Msg("configured database")
+		slog.Debug("Configured database", "dialect", conf.Dialect.Name())
 
 		if len(pods) == 0 {
 			pods, err = conf.Client.GetPodsFiltered(ctx, conf.Dialect.PodFilters())
@@ -143,7 +143,7 @@ func DefaultSetup(cmd *cobra.Command, conf *config.Global, opts SetupOptions) er
 		if db, ok := conf.Dialect.(config.DBFilterer); ok && podFlag == "" {
 			filtered, err := db.FilterPods(ctx, conf.Client, pods)
 			if err != nil {
-				log.Warn().Err(err).Msg("could not query primary instance")
+				slog.Warn("Could not query primary instance", "error", err)
 			}
 
 			if len(filtered) != 0 {
@@ -182,14 +182,14 @@ func DefaultSetup(cmd *cobra.Command, conf *config.Global, opts SetupOptions) er
 		if db, ok := conf.Dialect.(config.DBHasPort); ok && conf.Port == 0 {
 			port, err := db.PortEnvs().Search(ctx, conf.Client, conf.DBPod)
 			if err != nil {
-				log.Debug().Msg("could not detect port from pod env")
+				slog.Debug("Could not detect port from pod env")
 			} else {
 				port, err := strconv.ParseUint(port, 10, 16)
 				if err != nil {
-					log.Debug().Uint64("port", port).Msg("failed to parse port from pod env")
+					slog.Debug("Failed to parse port from pod env", "error", err)
 				} else {
 					conf.Port = uint16(port)
-					log.Debug().Uint16("port", conf.Port).Msg("found port in pod env")
+					slog.Debug("Found port in pod env", "port", conf.Port)
 				}
 			}
 
@@ -209,9 +209,9 @@ func DefaultSetup(cmd *cobra.Command, conf *config.Global, opts SetupOptions) er
 		if db, ok := conf.Dialect.(config.DBHasDatabase); ok && conf.Database == "" {
 			conf.Database, err = db.DatabaseEnvs().Search(ctx, conf.Client, conf.DBPod)
 			if err != nil {
-				log.Debug().Msg("could not detect database from pod env")
+				slog.Debug("Could not detect database from pod env", "error", err)
 			} else {
-				log.Debug().Str("database", conf.Database).Msg("found db name in pod env")
+				slog.Debug("Found db name in pod env", "database", conf.Database)
 			}
 		}
 		return nil
@@ -227,9 +227,9 @@ func DefaultSetup(cmd *cobra.Command, conf *config.Global, opts SetupOptions) er
 			conf.Username, err = db.UserEnvs().Search(ctx, conf.Client, conf.DBPod)
 			if err != nil {
 				conf.Username = db.UserDefault()
-				log.Debug().Str("user", conf.Username).Msg("could not detect user from pod env, using default")
+				slog.Debug("Could not detect user from pod env, using default", "error", err, "user", conf.Username)
 			} else {
-				log.Debug().Str("user", conf.Username).Msg("found user in pod env")
+				slog.Debug("Found user in pod env", "user", conf.Username)
 			}
 		}
 
@@ -241,10 +241,10 @@ func DefaultSetup(cmd *cobra.Command, conf *config.Global, opts SetupOptions) er
 		if db, ok := conf.Dialect.(config.DBHasPassword); ok && conf.Password == "" {
 			conf.Password, err = db.PasswordEnvs(*conf).Search(ctx, conf.Client, conf.DBPod)
 			if err != nil {
-				log.Err(err).Str("password", conf.Password).Msg("could not detect password from pod env")
+				slog.Error("Could not detect password from pod env", "error", err)
 				return err
 			}
-			log.Debug().Msg("found password in pod env")
+			slog.Debug("Found password in pod env")
 		}
 
 		return nil
@@ -373,8 +373,8 @@ func createJob(ctx context.Context, conf *config.Global, actionName string) erro
 	ctx, cancel := context.WithTimeout(ctx, time.Minute)
 	defer cancel()
 
-	nsLog := log.With().Str("namespace", conf.Namespace).Logger()
-	nsLog.Info().Msg("creating job")
+	nsLog := slog.With("namespace", conf.Namespace)
+	nsLog.Info("Creating job")
 	var err error
 	if conf.Job, err = conf.Client.Jobs().Create(ctx, &job, metav1.CreateOptions{}); err != nil {
 		return err
@@ -409,9 +409,9 @@ func createJob(ctx context.Context, conf *config.Global, actionName string) erro
 			},
 		}
 
-		nsLog.Info().Msg("creating network policy")
+		nsLog.Info("Creating network policy")
 		if _, err := conf.Client.NetworkPolicies().Create(ctx, &policy, metav1.CreateOptions{}); err != nil {
-			nsLog.Err(err).Msg("failed to create network policy")
+			nsLog.Error("Failed to create network policy", "error", err)
 			viper.Set(consts.CreateNetworkPolicyKey, "false")
 		}
 	}
@@ -426,10 +426,10 @@ var (
 )
 
 func watchJobPod(ctx context.Context, conf *config.Global) error {
-	log.Info().
-		Str("namespace", conf.Namespace).
-		Str("job", conf.Job.ObjectMeta.Name).
-		Msg("waiting for job...")
+	slog.Info("Waiting for job...",
+		"namespace", conf.Namespace,
+		"job", conf.Job.ObjectMeta.Name,
+	)
 
 	ctx, cancel := context.WithTimeout(ctx, 5*time.Minute)
 	defer cancel()
@@ -500,7 +500,7 @@ func pollJobPod(ctx context.Context, conf *config.Global) error {
 func jobPodUIDLabel(conf *config.Global, job *batchv1.Job) (string, string) {
 	useNewLabel, err := conf.Client.MinServerVersion(1, 27)
 	if err != nil {
-		log.Warn().Err(err).Msg("failed to query server version; assuming v1.27+")
+		slog.Warn("Failed to query server version; assuming v1.27+", "error", err)
 		useNewLabel = true
 	}
 
@@ -521,7 +521,7 @@ func jobPodLabelSelector(conf *config.Global, job *batchv1.Job) string {
 func jobPodNameLabel(conf *config.Global, job *batchv1.Job) (string, string) {
 	useNewLabel, err := conf.Client.MinServerVersion(1, 27)
 	if err != nil {
-		log.Warn().Err(err).Msg("failed to query server version; assuming v1.27+")
+		slog.Warn("Failed to query server version; assuming v1.27+", "error", err)
 		useNewLabel = true
 	}
 
