@@ -63,7 +63,8 @@ func Init(w io.Writer, level slog.Level, format Format) {
 	switch format {
 	case FormatJSON:
 		slog.SetDefault(slog.New(slog.NewJSONHandler(w, &slog.HandlerOptions{
-			Level: level,
+			Level:       level,
+			ReplaceAttr: MaskAttr,
 		})))
 	default:
 		var color bool
@@ -76,9 +77,10 @@ func Init(w io.Writer, level slog.Level, format Format) {
 
 		slog.SetDefault(slog.New(
 			tint.NewHandler(w, &tint.Options{
-				Level:      level,
-				TimeFormat: time.Kitchen,
-				NoColor:    !color,
+				Level:       level,
+				TimeFormat:  time.Kitchen,
+				NoColor:     !color,
+				ReplaceAttr: MaskAttr,
 			}),
 		))
 	}

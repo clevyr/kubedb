@@ -41,7 +41,7 @@ func NewCommand() *cobra.Command {
 	flags.LogLevel(cmd)
 	flags.LogFormat(cmd)
 	flags.Healthchecks(cmd)
-	flags.Redact(cmd)
+	flags.Mask(cmd)
 	cmd.InitDefaultVersionFlag()
 
 	cmd.AddGroup(
@@ -70,7 +70,7 @@ func preRun(cmd *cobra.Command, _ []string) error {
 	flags.BindKubeconfig(cmd)
 	flags.BindLogLevel(cmd)
 	flags.BindLogFormat(cmd)
-	flags.BindRedact(cmd)
+	flags.BindMask(cmd)
 	flags.BindHealthchecks(cmd)
 
 	ctx, cancel := signal.NotifyContext(cmd.Context(), os.Interrupt, os.Kill, syscall.SIGTERM)

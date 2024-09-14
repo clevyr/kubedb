@@ -211,8 +211,7 @@ func (action Restore) buildCommand(inputFormat sqlformat.Format) (*command.Build
 	if action.RemoteGzip {
 		cmd.Unshift("gunzip", "--force", command.Pipe)
 	}
-	sanitized := strings.ReplaceAll(cmd.String(), action.Password, "***")
-	slog.Log(context.Background(), log.LevelTrace, "Finished building command", "cmd", sanitized)
+	slog.Log(context.Background(), log.LevelTrace, "Finished building command", "cmd", cmd)
 	return cmd, nil
 }
 

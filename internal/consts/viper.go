@@ -11,7 +11,7 @@ const (
 	CreateNetworkPolicyKey = "kubernetes.create-network-policy"
 	LogLevelKey            = "log.level"
 	LogFormatKey           = "log.format"
-	LogRedactKey           = "log.redact"
+	LogMaskKey             = "log.mask"
 	RemoteGzipKey          = "remote-gzip"
 	PortForwardAddrKey     = "port-forward.address"
 	HealthchecksPingURLKey = "healthchecks.ping-url"

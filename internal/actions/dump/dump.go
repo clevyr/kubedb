@@ -8,7 +8,6 @@ import (
 	"log/slog"
 	"os"
 	"path/filepath"
-	"strings"
 	"time"
 
 	"github.com/charmbracelet/lipgloss"
@@ -206,8 +205,7 @@ func (action Dump) buildCommand() (*command.Builder, error) {
 	if action.RemoteGzip && action.Format != sqlformat.Custom {
 		cmd.Push(command.Pipe, "gzip", "--force")
 	}
-	sanitized := strings.ReplaceAll(cmd.String(), action.Password, "***")
-	slog.Log(context.Background(), log.LevelTrace, "Finished building command", "cmd", sanitized)
+	slog.Log(context.Background(), log.LevelTrace, "Finished building command", "cmd", cmd)
 	return cmd, nil
 }
 

@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"log/slog"
 	"os"
-	"strings"
 
 	"github.com/clevyr/kubedb/internal/command"
 	"github.com/clevyr/kubedb/internal/config"
@@ -70,7 +69,6 @@ func (action Exec) buildCommand() (*command.Builder, error) {
 		cmd.Push(command.Split(opts))
 	}
 
-	sanitized := strings.ReplaceAll(cmd.String(), action.Password, "***")
-	slog.Log(context.Background(), log.LevelTrace, "Finished building command", "cmd", sanitized)
+	slog.Log(context.Background(), log.LevelTrace, "Finished building command", "cmd", cmd)
 	return cmd, nil
 }

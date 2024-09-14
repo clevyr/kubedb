@@ -33,7 +33,7 @@ const (
 	QuietFlag               = "quiet"
 	LogLevelFlag            = "log-level"
 	LogFormatFlag           = "log-format"
-	RedactFlag              = "redact"
+	MaskFlag                = "mask"
 	HealthchecksPingURLFlag = "healthchecks-ping-url"
 
 	RemoteGzipFlag = "remote-gzip"

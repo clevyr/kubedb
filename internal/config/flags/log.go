@@ -53,15 +53,15 @@ func BindLogFormat(cmd *cobra.Command) {
 	}
 }
 
-func Redact(cmd *cobra.Command) {
-	cmd.PersistentFlags().Bool(consts.RedactFlag, true, "Redact password from logs")
-	if err := cmd.PersistentFlags().MarkHidden(consts.RedactFlag); err != nil {
+func Mask(cmd *cobra.Command) {
+	cmd.PersistentFlags().Bool(consts.MaskFlag, true, "Mask password in logs")
+	if err := cmd.PersistentFlags().MarkHidden(consts.MaskFlag); err != nil {
 		panic(err)
 	}
 }
 
-func BindRedact(cmd *cobra.Command) {
-	if err := viper.BindPFlag(consts.LogRedactKey, cmd.Flags().Lookup(consts.RedactFlag)); err != nil {
+func BindMask(cmd *cobra.Command) {
+	if err := viper.BindPFlag(consts.LogMaskKey, cmd.Flags().Lookup(consts.MaskFlag)); err != nil {
 		panic(err)
 	}
 }
