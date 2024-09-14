@@ -85,8 +85,12 @@ func preRun(cmd *cobra.Command, _ []string) error {
 	flags.BindMask(cmd)
 	flags.BindHealthchecks(cmd)
 
-	ctx, cancel := signal.NotifyContext(cmd.Context(), os.Interrupt, os.Kill, syscall.SIGTERM)
-	cmd.PersistentPostRun = func(_ *cobra.Command, _ []string) { cancel() }
+	ctx, cancel := signal.NotifyContext(cmd.Context(), os.Interrupt, syscall.SIGTERM, syscall.SIGQUIT)
+	defer func() {
+		util.OnFinalize(func(_ error) {
+			cancel()
+		})
+	}()
 	cmd.SetContext(ctx)
 
 	kubeconfig := viper.GetString(consts.KubeconfigKey)
@@ -109,12 +113,12 @@ func preRun(cmd *cobra.Command, _ []string) error {
 		if handler, err := notifier.NewHealthchecks(url); err != nil {
 			slog.Error("Notifications creation failed", "error", err)
 		} else {
-			if err := handler.Started(); err != nil {
+			if err := handler.Started(ctx); err != nil {
 				slog.Error("Notifications ping start failed", "error", err)
 			}
 
 			util.OnFinalize(func(err error) {
-				if err := handler.Finished(err); err != nil {
+				if err := handler.Finished(ctx, err); err != nil {
 					slog.Error("Notifications ping finished failed", "error", err)
 				}
 			})

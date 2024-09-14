@@ -1,6 +1,7 @@
 package notifier
 
 import (
+	"context"
 	"errors"
 	"fmt"
 	"strings"
@@ -21,8 +22,8 @@ var (
 )
 
 type Notifier interface {
-	Started() error
-	Finished(err error) error
+	Started(ctx context.Context) error
+	Finished(ctx context.Context, err error) error
 }
 
 type Logs interface {

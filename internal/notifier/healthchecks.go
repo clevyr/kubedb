@@ -26,7 +26,7 @@ type Healthchecks struct {
 	log string
 }
 
-func (h *Healthchecks) SendStatus(status Status, log string) error {
+func (h *Healthchecks) SendStatus(ctx context.Context, status Status, log string) error {
 	var statusStr string
 	switch status {
 	case StatusStart:
@@ -42,7 +42,7 @@ func (h *Healthchecks) SendStatus(status Status, log string) error {
 
 	u.Path = path.Join(u.Path, statusStr)
 
-	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
+	ctx, cancel := context.WithTimeout(ctx, 30*time.Second)
 	defer cancel()
 
 	req, err := http.NewRequestWithContext(ctx, http.MethodPost, u.String(), strings.NewReader(log))
@@ -66,22 +66,22 @@ func (h *Healthchecks) SendStatus(status Status, log string) error {
 	return nil
 }
 
-func (h *Healthchecks) Started() error {
-	return h.SendStatus(StatusStart, "")
+func (h *Healthchecks) Started(ctx context.Context) error {
+	return h.SendStatus(ctx, StatusStart, "")
 }
 
 func (h *Healthchecks) SetLog(log string) {
 	h.log = log
 }
 
-func (h *Healthchecks) Finished(err error) error {
+func (h *Healthchecks) Finished(ctx context.Context, err error) error {
 	if err == nil {
-		return h.SendStatus(StatusSuccess, h.log)
+		return h.SendStatus(ctx, StatusSuccess, h.log)
 	}
 
 	msg := "Error: " + err.Error()
 	if h.log != "" {
 		msg += "\n\n" + h.log
 	}
-	return h.SendStatus(StatusFailure, msg)
+	return h.SendStatus(ctx, StatusFailure, msg)
 }
