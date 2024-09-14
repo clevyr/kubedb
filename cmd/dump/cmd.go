@@ -3,10 +3,12 @@ package dump
 import (
 	"fmt"
 	"log/slog"
+	"maps"
 	"net/url"
 	"os"
 	"path"
 	"path/filepath"
+	"slices"
 	"time"
 
 	"github.com/clevyr/kubedb/internal/actions/dump"
@@ -64,7 +66,7 @@ func New() *cobra.Command {
 	return cmd
 }
 
-func validArgs(cmd *cobra.Command, args []string, _ string) ([]string, cobra.ShellCompDirective) {
+func validArgs(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
 	if len(args) != 0 {
 		return nil, cobra.ShellCompDirectiveNoFileComp
 	}
@@ -82,6 +84,29 @@ func validArgs(cmd *cobra.Command, args []string, _ string) ([]string, cobra.She
 	}
 
 	formats := db.Formats()
+
+	if storage.IsCloud(toComplete) {
+		u, err := url.Parse(toComplete)
+		if err != nil {
+			return nil, cobra.ShellCompDirectiveError
+		}
+
+		switch {
+		case storage.IsS3(toComplete):
+			if u.Host == "" || u.Path == "" {
+				return storage.CompleteBucketsS3(u)
+			} else {
+				return storage.CompleteObjectsS3(u, slices.Collect(maps.Values(formats)), true)
+			}
+		case storage.IsGCS(toComplete):
+			if u.Host == "" || u.Path == "" {
+				return storage.CompleteBucketsGCS(u, "")
+			} else {
+				return storage.CompleteObjectsGCS(u, slices.Collect(maps.Values(formats)), true)
+			}
+		}
+	}
+
 	exts := make([]string, 0, len(formats))
 	for _, ext := range formats {
 		exts = append(exts, ext[1:])

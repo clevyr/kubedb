@@ -3,6 +3,7 @@ package storage
 import (
 	"context"
 	"io"
+	"iter"
 	"net/url"
 	"strings"
 
@@ -29,12 +30,83 @@ func IsS3Dir(path string) bool {
 	return !strings.Contains(trimmed, "/")
 }
 
+func initAWS(ctx context.Context) (*s3.Client, error) {
+	awsCfg, err := config.LoadDefaultConfig(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	client := s3.NewFromConfig(awsCfg)
+	return client, nil
+}
+
+func ListBucketsS3(ctx context.Context, input *s3.ListBucketsInput) iter.Seq2[*s3.ListBucketsOutput, error] {
+	return func(yield func(*s3.ListBucketsOutput, error) bool) {
+		client, err := initAWS(ctx)
+		if err != nil {
+			yield(nil, err)
+			return
+		}
+
+		if input == nil {
+			input = &s3.ListBucketsInput{}
+		}
+
+		for {
+			buckets, err := client.ListBuckets(ctx, input)
+			if !yield(buckets, err) {
+				return
+			}
+
+			input.ContinuationToken = buckets.ContinuationToken
+			if input.ContinuationToken == nil {
+				return
+			}
+		}
+	}
+}
+
+func ListObjectsS3(ctx context.Context, key string) iter.Seq2[*s3.ListObjectsV2Output, error] {
+	return func(yield func(*s3.ListObjectsV2Output, error) bool) {
+		client, err := initAWS(ctx)
+		if err != nil {
+			yield(nil, err)
+			return
+		}
+
+		u, err := url.Parse(key)
+		if err != nil {
+			yield(nil, err)
+			return
+		}
+		u.Path = strings.TrimLeft(u.Path, "/")
+
+		input := &s3.ListObjectsV2Input{
+			Bucket:    ptr.To(u.Host),
+			Delimiter: ptr.To("/"),
+			Prefix:    ptr.To(u.Path),
+		}
+
+		for {
+			objects, err := client.ListObjectsV2(ctx, input)
+			if !yield(objects, err) {
+				return
+			}
+
+			input.ContinuationToken = objects.NextContinuationToken
+			if input.ContinuationToken == nil {
+				return
+			}
+		}
+	}
+}
+
 func UploadS3(ctx context.Context, r io.ReadCloser, key string) error {
 	defer func(r io.ReadCloser) {
 		_ = r.Close()
 	}(r)
 
-	awsCfg, err := config.LoadDefaultConfig(ctx)
+	client, err := initAWS(ctx)
 	if err != nil {
 		return err
 	}
@@ -45,9 +117,7 @@ func UploadS3(ctx context.Context, r io.ReadCloser, key string) error {
 	}
 	u.Path = strings.TrimLeft(u.Path, "/")
 
-	uploader := manager.NewUploader(s3.NewFromConfig(awsCfg))
-
-	_, err = uploader.Upload(ctx, &s3.PutObjectInput{
+	_, err = manager.NewUploader(client).Upload(ctx, &s3.PutObjectInput{
 		Bucket: ptr.To(u.Host),
 		Key:    ptr.To(u.Path),
 		Body:   r,
@@ -60,7 +130,7 @@ func DownloadS3(ctx context.Context, w *S3DownloadPipe, key string) error {
 		_ = w.w.Close()
 	}()
 
-	awsCfg, err := config.LoadDefaultConfig(ctx)
+	client, err := initAWS(ctx)
 	if err != nil {
 		return err
 	}
@@ -71,9 +141,8 @@ func DownloadS3(ctx context.Context, w *S3DownloadPipe, key string) error {
 	}
 	u.Path = strings.TrimLeft(u.Path, "/")
 
-	downloader := manager.NewDownloader(s3.NewFromConfig(awsCfg))
+	downloader := manager.NewDownloader(client)
 	downloader.Concurrency = 1
-
 	_, err = downloader.Download(ctx, w, &s3.GetObjectInput{
 		Bucket: ptr.To(u.Host),
 		Key:    ptr.To(u.Path),

@@ -2,10 +2,13 @@ package storage
 
 import (
 	"context"
+	"errors"
+	"iter"
 	"net/url"
 	"strings"
 
 	"cloud.google.com/go/storage"
+	"google.golang.org/api/iterator"
 )
 
 const GCSSchema = "gs://"
@@ -23,6 +26,62 @@ func IsGCSDir(path string) bool {
 	}
 	trimmed := strings.TrimPrefix(path, GCSSchema)
 	return !strings.Contains(trimmed, "/")
+}
+
+func ListBucketsGCS(ctx context.Context, projectID string) iter.Seq2[*storage.BucketAttrs, error] {
+	return func(yield func(*storage.BucketAttrs, error) bool) {
+		client, err := storage.NewClient(ctx)
+		if err != nil {
+			yield(nil, err)
+			return
+		}
+
+		objects := client.Buckets(ctx, projectID)
+		for {
+			attrs, err := objects.Next()
+			if err != nil && errors.Is(err, iterator.Done) {
+				return
+			}
+			if !yield(attrs, err) {
+				return
+			}
+		}
+	}
+}
+
+func ListObjectsGCS(ctx context.Context, key string) iter.Seq2[*storage.ObjectAttrs, error] {
+	return func(yield func(*storage.ObjectAttrs, error) bool) {
+		client, err := storage.NewClient(ctx)
+		if err != nil {
+			yield(nil, err)
+			return
+		}
+
+		u, err := url.Parse(key)
+		if err != nil {
+			yield(nil, err)
+			return
+		}
+		u.Path = strings.TrimLeft(u.Path, "/")
+
+		query := &storage.Query{
+			Delimiter:                "/",
+			Prefix:                   u.Path,
+			Projection:               storage.ProjectionNoACL,
+			IncludeFoldersAsPrefixes: true,
+		}
+
+		objects := client.Bucket(u.Host).Objects(ctx, query)
+		for {
+			attrs, err := objects.Next()
+			if err != nil && errors.Is(err, iterator.Done) {
+				return
+			}
+			if !yield(attrs, err) {
+				return
+			}
+		}
+	}
 }
 
 func UploadGCS(ctx context.Context, key string) (*storage.Writer, error) {

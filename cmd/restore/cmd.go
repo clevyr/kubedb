@@ -3,7 +3,10 @@ package restore
 import (
 	"errors"
 	"fmt"
+	"maps"
+	"net/url"
 	"os"
+	"slices"
 
 	"github.com/charmbracelet/huh"
 	"github.com/clevyr/kubedb/internal/actions/restore"
@@ -16,7 +19,6 @@ import (
 	"github.com/clevyr/kubedb/internal/util"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
-	"golang.org/x/exp/maps"
 	"k8s.io/kubectl/pkg/util/term"
 )
 
@@ -66,7 +68,7 @@ func New() *cobra.Command {
 	return cmd
 }
 
-func validArgs(cmd *cobra.Command, args []string, _ string) ([]string, cobra.ShellCompDirective) {
+func validArgs(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
 	if len(args) != 0 {
 		return nil, cobra.ShellCompDirectiveNoFileComp
 	}
@@ -87,6 +89,29 @@ func validArgs(cmd *cobra.Command, args []string, _ string) ([]string, cobra.She
 	}
 
 	formats := db.Formats()
+
+	if storage.IsCloud(toComplete) {
+		u, err := url.Parse(toComplete)
+		if err != nil {
+			return nil, cobra.ShellCompDirectiveError
+		}
+
+		switch {
+		case storage.IsS3(toComplete):
+			if u.Host == "" || u.Path == "" {
+				return storage.CompleteBucketsS3(u)
+			} else {
+				return storage.CompleteObjectsS3(u, slices.Collect(maps.Values(formats)), false)
+			}
+		case storage.IsGCS(toComplete):
+			if u.Host == "" || u.Path == "" {
+				return storage.CompleteBucketsGCS(u, "")
+			} else {
+				return storage.CompleteObjectsGCS(u, slices.Collect(maps.Values(formats)), false)
+			}
+		}
+	}
+
 	exts := make([]string, 0, len(formats))
 	for _, ext := range formats {
 		exts = append(exts, ext[1:])
@@ -142,7 +167,7 @@ func preRun(cmd *cobra.Command, args []string) error {
 				ShowSize(true).
 				ShowPermissions(false).
 				Height(15).
-				AllowedTypes(maps.Values(db.Formats())).
+				AllowedTypes(slices.Collect(maps.Values(db.Formats()))).
 				Value(&action.Filename),
 		))
 
