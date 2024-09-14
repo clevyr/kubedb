@@ -29,7 +29,7 @@ func Teardown(conf *config.Global) {
 
 		if viper.GetBool(consts.CreateNetworkPolicyKey) {
 			netPolLog := slog.With("name", conf.Job.Name)
-			netPolLog.Info("Cleaning up network policy")
+			netPolLog.Debug("Cleaning up network policy")
 			if err := conf.Client.NetworkPolicies().Delete(ctx, conf.Job.Name, opts); err != nil {
 				netPolLog.Error("Failed to delete network policy", "error", err)
 			}
