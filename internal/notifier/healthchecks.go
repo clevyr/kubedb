@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"io"
+	"log/slog"
 	"net/http"
 	"net/url"
 	"path"
@@ -42,28 +43,39 @@ func (h *Healthchecks) SendStatus(ctx context.Context, status Status, log string
 
 	u.Path = path.Join(u.Path, statusStr)
 
-	ctx, cancel := context.WithTimeout(ctx, 30*time.Second)
-	defer cancel()
+	client := &http.Client{Timeout: 10 * time.Second}
 
 	req, err := http.NewRequestWithContext(ctx, http.MethodPost, u.String(), strings.NewReader(log))
 	if err != nil {
 		return err
 	}
 
-	resp, err := http.DefaultClient.Do(req)
-	if err != nil {
-		return err
-	}
-	_, _ = io.Copy(io.Discard, resp.Body)
-	_ = resp.Body.Close()
+	var resp *http.Response
+	for i := range 5 {
+		if resp, err = client.Do(req); err == nil {
+			_, _ = io.Copy(io.Discard, resp.Body)
+			_ = resp.Body.Close()
 
-	switch resp.StatusCode {
-	case http.StatusOK:
-	case http.StatusCreated:
-	default:
-		return fmt.Errorf("%w: %s", ErrInvalidResponse, resp.Status)
+			if resp.StatusCode < 300 {
+				return nil
+			}
+		}
+		backoff := time.Duration(i+1) * time.Duration(i+1) * time.Second
+		slog.Debug("Healthchecks ping failed", "try", i+1, "backoff", backoff)
+		select {
+		case <-ctx.Done():
+			return ctx.Err()
+		case <-time.After(backoff):
+		}
 	}
-	return nil
+	switch {
+	case err != nil:
+		return err
+	case resp != nil:
+		return fmt.Errorf("%w: %s", ErrInvalidResponse, resp.Status)
+	default:
+		return ErrRetriesExhausted
+	}
 }
 
 func (h *Healthchecks) Started(ctx context.Context) error {
