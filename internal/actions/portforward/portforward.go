@@ -51,11 +51,17 @@ func (a PortForward) Run(ctx context.Context) error {
 		return err
 	}
 
-	go func() {
-		<-readyCh
-		a.printTable()
-	}()
 	group, ctx := errgroup.WithContext(ctx)
+
+	group.Go(func() error {
+		select {
+		case <-ctx.Done():
+			return nil
+		case <-readyCh:
+			a.printTable()
+		}
+		return nil
+	})
 
 	group.Go(func() error {
 		<-ctx.Done()
