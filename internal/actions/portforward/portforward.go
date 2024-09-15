@@ -14,7 +14,6 @@ import (
 	"github.com/clevyr/kubedb/internal/config"
 	"github.com/clevyr/kubedb/internal/log"
 	"github.com/clevyr/kubedb/internal/tui"
-	"golang.org/x/sync/errgroup"
 	"k8s.io/client-go/tools/portforward"
 	"k8s.io/client-go/transport/spdy"
 )
@@ -51,29 +50,23 @@ func (a PortForward) Run(ctx context.Context) error {
 		return err
 	}
 
-	group, ctx := errgroup.WithContext(ctx)
+	ctx, cancel := context.WithCancel(ctx)
+	defer cancel()
 
-	group.Go(func() error {
+	go func() {
 		select {
 		case <-ctx.Done():
-			return nil
 		case <-readyCh:
 			a.printTable()
 		}
-		return nil
-	})
+	}()
 
-	group.Go(func() error {
+	go func() {
 		<-ctx.Done()
 		close(stopCh)
-		return nil
-	})
+	}()
 
-	group.Go(func() error {
-		return fw.ForwardPorts()
-	})
-
-	return group.Wait()
+	return fw.ForwardPorts()
 }
 
 //nolint:forbidigo
