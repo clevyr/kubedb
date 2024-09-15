@@ -9,6 +9,9 @@ import (
 )
 
 func NewBuilder(p ...any) *Builder {
+	if err := checkType(p...); err != nil {
+		panic(err)
+	}
 	return &Builder{
 		cmd: p,
 	}
