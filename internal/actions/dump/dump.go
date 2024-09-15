@@ -2,7 +2,6 @@ package dump
 
 import (
 	"context"
-	"errors"
 	"fmt"
 	"io"
 	"log/slog"
@@ -91,13 +90,12 @@ func (action Dump) Run(ctx context.Context) error {
 	}
 
 	startTime := time.Now()
-
 	bar, plogger := progressbar.New(os.Stderr, -1, "downloading", action.Spinner)
 	defer bar.Close()
 
 	pr, pw := io.Pipe()
-	// Begin database export
 	errGroup.Go(func() error {
+		// Begin database export
 		defer func(pw io.WriteCloser) {
 			_ = pw.Close()
 		}(pw)
@@ -107,21 +105,18 @@ func (action Dump) Run(ctx context.Context) error {
 			return err
 		}
 
-		if err := action.Client.Exec(ctx, kubernetes.ExecOptions{
+		return action.Client.Exec(ctx, kubernetes.ExecOptions{
 			Pod:         action.JobPod,
 			Cmd:         cmd.String(),
 			Stdin:       os.Stdin,
 			Stdout:      pw,
 			Stderr:      plogger,
 			DisablePing: true,
-		}); err != nil {
-			return err
-		}
-
-		return pw.Close()
+		})
 	})
 
 	if !action.RemoteGzip && action.Format == sqlformat.Gzip {
+		// Gzip locally
 		gzPipeReader, gzPipeWriter := io.Pipe()
 		plainReader := pr
 		errGroup.Go(func() error {
@@ -140,15 +135,13 @@ func (action Dump) Run(ctx context.Context) error {
 	}
 
 	sizeW := &util.SizeWriter{}
-
-	// Begin copying export to local file
 	errGroup.Go(func() error {
+		// Begin copying export to local file
 		defer func(pr io.ReadCloser) {
 			_ = pr.Close()
 		}(pr)
 
 		r := io.Reader(pr)
-
 		if action.RemoteGzip {
 			if action.Format == sqlformat.Plain {
 				var err error
@@ -161,12 +154,7 @@ func (action Dump) Run(ctx context.Context) error {
 		if _, err := io.Copy(io.MultiWriter(f, bar, sizeW), r); err != nil {
 			return err
 		}
-
-		if err := f.Close(); err != nil && !errors.Is(err, os.ErrClosed) {
-			return err
-		}
-
-		return nil
+		return f.Close()
 	})
 
 	util.OnFinalize(func(err error) {

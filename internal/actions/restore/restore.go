@@ -78,7 +78,6 @@ func (action Restore) Run(ctx context.Context) error {
 	actionLog.Info("Ready to restore database")
 
 	startTime := time.Now()
-
 	bar, errLog := progressbar.New(os.Stderr, -1, "uploading", action.Spinner)
 	defer bar.Close()
 
@@ -92,7 +91,6 @@ func (action Restore) Run(ctx context.Context) error {
 	})
 
 	sizeW := &util.SizeWriter{}
-
 	errGroup.Go(func() error {
 		defer func(pw io.WriteCloser) {
 			_ = pw.Close()
