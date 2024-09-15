@@ -26,6 +26,7 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/util/intstr"
 	"k8s.io/apimachinery/pkg/util/wait"
+	"k8s.io/kubectl/pkg/cmd/util/podcmd"
 	"k8s.io/utils/ptr"
 )
 
@@ -285,6 +286,13 @@ func CreateJob(ctx context.Context, conf *config.Global, opts SetupOptions) erro
 
 func createJob(ctx context.Context, conf *config.Global, actionName string) error {
 	image := conf.DBPod.Spec.Containers[0].Image
+	if name := conf.DBPod.Annotations[podcmd.DefaultContainerAnnotationName]; name != "" {
+		for _, container := range conf.DBPod.Spec.Containers {
+			if container.Name == name {
+				image = container.Image
+			}
+		}
+	}
 
 	name := "kubedb-"
 	if actionName != "" {
