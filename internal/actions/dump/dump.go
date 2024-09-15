@@ -48,6 +48,9 @@ func (action Dump) Run(ctx context.Context) error {
 		}(pw)
 
 		errGroup.Go(func() error {
+			defer func() {
+				_ = pr.Close()
+			}()
 			return storage.UploadS3(ctx, pr, action.Filename)
 		})
 	case storage.IsGCS(action.Filename):
@@ -124,13 +127,13 @@ func (action Dump) Run(ctx context.Context) error {
 		errGroup.Go(func() error {
 			defer func() {
 				_ = gzPipeWriter.Close()
+				_ = plainReader.Close()
 			}()
 
 			gzw := gzip.NewWriter(gzPipeWriter)
 			if _, err := io.Copy(gzw, plainReader); err != nil {
 				return err
 			}
-
 			return gzw.Close()
 		})
 		pr = gzPipeReader
