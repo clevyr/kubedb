@@ -19,7 +19,6 @@ import (
 	"github.com/clevyr/kubedb/internal/tui"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
-	"golang.org/x/sync/errgroup"
 	batchv1 "k8s.io/api/batch/v1"
 	corev1 "k8s.io/api/core/v1"
 	networkingv1 "k8s.io/api/networking/v1"
@@ -172,100 +171,90 @@ func DefaultSetup(cmd *cobra.Command, conf *config.Global, opts SetupOptions) er
 		conf.DBPod = pods[idx]
 	}
 
-	group, ctx := errgroup.WithContext(ctx)
+	// Detect port
+	conf.Port, err = cmd.Flags().GetUint16(consts.PortFlag)
+	if err != nil {
+		panic(err)
+	}
 
-	group.Go(func() error {
-		conf.Port, err = cmd.Flags().GetUint16(consts.PortFlag)
+	if db, ok := conf.Dialect.(config.DBHasPort); ok && conf.Port == 0 {
+		port, err := db.PortEnvs().Search(ctx, conf.Client, conf.DBPod)
 		if err != nil {
-			panic(err)
-		}
-
-		if db, ok := conf.Dialect.(config.DBHasPort); ok && conf.Port == 0 {
-			port, err := db.PortEnvs().Search(ctx, conf.Client, conf.DBPod)
+			slog.Debug("Could not detect port from pod env")
+		} else {
+			port, err := strconv.ParseUint(port, 10, 16)
 			if err != nil {
-				slog.Debug("Could not detect port from pod env")
+				slog.Debug("Failed to parse port from pod env", "error", err)
 			} else {
-				port, err := strconv.ParseUint(port, 10, 16)
-				if err != nil {
-					slog.Debug("Failed to parse port from pod env", "error", err)
-				} else {
-					conf.Port = uint16(port)
-					slog.Debug("Found port in pod env", "port", conf.Port)
-				}
-			}
-
-			if conf.Port == 0 {
-				conf.Port = db.PortDefault()
-			}
-		}
-		return nil
-	})
-
-	group.Go(func() error {
-		conf.Database, err = cmd.Flags().GetString(consts.DbnameFlag)
-		if err != nil && !opts.DisableAuthFlags {
-			panic(err)
-		}
-
-		if db, ok := conf.Dialect.(config.DBHasDatabase); ok && conf.Database == "" {
-			conf.Database, err = db.DatabaseEnvs().Search(ctx, conf.Client, conf.DBPod)
-			if err != nil {
-				slog.Debug("Could not detect database from pod env", "error", err)
-			} else {
-				slog.Debug("Found db name in pod env", "database", conf.Database)
-			}
-		}
-		return nil
-	})
-
-	group.Go(func() error {
-		conf.Username, err = cmd.Flags().GetString(consts.UsernameFlag)
-		if err != nil && !opts.DisableAuthFlags {
-			panic(err)
-		}
-
-		if db, ok := conf.Dialect.(config.DBHasUser); ok && conf.Username == "" {
-			conf.Username, err = db.UserEnvs().Search(ctx, conf.Client, conf.DBPod)
-			if err != nil {
-				conf.Username = db.UserDefault()
-				slog.Debug("Could not detect user from pod env, using default", "error", err, "user", conf.Username)
-			} else {
-				slog.Debug("Found user in pod env", "user", conf.Username)
+				conf.Port = uint16(port)
+				slog.Debug("Found port in pod env", "port", conf.Port)
 			}
 		}
 
-		conf.Password, err = cmd.Flags().GetString(consts.PasswordFlag)
-		if err != nil && !opts.DisableAuthFlags {
-			panic(err)
+		if conf.Port == 0 {
+			conf.Port = db.PortDefault()
 		}
+	}
 
-		if db, ok := conf.Dialect.(config.DBHasPassword); ok && conf.Password == "" {
-			conf.Password, err = db.PasswordEnvs(*conf).Search(ctx, conf.Client, conf.DBPod)
-			if err != nil {
-				slog.Error("Could not detect password from pod env", "error", err)
-				return err
-			}
-			slog.Debug("Found password in pod env")
-		}
+	// Detect database
+	conf.Database, err = cmd.Flags().GetString(consts.DbnameFlag)
+	if err != nil && !opts.DisableAuthFlags {
+		panic(err)
+	}
 
-		if conf.Password != "" && viper.GetBool(consts.LogMaskKey) {
-			log.AddMask(conf.Password)
+	if db, ok := conf.Dialect.(config.DBHasDatabase); ok && conf.Database == "" {
+		conf.Database, err = db.DatabaseEnvs().Search(ctx, conf.Client, conf.DBPod)
+		if err != nil {
+			slog.Debug("Could not detect database from pod env", "error", err)
+		} else {
+			slog.Debug("Found db name in pod env", "database", conf.Database)
 		}
-		return nil
-	})
+	}
 
-	group.Go(func() error {
-		if db, ok := conf.Dialect.(config.DBCanDisableJob); ok && db.DisableJob() {
-			viper.Set(consts.CreateJobKey, false)
-		}
-		if !viper.GetBool(consts.CreateJobKey) {
-			conf.Host = "127.0.0.1"
-			conf.JobPod = conf.DBPod
-		}
-		return nil
-	})
+	// Detect username
+	conf.Username, err = cmd.Flags().GetString(consts.UsernameFlag)
+	if err != nil && !opts.DisableAuthFlags {
+		panic(err)
+	}
 
-	return group.Wait()
+	if db, ok := conf.Dialect.(config.DBHasUser); ok && conf.Username == "" {
+		conf.Username, err = db.UserEnvs().Search(ctx, conf.Client, conf.DBPod)
+		if err != nil {
+			conf.Username = db.UserDefault()
+			slog.Debug("Could not detect user from pod env, using default", "error", err, "user", conf.Username)
+		} else {
+			slog.Debug("Found user in pod env", "user", conf.Username)
+		}
+	}
+
+	// Detect password
+	conf.Password, err = cmd.Flags().GetString(consts.PasswordFlag)
+	if err != nil && !opts.DisableAuthFlags {
+		panic(err)
+	}
+
+	if db, ok := conf.Dialect.(config.DBHasPassword); ok && conf.Password == "" {
+		conf.Password, err = db.PasswordEnvs(*conf).Search(ctx, conf.Client, conf.DBPod)
+		if err != nil {
+			slog.Error("Could not detect password from pod env", "error", err)
+			return err
+		}
+		slog.Debug("Found password in pod env")
+	}
+
+	if conf.Password != "" && viper.GetBool(consts.LogMaskKey) {
+		log.AddMask(conf.Password)
+	}
+
+	if db, ok := conf.Dialect.(config.DBCanDisableJob); ok && db.DisableJob() {
+		viper.Set(consts.CreateJobKey, false)
+	}
+	if !viper.GetBool(consts.CreateJobKey) {
+		conf.Host = "127.0.0.1"
+		conf.JobPod = conf.DBPod
+	}
+
+	return nil
 }
 
 func CreateJob(ctx context.Context, conf *config.Global, opts SetupOptions) error {
