@@ -149,30 +149,34 @@ func preRun(cmd *cobra.Command, args []string) error {
 	switch {
 	case action.Filename == "-", storage.IsCloud(action.Filename):
 	case action.Filename == "":
-		db, ok := action.Dialect.(config.DBRestorer)
-		if !ok {
-			return fmt.Errorf("%w: %s", util.ErrNoRestore, action.Dialect.Name())
-		}
+		if (term.TTY{In: os.Stdin}).IsTerminalIn() {
+			db, ok := action.Dialect.(config.DBRestorer)
+			if !ok {
+				return fmt.Errorf("%w: %s", util.ErrNoRestore, action.Dialect.Name())
+			}
 
-		wd, err := os.Getwd()
-		if err != nil {
-			return err
-		}
+			wd, err := os.Getwd()
+			if err != nil {
+				return err
+			}
 
-		form := tui.NewForm(huh.NewGroup(
-			huh.NewFilePicker().
-				Title("Choose a file to restore").
-				Picking(true).
-				CurrentDirectory(wd).
-				ShowSize(true).
-				ShowPermissions(false).
-				Height(15).
-				AllowedTypes(slices.Collect(maps.Values(db.Formats()))).
-				Value(&action.Filename),
-		))
+			form := tui.NewForm(huh.NewGroup(
+				huh.NewFilePicker().
+					Title("Choose a file to restore").
+					Picking(true).
+					CurrentDirectory(wd).
+					ShowSize(true).
+					ShowPermissions(false).
+					Height(15).
+					AllowedTypes(slices.Collect(maps.Values(db.Formats()))).
+					Value(&action.Filename),
+			))
 
-		if err := form.Run(); err != nil {
-			return err
+			if err := form.Run(); err != nil {
+				return err
+			}
+		} else {
+			return cobra.ExactArgs(1)(cmd, args)
 		}
 		fallthrough
 	default:
@@ -190,17 +194,16 @@ func preRun(cmd *cobra.Command, args []string) error {
 		action.Format = database.DetectFormat(db, action.Filename)
 	}
 
-	if !action.Force {
-		tty := term.TTY{In: os.Stdin}.IsTerminalIn()
-		if tty {
-			if response, err := action.Confirm(); err != nil {
-				return err
-			} else if !response {
-				return ErrRestoreCanceled
-			}
-		} else {
-			return ErrRestoreRefused
+	switch {
+	case action.Force:
+	case (term.TTY{In: os.Stdin}).IsTerminalIn():
+		if response, err := action.Confirm(); err != nil {
+			return err
+		} else if !response {
+			return ErrRestoreCanceled
 		}
+	default:
+		return ErrRestoreRefused
 	}
 
 	if err := util.CreateJob(cmd.Context(), &action.Global, setupOptions); err != nil {
