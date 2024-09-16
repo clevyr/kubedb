@@ -24,6 +24,8 @@ func New() *cobra.Command {
 		Args:    cobra.NoArgs,
 		RunE:    run,
 		PreRunE: preRun,
+
+		ValidArgsFunction: cobra.NoFileCompletions,
 	}
 
 	flags.JobPodLabels(cmd)

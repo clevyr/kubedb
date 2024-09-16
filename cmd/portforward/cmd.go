@@ -52,6 +52,10 @@ func New() *cobra.Command {
 }
 
 func localPortCompletion(cmd *cobra.Command, args []string, _ string) ([]string, cobra.ShellCompDirective) {
+	if len(args) != 0 {
+		return nil, cobra.ShellCompDirectiveNoFileComp
+	}
+
 	setupOptions.NoSurvey = true
 	err := preRun(cmd, args)
 	if err != nil {
