@@ -78,7 +78,7 @@ func (action Restore) Run(ctx context.Context) error {
 	actionLog.Info("Ready to restore database")
 
 	startTime := time.Now()
-	bar, errLog := progressbar.New(os.Stderr, -1, "uploading", action.Spinner)
+	bar := progressbar.New(os.Stderr, -1, "uploading", action.Spinner)
 	defer bar.Close()
 
 	pr, pw := io.Pipe()
@@ -87,7 +87,7 @@ func (action Restore) Run(ctx context.Context) error {
 		defer func(pr io.ReadCloser) {
 			_ = pr.Close()
 		}(pr)
-		return action.runInDatabasePod(ctx, pr, errLog, errLog, action.Format)
+		return action.runInDatabasePod(ctx, pr, bar.Logger(), bar.Logger(), action.Format)
 	})
 
 	sizeW := &util.SizeWriter{}
@@ -144,7 +144,7 @@ func (action Restore) Run(ctx context.Context) error {
 							defer func(pr io.ReadCloser) {
 								_ = pr.Close()
 							}(pr)
-							return action.runInDatabasePod(ctx, pr, errLog, errLog, sqlformat.Gzip)
+							return action.runInDatabasePod(ctx, pr, bar.Logger(), bar.Logger(), sqlformat.Gzip)
 						})
 
 						errGroup.Go(func() error {

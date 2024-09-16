@@ -14,7 +14,6 @@ require (
 	github.com/gabe565/go-spinners v1.1.0
 	github.com/klauspost/pgzip v1.2.6
 	github.com/lmittmann/tint v1.0.5
-	github.com/mattn/go-isatty v0.0.20
 	github.com/muesli/termenv v0.15.3-0.20240912151726-82936c5ea257
 	github.com/schollz/progressbar/v3 v3.14.6
 	github.com/spf13/cobra v1.8.1
@@ -94,6 +93,7 @@ require (
 	github.com/lucasb-eyer/go-colorful v1.2.0 // indirect
 	github.com/magiconair/properties v1.8.7 // indirect
 	github.com/mailru/easyjson v0.7.7 // indirect
+	github.com/mattn/go-isatty v0.0.20 // indirect
 	github.com/mattn/go-localereader v0.0.1 // indirect
 	github.com/mattn/go-runewidth v0.0.16 // indirect
 	github.com/mitchellh/colorstring v0.0.0-20190213212951-d06e56a500db // indirect

@@ -1,6 +1,7 @@
 package progressbar
 
 import (
+	"context"
 	"io"
 	"log/slog"
 	"os"
@@ -9,11 +10,11 @@ import (
 
 	"github.com/clevyr/kubedb/internal/config/flags"
 	spinner "github.com/gabe565/go-spinners"
-	"github.com/mattn/go-isatty"
 	"github.com/schollz/progressbar/v3"
+	"k8s.io/kubectl/pkg/util/term"
 )
 
-func New(w io.Writer, total int64, label string, spinnerKey string) (*ProgressBar, *BarSafeLogger) {
+func New(w io.Writer, total int64, label string, spinnerKey string) *ProgressBar {
 	s, ok := spinner.Map[spinnerKey]
 	if !ok {
 		slog.Warn("Invalid spinner", "spinner", spinnerKey)
@@ -24,14 +25,12 @@ func New(w io.Writer, total int64, label string, spinnerKey string) (*ProgressBa
 		progressbar.OptionSetDescription(label),
 		progressbar.OptionSetWriter(io.Discard),
 		progressbar.OptionShowBytes(true),
-		progressbar.OptionSetWidth(10),
 		progressbar.OptionShowCount(),
 		progressbar.OptionSpinnerCustom(s.Frames),
-		progressbar.OptionFullWidth(),
 	}
 
-	var throttle time.Duration
-	if isatty.IsTerminal(os.Stdout.Fd()) || isatty.IsCygwinTerminal(os.Stdout.Fd()) {
+	throttle := 2 * time.Second
+	if (term.TTY{Out: w}).IsTerminalOut() {
 		throttle = 65 * time.Millisecond
 		options = append(options,
 			progressbar.OptionSetRenderBlankState(true),
@@ -39,35 +38,32 @@ func New(w io.Writer, total int64, label string, spinnerKey string) (*ProgressBa
 				_, _ = io.WriteString(os.Stderr, "\r\x1B[K")
 			}),
 		)
-	} else {
-		throttle = 2 * time.Second
 	}
-	options = append(options,
-		progressbar.OptionThrottle(throttle),
-	)
+	options = append(options, progressbar.OptionThrottle(throttle))
 
-	cancelChan := make(chan struct{})
+	ctx, cancel := context.WithCancel(context.Background())
+
 	bar := &ProgressBar{
 		ProgressBar: progressbar.NewOptions64(total, options...),
-		cancelChan:  cancelChan,
+		cancel:      cancel,
 	}
 	go func() {
 		for {
 			select {
-			case <-cancelChan:
+			case <-ctx.Done():
 				return
 			case <-time.After(throttle):
 				if bar.IsFinished() {
 					return
 				}
 				if bar.mu.TryLock() {
-					if !bar.logger.canOverwrite && time.Since(bar.logger.lastWrite) > time.Millisecond {
-						_, _ = os.Stderr.Write([]byte("\n"))
+					if !bar.logger.canOverwrite && time.Since(bar.logger.lastWrite) > 10*time.Millisecond {
+						_, _ = os.Stderr.WriteString("\n")
 						bar.logger.canOverwrite = true
 					}
 					if bar.logger.canOverwrite {
 						_ = bar.RenderBlank()
-						_, _ = os.Stderr.Write([]byte(bar.String()))
+						_, _ = os.Stderr.WriteString(bar.String())
 					}
 					bar.mu.Unlock()
 				}
@@ -76,15 +72,14 @@ func New(w io.Writer, total int64, label string, spinnerKey string) (*ProgressBa
 	}()
 
 	bar.logger = NewBarSafeLogger(w, bar)
-	return bar, bar.logger
+	return bar
 }
 
 type ProgressBar struct {
 	*progressbar.ProgressBar
-	mu         sync.Mutex
-	cancelChan chan struct{}
-	cancelOnce sync.Once
-	logger     *BarSafeLogger
+	mu     sync.Mutex
+	cancel context.CancelFunc
+	logger *BarSafeLogger
 }
 
 func (p *ProgressBar) Finish() error {
@@ -95,7 +90,9 @@ func (p *ProgressBar) Finish() error {
 }
 
 func (p *ProgressBar) Close() {
-	p.cancelOnce.Do(func() {
-		close(p.cancelChan)
-	})
+	p.cancel()
+}
+
+func (p *ProgressBar) Logger() io.Writer {
+	return p.logger
 }

@@ -90,7 +90,7 @@ func (action Dump) Run(ctx context.Context) error {
 	}
 
 	startTime := time.Now()
-	bar, plogger := progressbar.New(os.Stderr, -1, "downloading", action.Spinner)
+	bar := progressbar.New(os.Stderr, -1, "downloading", action.Spinner)
 	defer bar.Close()
 
 	pr, pw := io.Pipe()
@@ -110,7 +110,7 @@ func (action Dump) Run(ctx context.Context) error {
 			Cmd:         cmd.String(),
 			Stdin:       os.Stdin,
 			Stdout:      pw,
-			Stderr:      plogger,
+			Stderr:      bar.Logger(),
 			DisablePing: true,
 		})
 	})
