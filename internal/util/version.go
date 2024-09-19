@@ -17,5 +17,8 @@ func GetCommit() string {
 	if commit == "$Format:%H$" {
 		return ""
 	}
+	if len(commit) > 8 {
+		commit = commit[:8]
+	}
 	return commit
 }

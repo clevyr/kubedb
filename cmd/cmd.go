@@ -2,6 +2,7 @@ package cmd
 
 import (
 	"log/slog"
+	"net/http"
 	"os"
 	"os/signal"
 	"path/filepath"
@@ -79,6 +80,8 @@ func NewCommand() *cobra.Command {
 }
 
 func preRun(cmd *cobra.Command, _ []string) error {
+	http.DefaultTransport = util.NewUserAgentTransport()
+
 	flags.BindKubeconfig(cmd)
 	flags.BindLogLevel(cmd)
 	flags.BindLogFormat(cmd)
@@ -133,9 +136,6 @@ func preRun(cmd *cobra.Command, _ []string) error {
 func buildVersion() string {
 	result := util.GetVersion()
 	if commit := util.GetCommit(); commit != "" {
-		if len(commit) > 8 {
-			commit = commit[:8]
-		}
 		result += " (" + commit + ")"
 	}
 	return result
