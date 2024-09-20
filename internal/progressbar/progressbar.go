@@ -47,6 +47,7 @@ func New(w io.Writer, total int64, label string, spinnerKey string) *ProgressBar
 		ProgressBar: progressbar.NewOptions64(total, options...),
 		cancel:      cancel,
 	}
+	bar.logger = NewBarSafeLogger(w, bar)
 	go func() {
 		for {
 			select {
@@ -71,7 +72,6 @@ func New(w io.Writer, total int64, label string, spinnerKey string) *ProgressBar
 		}
 	}()
 
-	bar.logger = NewBarSafeLogger(w, bar)
 	return bar
 }
 
@@ -90,6 +90,8 @@ func (p *ProgressBar) Finish() error {
 }
 
 func (p *ProgressBar) Close() {
+	p.mu.Lock()
+	defer p.mu.Unlock()
 	p.cancel()
 }
 
