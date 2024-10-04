@@ -15,7 +15,7 @@ require (
 	github.com/klauspost/pgzip v1.2.6
 	github.com/lmittmann/tint v1.0.5
 	github.com/muesli/termenv v0.15.3-0.20240912151726-82936c5ea257
-	github.com/schollz/progressbar/v3 v3.15.0
+	github.com/schollz/progressbar/v3 v3.16.1
 	github.com/spf13/cobra v1.8.1
 	github.com/spf13/pflag v1.0.5
 	github.com/spf13/viper v1.19.0
