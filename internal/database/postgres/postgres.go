@@ -47,19 +47,31 @@ func (Postgres) Aliases() []string { return []string{"postgresql", "psql", "pg"}
 
 func (Postgres) Priority() uint8 { return 255 }
 
-func (Postgres) PortEnvs() kubernetes.ConfigLookups {
+func (db Postgres) PortEnvs(conf config.Global) kubernetes.ConfigLookups {
+	if secret := db.cnpgSecretName(conf); secret != "" {
+		return kubernetes.ConfigLookups{kubernetes.LookupNamedSecret{
+			Name: secret,
+			Key:  "port",
+		}}
+	}
+
 	return kubernetes.ConfigLookups{
 		kubernetes.LookupEnv{"POSTGRESQL_PORT_NUMBER"},
-		kubernetes.LookupVolumeSecret{Name: "app-secret", Key: "port"},
 	}
 }
 
 func (Postgres) PortDefault() uint16 { return 5432 }
 
-func (Postgres) DatabaseEnvs() kubernetes.ConfigLookups {
+func (db Postgres) DatabaseEnvs(conf config.Global) kubernetes.ConfigLookups {
+	if secret := db.cnpgSecretName(conf); secret != "" {
+		return kubernetes.ConfigLookups{kubernetes.LookupNamedSecret{
+			Name: secret,
+			Key:  "dbname",
+		}}
+	}
+
 	return kubernetes.ConfigLookups{
 		kubernetes.LookupEnv{"POSTGRES_DATABASE", "POSTGRES_DB"},
-		kubernetes.LookupVolumeSecret{Name: "app-secret", Key: "dbname"},
 	}
 }
 
@@ -71,10 +83,16 @@ func (Postgres) TableListQuery() string {
 	return "SELECT table_name FROM information_schema.tables WHERE table_schema='public' AND table_type='BASE TABLE'"
 }
 
-func (Postgres) UserEnvs() kubernetes.ConfigLookups {
+func (db Postgres) UserEnvs(conf config.Global) kubernetes.ConfigLookups {
+	if secret := db.cnpgSecretName(conf); secret != "" {
+		return kubernetes.ConfigLookups{kubernetes.LookupNamedSecret{
+			Name: secret,
+			Key:  "username",
+		}}
+	}
+
 	return kubernetes.ConfigLookups{
 		kubernetes.LookupEnv{"POSTGRES_USER", "PGPOOL_POSTGRES_USERNAME", "PGUSER_SUPERUSER"},
-		kubernetes.LookupVolumeSecret{Name: "app-secret", Key: "username"},
 	}
 }
 
@@ -176,17 +194,20 @@ func (db Postgres) FilterPods(ctx context.Context, client kubernetes.KubeClient,
 	return preferred, nil
 }
 
-func (db Postgres) PasswordEnvs(c config.Global) kubernetes.ConfigLookups {
+func (db Postgres) PasswordEnvs(conf config.Global) kubernetes.ConfigLookups {
+	if secret := db.cnpgSecretName(conf); secret != "" {
+		return kubernetes.ConfigLookups{kubernetes.LookupNamedSecret{
+			Name: secret,
+			Key:  "password",
+		}}
+	}
+
 	var searchEnvs kubernetes.LookupEnv
-	searchUser := kubernetes.LookupVolumeSecret{Key: "password"}
-	if c.Username == db.UserDefault() {
+	if conf.Username == db.UserDefault() {
 		searchEnvs = append(searchEnvs, "POSTGRES_POSTGRES_PASSWORD")
-		searchUser.Name = "superuser-secret"
-	} else {
-		searchUser.Name = "app-secret"
 	}
 	searchEnvs = append(searchEnvs, "POSTGRES_PASSWORD", "PGPOOL_POSTGRES_PASSWORD", "PGPASSWORD_SUPERUSER")
-	return kubernetes.ConfigLookups{searchEnvs, searchUser}
+	return kubernetes.ConfigLookups{searchEnvs}
 }
 
 func (Postgres) ExecCommand(conf config.Exec) *command.Builder {
@@ -329,4 +350,14 @@ func (Postgres) cnpgQuery() filter.Filter {
 
 func (Postgres) zalandoQuery() filter.Filter {
 	return filter.Label{Name: "application", Value: "spilo"}
+}
+
+func (db Postgres) cnpgSecretName(conf config.Global) string {
+	if cluster, ok := conf.DBPod.Labels["cnpg.io/cluster"]; ok {
+		if conf.Username == db.UserDefault() {
+			return cluster + "-superuser"
+		}
+		return cluster + "-app"
+	}
+	return ""
 }

@@ -29,13 +29,13 @@ func (Redis) Name() string { return "redis" }
 
 func (Redis) PrettyName() string { return "Redis" }
 
-func (Redis) PortEnvs() kubernetes.ConfigLookups {
+func (Redis) PortEnvs(_ config.Global) kubernetes.ConfigLookups {
 	return kubernetes.ConfigLookups{kubernetes.LookupEnv{"REDIS_PORT"}}
 }
 
 func (Redis) PortDefault() uint16 { return 6379 }
 
-func (Redis) DatabaseEnvs() kubernetes.ConfigLookups {
+func (Redis) DatabaseEnvs(_ config.Global) kubernetes.ConfigLookups {
 	return kubernetes.ConfigLookups{kubernetes.LookupEnv{"REDIS_DB"}}
 }
 

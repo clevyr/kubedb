@@ -50,12 +50,12 @@ type DBFiler interface {
 }
 
 type DBHasUser interface {
-	UserEnvs() kubernetes.ConfigLookups
+	UserEnvs(conf Global) kubernetes.ConfigLookups
 	UserDefault() string
 }
 
 type DBHasPort interface {
-	PortEnvs() kubernetes.ConfigLookups
+	PortEnvs(conf Global) kubernetes.ConfigLookups
 	PortDefault() uint16
 }
 
@@ -64,7 +64,7 @@ type DBHasPassword interface {
 }
 
 type DBHasDatabase interface {
-	DatabaseEnvs() kubernetes.ConfigLookups
+	DatabaseEnvs(conf Global) kubernetes.ConfigLookups
 }
 
 type DBDatabaseLister interface {

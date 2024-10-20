@@ -110,33 +110,25 @@ func (e LookupEnv) GetValue(ctx context.Context, client KubeClient, pod corev1.P
 	return "", fmt.Errorf("%w: %s", ErrEnvNoExist, strings.Join(e, ", "))
 }
 
-type LookupVolumeSecret struct {
+type LookupNamedSecret struct {
 	Name string
 	Key  string
 }
 
-var ErrVolumeNoExist = errors.New("volume does not exist")
-
-func (f LookupVolumeSecret) GetValue(ctx context.Context, client KubeClient, pod corev1.Pod) (string, error) {
+func (f LookupNamedSecret) GetValue(ctx context.Context, client KubeClient, _ corev1.Pod) (string, error) {
 	if f.Name == "" || f.Key == "" {
 		return "", ErrNoEnvNames
 	}
 
-	for _, volume := range pod.Spec.Volumes {
-		if volume.Name == f.Name && volume.Secret != nil {
-			secret, err := client.Secrets().Get(ctx, volume.Secret.SecretName, v1meta.GetOptions{})
-			if err != nil {
-				return "", err
-			}
-
-			if value, ok := secret.Data[f.Key]; ok {
-				return string(value), nil
-			}
-			return "", fmt.Errorf("%w: %s", ErrSecretDoesNotHaveKey, f.Key)
-		}
+	secret, err := client.Secrets().Get(ctx, f.Name, v1meta.GetOptions{})
+	if err != nil {
+		return "", err
 	}
 
-	return "", fmt.Errorf("%w: %s", ErrVolumeNoExist, f.Name)
+	if value, ok := secret.Data[f.Key]; ok {
+		return string(value), nil
+	}
+	return "", fmt.Errorf("%w: %s", ErrSecretDoesNotHaveKey, f.Key)
 }
 
 type LookupNop struct{}

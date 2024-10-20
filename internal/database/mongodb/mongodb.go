@@ -36,13 +36,13 @@ func (MongoDB) Aliases() []string { return []string{"mongo"} }
 
 func (MongoDB) Priority() uint8 { return 255 }
 
-func (MongoDB) PortEnvs() kubernetes.ConfigLookups {
+func (MongoDB) PortEnvs(_ config.Global) kubernetes.ConfigLookups {
 	return kubernetes.ConfigLookups{kubernetes.LookupEnv{"MONGODB_PORT_NUMBER"}}
 }
 
 func (MongoDB) PortDefault() uint16 { return 27017 }
 
-func (MongoDB) DatabaseEnvs() kubernetes.ConfigLookups {
+func (MongoDB) DatabaseEnvs(_ config.Global) kubernetes.ConfigLookups {
 	return kubernetes.ConfigLookups{kubernetes.LookupEnv{"MONGODB_EXTRA_DATABASES"}}
 }
 
@@ -54,7 +54,7 @@ func (MongoDB) TableListQuery() string {
 	return "db.getCollectionNames().forEach(function(collection){ print(collection) })"
 }
 
-func (MongoDB) UserEnvs() kubernetes.ConfigLookups {
+func (MongoDB) UserEnvs(_ config.Global) kubernetes.ConfigLookups {
 	return kubernetes.ConfigLookups{kubernetes.LookupEnv{"MONGODB_EXTRA_USERNAMES", "MONGODB_ROOT_USER"}}
 }
 

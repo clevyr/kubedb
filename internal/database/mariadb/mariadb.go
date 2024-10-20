@@ -36,7 +36,7 @@ func (MariaDB) Aliases() []string { return []string{"maria", "mysql"} }
 
 func (MariaDB) Priority() uint8 { return 255 }
 
-func (MariaDB) PortEnvs() kubernetes.ConfigLookups {
+func (MariaDB) PortEnvs(_ config.Global) kubernetes.ConfigLookups {
 	return kubernetes.ConfigLookups{kubernetes.LookupEnv{"MARIADB_PORT_NUMBER", "MYSQL_PORT_NUMBER"}}
 }
 
@@ -44,7 +44,7 @@ func (MariaDB) PortDefault() uint16 {
 	return 3306
 }
 
-func (MariaDB) DatabaseEnvs() kubernetes.ConfigLookups {
+func (MariaDB) DatabaseEnvs(_ config.Global) kubernetes.ConfigLookups {
 	return kubernetes.ConfigLookups{kubernetes.LookupEnv{"MARIADB_DATABASE", "MYSQL_DATABASE"}}
 }
 
@@ -52,7 +52,7 @@ func (MariaDB) DatabaseListQuery() string { return "show databases" }
 
 func (MariaDB) TableListQuery() string { return "show tables" }
 
-func (MariaDB) UserEnvs() kubernetes.ConfigLookups {
+func (MariaDB) UserEnvs(_ config.Global) kubernetes.ConfigLookups {
 	return kubernetes.ConfigLookups{kubernetes.LookupEnv{"MARIADB_USER", "MYSQL_USER"}}
 }
 

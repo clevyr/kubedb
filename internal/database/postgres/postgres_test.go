@@ -14,6 +14,17 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
+func newCNPGPod() v1.Pod {
+	return v1.Pod{
+		ObjectMeta: metav1.ObjectMeta{
+			Name: "postgresql-1",
+			Labels: map[string]string{
+				"cnpg.io/cluster": "postgresql",
+			},
+		},
+	}
+}
+
 func TestPostgres_DumpCommand(t *testing.T) {
 	t.Parallel()
 	type args struct {
@@ -171,6 +182,7 @@ func TestPostgres_FilterPods(t *testing.T) {
 
 func TestPostgres_PasswordEnvs(t *testing.T) {
 	t.Parallel()
+
 	type args struct {
 		c config.Global
 	}
@@ -185,7 +197,6 @@ func TestPostgres_PasswordEnvs(t *testing.T) {
 				"PGPOOL_POSTGRES_PASSWORD",
 				"PGPASSWORD_SUPERUSER",
 			},
-			kubernetes.LookupVolumeSecret{Name: "app-secret", Key: "password"},
 		}},
 		{"postgres", args{config.Global{Username: "postgres"}}, kubernetes.ConfigLookups{
 			kubernetes.LookupEnv{
@@ -194,7 +205,12 @@ func TestPostgres_PasswordEnvs(t *testing.T) {
 				"PGPOOL_POSTGRES_PASSWORD",
 				"PGPASSWORD_SUPERUSER",
 			},
-			kubernetes.LookupVolumeSecret{Name: "superuser-secret", Key: "password"},
+		}},
+		{"cnpg", args{config.Global{DBPod: newCNPGPod()}}, kubernetes.ConfigLookups{
+			kubernetes.LookupNamedSecret{
+				Name: "postgresql-app",
+				Key:  "password",
+			},
 		}},
 	}
 	for _, tt := range tests {
@@ -304,6 +320,102 @@ func TestPostgres_quoteParam(t *testing.T) {
 			po := Postgres{}
 			got := po.quoteParam(tt.args.param)
 			assert.Equal(t, tt.want, got)
+		})
+	}
+}
+
+func TestPostgres_cnpgSecretName(t *testing.T) {
+	type args struct {
+		conf config.Global
+	}
+	tests := []struct {
+		name string
+		args args
+		want string
+	}{
+		{"default", args{config.Global{DBPod: newCNPGPod()}}, "postgresql-app"},
+		{"postgres", args{config.Global{Username: "postgres", DBPod: newCNPGPod()}}, "postgresql-superuser"},
+		{"other", args{}, ""},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			db := Postgres{}
+			assert.Equal(t, tt.want, db.cnpgSecretName(tt.args.conf))
+		})
+	}
+}
+
+func TestPostgres_PortEnvs(t *testing.T) {
+	type args struct {
+		conf config.Global
+	}
+	tests := []struct {
+		name string
+		args args
+		want kubernetes.ConfigLookups
+	}{
+		{"default", args{}, kubernetes.ConfigLookups{kubernetes.LookupEnv{"POSTGRESQL_PORT_NUMBER"}}},
+		{"cnpg", args{config.Global{DBPod: newCNPGPod()}}, kubernetes.ConfigLookups{
+			kubernetes.LookupNamedSecret{
+				Name: "postgresql-app",
+				Key:  "port",
+			},
+		}},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			db := Postgres{}
+			assert.Equal(t, tt.want, db.PortEnvs(tt.args.conf))
+		})
+	}
+}
+
+func TestPostgres_DatabaseEnvs(t *testing.T) {
+	type args struct {
+		conf config.Global
+	}
+	tests := []struct {
+		name string
+		args args
+		want kubernetes.ConfigLookups
+	}{
+		{"default", args{}, kubernetes.ConfigLookups{kubernetes.LookupEnv{"POSTGRES_DATABASE", "POSTGRES_DB"}}},
+		{"cnpg", args{config.Global{DBPod: newCNPGPod()}}, kubernetes.ConfigLookups{
+			kubernetes.LookupNamedSecret{
+				Name: "postgresql-app",
+				Key:  "dbname",
+			},
+		}},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			db := Postgres{}
+			assert.Equal(t, tt.want, db.DatabaseEnvs(tt.args.conf))
+		})
+	}
+}
+
+func TestPostgres_UserEnvs(t *testing.T) {
+	type args struct {
+		conf config.Global
+	}
+	tests := []struct {
+		name string
+		args args
+		want kubernetes.ConfigLookups
+	}{
+		{"default", args{}, kubernetes.ConfigLookups{kubernetes.LookupEnv{"POSTGRES_USER", "PGPOOL_POSTGRES_USERNAME", "PGUSER_SUPERUSER"}}},
+		{"cnpg", args{config.Global{DBPod: newCNPGPod()}}, kubernetes.ConfigLookups{
+			kubernetes.LookupNamedSecret{
+				Name: "postgresql-app",
+				Key:  "username",
+			},
+		}},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			db := Postgres{}
+			assert.Equal(t, tt.want, db.UserEnvs(tt.args.conf))
 		})
 	}
 }
