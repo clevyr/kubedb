@@ -8,8 +8,8 @@ import (
 	"sync"
 	"time"
 
+	spinner "gabe565.com/spinners"
 	"github.com/clevyr/kubedb/internal/config/flags"
-	spinner "github.com/gabe565/go-spinners"
 	"github.com/schollz/progressbar/v3"
 	"k8s.io/kubectl/pkg/util/term"
 )
