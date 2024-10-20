@@ -274,11 +274,12 @@ func CreateJob(ctx context.Context, conf *config.Global, opts SetupOptions) erro
 }
 
 func createJob(ctx context.Context, conf *config.Global, actionName string) error {
-	image := conf.DBPod.Spec.Containers[0].Image
+	defaultContainer := conf.DBPod.Spec.Containers[0]
 	if name := conf.DBPod.Annotations[podcmd.DefaultContainerAnnotationName]; name != "" {
 		for _, container := range conf.DBPod.Spec.Containers {
 			if container.Name == name {
-				image = container.Image
+				defaultContainer = container
+				break
 			}
 		}
 	}
@@ -357,10 +358,10 @@ func createJob(ctx context.Context, conf *config.Global, actionName string) erro
 					Containers: []corev1.Container{
 						{
 							Name:            "kubedb",
-							Image:           image,
+							Image:           defaultContainer.Image,
 							ImagePullPolicy: corev1.PullIfNotPresent,
 							Command:         []string{"sleep", "infinity"},
-							SecurityContext: conf.DBPod.Spec.Containers[0].SecurityContext,
+							SecurityContext: defaultContainer.SecurityContext,
 						},
 					},
 					SecurityContext: conf.DBPod.Spec.SecurityContext,
