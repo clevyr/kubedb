@@ -5,6 +5,7 @@ go 1.23.2
 require (
 	al.essio.dev/pkg/shellescape v1.5.1
 	cloud.google.com/go/storage v1.45.0
+	gabe565.com/spinners v1.3.0
 	github.com/aws/aws-sdk-go-v2/config v1.28.0
 	github.com/aws/aws-sdk-go-v2/feature/s3/manager v1.17.33
 	github.com/aws/aws-sdk-go-v2/service/s3 v1.66.0
@@ -12,7 +13,6 @@ require (
 	github.com/charmbracelet/lipgloss v0.13.0
 	github.com/dmarkham/enumer v1.5.10
 	github.com/dustin/go-humanize v1.0.1
-	github.com/gabe565/go-spinners v1.3.0
 	github.com/klauspost/pgzip v1.2.6
 	github.com/lmittmann/tint v1.0.5
 	github.com/muesli/termenv v0.15.3-0.20240912151726-82936c5ea257
