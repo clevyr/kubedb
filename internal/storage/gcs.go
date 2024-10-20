@@ -9,6 +9,7 @@ import (
 
 	"cloud.google.com/go/storage"
 	"google.golang.org/api/iterator"
+	"google.golang.org/api/option"
 )
 
 const GCSSchema = "gs://"
@@ -28,9 +29,13 @@ func IsGCSDir(path string) bool {
 	return !strings.Contains(trimmed, "/")
 }
 
+func newGCSClient(ctx context.Context, scope string) (*storage.Client, error) {
+	return storage.NewClient(ctx, option.WithScopes(scope))
+}
+
 func ListBucketsGCS(ctx context.Context, projectID string) iter.Seq2[*storage.BucketAttrs, error] {
 	return func(yield func(*storage.BucketAttrs, error) bool) {
-		client, err := storage.NewClient(ctx)
+		client, err := newGCSClient(ctx, storage.ScopeReadOnly)
 		if err != nil {
 			yield(nil, err)
 			return
@@ -51,7 +56,7 @@ func ListBucketsGCS(ctx context.Context, projectID string) iter.Seq2[*storage.Bu
 
 func ListObjectsGCS(ctx context.Context, key string) iter.Seq2[*storage.ObjectAttrs, error] {
 	return func(yield func(*storage.ObjectAttrs, error) bool) {
-		client, err := storage.NewClient(ctx)
+		client, err := newGCSClient(ctx, storage.ScopeReadOnly)
 		if err != nil {
 			yield(nil, err)
 			return
@@ -85,7 +90,7 @@ func ListObjectsGCS(ctx context.Context, key string) iter.Seq2[*storage.ObjectAt
 }
 
 func UploadGCS(ctx context.Context, key string) (*storage.Writer, error) {
-	client, err := storage.NewClient(ctx)
+	client, err := newGCSClient(ctx, storage.ScopeReadWrite)
 	if err != nil {
 		return nil, err
 	}
@@ -101,7 +106,7 @@ func UploadGCS(ctx context.Context, key string) (*storage.Writer, error) {
 }
 
 func DownloadGCS(ctx context.Context, key string) (*storage.Reader, error) {
-	client, err := storage.NewClient(ctx)
+	client, err := newGCSClient(ctx, storage.ScopeReadOnly)
 	if err != nil {
 		return nil, err
 	}
