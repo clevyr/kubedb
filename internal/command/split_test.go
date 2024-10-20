@@ -7,7 +7,6 @@ import (
 )
 
 func TestSplit_Quote(t *testing.T) {
-	t.Parallel()
 	tests := []struct {
 		name string
 		s    Split
@@ -24,7 +23,6 @@ func TestSplit_Quote(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			t.Parallel()
 			assert.Equalf(t, tt.want, tt.s.Quote(), "String()")
 		})
 	}

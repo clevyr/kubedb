@@ -9,7 +9,6 @@ import (
 type panicFunc func(assert.TestingT, assert.PanicTestFunc, ...any) bool
 
 func TestBuilder_Push(t *testing.T) {
-	t.Parallel()
 	type fields struct {
 		cmd []any
 	}
@@ -29,7 +28,6 @@ func TestBuilder_Push(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			t.Parallel()
 			tt.wantPanic(t, func() {
 				j := &Builder{
 					cmd: tt.fields.cmd,
@@ -42,7 +40,6 @@ func TestBuilder_Push(t *testing.T) {
 }
 
 func TestBuilder_String(t *testing.T) {
-	t.Parallel()
 	type fields struct {
 		cmd []any
 	}
@@ -60,7 +57,6 @@ func TestBuilder_String(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			t.Parallel()
 			tt.wantPanic(t, func() {
 				j := Builder{
 					cmd: tt.fields.cmd,
@@ -73,7 +69,6 @@ func TestBuilder_String(t *testing.T) {
 }
 
 func TestBuilder_Unshift(t *testing.T) {
-	t.Parallel()
 	type fields struct {
 		cmd []any
 	}
@@ -93,7 +88,6 @@ func TestBuilder_Unshift(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			t.Parallel()
 			tt.wantPanic(t, func() {
 				j := &Builder{
 					cmd: tt.fields.cmd,
@@ -106,7 +100,6 @@ func TestBuilder_Unshift(t *testing.T) {
 }
 
 func TestNewBuilder(t *testing.T) {
-	t.Parallel()
 	type args struct {
 		p []any
 	}
@@ -121,7 +114,6 @@ func TestNewBuilder(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			t.Parallel()
 			got := NewBuilder(tt.args.p...)
 			assert.Equal(t, tt.want, got)
 		})

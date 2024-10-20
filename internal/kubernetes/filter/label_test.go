@@ -8,7 +8,6 @@ import (
 )
 
 func TestLabel_Matches(t *testing.T) {
-	t.Parallel()
 	type fields struct {
 		Name  string
 		Value string
@@ -27,7 +26,6 @@ func TestLabel_Matches(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			t.Parallel()
 			query := Label{
 				Name:  tt.fields.Name,
 				Value: tt.fields.Value,

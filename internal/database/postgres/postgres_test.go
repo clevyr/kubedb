@@ -26,7 +26,6 @@ func newCNPGPod() v1.Pod {
 }
 
 func TestPostgres_DumpCommand(t *testing.T) {
-	t.Parallel()
 	type args struct {
 		conf config.Dump
 	}
@@ -88,7 +87,6 @@ func TestPostgres_DumpCommand(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			t.Parallel()
 			po := Postgres{}
 			got := po.DumpCommand(tt.args.conf)
 			assert.Equal(t, tt.want, got)
@@ -97,7 +95,6 @@ func TestPostgres_DumpCommand(t *testing.T) {
 }
 
 func TestPostgres_ExecCommand(t *testing.T) {
-	t.Parallel()
 	type args struct {
 		conf config.Exec
 	}
@@ -129,7 +126,6 @@ func TestPostgres_ExecCommand(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			t.Parallel()
 			po := Postgres{}
 			got := po.ExecCommand(tt.args.conf)
 			assert.Equal(t, tt.want, got)
@@ -138,7 +134,6 @@ func TestPostgres_ExecCommand(t *testing.T) {
 }
 
 func TestPostgres_FilterPods(t *testing.T) {
-	t.Parallel()
 	postgresPod := v1.Pod{
 		ObjectMeta: metav1.ObjectMeta{
 			Labels: map[string]string{
@@ -170,7 +165,6 @@ func TestPostgres_FilterPods(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			t.Parallel()
 			po := Postgres{}
 			got, err := po.FilterPods(context.TODO(), tt.args.client, tt.args.pods)
 			tt.wantErr(t, err)
@@ -181,8 +175,6 @@ func TestPostgres_FilterPods(t *testing.T) {
 }
 
 func TestPostgres_PasswordEnvs(t *testing.T) {
-	t.Parallel()
-
 	type args struct {
 		c config.Global
 	}
@@ -215,7 +207,6 @@ func TestPostgres_PasswordEnvs(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			t.Parallel()
 			db := Postgres{}
 			got := db.PasswordEnvs(tt.args.c)
 			assert.Equal(t, tt.want, got)
@@ -224,7 +215,6 @@ func TestPostgres_PasswordEnvs(t *testing.T) {
 }
 
 func TestPostgres_RestoreCommand(t *testing.T) {
-	t.Parallel()
 	pgpassword := command.NewEnv("PGPASSWORD", "")
 
 	type args struct {
@@ -289,7 +279,6 @@ func TestPostgres_RestoreCommand(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			t.Parallel()
 			po := Postgres{}
 			got := po.RestoreCommand(tt.args.conf, tt.args.inputFormat)
 			assert.Equal(t, tt.want, got)
@@ -298,7 +287,6 @@ func TestPostgres_RestoreCommand(t *testing.T) {
 }
 
 func TestPostgres_quoteParam(t *testing.T) {
-	t.Parallel()
 	type args struct {
 		param string
 	}
@@ -316,7 +304,6 @@ func TestPostgres_quoteParam(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			t.Parallel()
 			po := Postgres{}
 			got := po.quoteParam(tt.args.param)
 			assert.Equal(t, tt.want, got)

@@ -11,7 +11,6 @@ import (
 )
 
 func TestMariaDB_DatabaseDropQuery(t *testing.T) {
-	t.Parallel()
 	type args struct {
 		database string
 	}
@@ -24,7 +23,6 @@ func TestMariaDB_DatabaseDropQuery(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			t.Parallel()
 			ma := MariaDB{}
 			got := ma.DatabaseDropQuery(tt.args.database)
 			assert.Equal(t, tt.want, got)
@@ -33,7 +31,6 @@ func TestMariaDB_DatabaseDropQuery(t *testing.T) {
 }
 
 func TestMariaDB_DumpCommand(t *testing.T) {
-	t.Parallel()
 	type args struct {
 		conf config.Dump
 	}
@@ -70,7 +67,6 @@ func TestMariaDB_DumpCommand(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			t.Parallel()
 			ma := MariaDB{}
 			got := ma.DumpCommand(tt.args.conf)
 			assert.Equal(t, tt.want, got)
@@ -79,7 +75,6 @@ func TestMariaDB_DumpCommand(t *testing.T) {
 }
 
 func TestMariaDB_ExecCommand(t *testing.T) {
-	t.Parallel()
 	type args struct {
 		conf config.Exec
 	}
@@ -111,7 +106,6 @@ func TestMariaDB_ExecCommand(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			t.Parallel()
 			ma := MariaDB{}
 			got := ma.ExecCommand(tt.args.conf)
 			assert.Equal(t, tt.want, got)
@@ -120,7 +114,6 @@ func TestMariaDB_ExecCommand(t *testing.T) {
 }
 
 func TestMariaDB_DatabaseListQuery(t *testing.T) {
-	t.Parallel()
 	tests := []struct {
 		name string
 		want string
@@ -129,7 +122,6 @@ func TestMariaDB_DatabaseListQuery(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			t.Parallel()
 			ma := MariaDB{}
 			got := ma.DatabaseListQuery()
 			assert.Equal(t, tt.want, got)
@@ -138,7 +130,6 @@ func TestMariaDB_DatabaseListQuery(t *testing.T) {
 }
 
 func TestMariaDB_PasswordEnvs(t *testing.T) {
-	t.Parallel()
 	type args struct {
 		c config.Global
 	}
@@ -152,7 +143,6 @@ func TestMariaDB_PasswordEnvs(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			t.Parallel()
 			db := MariaDB{}
 			got := db.PasswordEnvs(tt.args.c)
 			assert.Equal(t, tt.want, got)
@@ -161,7 +151,6 @@ func TestMariaDB_PasswordEnvs(t *testing.T) {
 }
 
 func TestMariaDB_RestoreCommand(t *testing.T) {
-	t.Parallel()
 	type args struct {
 		conf        config.Restore
 		inputFormat sqlformat.Format
@@ -194,7 +183,6 @@ func TestMariaDB_RestoreCommand(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			t.Parallel()
 			ma := MariaDB{}
 			got := ma.RestoreCommand(tt.args.conf, tt.args.inputFormat)
 			assert.Equal(t, tt.want, got)

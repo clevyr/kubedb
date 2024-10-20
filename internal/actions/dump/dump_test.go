@@ -13,7 +13,6 @@ import (
 )
 
 func Test_buildCommand(t *testing.T) {
-	t.Parallel()
 	pgpassword := command.NewEnv("PGPASSWORD", "")
 	mysqlPwd := command.NewEnv("MYSQL_PWD", "")
 
@@ -59,7 +58,6 @@ func Test_buildCommand(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			t.Parallel()
 			got, err := tt.args.conf.buildCommand()
 			tt.wantErr(t, err)
 			assert.Equal(t, tt.want, got)

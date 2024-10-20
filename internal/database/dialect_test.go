@@ -13,7 +13,6 @@ import (
 )
 
 func TestNew(t *testing.T) {
-	t.Parallel()
 	type args struct {
 		name string
 	}
@@ -36,7 +35,6 @@ func TestNew(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			t.Parallel()
 			got, err := New(tt.args.name)
 			tt.wantErr(t, err)
 			assert.Equal(t, tt.want, got)
@@ -45,7 +43,6 @@ func TestNew(t *testing.T) {
 }
 
 func TestDetectFormat(t *testing.T) {
-	t.Parallel()
 	type args struct {
 		db   config.DBFiler
 		path string
@@ -67,14 +64,12 @@ func TestDetectFormat(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			t.Parallel()
 			assert.Equalf(t, tt.want, DetectFormat(tt.args.db, tt.args.path), "DetectFormat(%v, %v)", tt.args.db, tt.args.path)
 		})
 	}
 }
 
 func TestGetExtension(t *testing.T) {
-	t.Parallel()
 	type args struct {
 		db     config.DBFiler
 		format sqlformat.Format
@@ -95,7 +90,6 @@ func TestGetExtension(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			t.Parallel()
 			assert.Equalf(t, tt.want, GetExtension(tt.args.db, tt.args.format), "GetExtension(%v, %v)", tt.args.db, tt.args.format)
 		})
 	}
