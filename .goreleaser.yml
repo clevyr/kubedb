@@ -29,17 +29,29 @@ builds:
       - goos: windows
         goarch: arm
         goarm: "7"
+    mod_timestamp: "{{.CommitTimestamp}}"
 archives:
   - format: tar.gz
+    builds_info:
+      owner: 0
+      group: 0
     # use zip for windows archives
     format_overrides:
       - goos: windows
         format: zip
     files:
-      - LICENSE
-      - README.md
-      - manpages/*
-      - completions/*
+      - src: LICENSE
+        info: &info
+          owner: 0
+          group: 0
+          mtime: "{{.CommitDate}}"
+          mode: 0644
+      - src: README.md
+        info: *info
+      - src: manpages/*
+        info: *info
+      - src: completions/*
+        info: *info
 checksum:
   name_template: "checksums.txt"
 snapshot:
