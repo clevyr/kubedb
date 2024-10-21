@@ -13,7 +13,6 @@ require (
 	github.com/charmbracelet/lipgloss v0.13.0
 	github.com/dmarkham/enumer v1.5.10
 	github.com/dustin/go-humanize v1.0.1
-	github.com/klauspost/pgzip v1.2.6
 	github.com/lmittmann/tint v1.0.5
 	github.com/muesli/termenv v0.15.3-0.20240912151726-82936c5ea257
 	github.com/schollz/progressbar/v3 v3.16.1
@@ -99,7 +98,6 @@ require (
 	github.com/inconshreveable/mousetrap v1.1.0 // indirect
 	github.com/josharian/intern v1.0.0 // indirect
 	github.com/json-iterator/go v1.1.12 // indirect
-	github.com/klauspost/compress v1.17.8 // indirect
 	github.com/liggitt/tabwriter v0.0.0-20181228230101-89fcab3d43de // indirect
 	github.com/lucasb-eyer/go-colorful v1.2.0 // indirect
 	github.com/magiconair/properties v1.8.7 // indirect

@@ -1,6 +1,7 @@
 package dump
 
 import (
+	"compress/gzip"
 	"context"
 	"fmt"
 	"io"
@@ -22,7 +23,6 @@ import (
 	"github.com/clevyr/kubedb/internal/storage"
 	"github.com/clevyr/kubedb/internal/tui"
 	"github.com/clevyr/kubedb/internal/util"
-	gzip "github.com/klauspost/pgzip"
 	"github.com/muesli/termenv"
 	"github.com/spf13/viper"
 	"golang.org/x/sync/errgroup"

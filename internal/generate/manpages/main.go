@@ -1,6 +1,7 @@
 package main
 
 import (
+	"compress/gzip"
 	"io"
 	"io/fs"
 	"os"
@@ -9,7 +10,6 @@ import (
 	"time"
 
 	"github.com/clevyr/kubedb/cmd"
-	gzip "github.com/klauspost/pgzip"
 	"github.com/spf13/cobra/doc"
 	flag "github.com/spf13/pflag"
 )

@@ -2,6 +2,7 @@ package restore
 
 import (
 	"bytes"
+	"compress/gzip"
 	"io"
 	"strings"
 	"testing"
@@ -10,7 +11,6 @@ import (
 	"github.com/clevyr/kubedb/internal/config"
 	"github.com/clevyr/kubedb/internal/database/postgres"
 	"github.com/clevyr/kubedb/internal/database/sqlformat"
-	gzip "github.com/klauspost/pgzip"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
