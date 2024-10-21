@@ -15,6 +15,10 @@ builds:
       - -X k8s.io/client-go/pkg/version.gitCommit={{ .FullCommit }}
       - -X k8s.io/client-go/pkg/version.gitTreeState={{ if .IsGitDirty }}dirty{{ else }}clean{{ end }}
       - -X k8s.io/client-go/pkg/version.buildDate={{ .CommitDate }}
+    tags:
+      # Disable Google Cloud Storage GRPC to reduce binary size
+      # https://pkg.go.dev/cloud.google.com/go/storage#hdr-gRPC_API
+      - disable_grpc_modules
     goarch:
       - amd64
       - arm
