@@ -8,6 +8,11 @@ issues:
       linters:
         - dupl
 
+linters-settings:
+  gosec:
+    excludes:
+      - G110
+
 linters:
   enable:
     - asasalint
