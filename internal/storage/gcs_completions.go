@@ -3,6 +3,7 @@ package storage
 import (
 	"context"
 	"fmt"
+	"log/slog"
 	"net/url"
 	"os"
 
@@ -27,6 +28,7 @@ func CompleteBucketsGCS(u *url.URL, projectID string) ([]string, cobra.ShellComp
 	var names []string //nolint:prealloc
 	for bucket, err := range ListBucketsGCS(context.Background(), projectID) {
 		if err != nil {
+			slog.Error("Failed to list GCS buckets", "error", err)
 			return nil, cobra.ShellCompDirectiveError
 		}
 
@@ -40,6 +42,7 @@ func CompleteObjectsGCS(u *url.URL, exts []string, dirOnly bool) ([]string, cobr
 	var paths []string
 	for object, err := range ListObjectsGCS(context.Background(), u.String()) {
 		if err != nil {
+			slog.Error("Failed to list GCS objects", "error", err)
 			return nil, cobra.ShellCompDirectiveError
 		}
 

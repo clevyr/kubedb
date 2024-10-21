@@ -3,6 +3,7 @@ package restore
 import (
 	"errors"
 	"fmt"
+	"log/slog"
 	"maps"
 	"net/url"
 	"os"
@@ -80,11 +81,13 @@ func validArgs(cmd *cobra.Command, args []string, toComplete string) ([]string, 
 
 	err := preRun(cmd, args)
 	if err != nil {
+		slog.Error("Pre-run failed", "error", err)
 		return nil, cobra.ShellCompDirectiveError
 	}
 
 	db, ok := action.Dialect.(config.DBRestorer)
 	if !ok {
+		slog.Error("Dialect does not support restore", "name", action.Dialect.Name())
 		return nil, cobra.ShellCompDirectiveError
 	}
 
@@ -93,6 +96,7 @@ func validArgs(cmd *cobra.Command, args []string, toComplete string) ([]string, 
 	if storage.IsCloud(toComplete) {
 		u, err := url.Parse(toComplete)
 		if err != nil {
+			slog.Error("Failed to parse URL", "error", err)
 			return nil, cobra.ShellCompDirectiveError
 		}
 

@@ -2,6 +2,7 @@ package portforward
 
 import (
 	"fmt"
+	"log/slog"
 	"strconv"
 
 	"github.com/clevyr/kubedb/internal/actions/portforward"
@@ -59,11 +60,13 @@ func localPortCompletion(cmd *cobra.Command, args []string, _ string) ([]string,
 	setupOptions.NoSurvey = true
 	err := preRun(cmd, args)
 	if err != nil {
-		return nil, cobra.ShellCompDirectiveNoFileComp
+		slog.Error("Pre-run failed", "error", err)
+		return nil, cobra.ShellCompDirectiveError
 	}
 
 	db, ok := action.Dialect.(config.DBHasPort)
 	if !ok {
+		slog.Error("Dialect does not support port-forwarding", "name", action.Dialect.Name())
 		return nil, cobra.ShellCompDirectiveError
 	}
 

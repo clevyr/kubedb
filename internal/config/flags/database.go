@@ -1,6 +1,7 @@
 package flags
 
 import (
+	"log/slog"
 	"os"
 	"strings"
 
@@ -166,11 +167,13 @@ func listTables(cmd *cobra.Command, _ []string, _ string) ([]string, cobra.Shell
 	viper.Set(consts.CreateJobKey, false)
 	err := util.DefaultSetup(cmd, &conf.Global, util.SetupOptions{NoSurvey: true})
 	if err != nil {
+		slog.Error("Setup failed", "error", err)
 		return nil, cobra.ShellCompDirectiveError
 	}
 
 	db, ok := conf.Dialect.(config.DBTableLister)
 	if !ok {
+		slog.Error("Dialect does not support listing tables", "error", err)
 		return nil, cobra.ShellCompDirectiveError
 	}
 
@@ -184,11 +187,13 @@ func listDatabases(cmd *cobra.Command, _ []string, _ string) ([]string, cobra.Sh
 	viper.Set(consts.CreateJobKey, false)
 	err := util.DefaultSetup(cmd, &conf.Global, util.SetupOptions{NoSurvey: true})
 	if err != nil {
+		slog.Error("Setup failed", "error", err)
 		return nil, cobra.ShellCompDirectiveError
 	}
 
 	db, ok := conf.Dialect.(config.DBDatabaseLister)
 	if !ok {
+		slog.Error("Dialect does not support listing databases", "error", err)
 		return nil, cobra.ShellCompDirectiveError
 	}
 
@@ -199,6 +204,7 @@ func listDatabases(cmd *cobra.Command, _ []string, _ string) ([]string, cobra.Sh
 func queryInDatabase(cmd *cobra.Command, conf config.Exec) ([]string, cobra.ShellCompDirective) {
 	db, ok := conf.Dialect.(config.DBExecer)
 	if !ok {
+		slog.Error("Dialect does not support exec", "name", conf.Dialect.Name())
 		return nil, cobra.ShellCompDirectiveError
 	}
 
@@ -209,6 +215,7 @@ func queryInDatabase(cmd *cobra.Command, conf config.Exec) ([]string, cobra.Shel
 		Stdout: &buf,
 		Stderr: os.Stderr,
 	}); err != nil {
+		slog.Error("Exec failed", "error", err)
 		return nil, cobra.ShellCompDirectiveError
 	}
 

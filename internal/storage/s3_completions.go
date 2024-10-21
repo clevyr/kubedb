@@ -3,6 +3,7 @@ package storage
 import (
 	"context"
 	"fmt"
+	"log/slog"
 	"net/url"
 	"slices"
 	"strings"
@@ -18,6 +19,7 @@ func CompleteBucketsS3(u *url.URL) ([]string, cobra.ShellCompDirective) {
 	var names []string
 	for output, err := range ListBucketsS3(context.Background(), nil) {
 		if err != nil {
+			slog.Error("Failed to list S3 buckets", "error", err)
 			return nil, cobra.ShellCompDirectiveError
 		}
 
@@ -35,6 +37,7 @@ func CompleteObjectsS3(u *url.URL, exts []string, dirOnly bool) ([]string, cobra
 	var paths []string
 	for output, err := range ListObjectsS3(context.Background(), u.String()) {
 		if err != nil {
+			slog.Error("Failed to list S3 objects", "error", err)
 			return nil, cobra.ShellCompDirectiveError
 		}
 

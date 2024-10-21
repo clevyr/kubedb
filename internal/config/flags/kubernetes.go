@@ -1,6 +1,7 @@
 package flags
 
 import (
+	"log/slog"
 	"os"
 	"path/filepath"
 
@@ -41,6 +42,7 @@ func Context(cmd *cobra.Command) {
 			)
 			conf, err := configLoader.RawConfig()
 			if err != nil {
+				slog.Error("Failed to load config", "error", err)
 				return nil, cobra.ShellCompDirectiveError
 			}
 			names := make([]string, 0, len(conf.Contexts))
@@ -61,10 +63,12 @@ func Namespace(cmd *cobra.Command) {
 		func(cmd *cobra.Command, _ []string, _ string) ([]string, cobra.ShellCompDirective) {
 			client, err := kubernetes.NewClientFromCmd(cmd)
 			if err != nil {
+				slog.Error("Failed to create Kubernetes client", "error", err)
 				return nil, cobra.ShellCompDirectiveError
 			}
 			namespaces, err := client.Namespaces().List(cmd.Context(), metav1.ListOptions{})
 			if err != nil {
+				slog.Error("Failed to list namespaces", "error", err)
 				return nil, cobra.ShellCompDirectiveError
 			}
 			names := make([]string, 0, len(namespaces.Items))
@@ -85,10 +89,12 @@ func Pod(cmd *cobra.Command) {
 		func(cmd *cobra.Command, _ []string, _ string) ([]string, cobra.ShellCompDirective) {
 			client, err := kubernetes.NewClientFromCmd(cmd)
 			if err != nil {
+				slog.Error("Failed to create Kubernetes client", "error", err)
 				return nil, cobra.ShellCompDirectiveError
 			}
 			pods, err := client.GetNamespacedPods(cmd.Context())
 			if err != nil {
+				slog.Error("Failed to list pods", "error", err)
 				return nil, cobra.ShellCompDirectiveError
 			}
 			names := make([]string, 0, len(pods.Items))
