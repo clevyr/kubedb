@@ -93,7 +93,7 @@ func TestRestore_copy(t *testing.T) {
 		name    string
 		fields  fields
 		args    args
-		wantW   string
+		want    string
 		wantErr require.ErrorAssertionFunc
 	}{
 		{"gzip", fields{Restore: config.Restore{Global: config.Global{RemoteGzip: true}}}, args{strings.NewReader(input)}, gzipped.String(), require.NoError},
@@ -106,9 +106,9 @@ func TestRestore_copy(t *testing.T) {
 				Analyze: tt.fields.Analyze,
 			}
 			w := &bytes.Buffer{}
-			err := action.copy(w, tt.args.r)
+			_, err := action.copy(w, tt.args.r)
 			tt.wantErr(t, err)
-			assert.Equal(t, tt.wantW, w.String())
+			assert.Equal(t, tt.want, w.String())
 		})
 	}
 }

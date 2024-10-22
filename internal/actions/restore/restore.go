@@ -8,6 +8,7 @@ import (
 	"log/slog"
 	"os"
 	"strings"
+	"sync/atomic"
 	"time"
 
 	"github.com/charmbracelet/huh"
@@ -23,6 +24,7 @@ import (
 	"github.com/clevyr/kubedb/internal/storage"
 	"github.com/clevyr/kubedb/internal/tui"
 	"github.com/clevyr/kubedb/internal/util"
+	"github.com/dustin/go-humanize"
 	"github.com/muesli/termenv"
 	"github.com/spf13/viper"
 	"golang.org/x/sync/errgroup"
@@ -90,20 +92,22 @@ func (action Restore) Run(ctx context.Context) error {
 		return action.runInDatabasePod(ctx, pr, bar.Logger(), bar.Logger(), action.Format)
 	})
 
-	sizeW := &util.SizeWriter{}
+	var written atomic.Int64
 	errGroup.Go(func() error {
 		defer func(pw io.WriteCloser) {
 			_ = pw.Close()
 		}(pw)
 
-		w := io.MultiWriter(pw, sizeW, bar)
+		w := io.MultiWriter(pw, bar)
 
 		// Clean database
 		if action.Clean && action.Format != sqlformat.Custom {
 			if db, ok := action.Dialect.(config.DBDatabaseDropper); ok {
 				dropQuery := db.DatabaseDropQuery(action.Database)
 				actionLog.Info("Cleaning existing data")
-				if err := action.copy(w, strings.NewReader(dropQuery)); err != nil {
+				n, err := action.copy(w, strings.NewReader(dropQuery))
+				written.Add(n)
+				if err != nil {
 					return err
 				}
 			}
@@ -123,11 +127,15 @@ func (action Restore) Run(ctx context.Context) error {
 				}(f)
 			}
 
-			if _, err := io.Copy(w, f); err != nil {
+			n, err := io.Copy(w, f)
+			written.Add(n)
+			if err != nil {
 				return err
 			}
 		case sqlformat.Plain, sqlformat.Custom:
-			if err := action.copy(w, f); err != nil {
+			n, err := action.copy(w, f)
+			written.Add(n)
+			if err != nil {
 				return err
 			}
 		}
@@ -151,11 +159,15 @@ func (action Restore) Run(ctx context.Context) error {
 							defer func() {
 								_ = pw.Close()
 							}()
-							return action.copy(pw, strings.NewReader(analyzeQuery))
+							n, err := action.copy(pw, strings.NewReader(analyzeQuery))
+							written.Add(n)
+							return err
 						})
 					}()
 				} else {
-					if err := action.copy(w, strings.NewReader(analyzeQuery)); err != nil {
+					n, err := action.copy(w, strings.NewReader(analyzeQuery))
+					written.Add(n)
+					if err != nil {
 						return err
 					}
 				}
@@ -171,7 +183,7 @@ func (action Restore) Run(ctx context.Context) error {
 	})
 
 	util.OnFinalize(func(err error) {
-		action.printSummary(err, time.Since(startTime).Truncate(10*time.Millisecond), sizeW)
+		action.printSummary(err, time.Since(startTime).Truncate(10*time.Millisecond), written.Load())
 	})
 
 	if err := errGroup.Wait(); err != nil {
@@ -182,12 +194,12 @@ func (action Restore) Run(ctx context.Context) error {
 
 	actionLog.Info("Restore complete",
 		"took", time.Since(startTime).Truncate(10*time.Millisecond),
-		"size", sizeW,
+		"size", written.Load(),
 	)
 
 	if handler, ok := notifier.FromContext(ctx); ok {
 		if logger, ok := handler.(notifier.Logs); ok {
-			logger.SetLog(action.summary(nil, time.Since(startTime).Truncate(10*time.Millisecond), sizeW, true))
+			logger.SetLog(action.summary(nil, time.Since(startTime).Truncate(10*time.Millisecond), written.Load(), true))
 		}
 	}
 	return nil
@@ -213,17 +225,18 @@ func (action Restore) buildCommand(inputFormat sqlformat.Format) (*command.Build
 	return cmd, nil
 }
 
-func (action Restore) copy(w io.Writer, r io.Reader) error {
+func (action Restore) copy(w io.Writer, r io.Reader) (int64, error) {
 	if action.RemoteGzip {
 		gzw := gzip.NewWriter(w)
-		if _, err := io.Copy(gzw, r); err != nil {
-			return err
+		n, err := io.Copy(gzw, r)
+		if err != nil {
+			return n, err
 		}
-		return gzw.Close()
+		return n, gzw.Close()
 	}
 
-	_, err := io.Copy(w, r)
-	return err
+	n, err := io.Copy(w, r)
+	return n, err
 }
 
 func (action Restore) runInDatabasePod(ctx context.Context, r *io.PipeReader, stdout, stderr io.Writer, inputFormat sqlformat.Format) error {
@@ -289,7 +302,7 @@ func (action Restore) Confirm() (bool, error) {
 	return response, err
 }
 
-func (action Restore) summary(err error, took time.Duration, size *util.SizeWriter, plain bool) string {
+func (action Restore) summary(err error, took time.Duration, written int64, plain bool) string {
 	var r *lipgloss.Renderer
 	if plain {
 		r = lipgloss.NewRenderer(os.Stdout, termenv.WithTTY(false))
@@ -302,8 +315,8 @@ func (action Restore) summary(err error, took time.Duration, size *util.SizeWrit
 		Row("Took", took.String())
 	if err != nil {
 		t.Row("Error", tui.ErrStyle(r).Render(err.Error()))
-	} else if size != nil {
-		t.Row("Size", size.String())
+	} else {
+		t.Row("Size", humanize.IBytes(uint64(written))) //nolint:gosec
 	}
 
 	if plain {
@@ -316,10 +329,10 @@ func (action Restore) summary(err error, took time.Duration, size *util.SizeWrit
 	)
 }
 
-func (action Restore) printSummary(err error, took time.Duration, size *util.SizeWriter) {
+func (action Restore) printSummary(err error, took time.Duration, written int64) {
 	out := os.Stdout
 	if action.Filename == "-" {
 		out = os.Stderr
 	}
-	_, _ = io.WriteString(out, "\n"+action.summary(err, took, size, false)+"\n")
+	_, _ = io.WriteString(out, "\n"+action.summary(err, took, written, false)+"\n")
 }

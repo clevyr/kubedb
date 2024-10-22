@@ -8,6 +8,7 @@ import (
 	"log/slog"
 	"os"
 	"path/filepath"
+	"sync/atomic"
 	"time"
 
 	"github.com/charmbracelet/lipgloss"
@@ -23,6 +24,7 @@ import (
 	"github.com/clevyr/kubedb/internal/storage"
 	"github.com/clevyr/kubedb/internal/tui"
 	"github.com/clevyr/kubedb/internal/util"
+	"github.com/dustin/go-humanize"
 	"github.com/muesli/termenv"
 	"github.com/spf13/viper"
 	"golang.org/x/sync/errgroup"
@@ -134,7 +136,7 @@ func (action Dump) Run(ctx context.Context) error {
 		pr = gzPipeReader
 	}
 
-	sizeW := &util.SizeWriter{}
+	var written atomic.Int64
 	errGroup.Go(func() error {
 		// Begin copying export to local file
 		defer func(pr io.ReadCloser) {
@@ -151,14 +153,16 @@ func (action Dump) Run(ctx context.Context) error {
 			}
 		}
 
-		if _, err := io.Copy(io.MultiWriter(f, bar, sizeW), r); err != nil {
+		n, err := io.Copy(io.MultiWriter(f, bar), r)
+		written.Add(n)
+		if err != nil {
 			return err
 		}
 		return f.Close()
 	})
 
 	util.OnFinalize(func(err error) {
-		action.printSummary(err, time.Since(startTime).Truncate(10*time.Millisecond), sizeW)
+		action.printSummary(err, time.Since(startTime).Truncate(10*time.Millisecond), written.Load())
 	})
 
 	if err := errGroup.Wait(); err != nil {
@@ -169,12 +173,12 @@ func (action Dump) Run(ctx context.Context) error {
 
 	actionLog.Info("Dump complete",
 		"took", time.Since(startTime).Truncate(10*time.Millisecond),
-		"size", sizeW,
+		"size", written.Load(),
 	)
 
 	if handler, ok := notifier.FromContext(ctx); ok {
 		if logger, ok := handler.(notifier.Logs); ok {
-			logger.SetLog(action.summary(nil, time.Since(startTime).Truncate(10*time.Millisecond), sizeW, true))
+			logger.SetLog(action.summary(nil, time.Since(startTime).Truncate(10*time.Millisecond), written.Load(), true))
 		}
 	}
 	return nil
@@ -200,7 +204,7 @@ func (action Dump) buildCommand() (*command.Builder, error) {
 	return cmd, nil
 }
 
-func (action Dump) summary(err error, took time.Duration, size *util.SizeWriter, plain bool) string {
+func (action Dump) summary(err error, took time.Duration, written int64, plain bool) string {
 	var r *lipgloss.Renderer
 	if plain {
 		r = lipgloss.NewRenderer(os.Stdout, termenv.WithTTY(false))
@@ -218,8 +222,8 @@ func (action Dump) summary(err error, took time.Duration, size *util.SizeWriter,
 		Row("Took", took.String())
 	if err != nil {
 		t.Row("Error", tui.ErrStyle(r).Render(err.Error()))
-	} else if size != nil {
-		t.Row("Size", size.String())
+	} else {
+		t.Row("Size", humanize.IBytes(uint64(written))) //nolint:gosec
 	}
 
 	if plain {
@@ -232,10 +236,10 @@ func (action Dump) summary(err error, took time.Duration, size *util.SizeWriter,
 	)
 }
 
-func (action Dump) printSummary(err error, took time.Duration, size *util.SizeWriter) {
+func (action Dump) printSummary(err error, took time.Duration, written int64) {
 	out := os.Stdout
 	if action.Filename == "-" {
 		out = os.Stderr
 	}
-	_, _ = io.WriteString(out, "\n"+action.summary(err, took, size, false)+"\n")
+	_, _ = io.WriteString(out, "\n"+action.summary(err, took, written, false)+"\n")
 }
