@@ -45,7 +45,12 @@ func (h *Healthchecks) SendStatus(ctx context.Context, status Status, log string
 
 	client := &http.Client{Timeout: 10 * time.Second}
 
-	req, err := http.NewRequestWithContext(ctx, http.MethodPost, u.String(), strings.NewReader(log))
+	method := http.MethodHead
+	if log != "" {
+		method = http.MethodPost
+	}
+
+	req, err := http.NewRequestWithContext(ctx, method, u.String(), strings.NewReader(log))
 	if err != nil {
 		return err
 	}
