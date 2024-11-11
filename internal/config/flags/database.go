@@ -5,6 +5,7 @@ import (
 	"os"
 	"strings"
 
+	"gabe565.com/utils/must"
 	"github.com/clevyr/kubedb/internal/config"
 	"github.com/clevyr/kubedb/internal/consts"
 	"github.com/clevyr/kubedb/internal/database"
@@ -17,60 +18,45 @@ import (
 
 func Dialect(cmd *cobra.Command) {
 	cmd.PersistentFlags().String(consts.DialectFlag, "", "Database dialect. (one of "+strings.Join(database.Names(), ", ")+") (default discovered)")
-	err := cmd.RegisterFlagCompletionFunc(
-		consts.DialectFlag,
+	must.Must(cmd.RegisterFlagCompletionFunc(consts.DialectFlag,
 		func(_ *cobra.Command, _ []string, _ string) ([]string, cobra.ShellCompDirective) {
 			return database.Names(), cobra.ShellCompDirectiveNoFileComp
-		})
-	if err != nil {
-		panic(err)
-	}
+		}),
+	)
 }
 
 func Format(cmd *cobra.Command, p *sqlformat.Format) {
 	*p = sqlformat.Gzip
 	cmd.Flags().VarP(p, consts.FormatFlag, "F", `Output file format (one of gzip, custom, plain)`)
-	err := cmd.RegisterFlagCompletionFunc(
-		consts.FormatFlag,
+	must.Must(cmd.RegisterFlagCompletionFunc(consts.FormatFlag,
 		func(_ *cobra.Command, _ []string, _ string) ([]string, cobra.ShellCompDirective) {
 			return []string{
 				sqlformat.Gzip.String(),
 				sqlformat.Plain.String(),
 				sqlformat.Custom.String(),
 			}, cobra.ShellCompDirectiveNoFileComp
-		})
-	if err != nil {
-		panic(err)
-	}
+		}),
+	)
 }
 
 func Port(cmd *cobra.Command) {
 	cmd.PersistentFlags().Uint16(consts.PortFlag, 0, "Database port (default discovered)")
-	if err := cmd.RegisterFlagCompletionFunc(consts.PortFlag, cobra.NoFileCompletions); err != nil {
-		panic(err)
-	}
+	must.Must(cmd.RegisterFlagCompletionFunc(consts.PortFlag, cobra.NoFileCompletions))
 }
 
 func Database(cmd *cobra.Command) {
 	cmd.Flags().StringP(consts.DbnameFlag, "d", "", "Database name to use (default discovered)")
-	err := cmd.RegisterFlagCompletionFunc(consts.DbnameFlag, listDatabases)
-	if err != nil {
-		panic(err)
-	}
+	must.Must(cmd.RegisterFlagCompletionFunc(consts.DbnameFlag, listDatabases))
 }
 
 func Username(cmd *cobra.Command) {
 	cmd.Flags().StringP(consts.UsernameFlag, "U", "", "Database username (default discovered)")
-	if err := cmd.RegisterFlagCompletionFunc(consts.UsernameFlag, cobra.NoFileCompletions); err != nil {
-		panic(err)
-	}
+	must.Must(cmd.RegisterFlagCompletionFunc(consts.UsernameFlag, cobra.NoFileCompletions))
 }
 
 func Password(cmd *cobra.Command) {
 	cmd.Flags().StringP(consts.PasswordFlag, "p", "", "Database password (default discovered)")
-	if err := cmd.RegisterFlagCompletionFunc(consts.PasswordFlag, cobra.NoFileCompletions); err != nil {
-		panic(err)
-	}
+	must.Must(cmd.RegisterFlagCompletionFunc(consts.PasswordFlag, cobra.NoFileCompletions))
 }
 
 func SingleTransaction(cmd *cobra.Command, p *bool) {
@@ -79,86 +65,59 @@ func SingleTransaction(cmd *cobra.Command, p *bool) {
 
 func Clean(cmd *cobra.Command, p *bool) {
 	cmd.Flags().BoolVarP(p, consts.CleanFlag, "c", true, "Clean (drop) database objects before recreating")
-	if err := cmd.RegisterFlagCompletionFunc(consts.CleanFlag, util.BoolCompletion); err != nil {
-		panic(err)
-	}
+	must.Must(cmd.RegisterFlagCompletionFunc(consts.CleanFlag, util.BoolCompletion))
 }
 
 func IfExists(cmd *cobra.Command, p *bool) {
 	cmd.Flags().BoolVar(p, consts.IfExistsFlag, true, "Use IF EXISTS when dropping objects")
-	if err := cmd.RegisterFlagCompletionFunc(consts.IfExistsFlag, util.BoolCompletion); err != nil {
-		panic(err)
-	}
+	must.Must(cmd.RegisterFlagCompletionFunc(consts.IfExistsFlag, util.BoolCompletion))
 }
 
 func NoOwner(cmd *cobra.Command, p *bool) {
 	cmd.Flags().BoolVarP(p, consts.NoOwnerFlag, "O", true, "Skip restoration of object ownership in plain-text format")
-	if err := cmd.RegisterFlagCompletionFunc(consts.NoOwnerFlag, util.BoolCompletion); err != nil {
-		panic(err)
-	}
+	must.Must(cmd.RegisterFlagCompletionFunc(consts.NoOwnerFlag, util.BoolCompletion))
 }
 
 func Tables(cmd *cobra.Command, p *[]string) {
 	cmd.Flags().StringSliceVarP(p, consts.TableFlag, "t", nil, "Dump the specified table(s) only")
-	err := cmd.RegisterFlagCompletionFunc(consts.TableFlag, listTables)
-	if err != nil {
-		panic(err)
-	}
+	must.Must(cmd.RegisterFlagCompletionFunc(consts.TableFlag, listTables))
 }
 
 func ExcludeTable(cmd *cobra.Command, p *[]string) {
 	cmd.Flags().StringSliceVarP(p, consts.ExcludeTableFlag, "T", nil, "Do NOT dump the specified table(s)")
-	err := cmd.RegisterFlagCompletionFunc(consts.ExcludeTableFlag, listTables)
-	if err != nil {
-		panic(err)
-	}
+	must.Must(cmd.RegisterFlagCompletionFunc(consts.ExcludeTableFlag, listTables))
 }
 
 func ExcludeTableData(cmd *cobra.Command, p *[]string) {
 	cmd.Flags().StringSliceVarP(p, consts.ExcludeTableDataFlag, "D", nil, "Do NOT dump data for the specified table(s)")
-	err := cmd.RegisterFlagCompletionFunc(consts.ExcludeTableDataFlag, listTables)
-	if err != nil {
-		panic(err)
-	}
+	must.Must(cmd.RegisterFlagCompletionFunc(consts.ExcludeTableDataFlag, listTables))
 }
 
 func Analyze(cmd *cobra.Command) {
 	cmd.Flags().Bool(consts.AnalyzeFlag, true, "Run an analyze query after restore")
-	if err := cmd.RegisterFlagCompletionFunc(consts.AnalyzeFlag, util.BoolCompletion); err != nil {
-		panic(err)
-	}
+	must.Must(cmd.RegisterFlagCompletionFunc(consts.AnalyzeFlag, util.BoolCompletion))
 }
 
 func BindAnalyze(cmd *cobra.Command) {
-	if err := viper.BindPFlag(consts.AnalyzeKey, cmd.Flags().Lookup(consts.AnalyzeFlag)); err != nil {
-		panic(err)
-	}
+	must.Must(viper.BindPFlag(consts.AnalyzeKey, cmd.Flags().Lookup(consts.AnalyzeFlag)))
 }
 
 func HaltOnError(cmd *cobra.Command) {
 	cmd.Flags().Bool(consts.HaltOnErrorFlag, true, "Halt on error (Postgres only)")
-	if err := cmd.RegisterFlagCompletionFunc(consts.HaltOnErrorFlag, util.BoolCompletion); err != nil {
-		panic(err)
-	}
+	must.Must(cmd.RegisterFlagCompletionFunc(consts.HaltOnErrorFlag, util.BoolCompletion))
 }
 
 func BindHaltOnError(cmd *cobra.Command) {
-	if err := viper.BindPFlag(consts.HaltOnErrorKey, cmd.Flags().Lookup(consts.HaltOnErrorFlag)); err != nil {
-		panic(err)
-	}
+	must.Must(viper.BindPFlag(consts.HaltOnErrorKey, cmd.Flags().Lookup(consts.HaltOnErrorFlag)))
 }
 
 func Opts(cmd *cobra.Command) {
 	cmd.Flags().String(consts.OptsFlag, "", "Additional options to pass to the database client command")
-	if err := cmd.RegisterFlagCompletionFunc(consts.OptsFlag, cobra.NoFileCompletions); err != nil {
-		panic(err)
-	}
+	must.Must(cmd.RegisterFlagCompletionFunc(consts.OptsFlag, cobra.NoFileCompletions))
 }
 
 func BindOpts(cmd *cobra.Command) {
-	if err := viper.BindPFlag(consts.OptsKey, cmd.Flags().Lookup(consts.OptsFlag)); err != nil {
-		panic(err)
-	}
+	must.Must(viper.BindPFlag(consts.OptsKey, cmd.Flags().Lookup(consts.OptsFlag)))
 }
 
 func listTables(cmd *cobra.Command, _ []string, _ string) ([]string, cobra.ShellCompDirective) {

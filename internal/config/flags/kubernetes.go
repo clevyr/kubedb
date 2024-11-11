@@ -5,6 +5,7 @@ import (
 	"os"
 	"path/filepath"
 
+	"gabe565.com/utils/must"
 	"github.com/clevyr/kubedb/internal/consts"
 	"github.com/clevyr/kubedb/internal/kubernetes"
 	"github.com/clevyr/kubedb/internal/util"
@@ -21,9 +22,7 @@ func Kubeconfig(cmd *cobra.Command) {
 }
 
 func BindKubeconfig(cmd *cobra.Command) {
-	if err := viper.BindPFlag(consts.KubeconfigKey, cmd.Flags().Lookup(consts.KubeconfigFlag)); err != nil {
-		panic(err)
-	}
+	must.Must(viper.BindPFlag(consts.KubeconfigKey, cmd.Flags().Lookup(consts.KubeconfigFlag)))
 
 	if env := os.Getenv(KubeconfigEnv); env != "" {
 		viper.SetDefault(consts.KubeconfigKey, env)
@@ -32,8 +31,7 @@ func BindKubeconfig(cmd *cobra.Command) {
 
 func Context(cmd *cobra.Command) {
 	cmd.PersistentFlags().String(consts.ContextFlag, "", "Kubernetes context name")
-	err := cmd.RegisterFlagCompletionFunc(
-		consts.ContextFlag,
+	must.Must(cmd.RegisterFlagCompletionFunc(consts.ContextFlag,
 		func(_ *cobra.Command, _ []string, _ string) ([]string, cobra.ShellCompDirective) {
 			kubeconfig := viper.GetString(consts.KubeconfigKey)
 			configLoader := clientcmd.NewNonInteractiveDeferredLoadingClientConfig(
@@ -50,16 +48,13 @@ func Context(cmd *cobra.Command) {
 				names = append(names, name)
 			}
 			return names, cobra.ShellCompDirectiveNoFileComp
-		})
-	if err != nil {
-		panic(err)
-	}
+		}),
+	)
 }
 
 func Namespace(cmd *cobra.Command) {
 	cmd.PersistentFlags().StringP(consts.NamespaceFlag, "n", "", "Kubernetes namespace")
-	err := cmd.RegisterFlagCompletionFunc(
-		consts.NamespaceFlag,
+	must.Must(cmd.RegisterFlagCompletionFunc(consts.NamespaceFlag,
 		func(cmd *cobra.Command, _ []string, _ string) ([]string, cobra.ShellCompDirective) {
 			client, err := kubernetes.NewClientFromCmd(cmd)
 			if err != nil {
@@ -76,16 +71,13 @@ func Namespace(cmd *cobra.Command) {
 				names = append(names, namespace.Name)
 			}
 			return names, cobra.ShellCompDirectiveNoFileComp
-		})
-	if err != nil {
-		panic(err)
-	}
+		}),
+	)
 }
 
 func Pod(cmd *cobra.Command) {
 	cmd.PersistentFlags().String(consts.PodFlag, "", "Perform detection from a pod instead of searching the namespace")
-	err := cmd.RegisterFlagCompletionFunc(
-		"pod",
+	must.Must(cmd.RegisterFlagCompletionFunc(consts.PodFlag,
 		func(cmd *cobra.Command, _ []string, _ string) ([]string, cobra.ShellCompDirective) {
 			client, err := kubernetes.NewClientFromCmd(cmd)
 			if err != nil {
@@ -102,47 +94,33 @@ func Pod(cmd *cobra.Command) {
 				names = append(names, pod.Name)
 			}
 			return names, cobra.ShellCompDirectiveNoFileComp
-		})
-	if err != nil {
-		panic(err)
-	}
+		}),
+	)
 }
 
 func JobPodLabels(cmd *cobra.Command) {
 	cmd.Flags().StringToString(consts.JobPodLabelsFlag, map[string]string{}, "Pod labels to add to the job")
-	if err := cmd.RegisterFlagCompletionFunc(consts.JobPodLabelsFlag, cobra.NoFileCompletions); err != nil {
-		panic(err)
-	}
+	must.Must(cmd.RegisterFlagCompletionFunc(consts.JobPodLabelsFlag, cobra.NoFileCompletions))
 }
 
 func BindJobPodLabels(cmd *cobra.Command) {
-	if err := viper.BindPFlag(consts.JobPodLabelsKey, cmd.Flags().Lookup(consts.JobPodLabelsFlag)); err != nil {
-		panic(err)
-	}
+	must.Must(viper.BindPFlag(consts.JobPodLabelsKey, cmd.Flags().Lookup(consts.JobPodLabelsFlag)))
 }
 
 func CreateJob(cmd *cobra.Command) {
 	cmd.Flags().Bool(consts.CreateJobFlag, true, "Create a job that will run the database client")
-	if err := cmd.RegisterFlagCompletionFunc(consts.CreateJobFlag, util.BoolCompletion); err != nil {
-		panic(err)
-	}
+	must.Must(cmd.RegisterFlagCompletionFunc(consts.CreateJobFlag, util.BoolCompletion))
 }
 
 func BindCreateJob(cmd *cobra.Command) {
-	if err := viper.BindPFlag(consts.CreateJobKey, cmd.Flags().Lookup(consts.CreateJobFlag)); err != nil {
-		panic(err)
-	}
+	must.Must(viper.BindPFlag(consts.CreateJobKey, cmd.Flags().Lookup(consts.CreateJobFlag)))
 }
 
 func CreateNetworkPolicy(cmd *cobra.Command) {
 	cmd.Flags().Bool(consts.CreateNetworkPolicyFlag, true, "Creates a network policy allowing the KubeDB job to talk to the database.")
-	if err := cmd.RegisterFlagCompletionFunc(consts.CreateNetworkPolicyFlag, util.BoolCompletion); err != nil {
-		panic(err)
-	}
+	must.Must(cmd.RegisterFlagCompletionFunc(consts.CreateNetworkPolicyFlag, util.BoolCompletion))
 }
 
 func BindCreateNetworkPolicy(cmd *cobra.Command) {
-	if err := viper.BindPFlag(consts.CreateNetworkPolicyKey, cmd.Flags().Lookup(consts.CreateNetworkPolicyFlag)); err != nil {
-		panic(err)
-	}
+	must.Must(viper.BindPFlag(consts.CreateNetworkPolicyKey, cmd.Flags().Lookup(consts.CreateNetworkPolicyFlag)))
 }

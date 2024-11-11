@@ -1,6 +1,7 @@
 package exec
 
 import (
+	"gabe565.com/utils/must"
 	"github.com/clevyr/kubedb/internal/actions/exec"
 	"github.com/clevyr/kubedb/internal/config/flags"
 	"github.com/clevyr/kubedb/internal/consts"
@@ -37,9 +38,7 @@ func New() *cobra.Command {
 	flags.Password(cmd)
 	flags.Opts(cmd)
 	cmd.Flags().StringVarP(&action.Command, consts.CommandFlag, "c", "", "Run a single command and exit")
-	if err := cmd.RegisterFlagCompletionFunc(consts.CommandFlag, cobra.NoFileCompletions); err != nil {
-		panic(err)
-	}
+	must.Must(cmd.RegisterFlagCompletionFunc(consts.CommandFlag, cobra.NoFileCompletions))
 
 	return cmd
 }

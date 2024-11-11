@@ -5,6 +5,7 @@ import (
 	"log/slog"
 	"strconv"
 
+	"gabe565.com/utils/must"
 	"github.com/clevyr/kubedb/internal/actions/portforward"
 	"github.com/clevyr/kubedb/internal/config"
 	"github.com/clevyr/kubedb/internal/config/flags"
@@ -36,18 +37,14 @@ func New() *cobra.Command {
 	flags.Port(cmd)
 
 	cmd.Flags().StringSlice(consts.AddrFlag, []string{"127.0.0.1", "::1"}, "Local listen address")
-	if err := cmd.RegisterFlagCompletionFunc(
-		consts.AddrFlag,
+	must.Must(cmd.RegisterFlagCompletionFunc(consts.AddrFlag,
 		func(_ *cobra.Command, _ []string, _ string) ([]string, cobra.ShellCompDirective) {
 			return []string{"127.0.0.1\tprivate", "::1\tprivate", "0.0.0.0\tpublic", "::\tpublic"}, cobra.ShellCompDirectiveNoFileComp
-		}); err != nil {
-		panic(err)
-	}
+		}),
+	)
 
 	cmd.Flags().Uint16(consts.ListenPortFlag, 0, "Local listen port (default discovered)")
-	if err := cmd.RegisterFlagCompletionFunc(consts.ListenPortFlag, localPortCompletion); err != nil {
-		panic(err)
-	}
+	must.Must(cmd.RegisterFlagCompletionFunc(consts.ListenPortFlag, localPortCompletion))
 
 	return cmd
 }
@@ -79,9 +76,7 @@ func localPortCompletion(cmd *cobra.Command, args []string, _ string) ([]string,
 }
 
 func preRun(cmd *cobra.Command, args []string) error {
-	if err := viper.BindPFlag(consts.PortForwardAddrKey, cmd.Flags().Lookup(consts.AddrFlag)); err != nil {
-		panic(err)
-	}
+	must.Must(viper.BindPFlag(consts.PortForwardAddrKey, cmd.Flags().Lookup(consts.AddrFlag)))
 	action.Addresses = viper.GetStringSlice(consts.PortForwardAddrKey)
 
 	err := util.DefaultSetup(cmd, &action.Global, setupOptions)
@@ -95,11 +90,7 @@ func preRun(cmd *cobra.Command, args []string) error {
 		}
 	}
 
-	action.LocalPort, err = cmd.Flags().GetUint16(consts.ListenPortFlag)
-	if err != nil {
-		panic(err)
-	}
-
+	action.LocalPort = must.Must2(cmd.Flags().GetUint16(consts.ListenPortFlag))
 	if action.LocalPort == 0 {
 		db, ok := action.Dialect.(config.DBHasPort)
 		if !ok {

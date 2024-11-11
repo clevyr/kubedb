@@ -10,6 +10,7 @@ import (
 	"strings"
 	"time"
 
+	"gabe565.com/utils/must"
 	"github.com/charmbracelet/huh"
 	"github.com/clevyr/kubedb/internal/config"
 	"github.com/clevyr/kubedb/internal/consts"
@@ -41,27 +42,20 @@ func DefaultSetup(cmd *cobra.Command, conf *config.Global, opts SetupOptions) er
 	ctx := cmd.Context()
 
 	conf.Kubeconfig = viper.GetString(consts.KubeconfigKey)
+	conf.Context = must.Must2(cmd.Flags().GetString(consts.ContextFlag))
+	conf.Namespace = must.Must2(cmd.Flags().GetString(consts.NamespaceFlag))
+
 	var err error
-	conf.Context, err = cmd.Flags().GetString(consts.ContextFlag)
-	if err != nil {
-		panic(err)
-	}
-	conf.Namespace, err = cmd.Flags().GetString(consts.NamespaceFlag)
-	if err != nil {
-		panic(err)
-	}
 	conf.Client, err = kubernetes.NewClient(conf.Kubeconfig, conf.Context, conf.Namespace)
 	if err != nil {
 		return err
 	}
+
 	slog.Debug("Created kube client", "namespace", conf.Client.Namespace)
 	conf.Context = conf.Client.Context
 	conf.Namespace = conf.Client.Namespace
 
-	podFlag, err := cmd.Flags().GetString(consts.PodFlag)
-	if err != nil {
-		panic(err)
-	}
+	podFlag := must.Must2(cmd.Flags().GetString(consts.PodFlag))
 	var pods []corev1.Pod
 	if podFlag != "" {
 		slashIdx := strings.IndexRune(podFlag, '/')
@@ -76,50 +70,7 @@ func DefaultSetup(cmd *cobra.Command, conf *config.Global, opts SetupOptions) er
 		pods = []corev1.Pod{*pod}
 	}
 
-	dialectFlag, err := cmd.Flags().GetString(consts.DialectFlag)
-	if err != nil {
-		panic(err)
-	}
-	if dialectFlag == "" {
-		// Configure via detection
-		if len(pods) == 0 {
-			result, err := database.DetectDialect(ctx, conf.Client)
-			if err != nil {
-				checkNamespaceExists(ctx, conf)
-				return err
-			}
-			if len(result) == 1 || opts.NoSurvey {
-				for dialect, p := range result {
-					conf.Dialect = dialect
-					pods = p
-					break
-				}
-			} else {
-				opts := make([]huh.Option[config.Database], 0, len(result))
-				for dialect := range result {
-					opts = append(opts, huh.NewOption(dialect.PrettyName(), dialect))
-				}
-				var chosen config.Database
-				if err := tui.NewForm(huh.NewGroup(
-					huh.NewSelect[config.Database]().
-						Title("Select database type").
-						Options(opts...).
-						Value(&chosen),
-				)).Run(); err != nil {
-					return err
-				}
-				conf.Dialect = chosen
-				pods = result[chosen]
-			}
-			slog.Debug("Detected dialect", "dialect", conf.Dialect.Name())
-		} else {
-			conf.Dialect, err = database.DetectDialectFromPod(pods[0])
-			if err != nil {
-				checkNamespaceExists(ctx, conf)
-				return err
-			}
-		}
-	} else {
+	if dialectFlag := must.Must2(cmd.Flags().GetString(consts.DialectFlag)); dialectFlag != "" {
 		// Configure via flag
 		conf.Dialect, err = database.New(dialectFlag)
 		if err != nil {
@@ -136,6 +87,42 @@ func DefaultSetup(cmd *cobra.Command, conf *config.Global, opts SetupOptions) er
 			if len(pods) == 0 {
 				return kubernetes.ErrPodNotFound
 			}
+		}
+	} else if len(pods) == 0 {
+		result, err := database.DetectDialect(ctx, conf.Client)
+		if err != nil {
+			checkNamespaceExists(ctx, conf)
+			return err
+		}
+		if len(result) == 1 || opts.NoSurvey {
+			for dialect, p := range result {
+				conf.Dialect = dialect
+				pods = p
+				break
+			}
+		} else {
+			opts := make([]huh.Option[config.Database], 0, len(result))
+			for dialect := range result {
+				opts = append(opts, huh.NewOption(dialect.PrettyName(), dialect))
+			}
+			var chosen config.Database
+			if err := tui.NewForm(huh.NewGroup(
+				huh.NewSelect[config.Database]().
+					Title("Select database type").
+					Options(opts...).
+					Value(&chosen),
+			)).Run(); err != nil {
+				return err
+			}
+			conf.Dialect = chosen
+			pods = result[chosen]
+		}
+		slog.Debug("Detected dialect", "dialect", conf.Dialect.Name())
+	} else {
+		conf.Dialect, err = database.DetectDialectFromPod(pods[0])
+		if err != nil {
+			checkNamespaceExists(ctx, conf)
+			return err
 		}
 	}
 
@@ -172,11 +159,7 @@ func DefaultSetup(cmd *cobra.Command, conf *config.Global, opts SetupOptions) er
 	}
 
 	// Detect port
-	conf.Port, err = cmd.Flags().GetUint16(consts.PortFlag)
-	if err != nil {
-		panic(err)
-	}
-
+	conf.Port = must.Must2(cmd.Flags().GetUint16(consts.PortFlag))
 	if db, ok := conf.Dialect.(config.DBHasPort); ok && conf.Port == 0 {
 		port, err := db.PortEnvs(*conf).Search(ctx, conf.Client, conf.DBPod)
 		if err != nil {
@@ -197,9 +180,8 @@ func DefaultSetup(cmd *cobra.Command, conf *config.Global, opts SetupOptions) er
 	}
 
 	// Detect database
-	conf.Database, err = cmd.Flags().GetString(consts.DbnameFlag)
-	if err != nil && !opts.DisableAuthFlags {
-		panic(err)
+	if !opts.DisableAuthFlags {
+		conf.Database = must.Must2(cmd.Flags().GetString(consts.DbnameFlag))
 	}
 
 	if db, ok := conf.Dialect.(config.DBHasDatabase); ok && conf.Database == "" {
@@ -212,9 +194,8 @@ func DefaultSetup(cmd *cobra.Command, conf *config.Global, opts SetupOptions) er
 	}
 
 	// Detect username
-	conf.Username, err = cmd.Flags().GetString(consts.UsernameFlag)
-	if err != nil && !opts.DisableAuthFlags {
-		panic(err)
+	if !opts.DisableAuthFlags {
+		conf.Username = must.Must2(cmd.Flags().GetString(consts.UsernameFlag))
 	}
 
 	if db, ok := conf.Dialect.(config.DBHasUser); ok && conf.Username == "" {
@@ -228,9 +209,8 @@ func DefaultSetup(cmd *cobra.Command, conf *config.Global, opts SetupOptions) er
 	}
 
 	// Detect password
-	conf.Password, err = cmd.Flags().GetString(consts.PasswordFlag)
-	if err != nil && !opts.DisableAuthFlags {
-		panic(err)
+	if !opts.DisableAuthFlags {
+		conf.Password = must.Must2(cmd.Flags().GetString(consts.PasswordFlag))
 	}
 
 	if db, ok := conf.Dialect.(config.DBHasPassword); ok && conf.Password == "" {
