@@ -173,7 +173,7 @@ func (action Dump) Run(ctx context.Context) error {
 
 	actionLog.Info("Dump complete",
 		"took", time.Since(startTime).Truncate(10*time.Millisecond),
-		"size", written.Load(),
+		"size", humanize.IBytes(uint64(written.Load())), //nolint:gosec
 	)
 
 	if handler, ok := notifier.FromContext(ctx); ok {
