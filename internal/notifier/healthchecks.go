@@ -8,6 +8,7 @@ import (
 	"net/http"
 	"net/url"
 	"path"
+	"strconv"
 	"strings"
 	"time"
 )
@@ -23,6 +24,8 @@ func NewHealthchecks(url string) (Notifier, error) {
 }
 
 type Healthchecks struct {
+	PingBodyLimit int
+
 	url string
 	log string
 }
@@ -50,6 +53,10 @@ func (h *Healthchecks) SendStatus(ctx context.Context, status Status, log string
 		method = http.MethodPost
 	}
 
+	if h.PingBodyLimit != 0 && len(log) > h.PingBodyLimit {
+		log = log[len(log)-h.PingBodyLimit:]
+	}
+
 	req, err := http.NewRequestWithContext(ctx, method, u.String(), strings.NewReader(log))
 	if err != nil {
 		return err
@@ -62,6 +69,13 @@ func (h *Healthchecks) SendStatus(ctx context.Context, status Status, log string
 		_ = resp.Body.Close()
 
 		if err == nil && resp.StatusCode < 300 {
+			if h.PingBodyLimit == 0 {
+				if limitStr := resp.Header.Get("Ping-Body-Limit"); limitStr != "" {
+					if limit, err := strconv.Atoi(limitStr); err == nil {
+						h.PingBodyLimit = limit
+					}
+				}
+			}
 			return nil
 		}
 
