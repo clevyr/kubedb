@@ -1,13 +1,14 @@
 package util
 
 import (
-	"net/http"
 	"os"
 	"path/filepath"
 	"runtime"
+
+	"gabe565.com/utils/httpx"
 )
 
-func NewUserAgentTransport() *UserAgentTransport {
+func NewUserAgentTransport() *httpx.UserAgentTransport {
 	ua := filepath.Base(os.Args[0])
 	if version := GetVersion(); version != "" {
 		ua += "/v" + version
@@ -19,18 +20,5 @@ func NewUserAgentTransport() *UserAgentTransport {
 	}
 	ua += " (" + runtime.GOOS + "/" + runtime.GOARCH + ")"
 
-	return &UserAgentTransport{
-		transport: http.DefaultTransport,
-		userAgent: ua,
-	}
-}
-
-type UserAgentTransport struct {
-	transport http.RoundTripper
-	userAgent string
-}
-
-func (u *UserAgentTransport) RoundTrip(r *http.Request) (*http.Response, error) {
-	r.Header.Set("User-Agent", u.userAgent)
-	return u.transport.RoundTrip(r)
+	return httpx.NewUserAgentTransport(nil, ua)
 }
