@@ -391,7 +391,7 @@ func createJob(ctx context.Context, conf *config.Global, actionName string) erro
 
 		nsLog.Debug("Creating network policy")
 		if _, err := conf.Client.NetworkPolicies().Create(ctx, &policy, metav1.CreateOptions{}); err != nil {
-			nsLog.Error("Failed to create network policy", "error", err)
+			nsLog.Warn("Failed to create network policy", "error", err)
 			viper.Set(consts.CreateNetworkPolicyKey, "false")
 		}
 	}
