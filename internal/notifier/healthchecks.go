@@ -57,14 +57,14 @@ func (h *Healthchecks) SendStatus(ctx context.Context, status Status, log string
 
 	var resp *http.Response
 	for i := range 5 {
-		if resp, err = client.Do(req); err == nil {
-			_, _ = io.Copy(io.Discard, resp.Body)
-			_ = resp.Body.Close()
+		resp, err = client.Do(req)
+		_, _ = io.Copy(io.Discard, resp.Body)
+		_ = resp.Body.Close()
 
-			if resp.StatusCode < 300 {
-				return nil
-			}
+		if err == nil && resp.StatusCode < 300 {
+			return nil
 		}
+
 		backoff := time.Duration(i+1) * time.Duration(i+1) * time.Second
 		slog.Debug("Healthchecks ping failed", "try", i+1, "backoff", backoff)
 		select {
