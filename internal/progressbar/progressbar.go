@@ -4,7 +4,6 @@ import (
 	"context"
 	"io"
 	"log/slog"
-	"os"
 	"sync"
 	"time"
 
@@ -35,7 +34,7 @@ func New(w io.Writer, total int64, label string, spinnerKey string) *ProgressBar
 		options = append(options,
 			progressbar.OptionSetRenderBlankState(true),
 			progressbar.OptionOnCompletion(func() {
-				_, _ = io.WriteString(os.Stderr, "\r\x1B[K")
+				_, _ = io.WriteString(w, "\r\x1B[K")
 			}),
 		)
 	}
@@ -59,12 +58,12 @@ func New(w io.Writer, total int64, label string, spinnerKey string) *ProgressBar
 				}
 				if bar.mu.TryLock() {
 					if !bar.logger.canOverwrite && time.Since(bar.logger.lastWrite) > 10*time.Millisecond {
-						_, _ = os.Stderr.WriteString("\n")
+						_, _ = io.WriteString(w, "\n")
 						bar.logger.canOverwrite = true
 					}
 					if bar.logger.canOverwrite {
 						_ = bar.RenderBlank()
-						_, _ = os.Stderr.WriteString(bar.String())
+						_, _ = io.WriteString(w, bar.String())
 					}
 					bar.mu.Unlock()
 				}
