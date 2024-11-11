@@ -13,7 +13,7 @@ import (
 	"k8s.io/kubectl/pkg/util/term"
 )
 
-func New(w io.Writer, total int64, label string, spinnerKey string) *ProgressBar {
+func New(w io.Writer, total int64, label string, enabled bool, spinnerKey string) *ProgressBar {
 	s, ok := spinner.Map[spinnerKey]
 	if !ok {
 		slog.Warn("Invalid spinner", "spinner", spinnerKey)
@@ -45,40 +45,44 @@ func New(w io.Writer, total int64, label string, spinnerKey string) *ProgressBar
 	bar := &ProgressBar{
 		ProgressBar: progressbar.NewOptions64(total, options...),
 		cancel:      cancel,
+		enabled:     enabled,
 	}
 	bar.logger = NewBarSafeLogger(w, bar)
-	go func() {
-		for {
-			select {
-			case <-ctx.Done():
-				return
-			case <-time.After(throttle):
-				if bar.IsFinished() {
+	if enabled {
+		go func() {
+			for {
+				select {
+				case <-ctx.Done():
 					return
-				}
-				if bar.mu.TryLock() {
-					if !bar.logger.canOverwrite && time.Since(bar.logger.lastWrite) > 10*time.Millisecond {
-						_, _ = io.WriteString(w, "\n")
-						bar.logger.canOverwrite = true
+				case <-time.After(throttle):
+					if bar.IsFinished() {
+						return
 					}
-					if bar.logger.canOverwrite {
-						_ = bar.RenderBlank()
-						_, _ = io.WriteString(w, bar.String())
+					if bar.mu.TryLock() {
+						if !bar.logger.canOverwrite && time.Since(bar.logger.lastWrite) > 10*time.Millisecond {
+							_, _ = io.WriteString(w, "\n")
+							bar.logger.canOverwrite = true
+						}
+						if bar.logger.canOverwrite {
+							_ = bar.RenderBlank()
+							_, _ = io.WriteString(w, bar.String())
+						}
+						bar.mu.Unlock()
 					}
-					bar.mu.Unlock()
 				}
 			}
-		}
-	}()
+		}()
+	}
 
 	return bar
 }
 
 type ProgressBar struct {
 	*progressbar.ProgressBar
-	mu     sync.Mutex
-	cancel context.CancelFunc
-	logger *BarSafeLogger
+	mu      sync.Mutex
+	cancel  context.CancelFunc
+	logger  *BarSafeLogger
+	enabled bool
 }
 
 func (p *ProgressBar) Finish() error {

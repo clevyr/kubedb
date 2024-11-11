@@ -39,6 +39,7 @@ kubedb restore filename [flags]
       --opts string                     Additional options to pass to the database client command
   -p, --password string                 Database password (default discovered)
       --port uint16                     Database port (default discovered)
+      --progress                        Enables the progress bar (default true)
   -q, --quiet                           Silence remote log output
       --remote-gzip                     Compress data over the wire. Results in lower bandwidth usage, but higher database load. May improve speed on slow connections. (default true)
   -1, --single-transaction              Restore as a single transaction (default true)

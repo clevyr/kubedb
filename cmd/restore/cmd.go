@@ -62,6 +62,7 @@ func New() *cobra.Command {
 	flags.HaltOnError(cmd)
 	flags.Spinner(cmd, &action.Spinner)
 	flags.Opts(cmd)
+	flags.Progress(cmd, &action.Progress)
 	cmd.Flags().BoolVarP(&action.Force, consts.ForceFlag, "f", false, "Do not prompt before restore")
 	must.Must(cmd.RegisterFlagCompletionFunc(consts.ForceFlag, util.BoolCompletion))
 
@@ -138,6 +139,8 @@ func preRun(cmd *cobra.Command, args []string) error {
 	flags.BindSpinner(cmd)
 	flags.BindHaltOnError(cmd)
 	flags.BindOpts(cmd)
+	flags.BindProgress(cmd)
+	action.Progress = viper.GetBool(consts.ProgressKey)
 	action.HaltOnError = viper.GetBool(consts.HaltOnErrorKey)
 	action.Spinner = viper.GetString(consts.SpinnerKey)
 

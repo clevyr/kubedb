@@ -1,6 +1,7 @@
 package flags
 
 import (
+	"os"
 	"strings"
 
 	"gabe565.com/utils/must"
@@ -9,11 +10,21 @@ import (
 	"github.com/clevyr/kubedb/internal/util"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
+	"k8s.io/kubectl/pkg/util/term"
 )
 
 func Quiet(cmd *cobra.Command, p *bool) {
 	cmd.PersistentFlags().BoolVarP(p, consts.QuietFlag, "q", false, "Silence remote log output")
 	must.Must(cmd.RegisterFlagCompletionFunc(consts.QuietFlag, util.BoolCompletion))
+}
+
+func Progress(cmd *cobra.Command, p *bool) {
+	cmd.PersistentFlags().BoolVar(p, consts.ProgressFlag, (term.TTY{Out: os.Stderr}).IsTerminalOut(), "Enables the progress bar")
+	must.Must(cmd.RegisterFlagCompletionFunc(consts.ProgressFlag, util.BoolCompletion))
+}
+
+func BindProgress(cmd *cobra.Command) {
+	must.Must(viper.BindPFlag(consts.ProgressKey, cmd.Flags().Lookup(consts.ProgressFlag)))
 }
 
 func LogLevel(cmd *cobra.Command) {

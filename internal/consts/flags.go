@@ -31,6 +31,7 @@ const (
 	CreateNetworkPolicyFlag = "create-network-policy"
 
 	QuietFlag               = "quiet"
+	ProgressFlag            = "progress"
 	LogLevelFlag            = "log-level"
 	LogFormatFlag           = "log-format"
 	MaskFlag                = "mask"

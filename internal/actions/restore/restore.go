@@ -80,7 +80,7 @@ func (action Restore) Run(ctx context.Context) error {
 	actionLog.Info("Ready to restore database")
 
 	startTime := time.Now()
-	bar := progressbar.New(os.Stderr, -1, "uploading", action.Spinner)
+	bar := progressbar.New(os.Stderr, -1, "uploading", action.Progress, action.Spinner)
 	defer bar.Close()
 
 	pr, pw := io.Pipe()

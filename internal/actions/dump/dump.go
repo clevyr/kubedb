@@ -92,7 +92,7 @@ func (action Dump) Run(ctx context.Context) error {
 	}
 
 	startTime := time.Now()
-	bar := progressbar.New(os.Stderr, -1, "downloading", action.Spinner)
+	bar := progressbar.New(os.Stderr, -1, "downloading", action.Progress, action.Spinner)
 	defer bar.Close()
 
 	pr, pw := io.Pipe()

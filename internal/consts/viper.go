@@ -9,6 +9,7 @@ const (
 	JobPodLabelsKey        = "kubernetes.job-pod-labels"
 	CreateJobKey           = "kubernetes.create-job"
 	CreateNetworkPolicyKey = "kubernetes.create-network-policy"
+	ProgressKey            = "progress"
 	LogLevelKey            = "log.level"
 	LogFormatKey           = "log.format"
 	LogMaskKey             = "log.mask"

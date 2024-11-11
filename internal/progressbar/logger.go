@@ -22,7 +22,7 @@ type BarSafeLogger struct {
 }
 
 func (l *BarSafeLogger) Write(p []byte) (int, error) {
-	if l.bar.IsFinished() {
+	if !l.bar.enabled || l.bar.IsFinished() {
 		return l.out.Write(p)
 	}
 

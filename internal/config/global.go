@@ -22,4 +22,6 @@ type Global struct {
 	Password   string
 	Quiet      bool
 	RemoteGzip bool `mapstructure:"remote-gzip"`
+
+	Progress bool
 }

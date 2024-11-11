@@ -62,6 +62,7 @@ func New() *cobra.Command {
 	flags.RemoteGzip(cmd)
 	flags.Spinner(cmd, &action.Spinner)
 	flags.Opts(cmd)
+	flags.Progress(cmd, &action.Progress)
 
 	return cmd
 }
@@ -126,6 +127,8 @@ func preRun(cmd *cobra.Command, args []string) error {
 	flags.BindSpinner(cmd)
 	action.Spinner = viper.GetString(consts.SpinnerKey)
 	flags.BindOpts(cmd)
+	flags.BindProgress(cmd)
+	action.Progress = viper.GetBool(consts.ProgressKey)
 
 	if len(args) > 0 {
 		action.Filename = args[0]
