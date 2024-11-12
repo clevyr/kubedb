@@ -11,6 +11,8 @@ import (
 	"strconv"
 	"strings"
 	"time"
+
+	"github.com/google/uuid"
 )
 
 var _ Logs = &Healthchecks{}
@@ -25,26 +27,33 @@ func NewHealthchecks(url string) (Notifier, error) {
 
 type Healthchecks struct {
 	PingBodyLimit int
+	RunID         string
 
 	url string
 	log string
 }
 
 func (h *Healthchecks) SendStatus(ctx context.Context, status Status, log string) error {
-	var statusStr string
-	switch status {
-	case StatusStart:
-		statusStr = "start"
-	case StatusFailure:
-		statusStr = "fail"
-	}
-
 	u, err := url.Parse(h.url)
 	if err != nil {
 		return err
 	}
 
-	u.Path = path.Join(u.Path, statusStr)
+	switch status {
+	case StatusStart:
+		u.Path = path.Join(u.Path, "start")
+	case StatusFailure:
+		u.Path = path.Join(u.Path, "fail")
+	}
+
+	if h.RunID == "" {
+		if u, err := uuid.NewRandom(); err == nil {
+			h.RunID = u.String()
+		}
+	}
+	q := u.Query()
+	q.Set("rid", h.RunID)
+	u.RawQuery = q.Encode()
 
 	client := &http.Client{Timeout: 10 * time.Second}
 

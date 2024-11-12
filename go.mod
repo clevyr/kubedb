@@ -14,6 +14,7 @@ require (
 	github.com/charmbracelet/lipgloss v0.13.0
 	github.com/dmarkham/enumer v1.5.10
 	github.com/dustin/go-humanize v1.0.1
+	github.com/google/uuid v1.6.0
 	github.com/lmittmann/tint v1.0.5
 	github.com/muesli/termenv v0.15.3-0.20240912151726-82936c5ea257
 	github.com/schollz/progressbar/v3 v3.16.1
@@ -90,7 +91,6 @@ require (
 	github.com/google/go-cmp v0.6.0 // indirect
 	github.com/google/gofuzz v1.2.0 // indirect
 	github.com/google/s2a-go v0.1.8 // indirect
-	github.com/google/uuid v1.6.0 // indirect
 	github.com/googleapis/enterprise-certificate-proxy v0.3.4 // indirect
 	github.com/googleapis/gax-go/v2 v2.13.0 // indirect
 	github.com/gorilla/websocket v1.5.1 // indirect
