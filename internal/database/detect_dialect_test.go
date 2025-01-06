@@ -9,13 +9,13 @@ import (
 	"github.com/clevyr/kubedb/internal/kubernetes"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
-	v1 "k8s.io/api/core/v1"
+	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	kubernetesfake "k8s.io/client-go/kubernetes/fake"
 )
 
 func TestDetectDialect(t *testing.T) {
-	postgresPod := v1.Pod{
+	postgresPod := corev1.Pod{
 		ObjectMeta: metav1.ObjectMeta{
 			Labels: map[string]string{
 				"app.kubernetes.io/name":      "postgresql",
@@ -24,7 +24,7 @@ func TestDetectDialect(t *testing.T) {
 		},
 	}
 
-	mariadbPod := v1.Pod{
+	mariadbPod := corev1.Pod{
 		ObjectMeta: metav1.ObjectMeta{
 			Labels: map[string]string{
 				"app.kubernetes.io/name":      "mariadb",
@@ -49,7 +49,7 @@ func TestDetectDialect(t *testing.T) {
 					ClientSet: kubernetesfake.NewSimpleClientset(&postgresPod),
 				},
 			},
-			DetectResult{postgres.Postgres{}: []v1.Pod{postgresPod}},
+			DetectResult{postgres.Postgres{}: []corev1.Pod{postgresPod}},
 			require.NoError,
 		},
 		{
@@ -59,14 +59,14 @@ func TestDetectDialect(t *testing.T) {
 					ClientSet: kubernetesfake.NewSimpleClientset(&mariadbPod),
 				},
 			},
-			DetectResult{mariadb.MariaDB{}: []v1.Pod{mariadbPod}},
+			DetectResult{mariadb.MariaDB{}: []corev1.Pod{mariadbPod}},
 			require.NoError,
 		},
 		{
 			"no database",
 			args{
 				kubernetes.KubeClient{
-					ClientSet: kubernetesfake.NewSimpleClientset(&v1.Pod{}),
+					ClientSet: kubernetesfake.NewSimpleClientset(&corev1.Pod{}),
 				},
 			},
 			nil,

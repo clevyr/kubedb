@@ -13,7 +13,7 @@ import (
 	"github.com/clevyr/kubedb/internal/config"
 	"github.com/clevyr/kubedb/internal/kubernetes"
 	"github.com/clevyr/kubedb/internal/kubernetes/filter"
-	v1 "k8s.io/api/core/v1"
+	corev1 "k8s.io/api/core/v1"
 )
 
 var (
@@ -54,8 +54,8 @@ func (db Redis) PodFilters() filter.Filter {
 	}
 }
 
-func (db Redis) FilterPods(ctx context.Context, client kubernetes.KubeClient, pods []v1.Pod) ([]v1.Pod, error) {
-	preferred := make([]v1.Pod, 0, len(pods))
+func (db Redis) FilterPods(ctx context.Context, client kubernetes.KubeClient, pods []corev1.Pod) ([]corev1.Pod, error) {
+	preferred := make([]corev1.Pod, 0, len(pods))
 
 	if matched := filter.Pods(pods, db.sentinelQuery()); len(matched) != 0 {
 		slog.Debug("Querying Sentinel for primary instance")

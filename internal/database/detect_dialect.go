@@ -6,12 +6,12 @@ import (
 
 	"github.com/clevyr/kubedb/internal/config"
 	"github.com/clevyr/kubedb/internal/kubernetes"
-	v1 "k8s.io/api/core/v1"
+	corev1 "k8s.io/api/core/v1"
 )
 
 var ErrDatabaseNotFound = errors.New("could not detect a database")
 
-type DetectResult map[config.Database][]v1.Pod
+type DetectResult map[config.Database][]corev1.Pod
 
 func DetectDialect(ctx context.Context, client kubernetes.KubeClient) (DetectResult, error) {
 	podList, err := client.GetNamespacedPods(ctx)
@@ -57,7 +57,7 @@ func DetectDialect(ctx context.Context, client kubernetes.KubeClient) (DetectRes
 	return result, nil
 }
 
-func DetectDialectFromPod(pod v1.Pod) (config.Database, error) {
+func DetectDialectFromPod(pod corev1.Pod) (config.Database, error) {
 	for _, db := range All() {
 		if db.PodFilters().Matches(pod) {
 			return db, nil

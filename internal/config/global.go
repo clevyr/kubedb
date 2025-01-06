@@ -3,7 +3,7 @@ package config
 import (
 	"github.com/clevyr/kubedb/internal/kubernetes"
 	batchv1 "k8s.io/api/batch/v1"
-	v1 "k8s.io/api/core/v1"
+	corev1 "k8s.io/api/core/v1"
 )
 
 type Global struct {
@@ -12,8 +12,8 @@ type Global struct {
 	Dialect Database `mapstructure:"-"`
 
 	Job    *batchv1.Job
-	JobPod v1.Pod `mapstructure:"-"`
-	DBPod  v1.Pod `mapstructure:"-"`
+	JobPod corev1.Pod `mapstructure:"-"`
+	DBPod  corev1.Pod `mapstructure:"-"`
 
 	Host       string
 	Port       uint16

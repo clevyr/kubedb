@@ -10,12 +10,12 @@ import (
 	"github.com/clevyr/kubedb/internal/kubernetes"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
-	v1 "k8s.io/api/core/v1"
+	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
-func newCNPGPod() v1.Pod {
-	return v1.Pod{
+func newCNPGPod() corev1.Pod {
+	return corev1.Pod{
 		ObjectMeta: metav1.ObjectMeta{
 			Name: "postgresql-1",
 			Labels: map[string]string{
@@ -134,7 +134,7 @@ func TestPostgres_ExecCommand(t *testing.T) {
 }
 
 func TestPostgres_FilterPods(t *testing.T) {
-	postgresPod := v1.Pod{
+	postgresPod := corev1.Pod{
 		ObjectMeta: metav1.ObjectMeta{
 			Labels: map[string]string{
 				"app.kubernetes.io/name":      "postgresql",
@@ -145,21 +145,21 @@ func TestPostgres_FilterPods(t *testing.T) {
 
 	type args struct {
 		client kubernetes.KubeClient
-		pods   []v1.Pod
+		pods   []corev1.Pod
 	}
 	tests := []struct {
 		name    string
 		args    args
-		want    []v1.Pod
+		want    []corev1.Pod
 		wantErr require.ErrorAssertionFunc
 	}{
 		{
 			"postgresql",
 			args{
 				kubernetes.KubeClient{},
-				[]v1.Pod{postgresPod},
+				[]corev1.Pod{postgresPod},
 			},
-			[]v1.Pod{postgresPod},
+			[]corev1.Pod{postgresPod},
 			require.NoError,
 		},
 	}

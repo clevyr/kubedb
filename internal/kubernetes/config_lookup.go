@@ -7,7 +7,7 @@ import (
 	"strings"
 
 	corev1 "k8s.io/api/core/v1"
-	v1meta "k8s.io/apimachinery/pkg/apis/meta/v1"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
 type ConfigLookup interface {
@@ -56,7 +56,7 @@ func (e LookupEnv) GetValue(ctx context.Context, client KubeClient, pod corev1.P
 					if env.ValueFrom != nil {
 						if env.ValueFrom.SecretKeyRef != nil {
 							secretKeyRef := env.ValueFrom.SecretKeyRef
-							secret, err := client.Secrets().Get(ctx, secretKeyRef.Name, v1meta.GetOptions{})
+							secret, err := client.Secrets().Get(ctx, secretKeyRef.Name, metav1.GetOptions{})
 							if err != nil {
 								return "", err
 							}
@@ -68,7 +68,7 @@ func (e LookupEnv) GetValue(ctx context.Context, client KubeClient, pod corev1.P
 						}
 						if env.ValueFrom.ConfigMapKeyRef != nil {
 							configMapRef := env.ValueFrom.ConfigMapKeyRef
-							configMap, err := client.ConfigMaps().Get(ctx, configMapRef.Name, v1meta.GetOptions{})
+							configMap, err := client.ConfigMaps().Get(ctx, configMapRef.Name, metav1.GetOptions{})
 							if err != nil {
 								return "", err
 							}
@@ -84,7 +84,7 @@ func (e LookupEnv) GetValue(ctx context.Context, client KubeClient, pod corev1.P
 
 			for _, source := range container.EnvFrom {
 				if source.SecretRef != nil {
-					secret, err := client.Secrets().Get(ctx, source.SecretRef.Name, v1meta.GetOptions{})
+					secret, err := client.Secrets().Get(ctx, source.SecretRef.Name, metav1.GetOptions{})
 					if err != nil {
 						return "", err
 					}
@@ -94,7 +94,7 @@ func (e LookupEnv) GetValue(ctx context.Context, client KubeClient, pod corev1.P
 					}
 				}
 				if source.ConfigMapRef != nil {
-					configMap, err := client.ConfigMaps().Get(ctx, source.ConfigMapRef.Name, v1meta.GetOptions{})
+					configMap, err := client.ConfigMaps().Get(ctx, source.ConfigMapRef.Name, metav1.GetOptions{})
 					if err != nil {
 						return "", err
 					}
@@ -120,7 +120,7 @@ func (f LookupNamedSecret) GetValue(ctx context.Context, client KubeClient, _ co
 		return "", ErrNoEnvNames
 	}
 
-	secret, err := client.Secrets().Get(ctx, f.Name, v1meta.GetOptions{})
+	secret, err := client.Secrets().Get(ctx, f.Name, metav1.GetOptions{})
 	if err != nil {
 		return "", err
 	}

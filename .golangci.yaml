@@ -12,6 +12,12 @@ linters-settings:
   gosec:
     excludes:
       - G110
+  importas:
+    alias:
+      - pkg: k8s.io/api/(\w+)/(v[\w\d]+)
+        alias: $1$2
+      - pkg: k8s.io/apimachinery/pkg/apis/(\w+)/(v[\w\d]+)
+        alias: $1$2
 
 linters:
   enable:

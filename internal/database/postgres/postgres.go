@@ -16,7 +16,7 @@ import (
 	"github.com/clevyr/kubedb/internal/database/sqlformat"
 	"github.com/clevyr/kubedb/internal/kubernetes"
 	"github.com/clevyr/kubedb/internal/kubernetes/filter"
-	v1 "k8s.io/api/core/v1"
+	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/selection"
 )
 
@@ -113,8 +113,8 @@ func (db Postgres) PodFilters() filter.Filter {
 	}
 }
 
-func (db Postgres) FilterPods(ctx context.Context, client kubernetes.KubeClient, pods []v1.Pod) ([]v1.Pod, error) {
-	preferred := make([]v1.Pod, 0, len(pods))
+func (db Postgres) FilterPods(ctx context.Context, client kubernetes.KubeClient, pods []corev1.Pod) ([]corev1.Pod, error) {
+	preferred := make([]corev1.Pod, 0, len(pods))
 
 	// bitnami/postgres
 	if matched := filter.Pods(pods, db.query()); len(pods) != 0 {

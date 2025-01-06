@@ -3,7 +3,7 @@ package filter
 import (
 	"log/slog"
 
-	v1 "k8s.io/api/core/v1"
+	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/selection"
 )
 
@@ -13,7 +13,7 @@ type Label struct {
 	Value    string
 }
 
-func (label Label) Matches(pod v1.Pod) bool {
+func (label Label) Matches(pod corev1.Pod) bool {
 	labelValue, ok := pod.Labels[label.Name]
 	switch label.Operator {
 	case selection.Exists:

@@ -11,7 +11,7 @@ import (
 
 	"github.com/clevyr/kubedb/internal/kubernetes/filter"
 	"github.com/clevyr/kubedb/internal/log"
-	v1 "k8s.io/api/core/v1"
+	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/util/httpstream/spdy"
 	"k8s.io/client-go/kubernetes/scheme"
@@ -23,7 +23,7 @@ var ErrNoPods = errors.New("no pods in namespace")
 
 var ErrPodNotFound = errors.New("no pods with matching label")
 
-func (client KubeClient) GetNamespacedPods(ctx context.Context) (*v1.PodList, error) {
+func (client KubeClient) GetNamespacedPods(ctx context.Context) (*corev1.PodList, error) {
 	pods, err := client.Pods().List(ctx, metav1.ListOptions{})
 	if err != nil {
 		return pods, err
@@ -37,7 +37,7 @@ func (client KubeClient) GetNamespacedPods(ctx context.Context) (*v1.PodList, er
 }
 
 type ExecOptions struct {
-	Pod            v1.Pod
+	Pod            corev1.Pod
 	Container      string
 	Cmd            string
 	Stdin          io.Reader
@@ -53,7 +53,7 @@ func (client KubeClient) Exec(ctx context.Context, opt ExecOptions) error {
 		Namespace(client.Namespace).
 		Name(opt.Pod.Name).
 		SubResource("exec").
-		VersionedParams(&v1.PodExecOptions{
+		VersionedParams(&corev1.PodExecOptions{
 			Command:   []string{"sh", "-c", opt.Cmd},
 			Container: opt.Container,
 			Stdin:     opt.Stdin != nil,
@@ -106,16 +106,16 @@ func (client KubeClient) Exec(ctx context.Context, opt ExecOptions) error {
 	return err
 }
 
-func (client KubeClient) GetPodsFiltered(ctx context.Context, queries filter.Filter) ([]v1.Pod, error) {
+func (client KubeClient) GetPodsFiltered(ctx context.Context, queries filter.Filter) ([]corev1.Pod, error) {
 	podList, err := client.GetNamespacedPods(ctx)
 	if err != nil {
-		return []v1.Pod{}, err
+		return []corev1.Pod{}, err
 	}
 	return FilterPodList(podList.Items, queries), nil
 }
 
-func FilterPodList(pods []v1.Pod, query filter.Filter) []v1.Pod {
-	matched := make([]v1.Pod, 0, len(pods))
+func FilterPodList(pods []corev1.Pod, query filter.Filter) []corev1.Pod {
+	matched := make([]corev1.Pod, 0, len(pods))
 
 	p := filter.Pods(pods, query)
 	qLog := slog.With("query", query)

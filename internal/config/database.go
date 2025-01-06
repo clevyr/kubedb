@@ -7,7 +7,7 @@ import (
 	"github.com/clevyr/kubedb/internal/database/sqlformat"
 	"github.com/clevyr/kubedb/internal/kubernetes"
 	"github.com/clevyr/kubedb/internal/kubernetes/filter"
-	v1 "k8s.io/api/core/v1"
+	corev1 "k8s.io/api/core/v1"
 )
 
 type Database interface {
@@ -42,7 +42,7 @@ type DBRestorer interface {
 }
 
 type DBFilterer interface {
-	FilterPods(ctx context.Context, client kubernetes.KubeClient, pods []v1.Pod) ([]v1.Pod, error)
+	FilterPods(ctx context.Context, client kubernetes.KubeClient, pods []corev1.Pod) ([]corev1.Pod, error)
 }
 
 type DBFiler interface {

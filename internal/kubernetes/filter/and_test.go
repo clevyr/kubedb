@@ -4,12 +4,12 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
-	v1 "k8s.io/api/core/v1"
+	corev1 "k8s.io/api/core/v1"
 )
 
 func TestAnd_Matches(t *testing.T) {
 	type args struct {
-		pod v1.Pod
+		pod corev1.Pod
 	}
 	tests := []struct {
 		name    string
