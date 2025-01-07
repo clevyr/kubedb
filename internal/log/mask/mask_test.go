@@ -1,4 +1,4 @@
-package log
+package mask
 
 import (
 	"log/slog"
@@ -8,23 +8,16 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func TestAddMask(t *testing.T) {
-	masks = nil
-	t.Cleanup(func() {
-		masks = nil
-	})
-	AddMask("test")
-	assert.Equal(t, []string{"test"}, masks)
-	AddMask("another")
-	assert.Equal(t, []string{"test", "another"}, masks)
+func TestMasker_Add(t *testing.T) {
+	masker := Masker{}
+	masker.Add("test")
+	assert.Equal(t, []string{"test"}, masker.masks)
+	masker.Add("another")
+	assert.Equal(t, []string{"test", "another"}, masker.masks)
 }
 
-func TestMaskAttr(t *testing.T) {
-	masks = []string{"test"}
-	t.Cleanup(func() {
-		masks = nil
-	})
-
+func TestMasker_MaskAttr(t *testing.T) {
+	masker := &Masker{masks: []string{"test"}}
 	var buf strings.Builder
 	buf.WriteString("test value")
 
@@ -43,17 +36,14 @@ func TestMaskAttr(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got := MaskAttr(nil, tt.args.attr)
+			got := masker.MaskAttr(nil, tt.args.attr)
 			assert.Equal(t, tt.want, got)
 		})
 	}
 }
 
-func Test_replace(t *testing.T) {
-	masks = []string{"test"}
-	t.Cleanup(func() {
-		masks = nil
-	})
+func TestMasker_replace(t *testing.T) {
+	masker := &Masker{masks: []string{"test"}}
 
 	type args struct {
 		str string
@@ -69,7 +59,7 @@ func Test_replace(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got, changed := replace(tt.args.str)
+			got, changed := masker.replace(tt.args.str)
 			assert.Equal(t, tt.want, got)
 			assert.Equal(t, tt.want1, changed)
 		})

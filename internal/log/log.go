@@ -8,6 +8,7 @@ import (
 	"time"
 
 	"github.com/clevyr/kubedb/internal/consts"
+	"github.com/clevyr/kubedb/internal/log/mask"
 	"github.com/lmittmann/tint"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
@@ -64,7 +65,7 @@ func Init(w io.Writer, level slog.Level, format Format) {
 	case FormatJSON:
 		slog.SetDefault(slog.New(slog.NewJSONHandler(w, &slog.HandlerOptions{
 			Level:       level,
-			ReplaceAttr: MaskAttr,
+			ReplaceAttr: mask.MaskAttr,
 		})))
 	default:
 		var color bool
@@ -80,7 +81,7 @@ func Init(w io.Writer, level slog.Level, format Format) {
 				Level:       level,
 				TimeFormat:  time.Kitchen,
 				NoColor:     !color,
-				ReplaceAttr: MaskAttr,
+				ReplaceAttr: mask.MaskAttr,
 			}),
 		))
 	}

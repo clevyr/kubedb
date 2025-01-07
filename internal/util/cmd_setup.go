@@ -16,7 +16,7 @@ import (
 	"github.com/clevyr/kubedb/internal/consts"
 	"github.com/clevyr/kubedb/internal/database"
 	"github.com/clevyr/kubedb/internal/kubernetes"
-	"github.com/clevyr/kubedb/internal/log"
+	"github.com/clevyr/kubedb/internal/log/mask"
 	"github.com/clevyr/kubedb/internal/tui"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
@@ -223,7 +223,7 @@ func DefaultSetup(cmd *cobra.Command, conf *config.Global, opts SetupOptions) er
 	}
 
 	if conf.Password != "" && viper.GetBool(consts.LogMaskKey) {
-		log.AddMask(conf.Password)
+		mask.Add(conf.Password)
 	}
 
 	if db, ok := conf.Dialect.(config.DBCanDisableJob); ok && db.DisableJob() {
