@@ -58,8 +58,8 @@ func CompleteObjectsS3(u *url.URL, exts []string, dirOnly bool) ([]string, cobra
 				paths = append(paths,
 					fmt.Sprintf("%s\t%s; %s",
 						u.String(),
-						object.LastModified.Local().Format("Jan _2 15:04"), //nolint:gosmopolitan
-						humanize.IBytes(uint64(*object.Size)),              //nolint:gosec
+						object.LastModified.Local().Format("Jan _2 15:04"),
+						humanize.IBytes(uint64(*object.Size)), //nolint:gosec
 					),
 				)
 			}

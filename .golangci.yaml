@@ -53,7 +53,6 @@ linters:
     - goprintffuncname
     - gosec
     - gosimple
-    - gosmopolitan
     - govet
     - importas
     - inamedparam
