@@ -6,6 +6,7 @@ import (
 	"log/slog"
 	"net/http"
 	"net/url"
+	"os"
 	"path"
 	"slices"
 	"strconv"
@@ -69,7 +70,6 @@ func (a PortForward) Run(ctx context.Context) error {
 	return fw.ForwardPorts()
 }
 
-//nolint:forbidigo
 func (a PortForward) printTable() {
 	slog.Debug("Port forward is ready",
 		"local", a.LocalPort,
@@ -130,5 +130,5 @@ func (a PortForward) printTable() {
 		BorderStyle(lipgloss.ThickBorder()).
 		BorderLeft(true).
 		BorderForeground(lipgloss.Color("238"))
-	fmt.Println(baseStyle.Render(data))
+	_, _ = fmt.Fprintln(os.Stdout, baseStyle.Render(data))
 }
