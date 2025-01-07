@@ -17,6 +17,7 @@ import (
 	"github.com/clevyr/kubedb/internal/config"
 	"github.com/clevyr/kubedb/internal/consts"
 	"github.com/clevyr/kubedb/internal/database/sqlformat"
+	"github.com/clevyr/kubedb/internal/finalizer"
 	"github.com/clevyr/kubedb/internal/kubernetes"
 	"github.com/clevyr/kubedb/internal/log"
 	"github.com/clevyr/kubedb/internal/notifier"
@@ -182,7 +183,7 @@ func (action Restore) Run(ctx context.Context) error {
 		return nil
 	})
 
-	util.OnFinalize(func(err error) {
+	finalizer.Add(func(err error) {
 		action.printSummary(err, time.Since(startTime).Truncate(10*time.Millisecond), written.Load())
 	})
 

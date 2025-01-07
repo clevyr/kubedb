@@ -17,6 +17,7 @@ import (
 	"github.com/clevyr/kubedb/internal/config"
 	"github.com/clevyr/kubedb/internal/config/flags"
 	"github.com/clevyr/kubedb/internal/consts"
+	"github.com/clevyr/kubedb/internal/finalizer"
 	"github.com/clevyr/kubedb/internal/log"
 	"github.com/clevyr/kubedb/internal/notifier"
 	"github.com/clevyr/kubedb/internal/util"
@@ -89,11 +90,9 @@ func preRun(cmd *cobra.Command, _ []string) error {
 	flags.BindHealthchecks(cmd)
 
 	ctx, cancel := signal.NotifyContext(cmd.Context(), os.Interrupt, syscall.SIGTERM, syscall.SIGQUIT)
-	defer func() {
-		util.OnFinalize(func(_ error) {
-			cancel()
-		})
-	}()
+	finalizer.Add(func(_ error) {
+		cancel()
+	})
 	cmd.SetContext(ctx)
 
 	kubeconfig := viper.GetString(consts.KubeconfigKey)
@@ -120,7 +119,7 @@ func preRun(cmd *cobra.Command, _ []string) error {
 				slog.Error("Notifications ping start failed", "error", err)
 			}
 
-			util.OnFinalize(func(err error) {
+			finalizer.Add(func(err error) {
 				if err := handler.Finished(ctx, err); err != nil {
 					slog.Error("Notifications ping finished failed", "error", err)
 				}

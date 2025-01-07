@@ -15,6 +15,7 @@ import (
 	"github.com/clevyr/kubedb/internal/config"
 	"github.com/clevyr/kubedb/internal/consts"
 	"github.com/clevyr/kubedb/internal/database"
+	"github.com/clevyr/kubedb/internal/finalizer"
 	"github.com/clevyr/kubedb/internal/kubernetes"
 	"github.com/clevyr/kubedb/internal/log/mask"
 	"github.com/clevyr/kubedb/internal/tui"
@@ -242,7 +243,7 @@ func CreateJob(ctx context.Context, conf *config.Global, opts SetupOptions) erro
 		if err := createJob(ctx, conf, opts.Name); err != nil {
 			return err
 		}
-		OnFinalize(func(_ error) {
+		finalizer.Add(func(_ error) {
 			Teardown(conf)
 		})
 
