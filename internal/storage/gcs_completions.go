@@ -25,8 +25,13 @@ func CompleteBucketsGCS(u *url.URL, projectID string) ([]string, cobra.ShellComp
 
 	u.Path = "/"
 
-	var names []string //nolint:prealloc
-	for bucket, err := range ListBucketsGCS(context.Background(), projectID) {
+	buckets, count, err := ListBucketsGCS(context.Background(), projectID)
+	if err != nil {
+		return nil, cobra.ShellCompDirectiveError
+	}
+
+	names := make([]string, 0, count)
+	for bucket, err := range buckets {
 		if err != nil {
 			slog.Error("Failed to list GCS buckets", "error", err)
 			return nil, cobra.ShellCompDirectiveError
@@ -39,8 +44,13 @@ func CompleteBucketsGCS(u *url.URL, projectID string) ([]string, cobra.ShellComp
 }
 
 func CompleteObjectsGCS(u *url.URL, exts []string, dirOnly bool) ([]string, cobra.ShellCompDirective) {
-	var paths []string
-	for object, err := range ListObjectsGCS(context.Background(), u.String()) {
+	objects, count, err := ListObjectsGCS(context.Background(), u.String())
+	if err != nil {
+		return nil, cobra.ShellCompDirectiveError
+	}
+
+	paths := make([]string, 0, count)
+	for object, err := range objects {
 		if err != nil {
 			slog.Error("Failed to list GCS objects", "error", err)
 			return nil, cobra.ShellCompDirectiveError

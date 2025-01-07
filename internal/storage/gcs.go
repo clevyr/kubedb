@@ -33,15 +33,15 @@ func newGCSClient(ctx context.Context, scope string) (*storage.Client, error) {
 	return storage.NewClient(ctx, option.WithScopes(scope))
 }
 
-func ListBucketsGCS(ctx context.Context, projectID string) iter.Seq2[*storage.BucketAttrs, error] {
-	return func(yield func(*storage.BucketAttrs, error) bool) {
-		client, err := newGCSClient(ctx, storage.ScopeReadOnly)
-		if err != nil {
-			yield(nil, err)
-			return
-		}
+func ListBucketsGCS(ctx context.Context, projectID string) (iter.Seq2[*storage.BucketAttrs, error], int, error) {
+	client, err := newGCSClient(ctx, storage.ScopeReadOnly)
+	if err != nil {
+		return nil, 0, err
+	}
 
-		objects := client.Buckets(ctx, projectID)
+	objects := client.Buckets(ctx, projectID)
+
+	return func(yield func(*storage.BucketAttrs, error) bool) {
 		for {
 			attrs, err := objects.Next()
 			if err != nil && errors.Is(err, iterator.Done) {
@@ -51,32 +51,31 @@ func ListBucketsGCS(ctx context.Context, projectID string) iter.Seq2[*storage.Bu
 				return
 			}
 		}
-	}
+	}, objects.PageInfo().Remaining(), nil
 }
 
-func ListObjectsGCS(ctx context.Context, key string) iter.Seq2[*storage.ObjectAttrs, error] {
+func ListObjectsGCS(ctx context.Context, key string) (iter.Seq2[*storage.ObjectAttrs, error], int, error) {
+	client, err := newGCSClient(ctx, storage.ScopeReadOnly)
+	if err != nil {
+		return nil, 0, err
+	}
+
+	u, err := url.Parse(key)
+	if err != nil {
+		return nil, 0, err
+	}
+	u.Path = strings.TrimLeft(u.Path, "/")
+
+	query := &storage.Query{
+		Delimiter:                "/",
+		Prefix:                   u.Path,
+		Projection:               storage.ProjectionNoACL,
+		IncludeFoldersAsPrefixes: true,
+	}
+
+	objects := client.Bucket(u.Host).Objects(ctx, query)
+
 	return func(yield func(*storage.ObjectAttrs, error) bool) {
-		client, err := newGCSClient(ctx, storage.ScopeReadOnly)
-		if err != nil {
-			yield(nil, err)
-			return
-		}
-
-		u, err := url.Parse(key)
-		if err != nil {
-			yield(nil, err)
-			return
-		}
-		u.Path = strings.TrimLeft(u.Path, "/")
-
-		query := &storage.Query{
-			Delimiter:                "/",
-			Prefix:                   u.Path,
-			Projection:               storage.ProjectionNoACL,
-			IncludeFoldersAsPrefixes: true,
-		}
-
-		objects := client.Bucket(u.Host).Objects(ctx, query)
 		for {
 			attrs, err := objects.Next()
 			if err != nil && errors.Is(err, iterator.Done) {
@@ -86,7 +85,7 @@ func ListObjectsGCS(ctx context.Context, key string) iter.Seq2[*storage.ObjectAt
 				return
 			}
 		}
-	}
+	}, objects.PageInfo().Remaining(), nil
 }
 
 func UploadGCS(ctx context.Context, key string) (*storage.Writer, error) {
