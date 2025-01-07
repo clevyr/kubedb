@@ -36,7 +36,6 @@ func main() {
 			slog.Error(err.Error())
 		}
 		util.PostRun(err)
-		//nolint:gocritic
-		os.Exit(1)
+		os.Exit(1) //nolint:gocritic
 	}
 }
