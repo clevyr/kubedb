@@ -11,6 +11,7 @@ import (
 	"sync/atomic"
 	"time"
 
+	"gabe565.com/utils/bytefmt"
 	"github.com/charmbracelet/huh"
 	"github.com/charmbracelet/lipgloss"
 	"github.com/clevyr/kubedb/internal/command"
@@ -25,7 +26,6 @@ import (
 	"github.com/clevyr/kubedb/internal/storage"
 	"github.com/clevyr/kubedb/internal/tui"
 	"github.com/clevyr/kubedb/internal/util"
-	"github.com/dustin/go-humanize"
 	"github.com/muesli/termenv"
 	"github.com/spf13/viper"
 	"golang.org/x/sync/errgroup"
@@ -195,7 +195,7 @@ func (action Restore) Run(ctx context.Context) error {
 
 	actionLog.Info("Restore complete",
 		"took", time.Since(startTime).Truncate(10*time.Millisecond),
-		"size", humanize.IBytes(uint64(written.Load())), //nolint:gosec
+		"size", bytefmt.Encode(written.Load()),
 	)
 
 	if handler, ok := notifier.FromContext(ctx); ok {
@@ -317,7 +317,7 @@ func (action Restore) summary(err error, took time.Duration, written int64, plai
 	if err != nil {
 		t.Row("Error", tui.ErrStyle(r).Render(err.Error()))
 	} else {
-		t.Row("Size", humanize.IBytes(uint64(written))) //nolint:gosec
+		t.Row("Size", bytefmt.Encode(written))
 	}
 
 	if plain {

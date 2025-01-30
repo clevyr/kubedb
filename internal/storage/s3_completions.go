@@ -8,8 +8,8 @@ import (
 	"slices"
 	"strings"
 
+	"gabe565.com/utils/bytefmt"
 	"github.com/clevyr/kubedb/internal/util"
-	"github.com/dustin/go-humanize"
 	"github.com/spf13/cobra"
 )
 
@@ -59,7 +59,7 @@ func CompleteObjectsS3(u *url.URL, exts []string, dirOnly bool) ([]string, cobra
 					fmt.Sprintf("%s\t%s; %s",
 						u.String(),
 						object.LastModified.Local().Format("Jan _2 15:04"),
-						humanize.IBytes(uint64(*object.Size)), //nolint:gosec
+						bytefmt.Encode(*object.Size),
 					),
 				)
 			}
