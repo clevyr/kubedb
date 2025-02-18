@@ -23,7 +23,7 @@ RUN <<EOT
 EOT
 
 
-FROM alpine:3.21
+FROM alpine:3.21.3
 LABEL org.opencontainers.image.source="https://github.com/clevyr/kubedb"
 WORKDIR /data
 
