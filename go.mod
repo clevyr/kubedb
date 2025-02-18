@@ -12,7 +12,7 @@ require (
 	github.com/aws/aws-sdk-go-v2/service/s3 v1.77.1
 	github.com/charmbracelet/huh v0.6.0
 	github.com/charmbracelet/lipgloss v1.0.0
-	github.com/dmarkham/enumer v1.5.10
+	github.com/dmarkham/enumer v1.5.11
 	github.com/google/uuid v1.6.0
 	github.com/lmittmann/tint v1.0.7
 	github.com/muesli/termenv v0.15.3-0.20241212154518-8c990cd6cf4b
