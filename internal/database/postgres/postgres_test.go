@@ -1,7 +1,6 @@
 package postgres
 
 import (
-	"context"
 	"testing"
 
 	"github.com/clevyr/kubedb/internal/command"
@@ -166,7 +165,7 @@ func TestPostgres_FilterPods(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			po := Postgres{}
-			got, err := po.FilterPods(context.TODO(), tt.args.client, tt.args.pods)
+			got, err := po.FilterPods(t.Context(), tt.args.client, tt.args.pods)
 			tt.wantErr(t, err)
 
 			assert.Equal(t, tt.want, got)

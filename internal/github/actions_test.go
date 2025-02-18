@@ -9,11 +9,8 @@ import (
 )
 
 func TestSetOutput(t *testing.T) {
-	f, err := os.CreateTemp("", "")
+	f, err := os.CreateTemp(t.TempDir(), "")
 	require.NoError(t, err)
-	defer func() {
-		_ = os.Remove(f.Name())
-	}()
 	_ = f.Close()
 
 	t.Setenv("GITHUB_OUTPUT", f.Name())

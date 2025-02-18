@@ -1,7 +1,6 @@
 package database
 
 import (
-	"context"
 	"testing"
 
 	"github.com/clevyr/kubedb/internal/database/mariadb"
@@ -85,7 +84,7 @@ func TestDetectDialect(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got, err := DetectDialect(context.Background(), tt.args.client)
+			got, err := DetectDialect(t.Context(), tt.args.client)
 			tt.wantErr(t, err)
 			assert.Equal(t, tt.want, got)
 		})
