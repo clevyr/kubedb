@@ -1,8 +1,6 @@
 package redis
 
 import (
-	"bufio"
-	"bytes"
 	"context"
 	"fmt"
 	"log/slog"
@@ -65,7 +63,7 @@ func (db Redis) FilterPods(ctx context.Context, client kubernetes.KubeClient, po
 			"SENTINEL", "MASTERS",
 		)
 
-		var buf bytes.Buffer
+		var buf strings.Builder
 		var errBuf strings.Builder
 		if err := client.Exec(ctx, kubernetes.ExecOptions{
 			Pod:       matched[0],
@@ -77,16 +75,16 @@ func (db Redis) FilterPods(ctx context.Context, client kubernetes.KubeClient, po
 			return pods, fmt.Errorf("%w: %s", err, errBuf.String())
 		}
 
-		scanner := bufio.NewScanner(&buf)
 		var primary string
-		for scanner.Scan() {
-			if scanner.Text() == "ip" && scanner.Scan() {
-				primary = scanner.Text()
+		var returnNext bool
+		for line := range strings.Lines(buf.String()) {
+			if returnNext {
+				primary = strings.TrimSuffix(line, "\n")
 				break
 			}
-		}
-		if scanner.Err() != nil {
-			return pods, scanner.Err()
+			if line == "ip\n" {
+				returnNext = true
+			}
 		}
 
 		for _, pod := range pods {
