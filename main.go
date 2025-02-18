@@ -8,6 +8,7 @@ import (
 	"os"
 	"runtime/debug"
 
+	"gabe565.com/utils/slogx"
 	"github.com/clevyr/kubedb/cmd"
 	"github.com/clevyr/kubedb/internal/finalizer"
 	"github.com/clevyr/kubedb/internal/log"
@@ -29,7 +30,7 @@ func main() {
 		os.Exit(status)
 	}()
 
-	log.Init(os.Stderr, slog.LevelInfo, log.FormatAuto)
+	log.Init(os.Stderr, slogx.LevelInfo, slogx.FormatAuto)
 	rootCmd := cmd.NewCommand()
 	if err := rootCmd.Execute(); err != nil {
 		if rootCmd.SilenceErrors {

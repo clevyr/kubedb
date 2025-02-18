@@ -12,6 +12,7 @@ import (
 	"time"
 
 	"gabe565.com/utils/bytefmt"
+	"gabe565.com/utils/slogx"
 	"github.com/charmbracelet/huh"
 	"github.com/charmbracelet/lipgloss"
 	"github.com/clevyr/kubedb/internal/command"
@@ -20,7 +21,6 @@ import (
 	"github.com/clevyr/kubedb/internal/database/sqlformat"
 	"github.com/clevyr/kubedb/internal/finalizer"
 	"github.com/clevyr/kubedb/internal/kubernetes"
-	"github.com/clevyr/kubedb/internal/log"
 	"github.com/clevyr/kubedb/internal/notifier"
 	"github.com/clevyr/kubedb/internal/progressbar"
 	"github.com/clevyr/kubedb/internal/storage"
@@ -222,7 +222,7 @@ func (action Restore) buildCommand(inputFormat sqlformat.Format) (*command.Build
 	if action.RemoteGzip {
 		cmd.Unshift("gunzip", "--force", command.Pipe)
 	}
-	slog.Log(context.Background(), log.LevelTrace, "Finished building command", "cmd", cmd)
+	slogx.Trace("Finished building command", "cmd", cmd)
 	return cmd, nil
 }
 

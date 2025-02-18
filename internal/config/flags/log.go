@@ -5,8 +5,8 @@ import (
 	"strings"
 
 	"gabe565.com/utils/must"
+	"gabe565.com/utils/slogx"
 	"github.com/clevyr/kubedb/internal/consts"
-	"github.com/clevyr/kubedb/internal/log"
 	"github.com/clevyr/kubedb/internal/util"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
@@ -28,10 +28,10 @@ func BindProgress(cmd *cobra.Command) {
 }
 
 func LogLevel(cmd *cobra.Command) {
-	cmd.PersistentFlags().String(consts.LogLevelFlag, "info", "Log level (one of "+strings.Join(log.LevelStrings(), ", ")+")")
+	cmd.PersistentFlags().String(consts.LogLevelFlag, "info", "Log level (one of "+strings.Join(slogx.LevelStrings(), ", ")+")")
 	must.Must(cmd.RegisterFlagCompletionFunc(consts.LogLevelFlag,
 		func(_ *cobra.Command, _ []string, _ string) ([]string, cobra.ShellCompDirective) {
-			return log.LevelStrings(), cobra.ShellCompDirectiveNoFileComp
+			return slogx.LevelStrings(), cobra.ShellCompDirectiveNoFileComp
 		}),
 	)
 }
@@ -41,10 +41,10 @@ func BindLogLevel(cmd *cobra.Command) {
 }
 
 func LogFormat(cmd *cobra.Command) {
-	cmd.PersistentFlags().String(consts.LogFormatFlag, "auto", "Log format (one of "+strings.Join(log.FormatStrings(), ", ")+")")
+	cmd.PersistentFlags().String(consts.LogFormatFlag, "auto", "Log format (one of "+strings.Join(slogx.FormatStrings(), ", ")+")")
 	must.Must(cmd.RegisterFlagCompletionFunc(consts.LogFormatFlag,
 		func(_ *cobra.Command, _ []string, _ string) ([]string, cobra.ShellCompDirective) {
-			return []string{"auto", "color", "plain", "json"}, cobra.ShellCompDirectiveNoFileComp
+			return slogx.FormatStrings(), cobra.ShellCompDirectiveNoFileComp
 		}),
 	)
 }

@@ -6,11 +6,11 @@ import (
 	"log/slog"
 	"os"
 
+	"gabe565.com/utils/slogx"
 	"github.com/clevyr/kubedb/internal/command"
 	"github.com/clevyr/kubedb/internal/config"
 	"github.com/clevyr/kubedb/internal/consts"
 	"github.com/clevyr/kubedb/internal/kubernetes"
-	"github.com/clevyr/kubedb/internal/log"
 	"github.com/clevyr/kubedb/internal/util"
 	"github.com/spf13/viper"
 	"k8s.io/client-go/tools/remotecommand"
@@ -69,6 +69,6 @@ func (action Exec) buildCommand() (*command.Builder, error) {
 		cmd.Push(command.Split(opts))
 	}
 
-	slog.Log(context.Background(), log.LevelTrace, "Finished building command", "cmd", cmd)
+	slogx.Trace("Finished building command", "cmd", cmd)
 	return cmd, nil
 }

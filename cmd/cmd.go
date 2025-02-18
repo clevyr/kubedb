@@ -108,7 +108,9 @@ func preRun(cmd *cobra.Command, _ []string) error {
 	if err := config.LoadViper(); err != nil {
 		return err
 	}
-	log.InitFromCmd(cmd)
+	if err := log.InitFromCmd(cmd); err != nil {
+		return err
+	}
 	cmd.Root().SilenceErrors = true
 
 	if url := viper.GetString(consts.HealthchecksPingURLKey); url != "" {

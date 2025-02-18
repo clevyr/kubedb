@@ -9,8 +9,8 @@ import (
 	"net/http"
 	"time"
 
+	"gabe565.com/utils/slogx"
 	"github.com/clevyr/kubedb/internal/kubernetes/filter"
-	"github.com/clevyr/kubedb/internal/log"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/util/httpstream/spdy"
@@ -120,9 +120,9 @@ func FilterPodList(pods []corev1.Pod, query filter.Filter) []corev1.Pod {
 	p := filter.Pods(pods, query)
 	qLog := slog.With("query", query)
 	if len(p) == 0 {
-		qLog.Log(context.Background(), log.LevelTrace, ErrPodNotFound.Error())
+		slogx.LoggerTrace(qLog, ErrPodNotFound.Error())
 	}
-	qLog.Log(context.Background(), log.LevelTrace, "Query returned pod list", "count", len(p))
+	slogx.LoggerTrace(qLog, "Query returned pod list", "count", len(p))
 	matched = append(matched, p...)
 
 	return matched

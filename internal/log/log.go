@@ -3,10 +3,9 @@ package log
 import (
 	"io"
 	"log/slog"
-	"strconv"
-	"strings"
 	"time"
 
+	"gabe565.com/utils/slogx"
 	"github.com/clevyr/kubedb/internal/consts"
 	"github.com/clevyr/kubedb/internal/log/mask"
 	"github.com/lmittmann/tint"
@@ -15,54 +14,24 @@ import (
 	"k8s.io/kubectl/pkg/util/term"
 )
 
-const LevelTrace slog.Level = -5
-
-//go:generate go run github.com/dmarkham/enumer -type Format -trimprefix Format -transform lower -text
-
-type Format uint8
-
-const (
-	FormatAuto Format = iota
-	FormatColor
-	FormatPlain
-	FormatJSON
-)
-
-func InitFromCmd(cmd *cobra.Command) (slog.Level, Format) {
-	var level slog.Level
-	levelStr := viper.GetString(consts.LogLevelKey)
-	if val, err := strconv.Atoi(levelStr); err == nil {
-		level = slog.Level(val)
-	} else if err := level.UnmarshalText([]byte(levelStr)); err != nil {
-		switch levelStr {
-		case "trace":
-			level = LevelTrace
-		default:
-			defer func() {
-				slog.Warn("Invalid log level. Defaulting to info.", "value", levelStr)
-			}()
-			level = slog.LevelInfo
-			viper.Set(consts.LogLevelKey, level.String())
-		}
+func InitFromCmd(cmd *cobra.Command) error {
+	var level slogx.Level
+	if err := level.UnmarshalText([]byte(viper.GetString(consts.LogLevelKey))); err != nil {
+		return err
 	}
 
-	var format Format
-	formatStr := viper.GetString(consts.LogFormatKey)
-	if err := format.UnmarshalText([]byte(formatStr)); err != nil {
-		defer func() {
-			slog.Warn("Invalid log format. Defaulting to auto.", "value", formatStr)
-		}()
-		format = FormatAuto
-		viper.Set(consts.LogFormatKey, format.String())
+	var format slogx.Format
+	if err := format.UnmarshalText([]byte(viper.GetString(consts.LogFormatKey))); err != nil {
+		return err
 	}
 
 	Init(cmd.ErrOrStderr(), level, format)
-	return level, format
+	return nil
 }
 
-func Init(w io.Writer, level slog.Level, format Format) {
+func Init(w io.Writer, level slogx.Level, format slogx.Format) {
 	switch format {
-	case FormatJSON:
+	case slogx.FormatJSON:
 		slog.SetDefault(slog.New(slog.NewJSONHandler(w, &slog.HandlerOptions{
 			Level:       level,
 			ReplaceAttr: mask.MaskAttr,
@@ -70,9 +39,9 @@ func Init(w io.Writer, level slog.Level, format Format) {
 	default:
 		var color bool
 		switch format {
-		case FormatAuto:
+		case slogx.FormatAuto:
 			color = term.TTY{Out: w}.IsTerminalOut()
-		case FormatColor:
+		case slogx.FormatColor:
 			color = true
 		}
 
@@ -84,15 +53,5 @@ func Init(w io.Writer, level slog.Level, format Format) {
 				ReplaceAttr: mask.MaskAttr,
 			}),
 		))
-	}
-}
-
-func LevelStrings() []string {
-	return []string{
-		"trace",
-		strings.ToLower(slog.LevelDebug.String()),
-		strings.ToLower(slog.LevelInfo.String()),
-		strings.ToLower(slog.LevelWarn.String()),
-		strings.ToLower(slog.LevelError.String()),
 	}
 }
