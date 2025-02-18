@@ -31,14 +31,14 @@ builds:
         goarm: "7"
     mod_timestamp: "{{.CommitTimestamp}}"
 archives:
-  - format: tar.gz
+  - formats: tar.gz
     builds_info:
       owner: 0
       group: 0
     # use zip for windows archives
     format_overrides:
       - goos: windows
-        format: zip
+        formats: zip
     files:
       - src: LICENSE
         info: &info
