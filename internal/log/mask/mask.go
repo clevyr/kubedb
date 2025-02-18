@@ -40,7 +40,7 @@ func (m *Masker) MaskAttr(_ []string, attr slog.Attr) slog.Attr {
 	return attr
 }
 
-func MaskAttr(groups []string, attr slog.Attr) slog.Attr {
+func MaskAttr(groups []string, attr slog.Attr) slog.Attr { //nolint:revive
 	return Default.MaskAttr(groups, attr)
 }
 

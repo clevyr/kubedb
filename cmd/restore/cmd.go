@@ -104,15 +104,13 @@ func validArgs(cmd *cobra.Command, args []string, toComplete string) ([]string, 
 		case storage.IsS3(toComplete):
 			if u.Host == "" || u.Path == "" {
 				return storage.CompleteBucketsS3(u)
-			} else {
-				return storage.CompleteObjectsS3(u, slices.Collect(maps.Values(formats)), false)
 			}
+			return storage.CompleteObjectsS3(u, slices.Collect(maps.Values(formats)), false)
 		case storage.IsGCS(toComplete):
 			if u.Host == "" || u.Path == "" {
 				return storage.CompleteBucketsGCS(u, "")
-			} else {
-				return storage.CompleteObjectsGCS(u, slices.Collect(maps.Values(formats)), false)
 			}
+			return storage.CompleteObjectsGCS(u, slices.Collect(maps.Values(formats)), false)
 		}
 	}
 
