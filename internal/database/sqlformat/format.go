@@ -6,7 +6,7 @@ import (
 	"strings"
 )
 
-//go:generate stringer -type Format -linecomment
+//go:generate go tool stringer -type Format -linecomment
 
 type Format uint8
 
