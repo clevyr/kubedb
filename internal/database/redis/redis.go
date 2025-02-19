@@ -15,6 +15,7 @@ import (
 )
 
 var (
+	_ config.DBAliaser     = Redis{}
 	_ config.DBExecer      = Redis{}
 	_ config.DBHasPort     = Redis{}
 	_ config.DBHasPassword = Redis{}
@@ -27,8 +28,10 @@ func (Redis) Name() string { return "redis" }
 
 func (Redis) PrettyName() string { return "Redis" }
 
+func (Redis) Aliases() []string { return []string{"valkey", "keydb"} }
+
 func (Redis) PortEnvs(_ config.Global) kubernetes.ConfigLookups {
-	return kubernetes.ConfigLookups{kubernetes.LookupEnv{"REDIS_PORT"}}
+	return kubernetes.ConfigLookups{kubernetes.LookupEnv{"REDIS_PORT", "VALKEY_PORT"}}
 }
 
 func (Redis) PortDefault() uint16 { return 6379 }
@@ -42,6 +45,10 @@ func (db Redis) PodFilters() filter.Filter {
 		filter.And{
 			filter.Label{Name: "app.kubernetes.io/name", Value: "redis"},
 			filter.Label{Name: "app.kubernetes.io/component", Value: "master"},
+		},
+		filter.And{
+			filter.Label{Name: "app.kubernetes.io/name", Value: "valkey"},
+			filter.Label{Name: "app.kubernetes.io/component", Value: "primary"},
 		},
 		db.sentinelQuery(),
 		filter.And{
@@ -58,8 +65,8 @@ func (db Redis) FilterPods(ctx context.Context, client kubernetes.KubeClient, po
 	if matched := filter.Pods(pods, db.sentinelQuery()); len(matched) != 0 {
 		slog.Debug("Querying Sentinel for primary instance")
 		cmd := command.NewBuilder(
-			command.Raw(`REDISCLI_AUTH="$REDIS_PASSWORD"`),
-			"redis-cli", "-p", command.Raw(`"$REDIS_SENTINEL_PORT"`), "--raw",
+			command.Raw(`REDISCLI_AUTH="${REDIS_PASSWORD:-$VALKEY_PASSWORD}"`),
+			command.Raw(`"$(which redis-cli || which valkey-cli)"`), "-p", command.Raw(`"${REDIS_SENTINEL_PORT:-$VALKEY_SENTINEL_PORT}"`), "--raw",
 			"SENTINEL", "MASTERS",
 		)
 
@@ -100,14 +107,14 @@ func (db Redis) FilterPods(ctx context.Context, client kubernetes.KubeClient, po
 
 func (db Redis) PasswordEnvs(_ config.Global) kubernetes.ConfigLookups {
 	return kubernetes.ConfigLookups{
-		kubernetes.LookupEnv{"REDIS_PASSWORD", "KEYDB_PASSWORD"},
+		kubernetes.LookupEnv{"REDIS_PASSWORD", "VALKEY_PASSWORD", "KEYDB_PASSWORD"},
 	}
 }
 
 func (Redis) ExecCommand(conf config.Exec) *command.Builder {
 	cmd := command.NewBuilder(
 		command.NewEnv("REDISCLI_AUTH", conf.Password),
-		"exec", "redis-cli", "-h", conf.Host,
+		"exec", command.Raw(`"$(which redis-cli || which valkey-cli)"`), "-h", conf.Host,
 	)
 	if conf.Port != 0 {
 		cmd.Push("-p", strconv.Itoa(int(conf.Port)))
@@ -126,7 +133,10 @@ func (Redis) ExecCommand(conf config.Exec) *command.Builder {
 
 func (Redis) sentinelQuery() filter.And {
 	return filter.And{
-		filter.Label{Name: "app.kubernetes.io/name", Value: "redis"},
+		filter.Or{
+			filter.Label{Name: "app.kubernetes.io/name", Value: "redis"},
+			filter.Label{Name: "app.kubernetes.io/name", Value: "valkey"},
+		},
 		filter.Label{Name: "app.kubernetes.io/component", Value: "node"},
 	}
 }
