@@ -96,8 +96,8 @@ func NewClient(kubeconfig, context, namespace string) (KubeClient, error) {
 }
 
 func NewClientFromCmd(cmd *cobra.Command) (KubeClient, error) {
-	kubeconfig := viper.GetString(consts.KubeconfigKey)
-	context := must.Must2(cmd.Flags().GetString(consts.ContextFlag))
-	namespace := must.Must2(cmd.Flags().GetString(consts.NamespaceFlag))
+	kubeconfig := viper.GetString(consts.KeyKubeConfig)
+	context := must.Must2(cmd.Flags().GetString(consts.FlagContext))
+	namespace := must.Must2(cmd.Flags().GetString(consts.FlagNamespace))
 	return NewClient(kubeconfig, context, namespace)
 }

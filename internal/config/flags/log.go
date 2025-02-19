@@ -14,22 +14,22 @@ import (
 )
 
 func Quiet(cmd *cobra.Command, p *bool) {
-	cmd.PersistentFlags().BoolVarP(p, consts.QuietFlag, "q", false, "Silence remote log output")
-	must.Must(cmd.RegisterFlagCompletionFunc(consts.QuietFlag, util.BoolCompletion))
+	cmd.PersistentFlags().BoolVarP(p, consts.FlagQuiet, "q", false, "Silence remote log output")
+	must.Must(cmd.RegisterFlagCompletionFunc(consts.FlagQuiet, util.BoolCompletion))
 }
 
 func Progress(cmd *cobra.Command, p *bool) {
-	cmd.PersistentFlags().BoolVar(p, consts.ProgressFlag, (term.TTY{Out: os.Stderr}).IsTerminalOut(), "Enables the progress bar")
-	must.Must(cmd.RegisterFlagCompletionFunc(consts.ProgressFlag, util.BoolCompletion))
+	cmd.PersistentFlags().BoolVar(p, consts.FlagProgress, (term.TTY{Out: os.Stderr}).IsTerminalOut(), "Enables the progress bar")
+	must.Must(cmd.RegisterFlagCompletionFunc(consts.FlagProgress, util.BoolCompletion))
 }
 
 func BindProgress(cmd *cobra.Command) {
-	must.Must(viper.BindPFlag(consts.ProgressKey, cmd.Flags().Lookup(consts.ProgressFlag)))
+	must.Must(viper.BindPFlag(consts.KeyProgress, cmd.Flags().Lookup(consts.FlagProgress)))
 }
 
 func LogLevel(cmd *cobra.Command) {
-	cmd.PersistentFlags().String(consts.LogLevelFlag, "info", "Log level (one of "+strings.Join(slogx.LevelStrings(), ", ")+")")
-	must.Must(cmd.RegisterFlagCompletionFunc(consts.LogLevelFlag,
+	cmd.PersistentFlags().String(consts.FlagLogLevel, "info", "Log level (one of "+strings.Join(slogx.LevelStrings(), ", ")+")")
+	must.Must(cmd.RegisterFlagCompletionFunc(consts.FlagLogLevel,
 		func(_ *cobra.Command, _ []string, _ string) ([]string, cobra.ShellCompDirective) {
 			return slogx.LevelStrings(), cobra.ShellCompDirectiveNoFileComp
 		}),
@@ -37,12 +37,12 @@ func LogLevel(cmd *cobra.Command) {
 }
 
 func BindLogLevel(cmd *cobra.Command) {
-	must.Must(viper.BindPFlag(consts.LogLevelKey, cmd.Flags().Lookup(consts.LogLevelFlag)))
+	must.Must(viper.BindPFlag(consts.KeyLogLevel, cmd.Flags().Lookup(consts.FlagLogLevel)))
 }
 
 func LogFormat(cmd *cobra.Command) {
-	cmd.PersistentFlags().String(consts.LogFormatFlag, "auto", "Log format (one of "+strings.Join(slogx.FormatStrings(), ", ")+")")
-	must.Must(cmd.RegisterFlagCompletionFunc(consts.LogFormatFlag,
+	cmd.PersistentFlags().String(consts.FlagLogFormat, "auto", "Log format (one of "+strings.Join(slogx.FormatStrings(), ", ")+")")
+	must.Must(cmd.RegisterFlagCompletionFunc(consts.FlagLogFormat,
 		func(_ *cobra.Command, _ []string, _ string) ([]string, cobra.ShellCompDirective) {
 			return slogx.FormatStrings(), cobra.ShellCompDirectiveNoFileComp
 		}),
@@ -50,23 +50,23 @@ func LogFormat(cmd *cobra.Command) {
 }
 
 func BindLogFormat(cmd *cobra.Command) {
-	must.Must(viper.BindPFlag(consts.LogFormatKey, cmd.Flags().Lookup(consts.LogFormatFlag)))
+	must.Must(viper.BindPFlag(consts.KeyLogFormat, cmd.Flags().Lookup(consts.FlagLogFormat)))
 }
 
 func Mask(cmd *cobra.Command) {
-	cmd.PersistentFlags().Bool(consts.MaskFlag, true, "Mask password in logs")
-	must.Must(cmd.PersistentFlags().MarkHidden(consts.MaskFlag))
+	cmd.PersistentFlags().Bool(consts.FlagMask, true, "Mask password in logs")
+	must.Must(cmd.PersistentFlags().MarkHidden(consts.FlagMask))
 }
 
 func BindMask(cmd *cobra.Command) {
-	must.Must(viper.BindPFlag(consts.LogMaskKey, cmd.Flags().Lookup(consts.MaskFlag)))
+	must.Must(viper.BindPFlag(consts.KeyLogMask, cmd.Flags().Lookup(consts.FlagMask)))
 }
 
 func Healthchecks(cmd *cobra.Command) {
-	cmd.PersistentFlags().String(consts.HealthchecksPingURLFlag, "", "Notification handler URL")
-	must.Must(cmd.RegisterFlagCompletionFunc(consts.HealthchecksPingURLFlag, cobra.NoFileCompletions))
+	cmd.PersistentFlags().String(consts.FlagHealchecksPingURL, "", "Notification handler URL")
+	must.Must(cmd.RegisterFlagCompletionFunc(consts.FlagHealchecksPingURL, cobra.NoFileCompletions))
 }
 
 func BindHealthchecks(cmd *cobra.Command) {
-	must.Must(viper.BindPFlag(consts.HealthchecksPingURLKey, cmd.Flags().Lookup(consts.HealthchecksPingURLFlag)))
+	must.Must(viper.BindPFlag(consts.KeyHealthchecksPingURL, cmd.Flags().Lookup(consts.FlagHealchecksPingURL)))
 }

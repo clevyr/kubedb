@@ -36,15 +36,15 @@ func New() *cobra.Command {
 
 	flags.Port(cmd)
 
-	cmd.Flags().StringSlice(consts.AddrFlag, []string{"127.0.0.1", "::1"}, "Local listen address")
-	must.Must(cmd.RegisterFlagCompletionFunc(consts.AddrFlag,
+	cmd.Flags().StringSlice(consts.FlagAddress, []string{"127.0.0.1", "::1"}, "Local listen address")
+	must.Must(cmd.RegisterFlagCompletionFunc(consts.FlagAddress,
 		func(_ *cobra.Command, _ []string, _ string) ([]string, cobra.ShellCompDirective) {
 			return []string{"127.0.0.1\tprivate", "::1\tprivate", "0.0.0.0\tpublic", "::\tpublic"}, cobra.ShellCompDirectiveNoFileComp
 		}),
 	)
 
-	cmd.Flags().Uint16(consts.ListenPortFlag, 0, "Local listen port (default discovered)")
-	must.Must(cmd.RegisterFlagCompletionFunc(consts.ListenPortFlag, localPortCompletion))
+	cmd.Flags().Uint16(consts.FlagListenPort, 0, "Local listen port (default discovered)")
+	must.Must(cmd.RegisterFlagCompletionFunc(consts.FlagListenPort, localPortCompletion))
 
 	return cmd
 }
@@ -76,8 +76,8 @@ func localPortCompletion(cmd *cobra.Command, args []string, _ string) ([]string,
 }
 
 func preRun(cmd *cobra.Command, args []string) error {
-	must.Must(viper.BindPFlag(consts.PortForwardAddrKey, cmd.Flags().Lookup(consts.AddrFlag)))
-	action.Addresses = viper.GetStringSlice(consts.PortForwardAddrKey)
+	must.Must(viper.BindPFlag(consts.KeyPortForwardAddress, cmd.Flags().Lookup(consts.FlagAddress)))
+	action.Addresses = viper.GetStringSlice(consts.KeyPortForwardAddress)
 
 	err := util.DefaultSetup(cmd, &action.Global, setupOptions)
 	if err != nil {
@@ -85,12 +85,12 @@ func preRun(cmd *cobra.Command, args []string) error {
 	}
 
 	if len(args) != 0 {
-		if err := cmd.Flags().Set(consts.ListenPortFlag, args[0]); err != nil {
+		if err := cmd.Flags().Set(consts.FlagListenPort, args[0]); err != nil {
 			return err
 		}
 	}
 
-	action.LocalPort = must.Must2(cmd.Flags().GetUint16(consts.ListenPortFlag))
+	action.LocalPort = must.Must2(cmd.Flags().GetUint16(consts.FlagListenPort))
 	if action.LocalPort == 0 {
 		db, ok := action.Dialect.(config.DBHasPort)
 		if !ok {

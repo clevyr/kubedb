@@ -16,12 +16,12 @@ import (
 
 func InitFromCmd(cmd *cobra.Command) error {
 	var level slogx.Level
-	if err := level.UnmarshalText([]byte(viper.GetString(consts.LogLevelKey))); err != nil {
+	if err := level.UnmarshalText([]byte(viper.GetString(consts.KeyLogLevel))); err != nil {
 		return err
 	}
 
 	var format slogx.Format
-	if err := format.UnmarshalText([]byte(viper.GetString(consts.LogFormatKey))); err != nil {
+	if err := format.UnmarshalText([]byte(viper.GetString(consts.KeyLogFormat))); err != nil {
 		return err
 	}
 

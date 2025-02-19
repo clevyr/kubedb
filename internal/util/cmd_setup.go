@@ -42,9 +42,9 @@ func DefaultSetup(cmd *cobra.Command, conf *config.Global, opts SetupOptions) er
 
 	ctx := cmd.Context()
 
-	conf.Kubeconfig = viper.GetString(consts.KubeconfigKey)
-	conf.Context = must.Must2(cmd.Flags().GetString(consts.ContextFlag))
-	conf.Namespace = must.Must2(cmd.Flags().GetString(consts.NamespaceFlag))
+	conf.Kubeconfig = viper.GetString(consts.KeyKubeConfig)
+	conf.Context = must.Must2(cmd.Flags().GetString(consts.FlagContext))
+	conf.Namespace = must.Must2(cmd.Flags().GetString(consts.FlagNamespace))
 
 	var err error
 	conf.Client, err = kubernetes.NewClient(conf.Kubeconfig, conf.Context, conf.Namespace)
@@ -56,7 +56,7 @@ func DefaultSetup(cmd *cobra.Command, conf *config.Global, opts SetupOptions) er
 	conf.Context = conf.Client.Context
 	conf.Namespace = conf.Client.Namespace
 
-	podFlag := must.Must2(cmd.Flags().GetString(consts.PodFlag))
+	podFlag := must.Must2(cmd.Flags().GetString(consts.FlagPod))
 	var pods []corev1.Pod
 	if podFlag != "" {
 		slashIdx := strings.IndexRune(podFlag, '/')
@@ -71,7 +71,7 @@ func DefaultSetup(cmd *cobra.Command, conf *config.Global, opts SetupOptions) er
 		pods = []corev1.Pod{*pod}
 	}
 
-	if dialectFlag := must.Must2(cmd.Flags().GetString(consts.DialectFlag)); dialectFlag != "" {
+	if dialectFlag := must.Must2(cmd.Flags().GetString(consts.FlagDialect)); dialectFlag != "" {
 		// Configure via flag
 		conf.Dialect, err = database.New(dialectFlag)
 		if err != nil {
@@ -160,7 +160,7 @@ func DefaultSetup(cmd *cobra.Command, conf *config.Global, opts SetupOptions) er
 	}
 
 	// Detect port
-	conf.Port = must.Must2(cmd.Flags().GetUint16(consts.PortFlag))
+	conf.Port = must.Must2(cmd.Flags().GetUint16(consts.FlagPort))
 	if db, ok := conf.Dialect.(config.DBHasPort); ok && conf.Port == 0 {
 		port, err := db.PortEnvs(*conf).Search(ctx, conf.Client, conf.DBPod)
 		if err != nil {
@@ -182,7 +182,7 @@ func DefaultSetup(cmd *cobra.Command, conf *config.Global, opts SetupOptions) er
 
 	// Detect database
 	if !opts.DisableAuthFlags {
-		conf.Database = must.Must2(cmd.Flags().GetString(consts.DbnameFlag))
+		conf.Database = must.Must2(cmd.Flags().GetString(consts.FlagDBName))
 	}
 
 	if db, ok := conf.Dialect.(config.DBHasDatabase); ok && conf.Database == "" {
@@ -196,7 +196,7 @@ func DefaultSetup(cmd *cobra.Command, conf *config.Global, opts SetupOptions) er
 
 	// Detect username
 	if !opts.DisableAuthFlags {
-		conf.Username = must.Must2(cmd.Flags().GetString(consts.UsernameFlag))
+		conf.Username = must.Must2(cmd.Flags().GetString(consts.FlagUsername))
 	}
 
 	if db, ok := conf.Dialect.(config.DBHasUser); ok && conf.Username == "" {
@@ -211,7 +211,7 @@ func DefaultSetup(cmd *cobra.Command, conf *config.Global, opts SetupOptions) er
 
 	// Detect password
 	if !opts.DisableAuthFlags {
-		conf.Password = must.Must2(cmd.Flags().GetString(consts.PasswordFlag))
+		conf.Password = must.Must2(cmd.Flags().GetString(consts.FlagPassword))
 	}
 
 	if db, ok := conf.Dialect.(config.DBHasPassword); ok && conf.Password == "" {
@@ -223,14 +223,14 @@ func DefaultSetup(cmd *cobra.Command, conf *config.Global, opts SetupOptions) er
 		slog.Debug("Found password in pod env")
 	}
 
-	if conf.Password != "" && viper.GetBool(consts.LogMaskKey) {
+	if conf.Password != "" && viper.GetBool(consts.KeyLogMask) {
 		mask.Add(conf.Password)
 	}
 
 	if db, ok := conf.Dialect.(config.DBCanDisableJob); ok && db.DisableJob() {
-		viper.Set(consts.CreateJobKey, false)
+		viper.Set(consts.KeyCreateJob, false)
 	}
-	if !viper.GetBool(consts.CreateJobKey) {
+	if !viper.GetBool(consts.KeyCreateJob) {
 		conf.Host = "127.0.0.1"
 		conf.JobPod = conf.DBPod
 	}
@@ -239,7 +239,7 @@ func DefaultSetup(cmd *cobra.Command, conf *config.Global, opts SetupOptions) er
 }
 
 func CreateJob(ctx context.Context, conf *config.Global, opts SetupOptions) error {
-	if viper.GetBool(consts.CreateJobKey) {
+	if viper.GetBool(consts.KeyCreateJob) {
 		if err := createJob(ctx, conf, opts.Name); err != nil {
 			return err
 		}
@@ -281,7 +281,7 @@ func createJob(ctx context.Context, conf *config.Global, actionName string) erro
 		"sidecar.istio.io/inject": "false",
 	}
 	maps.Copy(podLabels, standardLabels)
-	maps.Copy(podLabels, viper.GetStringMapString(consts.JobPodLabelsKey))
+	maps.Copy(podLabels, viper.GetStringMapString(consts.KeyJobPodLabels))
 
 	job := batchv1.Job{
 		ObjectMeta: metav1.ObjectMeta{
@@ -361,7 +361,7 @@ func createJob(ctx context.Context, conf *config.Global, actionName string) erro
 		return err
 	}
 
-	if viper.GetBool(consts.CreateNetworkPolicyKey) {
+	if viper.GetBool(consts.KeyCreateNetworkPolicy) {
 		jobPodKey, jobPodVal := jobPodNameLabel(conf, conf.Job)
 		policy := networkingv1.NetworkPolicy{
 			ObjectMeta: metav1.ObjectMeta{
@@ -393,7 +393,7 @@ func createJob(ctx context.Context, conf *config.Global, actionName string) erro
 		nsLog.Debug("Creating network policy")
 		if _, err := conf.Client.NetworkPolicies().Create(ctx, &policy, metav1.CreateOptions{}); err != nil {
 			nsLog.Warn("Failed to create network policy", "error", err)
-			viper.Set(consts.CreateNetworkPolicyKey, "false")
+			viper.Set(consts.KeyCreateNetworkPolicy, "false")
 		}
 	}
 

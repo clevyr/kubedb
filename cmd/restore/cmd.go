@@ -63,8 +63,8 @@ func New() *cobra.Command {
 	flags.Spinner(cmd, &action.Spinner)
 	flags.Opts(cmd)
 	flags.Progress(cmd, &action.Progress)
-	cmd.Flags().BoolVarP(&action.Force, consts.ForceFlag, "f", false, "Do not prompt before restore")
-	must.Must(cmd.RegisterFlagCompletionFunc(consts.ForceFlag, util.BoolCompletion))
+	cmd.Flags().BoolVarP(&action.Force, consts.FlagForce, "f", false, "Do not prompt before restore")
+	must.Must(cmd.RegisterFlagCompletionFunc(consts.FlagForce, util.BoolCompletion))
 
 	return cmd
 }
@@ -74,7 +74,7 @@ func validArgs(cmd *cobra.Command, args []string, toComplete string) ([]string, 
 		return nil, cobra.ShellCompDirectiveNoFileComp
 	}
 
-	viper.Set(consts.CreateJobKey, false)
+	viper.Set(consts.KeyCreateJob, false)
 	action.Force = true
 	action.Filename = "-"
 	setupOptions.NoSurvey = true
@@ -128,9 +128,9 @@ var (
 
 func preRun(cmd *cobra.Command, args []string) error {
 	flags.BindRemoteGzip(cmd)
-	action.RemoteGzip = viper.GetBool(consts.RemoteGzipKey)
+	action.RemoteGzip = viper.GetBool(consts.KeyRemoteGzip)
 	flags.BindAnalyze(cmd)
-	action.Analyze = viper.GetBool(consts.AnalyzeKey)
+	action.Analyze = viper.GetBool(consts.KeyAnalyze)
 	flags.BindJobPodLabels(cmd)
 	flags.BindCreateJob(cmd)
 	flags.BindCreateNetworkPolicy(cmd)
@@ -138,9 +138,9 @@ func preRun(cmd *cobra.Command, args []string) error {
 	flags.BindHaltOnError(cmd)
 	flags.BindOpts(cmd)
 	flags.BindProgress(cmd)
-	action.Progress = viper.GetBool(consts.ProgressKey)
-	action.HaltOnError = viper.GetBool(consts.HaltOnErrorKey)
-	action.Spinner = viper.GetString(consts.SpinnerKey)
+	action.Progress = viper.GetBool(consts.KeyProgress)
+	action.HaltOnError = viper.GetBool(consts.KeyHaltOnError)
+	action.Spinner = viper.GetString(consts.KeySpinner)
 
 	if err := util.DefaultSetup(cmd, &action.Global, setupOptions); err != nil {
 		return err
@@ -189,7 +189,7 @@ func preRun(cmd *cobra.Command, args []string) error {
 		}
 	}
 
-	if !cmd.Flags().Lookup(consts.FormatFlag).Changed {
+	if !cmd.Flags().Lookup(consts.FlagFormat).Changed {
 		db, ok := action.Dialect.(config.DBRestorer)
 		if !ok {
 			return fmt.Errorf("%w: %s", util.ErrNoRestore, action.Dialect.Name())

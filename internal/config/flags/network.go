@@ -9,10 +9,10 @@ import (
 )
 
 func RemoteGzip(cmd *cobra.Command) {
-	cmd.Flags().Bool(consts.RemoteGzipFlag, true, "Compress data over the wire. Results in lower bandwidth usage, but higher database load. May improve speed on slow connections.")
-	must.Must(cmd.RegisterFlagCompletionFunc(consts.RemoteGzipFlag, util.BoolCompletion))
+	cmd.Flags().Bool(consts.FlagRemoteGzip, true, "Compress data over the wire. Results in lower bandwidth usage, but higher database load. May improve speed on slow connections.")
+	must.Must(cmd.RegisterFlagCompletionFunc(consts.FlagRemoteGzip, util.BoolCompletion))
 }
 
 func BindRemoteGzip(cmd *cobra.Command) {
-	must.Must(viper.BindPFlag(consts.RemoteGzipKey, cmd.Flags().Lookup(consts.RemoteGzipFlag)))
+	must.Must(viper.BindPFlag(consts.KeyRemoteGzip, cmd.Flags().Lookup(consts.FlagRemoteGzip)))
 }

@@ -19,7 +19,7 @@ func Teardown(conf *config.Global) {
 
 		opts := metav1.DeleteOptions{PropagationPolicy: ptr.To(metav1.DeletePropagationForeground)}
 
-		if viper.GetBool(consts.CreateJobKey) {
+		if viper.GetBool(consts.KeyCreateJob) {
 			jobLog := slog.With("name", conf.Job.Name)
 			jobLog.Info("Cleaning up job")
 			if err := conf.Client.Jobs().Delete(ctx, conf.Job.Name, opts); err != nil {
@@ -27,7 +27,7 @@ func Teardown(conf *config.Global) {
 			}
 		}
 
-		if viper.GetBool(consts.CreateNetworkPolicyKey) {
+		if viper.GetBool(consts.KeyCreateNetworkPolicy) {
 			netPolLog := slog.With("name", conf.Job.Name)
 			netPolLog.Debug("Cleaning up network policy")
 			if err := conf.Client.NetworkPolicies().Delete(ctx, conf.Job.Name, opts); err != nil {

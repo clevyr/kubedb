@@ -37,8 +37,8 @@ func New() *cobra.Command {
 	flags.Username(cmd)
 	flags.Password(cmd)
 	flags.Opts(cmd)
-	cmd.Flags().StringVarP(&action.Command, consts.CommandFlag, "c", "", "Run a single command and exit")
-	must.Must(cmd.RegisterFlagCompletionFunc(consts.CommandFlag, cobra.NoFileCompletions))
+	cmd.Flags().StringVarP(&action.Command, consts.FlagCommand, "c", "", "Run a single command and exit")
+	must.Must(cmd.RegisterFlagCompletionFunc(consts.FlagCommand, cobra.NoFileCompletions))
 
 	return cmd
 }

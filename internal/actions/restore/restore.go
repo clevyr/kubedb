@@ -213,7 +213,7 @@ func (action Restore) buildCommand(inputFormat sqlformat.Format) (*command.Build
 	}
 
 	cmd := db.RestoreCommand(action.Restore, inputFormat)
-	if opts := viper.GetString(consts.OptsKey); opts != "" {
+	if opts := viper.GetString(consts.KeyOpts); opts != "" {
 		cmd.Push(command.Split(opts))
 	}
 	cmd.Unshift(command.Raw("{"))

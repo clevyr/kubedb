@@ -47,7 +47,7 @@ func New() *cobra.Command {
 
 func preRun(cmd *cobra.Command, _ []string) error {
 	cmd.SilenceUsage = true
-	viper.Set(consts.LogLevelFlag, slog.LevelWarn.String())
+	viper.Set(consts.FlagLogLevel, slog.LevelWarn.String())
 	if err := log.InitFromCmd(cmd); err != nil {
 		return err
 	}

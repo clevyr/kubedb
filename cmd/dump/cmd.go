@@ -72,7 +72,7 @@ func validArgs(cmd *cobra.Command, args []string, toComplete string) ([]string, 
 		return nil, cobra.ShellCompDirectiveNoFileComp
 	}
 
-	viper.Set(consts.CreateJobKey, false)
+	viper.Set(consts.KeyCreateJob, false)
 	setupOptions.NoSurvey = true
 	err := preRun(cmd, args)
 	if err != nil {
@@ -121,12 +121,12 @@ func preRun(cmd *cobra.Command, args []string) error {
 	flags.BindCreateJob(cmd)
 	flags.BindCreateNetworkPolicy(cmd)
 	flags.BindRemoteGzip(cmd)
-	action.RemoteGzip = viper.GetBool(consts.RemoteGzipKey)
+	action.RemoteGzip = viper.GetBool(consts.KeyRemoteGzip)
 	flags.BindSpinner(cmd)
-	action.Spinner = viper.GetString(consts.SpinnerKey)
+	action.Spinner = viper.GetString(consts.KeySpinner)
 	flags.BindOpts(cmd)
 	flags.BindProgress(cmd)
-	action.Progress = viper.GetBool(consts.ProgressKey)
+	action.Progress = viper.GetBool(consts.KeyProgress)
 
 	if len(args) > 0 {
 		action.Filename = args[0]
@@ -169,7 +169,7 @@ func preRun(cmd *cobra.Command, args []string) error {
 		} else {
 			action.Filename = filepath.Join(action.Filename, generated)
 		}
-	} else if !cmd.Flags().Lookup(consts.FormatFlag).Changed {
+	} else if !cmd.Flags().Lookup(consts.FlagFormat).Changed {
 		action.Format = database.DetectFormat(db, action.Filename)
 	}
 

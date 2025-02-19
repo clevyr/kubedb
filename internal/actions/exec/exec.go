@@ -65,7 +65,7 @@ func (action Exec) buildCommand() (*command.Builder, error) {
 	}
 
 	cmd := db.ExecCommand(action.Exec)
-	if opts := viper.GetString(consts.OptsKey); opts != "" {
+	if opts := viper.GetString(consts.KeyOpts); opts != "" {
 		cmd.Push(command.Split(opts))
 	}
 

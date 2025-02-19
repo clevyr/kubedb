@@ -24,7 +24,7 @@ func HeaderStyle(r *lipgloss.Renderer) lipgloss.Style {
 func NamespaceStyle(r *lipgloss.Renderer, namespace string) lipgloss.Style {
 	style := lipgloss.NewStyle().Renderer(r).SetString(namespace)
 
-	colors := viper.GetStringMapString(consts.NamespaceColorKey)
+	colors := viper.GetStringMapString(consts.KeyNamespaceColor)
 	for k, v := range colors {
 		if regexp.MustCompile(k).MatchString(namespace) {
 			style = style.Foreground(lipgloss.Color(v))

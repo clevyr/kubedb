@@ -95,14 +95,14 @@ func preRun(cmd *cobra.Command, _ []string) error {
 	})
 	cmd.SetContext(ctx)
 
-	kubeconfig := viper.GetString(consts.KubeconfigKey)
+	kubeconfig := viper.GetString(consts.KeyKubeConfig)
 	if kubeconfig == "$HOME" || strings.HasPrefix(kubeconfig, "$HOME"+string(os.PathSeparator)) {
 		home, err := os.UserHomeDir()
 		if err != nil {
 			return err
 		}
 		kubeconfig = home + kubeconfig[5:]
-		viper.Set(consts.KubeconfigKey, kubeconfig)
+		viper.Set(consts.KeyKubeConfig, kubeconfig)
 	}
 
 	if err := config.LoadViper(); err != nil {
@@ -113,7 +113,7 @@ func preRun(cmd *cobra.Command, _ []string) error {
 	}
 	cmd.Root().SilenceErrors = true
 
-	if url := viper.GetString(consts.HealthchecksPingURLKey); url != "" {
+	if url := viper.GetString(consts.KeyHealthchecksPingURL); url != "" {
 		if handler, err := notifier.NewHealthchecks(url); err != nil {
 			slog.Error("Notifications creation failed", "error", err)
 		} else {

@@ -192,7 +192,7 @@ func (action Dump) buildCommand() (*command.Builder, error) {
 	}
 
 	cmd := db.DumpCommand(action.Dump)
-	if opts := viper.GetString(consts.OptsKey); opts != "" {
+	if opts := viper.GetString(consts.KeyOpts); opts != "" {
 		cmd.Push(command.Split(opts))
 	}
 	cmd.Unshift(command.Raw("{"))

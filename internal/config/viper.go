@@ -41,7 +41,7 @@ func LoadViper() error {
 }
 
 func SetViperDefaults() {
-	viper.SetDefault(consts.NamespaceColorKey, map[string]string{
+	viper.SetDefault(consts.KeyNamespaceColor, map[string]string{
 		"[-_]pro?d(uction)?([-_]|$)": string(tui.ColorRed),
 	})
 }
