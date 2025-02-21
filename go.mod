@@ -14,7 +14,7 @@ require (
 	github.com/charmbracelet/lipgloss v1.0.0
 	github.com/google/uuid v1.6.0
 	github.com/lmittmann/tint v1.0.7
-	github.com/muesli/termenv v0.15.3-0.20241212154518-8c990cd6cf4b
+	github.com/muesli/termenv v0.16.0
 	github.com/schollz/progressbar/v3 v3.18.0
 	github.com/spf13/cobra v1.9.1
 	github.com/spf13/pflag v1.0.6
