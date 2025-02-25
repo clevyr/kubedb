@@ -6,7 +6,7 @@ require (
 	al.essio.dev/pkg/shellescape v1.5.1
 	cloud.google.com/go/storage v1.50.0
 	gabe565.com/spinners v1.3.0
-	gabe565.com/utils v0.0.0-20250218053544-40f17d09c725
+	gabe565.com/utils v0.0.0-20250225060243-a5332a333cd9
 	github.com/aws/aws-sdk-go-v2/config v1.29.7
 	github.com/aws/aws-sdk-go-v2/feature/s3/manager v1.17.63
 	github.com/aws/aws-sdk-go-v2/service/s3 v1.77.1
