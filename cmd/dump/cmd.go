@@ -146,14 +146,14 @@ func preRun(cmd *cobra.Command, args []string) error {
 		return fmt.Errorf("%w: %s", util.ErrNoDump, action.Dialect.Name())
 	}
 
-	var isDir bool
-	if action.Filename != "" {
-		if stat, err := os.Stat(action.Filename); err == nil && stat.IsDir() {
-			isDir = true
+	isDir := action.Filename == "" || strings.HasSuffix(action.Filename, string(os.PathSeparator)) || storage.IsCloudDir(action.Filename)
+	if !isDir && !storage.IsCloud(action.Filename) {
+		if stat, err := os.Stat(action.Filename); err == nil {
+			isDir = stat.IsDir()
 		}
 	}
 
-	if action.Filename == "" || isDir || strings.HasSuffix(action.Filename, string(os.PathSeparator)) || storage.IsCloudDir(action.Filename) {
+	if isDir {
 		generated := dump.Filename{
 			Database:  action.Database,
 			Namespace: action.Client.Namespace,
