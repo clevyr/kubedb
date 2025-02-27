@@ -9,6 +9,7 @@ import (
 	"path"
 	"path/filepath"
 	"slices"
+	"strings"
 	"time"
 
 	"github.com/clevyr/kubedb/internal/actions/dump"
@@ -152,7 +153,7 @@ func preRun(cmd *cobra.Command, args []string) error {
 		}
 	}
 
-	if action.Filename == "" || isDir || storage.IsCloudDir(action.Filename) {
+	if action.Filename == "" || isDir || strings.HasSuffix(action.Filename, string(os.PathSeparator)) || storage.IsCloudDir(action.Filename) {
 		generated := dump.Filename{
 			Database:  action.Database,
 			Namespace: action.Client.Namespace,
