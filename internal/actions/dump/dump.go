@@ -39,6 +39,7 @@ func (action Dump) Run(ctx context.Context) error {
 	errGroup, ctx := errgroup.WithContext(ctx)
 
 	var f io.WriteCloser
+	var rename bool
 	switch {
 	case action.Filename == "-":
 		f = os.Stdout
@@ -64,20 +65,25 @@ func (action Dump) Run(ctx context.Context) error {
 			_ = f.Close()
 		}(f)
 	default:
-		if _, err := os.Stat(filepath.Dir(action.Filename)); os.IsNotExist(err) {
-			err = os.MkdirAll(filepath.Dir(action.Filename), os.ModePerm)
+		dir := filepath.Dir(action.Filename)
+		if _, err := os.Stat(dir); os.IsNotExist(err) {
+			err = os.MkdirAll(dir, os.ModePerm)
 			if err != nil {
 				return err
 			}
 		}
 
-		var err error
-		if f, err = os.Create(action.Filename); err != nil {
+		tmp, err := os.CreateTemp(dir, filepath.Base(action.Filename)+"-*")
+		if err != nil {
 			return err
 		}
-		defer func(f io.WriteCloser) {
-			_ = f.Close()
-		}(f)
+		defer func() {
+			_ = tmp.Close()
+			_ = os.Remove(tmp.Name())
+		}()
+
+		f = tmp
+		rename = true
 	}
 
 	actionLog := slog.With(
@@ -171,6 +177,14 @@ func (action Dump) Run(ctx context.Context) error {
 	}
 
 	_ = bar.Finish()
+
+	if rename {
+		if f, ok := f.(*os.File); ok {
+			if err := os.Rename(f.Name(), action.Filename); err != nil {
+				return err
+			}
+		}
+	}
 
 	actionLog.Info("Dump complete",
 		"took", time.Since(startTime).Truncate(10*time.Millisecond),
