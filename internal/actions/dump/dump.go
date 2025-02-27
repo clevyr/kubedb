@@ -66,11 +66,8 @@ func (action Dump) Run(ctx context.Context) error {
 		}(f)
 	default:
 		dir := filepath.Dir(action.Filename)
-		if _, err := os.Stat(dir); os.IsNotExist(err) {
-			err = os.MkdirAll(dir, os.ModePerm)
-			if err != nil {
-				return err
-			}
+		if err := os.MkdirAll(dir, os.ModePerm); err != nil && !os.IsExist(err) {
+			return err
 		}
 
 		tmp, err := os.CreateTemp(dir, filepath.Base(action.Filename)+"-*")

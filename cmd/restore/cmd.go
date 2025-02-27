@@ -184,7 +184,7 @@ func preRun(cmd *cobra.Command, args []string) error {
 		}
 		fallthrough
 	default:
-		if _, err := os.Stat(action.Filename); errors.Is(err, os.ErrNotExist) {
+		if _, err := os.Stat(action.Filename); err != nil {
 			return err
 		}
 	}
