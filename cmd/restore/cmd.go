@@ -10,6 +10,7 @@ import (
 	"slices"
 
 	"gabe565.com/utils/must"
+	"gabe565.com/utils/termx"
 	"github.com/charmbracelet/huh"
 	"github.com/clevyr/kubedb/internal/actions/restore"
 	"github.com/clevyr/kubedb/internal/config"
@@ -21,7 +22,6 @@ import (
 	"github.com/clevyr/kubedb/internal/util"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
-	"k8s.io/kubectl/pkg/util/term"
 )
 
 //nolint:gochecknoglobals
@@ -153,7 +153,7 @@ func preRun(cmd *cobra.Command, args []string) error {
 	switch {
 	case action.Filename == "-", storage.IsCloud(action.Filename):
 	case action.Filename == "":
-		if (term.TTY{In: os.Stdin}).IsTerminalIn() {
+		if termx.IsTerminal(cmd.InOrStdin()) {
 			db, ok := action.Dialect.(config.DBRestorer)
 			if !ok {
 				return fmt.Errorf("%w: %s", util.ErrNoRestore, action.Dialect.Name())
@@ -200,7 +200,7 @@ func preRun(cmd *cobra.Command, args []string) error {
 
 	switch {
 	case action.Force:
-	case (term.TTY{In: os.Stdin}).IsTerminalIn():
+	case termx.IsTerminal(cmd.InOrStdin()):
 		if response, err := action.Confirm(); err != nil {
 			return err
 		} else if !response {

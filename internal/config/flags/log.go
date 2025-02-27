@@ -6,11 +6,11 @@ import (
 
 	"gabe565.com/utils/must"
 	"gabe565.com/utils/slogx"
+	"gabe565.com/utils/termx"
 	"github.com/clevyr/kubedb/internal/consts"
 	"github.com/clevyr/kubedb/internal/util"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
-	"k8s.io/kubectl/pkg/util/term"
 )
 
 func Quiet(cmd *cobra.Command, p *bool) {
@@ -19,7 +19,7 @@ func Quiet(cmd *cobra.Command, p *bool) {
 }
 
 func Progress(cmd *cobra.Command, p *bool) {
-	cmd.PersistentFlags().BoolVar(p, consts.FlagProgress, (term.TTY{Out: os.Stderr}).IsTerminalOut(), "Enables the progress bar")
+	cmd.PersistentFlags().BoolVar(p, consts.FlagProgress, termx.IsTerminal(os.Stderr), "Enables the progress bar")
 	must.Must(cmd.RegisterFlagCompletionFunc(consts.FlagProgress, util.BoolCompletion))
 }
 

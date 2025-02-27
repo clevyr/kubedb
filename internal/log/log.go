@@ -6,13 +6,13 @@ import (
 	"time"
 
 	"gabe565.com/utils/slogx"
+	"gabe565.com/utils/termx"
 	"github.com/clevyr/kubedb/internal/consts"
 	"github.com/clevyr/kubedb/internal/log/mask"
 	"github.com/clevyr/kubedb/internal/tui"
 	"github.com/lmittmann/tint"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
-	"k8s.io/kubectl/pkg/util/term"
 )
 
 func InitFromCmd(cmd *cobra.Command) error {
@@ -41,7 +41,7 @@ func Init(w io.Writer, level slogx.Level, format slogx.Format) {
 		var color bool
 		switch format {
 		case slogx.FormatAuto:
-			color = term.TTY{Out: w}.IsTerminalOut()
+			color = termx.IsColor(w)
 		case slogx.FormatColor:
 			color = true
 		}

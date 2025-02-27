@@ -4,9 +4,9 @@ import (
 	"os"
 
 	"gabe565.com/utils/slogx"
+	"gabe565.com/utils/termx"
 	"github.com/charmbracelet/lipgloss"
 	"github.com/muesli/termenv"
-	"k8s.io/kubectl/pkg/util/term"
 )
 
 //nolint:gochecknoglobals
@@ -16,7 +16,7 @@ func InitRenderer(format slogx.Format) {
 	var color bool
 	switch format {
 	case slogx.FormatAuto:
-		color = term.TTY{Out: os.Stdout}.IsTerminalOut()
+		color = termx.IsColor(os.Stdout)
 	case slogx.FormatColor:
 		color = true
 	}

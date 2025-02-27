@@ -8,9 +8,9 @@ import (
 	"time"
 
 	spinner "gabe565.com/spinners"
+	"gabe565.com/utils/termx"
 	"github.com/clevyr/kubedb/internal/config/flags"
 	"github.com/schollz/progressbar/v3"
-	"k8s.io/kubectl/pkg/util/term"
 )
 
 func New(w io.Writer, total int64, label string, enabled bool, spinnerKey string) *ProgressBar {
@@ -29,7 +29,7 @@ func New(w io.Writer, total int64, label string, enabled bool, spinnerKey string
 	}
 
 	throttle := 2 * time.Second
-	if (term.TTY{Out: w}).IsTerminalOut() {
+	if termx.IsTerminal(w) {
 		throttle = 65 * time.Millisecond
 		options = append(options,
 			progressbar.OptionSetRenderBlankState(true),
