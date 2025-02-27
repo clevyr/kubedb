@@ -31,7 +31,7 @@ func main() {
 		}
 
 		path := filepath.Join("completions", shell)
-		if err := os.MkdirAll(path, 0o777); err != nil {
+		if err := os.MkdirAll(path, 0o755); err != nil {
 			panic(err)
 		}
 

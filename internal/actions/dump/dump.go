@@ -66,7 +66,7 @@ func (action Dump) Run(ctx context.Context) error {
 		}(f)
 	default:
 		dir := filepath.Dir(action.Filename)
-		if err := os.MkdirAll(dir, os.ModePerm); err != nil && !os.IsExist(err) {
+		if err := os.MkdirAll(dir, 0o755); err != nil && !os.IsExist(err) {
 			return err
 		}
 
