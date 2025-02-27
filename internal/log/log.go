@@ -8,6 +8,7 @@ import (
 	"gabe565.com/utils/slogx"
 	"github.com/clevyr/kubedb/internal/consts"
 	"github.com/clevyr/kubedb/internal/log/mask"
+	"github.com/clevyr/kubedb/internal/tui"
 	"github.com/lmittmann/tint"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
@@ -44,6 +45,8 @@ func Init(w io.Writer, level slogx.Level, format slogx.Format) {
 		case slogx.FormatColor:
 			color = true
 		}
+
+		tui.InitRenderer(format)
 
 		slog.SetDefault(slog.New(
 			tint.NewHandler(w, &tint.Options{

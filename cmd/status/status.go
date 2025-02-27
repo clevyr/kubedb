@@ -56,11 +56,11 @@ func preRun(cmd *cobra.Command, _ []string) error {
 }
 
 func run(cmd *cobra.Command, _ []string) error {
-	statusStyle := lipgloss.NewStyle().PaddingLeft(1)
+	statusStyle := lipgloss.NewStyle().Renderer(tui.Renderer).PaddingLeft(1)
 	prefixOk := statusStyle.Foreground(tui.ColorGreen).Render("✓")
 	prefixNeutral := statusStyle.Foreground(tui.ColorHiBlack).Render("-")
 	prefixErr := statusStyle.Foreground(tui.ColorRed).Render("✗")
-	bold := lipgloss.NewStyle().Bold(true).Render
+	bold := lipgloss.NewStyle().Renderer(tui.Renderer).Bold(true).Render
 
 	defaultSetupErr := util.DefaultSetup(cmd, &conf, util.SetupOptions{Name: "status"})
 

@@ -16,12 +16,18 @@ const (
 )
 
 func HeaderStyle(r *lipgloss.Renderer) lipgloss.Style {
+	if r == nil {
+		r = Renderer
+	}
 	return lipgloss.NewStyle().Renderer(r).
 		Bold(true).
 		Foreground(lipgloss.AdaptiveColor{Light: "#5A56E0", Dark: "#7571F9"})
 }
 
 func NamespaceStyle(r *lipgloss.Renderer, namespace string) lipgloss.Style {
+	if r == nil {
+		r = Renderer
+	}
 	style := lipgloss.NewStyle().Renderer(r).SetString(namespace)
 
 	colors := viper.GetStringMapString(consts.KeyNamespaceColor)
@@ -36,9 +42,15 @@ func NamespaceStyle(r *lipgloss.Renderer, namespace string) lipgloss.Style {
 }
 
 func WarnStyle(r *lipgloss.Renderer) lipgloss.Style {
+	if r == nil {
+		r = Renderer
+	}
 	return lipgloss.NewStyle().Renderer(r).Foreground(ColorYellow)
 }
 
 func ErrStyle(r *lipgloss.Renderer) lipgloss.Style {
+	if r == nil {
+		r = Renderer
+	}
 	return lipgloss.NewStyle().Renderer(r).Foreground(ColorRed)
 }

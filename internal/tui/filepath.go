@@ -8,6 +8,9 @@ import (
 )
 
 func InPath(path string, r *lipgloss.Renderer) string {
+	if r == nil {
+		r = Renderer
+	}
 	style := lipgloss.NewStyle().Renderer(r).Italic(true)
 	if path == "-" {
 		return "stdin"
@@ -16,6 +19,9 @@ func InPath(path string, r *lipgloss.Renderer) string {
 }
 
 func OutPath(path string, r *lipgloss.Renderer) string {
+	if r == nil {
+		r = Renderer
+	}
 	style := lipgloss.NewStyle().Renderer(r).Italic(true)
 	if path == "-" {
 		return "stdout"
