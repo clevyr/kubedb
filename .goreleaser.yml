@@ -20,6 +20,9 @@ builds:
       # Disable Google Cloud Storage GRPC to reduce binary size
       # https://pkg.go.dev/cloud.google.com/go/storage#hdr-gRPC_API
       - disable_grpc_modules
+      # Disable GRPC tracing to reduce binary size
+      # https://github.com/grpc/grpc-go/blob/master/trace_notrace.go
+      - grpcnotrace
     goarch:
       - amd64
       - arm
