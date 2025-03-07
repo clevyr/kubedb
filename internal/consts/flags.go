@@ -18,8 +18,6 @@ const (
 	FlagHaltOnError       = "halt-on-error"
 	FlagOpts              = "opts"
 
-	FlagDirectory = "directory"
-
 	FlagSpinner = "spinner"
 
 	FlagKubeConfig          = "kubeconfig"
