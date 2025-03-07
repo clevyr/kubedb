@@ -4,24 +4,24 @@ import (
 	"strconv"
 
 	"github.com/clevyr/kubedb/internal/command"
-	"github.com/clevyr/kubedb/internal/config"
+	"github.com/clevyr/kubedb/internal/config/conftypes"
 	"github.com/clevyr/kubedb/internal/database/sqlformat"
 	"github.com/clevyr/kubedb/internal/kubernetes"
 	"github.com/clevyr/kubedb/internal/kubernetes/filter"
 )
 
 var (
-	_ config.DBAliaser        = MongoDB{}
-	_ config.DBOrderer        = MongoDB{}
-	_ config.DBDumper         = MongoDB{}
-	_ config.DBExecer         = MongoDB{}
-	_ config.DBRestorer       = MongoDB{}
-	_ config.DBHasUser        = MongoDB{}
-	_ config.DBHasPort        = MongoDB{}
-	_ config.DBHasPassword    = MongoDB{}
-	_ config.DBHasDatabase    = MongoDB{}
-	_ config.DBDatabaseLister = MongoDB{}
-	_ config.DBTableLister    = MongoDB{}
+	_ conftypes.DBAliaser        = MongoDB{}
+	_ conftypes.DBOrderer        = MongoDB{}
+	_ conftypes.DBDumper         = MongoDB{}
+	_ conftypes.DBExecer         = MongoDB{}
+	_ conftypes.DBRestorer       = MongoDB{}
+	_ conftypes.DBHasUser        = MongoDB{}
+	_ conftypes.DBHasPort        = MongoDB{}
+	_ conftypes.DBHasPassword    = MongoDB{}
+	_ conftypes.DBHasDatabase    = MongoDB{}
+	_ conftypes.DBDatabaseLister = MongoDB{}
+	_ conftypes.DBTableLister    = MongoDB{}
 )
 
 type MongoDB struct{}
@@ -36,13 +36,13 @@ func (MongoDB) Aliases() []string { return []string{"mongo"} }
 
 func (MongoDB) Priority() uint8 { return 255 }
 
-func (MongoDB) PortEnvs(_ config.Global) kubernetes.ConfigLookups {
+func (MongoDB) PortEnvs(_ *conftypes.Global) kubernetes.ConfigLookups {
 	return kubernetes.ConfigLookups{kubernetes.LookupEnv{"MONGODB_PORT_NUMBER"}}
 }
 
 func (MongoDB) PortDefault() uint16 { return 27017 }
 
-func (MongoDB) DatabaseEnvs(_ config.Global) kubernetes.ConfigLookups {
+func (MongoDB) DatabaseEnvs(_ *conftypes.Global) kubernetes.ConfigLookups {
 	return kubernetes.ConfigLookups{kubernetes.LookupEnv{"MONGODB_EXTRA_DATABASES"}}
 }
 
@@ -54,7 +54,7 @@ func (MongoDB) TableListQuery() string {
 	return "db.getCollectionNames().forEach(function(collection){ print(collection) })"
 }
 
-func (MongoDB) UserEnvs(_ config.Global) kubernetes.ConfigLookups {
+func (MongoDB) UserEnvs(_ *conftypes.Global) kubernetes.ConfigLookups {
 	return kubernetes.ConfigLookups{kubernetes.LookupEnv{"MONGODB_EXTRA_USERNAMES", "MONGODB_ROOT_USER"}}
 }
 
@@ -75,21 +75,21 @@ func (MongoDB) PodFilters() filter.Filter {
 	}
 }
 
-func (db MongoDB) PasswordEnvs(c config.Global) kubernetes.ConfigLookups {
+func (db MongoDB) PasswordEnvs(c *conftypes.Global) kubernetes.ConfigLookups {
 	if c.Username == db.UserDefault() {
 		return kubernetes.ConfigLookups{kubernetes.LookupEnv{"MONGODB_ROOT_PASSWORD"}}
 	}
 	return kubernetes.ConfigLookups{kubernetes.LookupEnv{"MONGODB_EXTRA_PASSWORDS"}}
 }
 
-func (db MongoDB) AuthenticationDatabase(c config.Global) string {
+func (db MongoDB) AuthenticationDatabase(c *conftypes.Global) string {
 	if c.Username == db.UserDefault() {
 		return "admin"
 	}
 	return c.Database
 }
 
-func (db MongoDB) ExecCommand(conf config.Exec) *command.Builder {
+func (db MongoDB) ExecCommand(conf *conftypes.Exec) *command.Builder {
 	cmd := command.NewBuilder(
 		"exec", command.Raw(`"$(which mongosh || which mongo)"`),
 		"--host="+conf.Host,
@@ -112,7 +112,7 @@ func (db MongoDB) ExecCommand(conf config.Exec) *command.Builder {
 	return cmd
 }
 
-func (db MongoDB) DumpCommand(conf config.Dump) *command.Builder {
+func (db MongoDB) DumpCommand(conf *conftypes.Dump) *command.Builder {
 	cmd := command.NewBuilder(
 		"mongodump",
 		"--archive",
@@ -127,7 +127,7 @@ func (db MongoDB) DumpCommand(conf config.Dump) *command.Builder {
 	if conf.Database != "" {
 		cmd.Push("--db=" + conf.Database)
 	}
-	for _, table := range conf.Tables {
+	for _, table := range conf.Table {
 		cmd.Push("--collection=" + table)
 	}
 	for _, table := range conf.ExcludeTable {
@@ -139,7 +139,7 @@ func (db MongoDB) DumpCommand(conf config.Dump) *command.Builder {
 	return cmd
 }
 
-func (db MongoDB) RestoreCommand(conf config.Restore, _ sqlformat.Format) *command.Builder {
+func (db MongoDB) RestoreCommand(conf *conftypes.Restore, _ sqlformat.Format) *command.Builder {
 	cmd := command.NewBuilder(
 		"mongorestore",
 		"--archive",

@@ -8,18 +8,15 @@ import (
 	"gabe565.com/utils/must"
 	"github.com/clevyr/kubedb/internal/actions/portforward"
 	"github.com/clevyr/kubedb/internal/config"
+	"github.com/clevyr/kubedb/internal/config/conftypes"
 	"github.com/clevyr/kubedb/internal/config/flags"
 	"github.com/clevyr/kubedb/internal/consts"
 	"github.com/clevyr/kubedb/internal/util"
 	"github.com/spf13/cobra"
-	"github.com/spf13/viper"
 )
 
 //nolint:gochecknoglobals
-var (
-	action       portforward.PortForward
-	setupOptions = util.SetupOptions{DisableAuthFlags: true}
-)
+var action = &portforward.PortForward{PortForward: conftypes.PortForward{Global: config.Global}}
 
 func New() *cobra.Command {
 	cmd := &cobra.Command{
@@ -54,14 +51,13 @@ func localPortCompletion(cmd *cobra.Command, args []string, _ string) ([]string,
 		return nil, cobra.ShellCompDirectiveNoFileComp
 	}
 
-	setupOptions.NoSurvey = true
-	err := preRun(cmd, args)
-	if err != nil {
+	config.Global.SkipSurvey = true
+	if err := preRun(cmd, args); err != nil {
 		slog.Error("Pre-run failed", "error", err)
 		return nil, cobra.ShellCompDirectiveError
 	}
 
-	db, ok := action.Dialect.(config.DBHasPort)
+	db, ok := action.Dialect.(conftypes.DBHasPort)
 	if !ok {
 		slog.Error("Dialect does not support port-forwarding", "name", action.Dialect.Name())
 		return nil, cobra.ShellCompDirectiveError
@@ -69,35 +65,39 @@ func localPortCompletion(cmd *cobra.Command, args []string, _ string) ([]string,
 
 	defaultPort := db.PortDefault()
 	return []string{
-		strconv.Itoa(int(action.LocalPort)),
+		strconv.Itoa(int(action.ListenPort)),
 		strconv.Itoa(int(defaultPort)),
 		strconv.Itoa(int(defaultPort + 1)),
 	}, cobra.ShellCompDirectiveNoFileComp
 }
 
 func preRun(cmd *cobra.Command, args []string) error {
-	must.Must(viper.BindPFlag(consts.KeyPortForwardAddress, cmd.Flags().Lookup(consts.FlagAddress)))
-	action.Addresses = viper.GetStringSlice(consts.KeyPortForwardAddress)
-
-	err := util.DefaultSetup(cmd, &action.Global, setupOptions)
-	if err != nil {
+	if err := config.Unmarshal("port-forward", &action); err != nil {
 		return err
 	}
 
 	if len(args) != 0 {
-		if err := cmd.Flags().Set(consts.FlagListenPort, args[0]); err != nil {
+		port, err := strconv.ParseUint(args[0], 10, 16)
+		if err != nil {
 			return err
 		}
+
+		action.ListenPort = uint16(port)
 	}
 
-	action.LocalPort = must.Must2(cmd.Flags().GetUint16(consts.FlagListenPort))
-	if action.LocalPort == 0 {
-		db, ok := action.Dialect.(config.DBHasPort)
+	setupOpts := util.SetupOptions{NoSurvey: config.Global.SkipSurvey}
+	err := util.DefaultSetup(cmd, action.Global, setupOpts)
+	if err != nil {
+		return err
+	}
+
+	if action.ListenPort == 0 {
+		db, ok := action.Dialect.(conftypes.DBHasPort)
 		if !ok {
 			return fmt.Errorf("%w: %s", util.ErrNoPortForward, action.Dialect.Name())
 		}
 
-		action.LocalPort = 30000 + db.PortDefault()
+		action.ListenPort = 30000 + db.PortDefault()
 	}
 
 	return nil

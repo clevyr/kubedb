@@ -1,6 +1,7 @@
 package consts
 
 const (
+	FlagConfig            = "config"
 	FlagDialect           = "dialect"
 	FlagFormat            = "format"
 	FlagPort              = "port"
@@ -28,12 +29,12 @@ const (
 	FlagCreateJob           = "create-job"
 	FlagCreateNetworkPolicy = "create-network-policy"
 
-	FlagQuiet             = "quiet"
-	FlagProgress          = "progress"
-	FlagLogLevel          = "log-level"
-	FlagLogFormat         = "log-format"
-	FlagMask              = "mask"
-	FlagHealchecksPingURL = "healthchecks-ping-url"
+	FlagQuiet               = "quiet"
+	FlagProgress            = "progress"
+	FlagLogLevel            = "log-level"
+	FlagLogFormat           = "log-format"
+	FlagLogMask             = "mask"
+	FlagHealthchecksPingURL = "healthchecks-ping-url"
 
 	FlagRemoteGzip = "remote-gzip"
 
@@ -41,4 +42,6 @@ const (
 	FlagAddress    = "address"
 	FlagCommand    = "command"
 	FlagForce      = "force"
+
+	KeyNamespaceColor = "ui.colors.namespace"
 )

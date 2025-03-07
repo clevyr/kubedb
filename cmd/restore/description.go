@@ -3,12 +3,12 @@ package restore
 import (
 	"strings"
 
-	"github.com/clevyr/kubedb/internal/config"
+	"github.com/clevyr/kubedb/internal/config/conftypes"
 	"github.com/clevyr/kubedb/internal/database"
 )
 
 func newDescription() string {
-	dbs := database.NamesForInterface[config.DBRestorer]()
+	dbs := database.NamesForInterface[conftypes.DBRestorer]()
 
 	return `Restore a sql file to a database.
 

@@ -12,6 +12,7 @@ Supported Databases:
 ### Options
 
 ```
+      --config string                  Path to the config file (default "$HOME/.config/kubedb/config.yaml")
       --context string                 Kubernetes context name
       --dialect string                 Database dialect. (one of postgres, mariadb, mongodb, redis, meilisearch) (default discovered)
       --healthchecks-ping-url string   Notification handler URL

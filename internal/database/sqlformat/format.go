@@ -44,3 +44,11 @@ func ParseFormat(format string) (Format, error) {
 	}
 	return Unknown, fmt.Errorf("%w: %s", ErrUnknown, format)
 }
+
+func (i *Format) MarshalText() ([]byte, error) {
+	return []byte(i.String()), nil
+}
+
+func (i *Format) UnmarshalText(text []byte) error {
+	return i.Set(string(text))
+}

@@ -8,18 +8,18 @@ import (
 	"strings"
 
 	"github.com/clevyr/kubedb/internal/command"
-	"github.com/clevyr/kubedb/internal/config"
+	"github.com/clevyr/kubedb/internal/config/conftypes"
 	"github.com/clevyr/kubedb/internal/kubernetes"
 	"github.com/clevyr/kubedb/internal/kubernetes/filter"
 	corev1 "k8s.io/api/core/v1"
 )
 
 var (
-	_ config.DBAliaser     = Redis{}
-	_ config.DBExecer      = Redis{}
-	_ config.DBHasPort     = Redis{}
-	_ config.DBHasPassword = Redis{}
-	_ config.DBHasDatabase = Redis{}
+	_ conftypes.DBAliaser     = Redis{}
+	_ conftypes.DBExecer      = Redis{}
+	_ conftypes.DBHasPort     = Redis{}
+	_ conftypes.DBHasPassword = Redis{}
+	_ conftypes.DBHasDatabase = Redis{}
 )
 
 type Redis struct{}
@@ -30,13 +30,13 @@ func (Redis) PrettyName() string { return "Redis" }
 
 func (Redis) Aliases() []string { return []string{"valkey", "keydb"} }
 
-func (Redis) PortEnvs(_ config.Global) kubernetes.ConfigLookups {
+func (Redis) PortEnvs(_ *conftypes.Global) kubernetes.ConfigLookups {
 	return kubernetes.ConfigLookups{kubernetes.LookupEnv{"REDIS_PORT", "VALKEY_PORT"}}
 }
 
 func (Redis) PortDefault() uint16 { return 6379 }
 
-func (Redis) DatabaseEnvs(_ config.Global) kubernetes.ConfigLookups {
+func (Redis) DatabaseEnvs(_ *conftypes.Global) kubernetes.ConfigLookups {
 	return kubernetes.ConfigLookups{kubernetes.LookupEnv{"REDIS_DB"}}
 }
 
@@ -105,13 +105,13 @@ func (db Redis) FilterPods(ctx context.Context, client kubernetes.KubeClient, po
 	return preferred, nil
 }
 
-func (db Redis) PasswordEnvs(_ config.Global) kubernetes.ConfigLookups {
+func (db Redis) PasswordEnvs(_ *conftypes.Global) kubernetes.ConfigLookups {
 	return kubernetes.ConfigLookups{
 		kubernetes.LookupEnv{"REDIS_PASSWORD", "VALKEY_PASSWORD", "KEYDB_PASSWORD"},
 	}
 }
 
-func (Redis) ExecCommand(conf config.Exec) *command.Builder {
+func (Redis) ExecCommand(conf *conftypes.Exec) *command.Builder {
 	cmd := command.NewBuilder(
 		command.NewEnv("REDISCLI_AUTH", conf.Password),
 		"exec", command.Raw(`"$(which redis-cli || which valkey-cli)"`), "-h", conf.Host,

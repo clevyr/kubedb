@@ -5,25 +5,25 @@ import (
 	"strings"
 
 	"github.com/clevyr/kubedb/internal/command"
-	"github.com/clevyr/kubedb/internal/config"
+	"github.com/clevyr/kubedb/internal/config/conftypes"
 	"github.com/clevyr/kubedb/internal/database/sqlformat"
 	"github.com/clevyr/kubedb/internal/kubernetes"
 	"github.com/clevyr/kubedb/internal/kubernetes/filter"
 )
 
 var (
-	_ config.DBAliaser         = MariaDB{}
-	_ config.DBOrderer         = MariaDB{}
-	_ config.DBDumper          = MariaDB{}
-	_ config.DBExecer          = MariaDB{}
-	_ config.DBRestorer        = MariaDB{}
-	_ config.DBHasUser         = MariaDB{}
-	_ config.DBHasPort         = MariaDB{}
-	_ config.DBHasPassword     = MariaDB{}
-	_ config.DBHasDatabase     = MariaDB{}
-	_ config.DBDatabaseLister  = MariaDB{}
-	_ config.DBDatabaseDropper = MariaDB{}
-	_ config.DBTableLister     = MariaDB{}
+	_ conftypes.DBAliaser         = MariaDB{}
+	_ conftypes.DBOrderer         = MariaDB{}
+	_ conftypes.DBDumper          = MariaDB{}
+	_ conftypes.DBExecer          = MariaDB{}
+	_ conftypes.DBRestorer        = MariaDB{}
+	_ conftypes.DBHasUser         = MariaDB{}
+	_ conftypes.DBHasPort         = MariaDB{}
+	_ conftypes.DBHasPassword     = MariaDB{}
+	_ conftypes.DBHasDatabase     = MariaDB{}
+	_ conftypes.DBDatabaseLister  = MariaDB{}
+	_ conftypes.DBDatabaseDropper = MariaDB{}
+	_ conftypes.DBTableLister     = MariaDB{}
 )
 
 type MariaDB struct{}
@@ -36,7 +36,7 @@ func (MariaDB) Aliases() []string { return []string{"maria", "mysql"} }
 
 func (MariaDB) Priority() uint8 { return 255 }
 
-func (MariaDB) PortEnvs(_ config.Global) kubernetes.ConfigLookups {
+func (MariaDB) PortEnvs(_ *conftypes.Global) kubernetes.ConfigLookups {
 	return kubernetes.ConfigLookups{kubernetes.LookupEnv{"MARIADB_PORT_NUMBER", "MYSQL_PORT_NUMBER"}}
 }
 
@@ -44,7 +44,7 @@ func (MariaDB) PortDefault() uint16 {
 	return 3306
 }
 
-func (MariaDB) DatabaseEnvs(_ config.Global) kubernetes.ConfigLookups {
+func (MariaDB) DatabaseEnvs(_ *conftypes.Global) kubernetes.ConfigLookups {
 	return kubernetes.ConfigLookups{kubernetes.LookupEnv{"MARIADB_DATABASE", "MYSQL_DATABASE"}}
 }
 
@@ -52,7 +52,7 @@ func (MariaDB) DatabaseListQuery() string { return "show databases" }
 
 func (MariaDB) TableListQuery() string { return "show tables" }
 
-func (MariaDB) UserEnvs(_ config.Global) kubernetes.ConfigLookups {
+func (MariaDB) UserEnvs(_ *conftypes.Global) kubernetes.ConfigLookups {
 	return kubernetes.ConfigLookups{kubernetes.LookupEnv{"MARIADB_USER", "MYSQL_USER"}}
 }
 
@@ -81,7 +81,7 @@ func (MariaDB) PodFilters() filter.Filter {
 	}
 }
 
-func (db MariaDB) PasswordEnvs(c config.Global) kubernetes.ConfigLookups {
+func (db MariaDB) PasswordEnvs(c *conftypes.Global) kubernetes.ConfigLookups {
 	if c.Username == db.UserDefault() {
 		return kubernetes.ConfigLookups{
 			kubernetes.LookupEnv{"MARIADB_ROOT_PASSWORD", "MYSQL_ROOT_PASSWORD"},
@@ -92,7 +92,7 @@ func (db MariaDB) PasswordEnvs(c config.Global) kubernetes.ConfigLookups {
 	}
 }
 
-func (MariaDB) ExecCommand(conf config.Exec) *command.Builder {
+func (MariaDB) ExecCommand(conf *conftypes.Exec) *command.Builder {
 	cmd := command.NewBuilder(
 		command.NewEnv("MYSQL_PWD", conf.Password),
 		"exec", command.Raw(`"$(which mariadb || which mysql)"`), "--host="+conf.Host, "--user="+conf.Username,
@@ -112,7 +112,7 @@ func (MariaDB) ExecCommand(conf config.Exec) *command.Builder {
 	return cmd
 }
 
-func (MariaDB) DumpCommand(conf config.Dump) *command.Builder {
+func (MariaDB) DumpCommand(conf *conftypes.Dump) *command.Builder {
 	cmd := command.NewBuilder(
 		command.NewEnv("MYSQL_PWD", conf.Password),
 		command.Raw(`"$(which mariadb-dump || which mysqldump)"`), "--host="+conf.Host, "--user="+conf.Username, conf.Database,
@@ -123,7 +123,7 @@ func (MariaDB) DumpCommand(conf config.Dump) *command.Builder {
 	if conf.Clean {
 		cmd.Push("--add-drop-table")
 	}
-	for _, table := range conf.Tables {
+	for _, table := range conf.Table {
 		cmd.Push(table)
 	}
 	for _, table := range conf.ExcludeTable {
@@ -135,7 +135,7 @@ func (MariaDB) DumpCommand(conf config.Dump) *command.Builder {
 	return cmd
 }
 
-func (MariaDB) RestoreCommand(conf config.Restore, _ sqlformat.Format) *command.Builder {
+func (MariaDB) RestoreCommand(conf *conftypes.Restore, _ sqlformat.Format) *command.Builder {
 	cmd := command.NewBuilder(
 		command.NewEnv("MYSQL_PWD", conf.Password),
 		command.Raw(`"$(which mariadb || which mysql)"`), "--host="+conf.Host, "--user="+conf.Username, "--database="+conf.Database,

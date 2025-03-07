@@ -12,7 +12,7 @@ import (
 	"strconv"
 
 	"github.com/charmbracelet/lipgloss"
-	"github.com/clevyr/kubedb/internal/config"
+	"github.com/clevyr/kubedb/internal/config/conftypes"
 	"github.com/clevyr/kubedb/internal/log"
 	"github.com/clevyr/kubedb/internal/tui"
 	"k8s.io/client-go/tools/portforward"
@@ -20,7 +20,7 @@ import (
 )
 
 type PortForward struct {
-	config.PortForward `mapstructure:",squash"`
+	conftypes.PortForward `koanf:",squash"`
 }
 
 func (a PortForward) Run(ctx context.Context) error {
@@ -41,12 +41,12 @@ func (a PortForward) Run(ctx context.Context) error {
 	}
 
 	dialer := spdy.NewDialer(upgrader, &http.Client{Transport: transport}, http.MethodPost, hostURL)
-	ports := []string{fmt.Sprintf("%d:%d", a.LocalPort, a.Port)}
+	ports := []string{fmt.Sprintf("%d:%d", a.ListenPort, a.Port)}
 	stopCh := make(chan struct{}, 1)
 	readyCh := make(chan struct{}, 1)
 	outWriter := log.NewWriter(slog.Default(), slog.LevelInfo)
 	errWriter := log.NewWriter(slog.Default(), slog.LevelError)
-	fw, err := portforward.NewOnAddresses(dialer, a.Addresses, ports, stopCh, readyCh, outWriter, errWriter)
+	fw, err := portforward.NewOnAddresses(dialer, a.Address, ports, stopCh, readyCh, outWriter, errWriter)
 	if err != nil {
 		return err
 	}
@@ -72,20 +72,20 @@ func (a PortForward) Run(ctx context.Context) error {
 
 func (a PortForward) printTable() {
 	slog.Debug("Port forward is ready",
-		"local", a.LocalPort,
+		"local", a.ListenPort,
 		"remote", a.Port,
 	)
 
 	info := tui.MinimalTable(nil).
 		RowIfNotEmpty("Context", a.Context).
-		Row("Namespace", tui.NamespaceStyle(nil, a.Namespace).Render()).
+		Row("Namespace", tui.NamespaceStyle(nil, a.NamespaceColors, a.Namespace).Render()).
 		Row("Pod", a.DBPod.Name)
 
 	params := tui.MinimalTable(nil).
 		Row("Type", a.Dialect.PrettyName()).
 		Row("Namespace", a.Namespace).
 		Row("Hostname", "localhost").
-		Row("Port", strconv.Itoa(int(a.LocalPort))).
+		Row("Port", strconv.Itoa(int(a.ListenPort))).
 		RowIfNotEmpty("Username", a.Username).
 		RowIfNotEmpty("Password", a.Password).
 		RowIfNotEmpty("Database", a.Database)

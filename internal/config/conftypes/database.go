@@ -1,4 +1,4 @@
-package config
+package conftypes
 
 import (
 	"context"
@@ -26,18 +26,18 @@ type DBOrderer interface {
 
 type DBDumper interface {
 	Database
-	DumpCommand(conf Dump) *command.Builder
+	DumpCommand(conf *Dump) *command.Builder
 	DBFiler
 }
 
 type DBExecer interface {
 	Database
-	ExecCommand(conf Exec) *command.Builder
+	ExecCommand(conf *Exec) *command.Builder
 }
 
 type DBRestorer interface {
 	Database
-	RestoreCommand(conf Restore, inputFormat sqlformat.Format) *command.Builder
+	RestoreCommand(conf *Restore, inputFormat sqlformat.Format) *command.Builder
 	DBFiler
 }
 
@@ -50,21 +50,21 @@ type DBFiler interface {
 }
 
 type DBHasUser interface {
-	UserEnvs(conf Global) kubernetes.ConfigLookups
+	UserEnvs(conf *Global) kubernetes.ConfigLookups
 	UserDefault() string
 }
 
 type DBHasPort interface {
-	PortEnvs(conf Global) kubernetes.ConfigLookups
+	PortEnvs(conf *Global) kubernetes.ConfigLookups
 	PortDefault() uint16
 }
 
 type DBHasPassword interface {
-	PasswordEnvs(conf Global) kubernetes.ConfigLookups
+	PasswordEnvs(conf *Global) kubernetes.ConfigLookups
 }
 
 type DBHasDatabase interface {
-	DatabaseEnvs(conf Global) kubernetes.ConfigLookups
+	DatabaseEnvs(conf *Global) kubernetes.ConfigLookups
 }
 
 type DBDatabaseLister interface {

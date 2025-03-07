@@ -5,18 +5,18 @@ import (
 	"strconv"
 
 	"github.com/clevyr/kubedb/internal/command"
-	"github.com/clevyr/kubedb/internal/config"
+	"github.com/clevyr/kubedb/internal/config/conftypes"
 	"github.com/clevyr/kubedb/internal/database/sqlformat"
 	"github.com/clevyr/kubedb/internal/kubernetes"
 	"github.com/clevyr/kubedb/internal/kubernetes/filter"
 )
 
 var (
-	_ config.DBDumper        = Meilisearch{}
-	_ config.DBRestorer      = Meilisearch{}
-	_ config.DBHasPort       = Meilisearch{}
-	_ config.DBHasPassword   = Meilisearch{}
-	_ config.DBCanDisableJob = Meilisearch{}
+	_ conftypes.DBDumper        = Meilisearch{}
+	_ conftypes.DBRestorer      = Meilisearch{}
+	_ conftypes.DBHasPort       = Meilisearch{}
+	_ conftypes.DBHasPassword   = Meilisearch{}
+	_ conftypes.DBCanDisableJob = Meilisearch{}
 )
 
 type Meilisearch struct{}
@@ -25,7 +25,7 @@ func (Meilisearch) Name() string { return "meilisearch" }
 
 func (Meilisearch) PrettyName() string { return "Meilisearch" }
 
-func (Meilisearch) PortEnvs(_ config.Global) kubernetes.ConfigLookups {
+func (Meilisearch) PortEnvs(_ *conftypes.Global) kubernetes.ConfigLookups {
 	return kubernetes.ConfigLookups{}
 }
 
@@ -35,7 +35,7 @@ func (Meilisearch) PodFilters() filter.Filter {
 	return filter.Label{Name: "app.kubernetes.io/name", Value: "meilisearch"}
 }
 
-func (Meilisearch) PasswordEnvs(_ config.Global) kubernetes.ConfigLookups {
+func (Meilisearch) PasswordEnvs(_ *conftypes.Global) kubernetes.ConfigLookups {
 	return kubernetes.ConfigLookups{
 		kubernetes.LookupEnv{"MEILI_MASTER_KEY"},
 		kubernetes.LookupNop{},
@@ -45,7 +45,7 @@ func (Meilisearch) PasswordEnvs(_ config.Global) kubernetes.ConfigLookups {
 //go:embed dump.sh
 var dumpScript string
 
-func (Meilisearch) DumpCommand(conf config.Dump) *command.Builder {
+func (Meilisearch) DumpCommand(conf *conftypes.Dump) *command.Builder {
 	url := "http://" + conf.Host + ":" + strconv.Itoa(int(conf.Port))
 	cmd := command.NewBuilder(
 		command.NewEnv("API_HOST", url),
@@ -60,7 +60,7 @@ func (Meilisearch) DumpCommand(conf config.Dump) *command.Builder {
 //go:embed restore.sh
 var restoreScript string
 
-func (Meilisearch) RestoreCommand(conf config.Restore, _ sqlformat.Format) *command.Builder {
+func (Meilisearch) RestoreCommand(conf *conftypes.Restore, _ sqlformat.Format) *command.Builder {
 	cmd := command.NewBuilder("sh", "-c", restoreScript)
 	if conf.Password != "" {
 		cmd.Unshift(command.NewEnv("MEILI_MASTER_KEY", conf.Password))

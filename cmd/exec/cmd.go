@@ -3,6 +3,8 @@ package exec
 import (
 	"gabe565.com/utils/must"
 	"github.com/clevyr/kubedb/internal/actions/exec"
+	"github.com/clevyr/kubedb/internal/config"
+	"github.com/clevyr/kubedb/internal/config/conftypes"
 	"github.com/clevyr/kubedb/internal/config/flags"
 	"github.com/clevyr/kubedb/internal/consts"
 	"github.com/clevyr/kubedb/internal/util"
@@ -10,10 +12,7 @@ import (
 )
 
 //nolint:gochecknoglobals
-var (
-	action       exec.Exec
-	setupOptions = util.SetupOptions{Name: "exec"}
-)
+var action = &exec.Exec{Exec: conftypes.Exec{Global: config.Global}}
 
 func New() *cobra.Command {
 	cmd := &cobra.Command{
@@ -37,22 +36,21 @@ func New() *cobra.Command {
 	flags.Username(cmd)
 	flags.Password(cmd)
 	flags.Opts(cmd)
-	cmd.Flags().StringVarP(&action.Command, consts.FlagCommand, "c", "", "Run a single command and exit")
+	cmd.Flags().StringP(consts.FlagCommand, "c", "", "Run a single command and exit")
 	must.Must(cmd.RegisterFlagCompletionFunc(consts.FlagCommand, cobra.NoFileCompletions))
 
 	return cmd
 }
 
 func preRun(cmd *cobra.Command, _ []string) error {
-	flags.BindJobPodLabels(cmd)
-	flags.BindCreateJob(cmd)
-	flags.BindCreateNetworkPolicy(cmd)
-	flags.BindOpts(cmd)
-
-	if err := util.DefaultSetup(cmd, &action.Global, setupOptions); err != nil {
+	if err := config.Unmarshal("exec", &action); err != nil {
 		return err
 	}
-	if err := util.CreateJob(cmd.Context(), &action.Global, setupOptions); err != nil {
+
+	if err := util.DefaultSetup(cmd, action.Global, util.SetupOptions{}); err != nil {
+		return err
+	}
+	if err := util.CreateJob(cmd.Context(), action.Global, util.SetupOptions{}); err != nil {
 		return err
 	}
 

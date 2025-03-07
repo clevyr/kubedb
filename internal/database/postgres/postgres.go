@@ -12,7 +12,7 @@ import (
 	"strings"
 
 	"github.com/clevyr/kubedb/internal/command"
-	"github.com/clevyr/kubedb/internal/config"
+	"github.com/clevyr/kubedb/internal/config/conftypes"
 	"github.com/clevyr/kubedb/internal/database/sqlformat"
 	"github.com/clevyr/kubedb/internal/kubernetes"
 	"github.com/clevyr/kubedb/internal/kubernetes/filter"
@@ -21,20 +21,20 @@ import (
 )
 
 var (
-	_ config.DBAliaser         = Postgres{}
-	_ config.DBOrderer         = Postgres{}
-	_ config.DBDumper          = Postgres{}
-	_ config.DBExecer          = Postgres{}
-	_ config.DBRestorer        = Postgres{}
-	_ config.DBFilterer        = Postgres{}
-	_ config.DBHasUser         = Postgres{}
-	_ config.DBHasPort         = Postgres{}
-	_ config.DBHasPassword     = Postgres{}
-	_ config.DBHasDatabase     = Postgres{}
-	_ config.DBDatabaseLister  = Postgres{}
-	_ config.DBDatabaseDropper = Postgres{}
-	_ config.DBTableLister     = Postgres{}
-	_ config.DBAnalyzer        = Postgres{}
+	_ conftypes.DBAliaser         = Postgres{}
+	_ conftypes.DBOrderer         = Postgres{}
+	_ conftypes.DBDumper          = Postgres{}
+	_ conftypes.DBExecer          = Postgres{}
+	_ conftypes.DBRestorer        = Postgres{}
+	_ conftypes.DBFilterer        = Postgres{}
+	_ conftypes.DBHasUser         = Postgres{}
+	_ conftypes.DBHasPort         = Postgres{}
+	_ conftypes.DBHasPassword     = Postgres{}
+	_ conftypes.DBHasDatabase     = Postgres{}
+	_ conftypes.DBDatabaseLister  = Postgres{}
+	_ conftypes.DBDatabaseDropper = Postgres{}
+	_ conftypes.DBTableLister     = Postgres{}
+	_ conftypes.DBAnalyzer        = Postgres{}
 )
 
 type Postgres struct{}
@@ -47,7 +47,7 @@ func (Postgres) Aliases() []string { return []string{"postgresql", "psql", "pg"}
 
 func (Postgres) Priority() uint8 { return 255 }
 
-func (db Postgres) PortEnvs(conf config.Global) kubernetes.ConfigLookups {
+func (db Postgres) PortEnvs(conf *conftypes.Global) kubernetes.ConfigLookups {
 	if secret := db.cnpgSecretName(conf); secret != "" {
 		return kubernetes.ConfigLookups{kubernetes.LookupNamedSecret{
 			Name: secret,
@@ -62,7 +62,7 @@ func (db Postgres) PortEnvs(conf config.Global) kubernetes.ConfigLookups {
 
 func (Postgres) PortDefault() uint16 { return 5432 }
 
-func (db Postgres) DatabaseEnvs(conf config.Global) kubernetes.ConfigLookups {
+func (db Postgres) DatabaseEnvs(conf *conftypes.Global) kubernetes.ConfigLookups {
 	if secret := db.cnpgSecretName(conf); secret != "" {
 		return kubernetes.ConfigLookups{kubernetes.LookupNamedSecret{
 			Name: secret,
@@ -83,7 +83,7 @@ func (Postgres) TableListQuery() string {
 	return "SELECT table_name FROM information_schema.tables WHERE table_schema='public' AND table_type='BASE TABLE'"
 }
 
-func (db Postgres) UserEnvs(conf config.Global) kubernetes.ConfigLookups {
+func (db Postgres) UserEnvs(conf *conftypes.Global) kubernetes.ConfigLookups {
 	if secret := db.cnpgSecretName(conf); secret != "" {
 		return kubernetes.ConfigLookups{kubernetes.LookupNamedSecret{
 			Name: secret,
@@ -194,7 +194,7 @@ func (db Postgres) FilterPods(ctx context.Context, client kubernetes.KubeClient,
 	return preferred, nil
 }
 
-func (db Postgres) PasswordEnvs(conf config.Global) kubernetes.ConfigLookups {
+func (db Postgres) PasswordEnvs(conf *conftypes.Global) kubernetes.ConfigLookups {
 	if secret := db.cnpgSecretName(conf); secret != "" {
 		return kubernetes.ConfigLookups{kubernetes.LookupNamedSecret{
 			Name: secret,
@@ -210,7 +210,7 @@ func (db Postgres) PasswordEnvs(conf config.Global) kubernetes.ConfigLookups {
 	return kubernetes.ConfigLookups{searchEnvs}
 }
 
-func (Postgres) ExecCommand(conf config.Exec) *command.Builder {
+func (Postgres) ExecCommand(conf *conftypes.Exec) *command.Builder {
 	cmd := command.NewBuilder(
 		command.NewEnv("PGPASSWORD", conf.Password),
 		"exec", "psql", "--host="+conf.Host, "--username="+conf.Username,
@@ -236,7 +236,7 @@ func (Postgres) quoteParam(param string) string {
 	return param
 }
 
-func (db Postgres) DumpCommand(conf config.Dump) *command.Builder {
+func (db Postgres) DumpCommand(conf *conftypes.Dump) *command.Builder {
 	cmd := command.NewBuilder(
 		command.NewEnv("PGPASSWORD", conf.Password),
 		"pg_dump", "--host="+conf.Host, "--username="+conf.Username,
@@ -256,7 +256,7 @@ func (db Postgres) DumpCommand(conf config.Dump) *command.Builder {
 	if conf.NoOwner {
 		cmd.Push("--no-owner")
 	}
-	for _, table := range conf.Tables {
+	for _, table := range conf.Table {
 		cmd.Push("--table=" + db.quoteParam(table))
 	}
 	for _, table := range conf.ExcludeTable {
@@ -274,7 +274,7 @@ func (db Postgres) DumpCommand(conf config.Dump) *command.Builder {
 	return cmd
 }
 
-func (Postgres) RestoreCommand(conf config.Restore, inputFormat sqlformat.Format) *command.Builder {
+func (Postgres) RestoreCommand(conf *conftypes.Restore, inputFormat sqlformat.Format) *command.Builder {
 	cmd := command.NewBuilder(
 		command.NewEnv("PGPASSWORD", conf.Password),
 	)
@@ -352,7 +352,7 @@ func (Postgres) zalandoQuery() filter.Filter {
 	return filter.Label{Name: "application", Value: "spilo"}
 }
 
-func (db Postgres) cnpgSecretName(conf config.Global) string {
+func (db Postgres) cnpgSecretName(conf *conftypes.Global) string {
 	if cluster, ok := conf.DBPod.Labels["cnpg.io/cluster"]; ok {
 		if conf.Username == db.UserDefault() {
 			return cluster + "-superuser"

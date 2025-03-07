@@ -3,7 +3,7 @@ package database
 import (
 	"testing"
 
-	"github.com/clevyr/kubedb/internal/config"
+	"github.com/clevyr/kubedb/internal/config/conftypes"
 	"github.com/clevyr/kubedb/internal/database/mariadb"
 	"github.com/clevyr/kubedb/internal/database/mongodb"
 	"github.com/clevyr/kubedb/internal/database/postgres"
@@ -19,7 +19,7 @@ func TestNew(t *testing.T) {
 	tests := []struct {
 		name    string
 		args    args
-		want    config.Database
+		want    conftypes.Database
 		wantErr require.ErrorAssertionFunc
 	}{
 		{"postgresql", args{"postgresql"}, postgres.Postgres{}, require.NoError},
@@ -44,7 +44,7 @@ func TestNew(t *testing.T) {
 
 func TestDetectFormat(t *testing.T) {
 	type args struct {
-		db   config.DBFiler
+		db   conftypes.DBFiler
 		path string
 	}
 	tests := []struct {
@@ -71,7 +71,7 @@ func TestDetectFormat(t *testing.T) {
 
 func TestGetExtension(t *testing.T) {
 	type args struct {
-		db     config.DBFiler
+		db     conftypes.DBFiler
 		format sqlformat.Format
 	}
 	tests := []struct {

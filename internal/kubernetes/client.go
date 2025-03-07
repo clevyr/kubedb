@@ -3,10 +3,6 @@ package kubernetes
 import (
 	"path/filepath"
 
-	"gabe565.com/utils/must"
-	"github.com/clevyr/kubedb/internal/consts"
-	"github.com/spf13/cobra"
-	"github.com/spf13/viper"
 	"k8s.io/client-go/discovery"
 	"k8s.io/client-go/kubernetes"
 	batchv1 "k8s.io/client-go/kubernetes/typed/batch/v1"
@@ -93,11 +89,4 @@ func NewClient(kubeconfig, context, namespace string) (KubeClient, error) {
 	}
 
 	return client, err
-}
-
-func NewClientFromCmd(cmd *cobra.Command) (KubeClient, error) {
-	kubeconfig := viper.GetString(consts.KeyKubeConfig)
-	context := must.Must2(cmd.Flags().GetString(consts.FlagContext))
-	namespace := must.Must2(cmd.Flags().GetString(consts.FlagNamespace))
-	return NewClient(kubeconfig, context, namespace)
 }
