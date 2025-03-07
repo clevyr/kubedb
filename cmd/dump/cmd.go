@@ -161,7 +161,7 @@ func preRun(cmd *cobra.Command, args []string) error {
 		action.Format = database.DetectFormat(db, action.Filename)
 	}
 
-	if err := util.CreateJob(cmd.Context(), action.Global, setupOpts); err != nil {
+	if err := util.CreateJob(cmd.Context(), cmd, action.Global, setupOpts); err != nil {
 		return err
 	}
 

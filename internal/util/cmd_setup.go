@@ -221,7 +221,11 @@ func DefaultSetup(cmd *cobra.Command, conf *conftypes.Global, opts SetupOptions)
 	return nil
 }
 
-func CreateJob(ctx context.Context, conf *conftypes.Global, opts SetupOptions) error {
+func CreateJob(ctx context.Context, cmd *cobra.Command, conf *conftypes.Global, opts SetupOptions) error {
+	if opts.Name == "" {
+		opts.Name = cmd.Name()
+	}
+
 	if conf.CreateJob {
 		if err := createJob(ctx, conf, opts.Name); err != nil {
 			return err

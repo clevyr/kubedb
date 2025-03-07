@@ -50,7 +50,7 @@ func preRun(cmd *cobra.Command, _ []string) error {
 	if err := util.DefaultSetup(cmd, action.Global, util.SetupOptions{}); err != nil {
 		return err
 	}
-	if err := util.CreateJob(cmd.Context(), action.Global, util.SetupOptions{}); err != nil {
+	if err := util.CreateJob(cmd.Context(), cmd, action.Global, util.SetupOptions{}); err != nil {
 		return err
 	}
 

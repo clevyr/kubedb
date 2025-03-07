@@ -198,7 +198,7 @@ func preRun(cmd *cobra.Command, args []string) error {
 		return ErrRestoreRefused
 	}
 
-	if err := util.CreateJob(cmd.Context(), action.Global, setupOpts); err != nil {
+	if err := util.CreateJob(cmd.Context(), cmd, action.Global, setupOpts); err != nil {
 		return err
 	}
 
