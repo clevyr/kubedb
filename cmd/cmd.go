@@ -6,7 +6,6 @@ import (
 	"os"
 	"os/signal"
 	"path/filepath"
-	"strings"
 	"syscall"
 
 	"github.com/clevyr/kubedb/cmd/dump"
@@ -16,13 +15,11 @@ import (
 	"github.com/clevyr/kubedb/cmd/status"
 	"github.com/clevyr/kubedb/internal/config"
 	"github.com/clevyr/kubedb/internal/config/flags"
-	"github.com/clevyr/kubedb/internal/consts"
 	"github.com/clevyr/kubedb/internal/finalizer"
 	"github.com/clevyr/kubedb/internal/log"
 	"github.com/clevyr/kubedb/internal/notifier"
 	"github.com/clevyr/kubedb/internal/util"
 	"github.com/spf13/cobra"
-	"github.com/spf13/viper"
 )
 
 func NewCommand() *cobra.Command {
@@ -47,15 +44,14 @@ func NewCommand() *cobra.Command {
 		PersistentPreRunE: preRun,
 	}
 
+	flags.Config(cmd)
 	flags.Kubeconfig(cmd)
 	flags.Context(cmd)
 	flags.Namespace(cmd)
 	flags.Dialect(cmd)
 	flags.Pod(cmd)
-	flags.LogLevel(cmd)
-	flags.LogFormat(cmd)
+	flags.Log(cmd)
 	flags.Healthchecks(cmd)
-	flags.Mask(cmd)
 	cmd.InitDefaultVersionFlag()
 
 	cmd.AddGroup(
@@ -83,11 +79,9 @@ func NewCommand() *cobra.Command {
 func preRun(cmd *cobra.Command, _ []string) error {
 	http.DefaultTransport = util.NewUserAgentTransport()
 
-	flags.BindKubeconfig(cmd)
-	flags.BindLogLevel(cmd)
-	flags.BindLogFormat(cmd)
-	flags.BindMask(cmd)
-	flags.BindHealthchecks(cmd)
+	if err := config.Load(cmd); err != nil {
+		return err
+	}
 
 	ctx, cancel := signal.NotifyContext(cmd.Context(), os.Interrupt, syscall.SIGTERM, syscall.SIGQUIT)
 	finalizer.Add(func(_ error) {
@@ -95,26 +89,11 @@ func preRun(cmd *cobra.Command, _ []string) error {
 	})
 	cmd.SetContext(ctx)
 
-	kubeconfig := viper.GetString(consts.KeyKubeConfig)
-	if kubeconfig == "$HOME" || strings.HasPrefix(kubeconfig, "$HOME"+string(os.PathSeparator)) {
-		home, err := os.UserHomeDir()
-		if err != nil {
-			return err
-		}
-		kubeconfig = home + kubeconfig[5:]
-		viper.Set(consts.KeyKubeConfig, kubeconfig)
-	}
-
-	if err := config.LoadViper(); err != nil {
-		return err
-	}
-	if err := log.InitFromCmd(cmd); err != nil {
-		return err
-	}
+	log.InitGlobal(cmd)
 	cmd.Root().SilenceErrors = true
 
-	if url := viper.GetString(consts.KeyHealthchecksPingURL); url != "" {
-		if handler, err := notifier.NewHealthchecks(url); err != nil {
+	if config.Global.HealthchecksPingURL != "" {
+		if handler, err := notifier.NewHealthchecks(config.Global.HealthchecksPingURL); err != nil {
 			slog.Error("Notifications creation failed", "error", err)
 		} else {
 			if err := handler.Started(ctx); err != nil {

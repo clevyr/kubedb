@@ -13,6 +13,7 @@ import (
 	"gabe565.com/utils/must"
 	"github.com/charmbracelet/huh"
 	"github.com/clevyr/kubedb/internal/config"
+	"github.com/clevyr/kubedb/internal/config/conftypes"
 	"github.com/clevyr/kubedb/internal/consts"
 	"github.com/clevyr/kubedb/internal/database"
 	"github.com/clevyr/kubedb/internal/finalizer"
@@ -20,7 +21,6 @@ import (
 	"github.com/clevyr/kubedb/internal/log/mask"
 	"github.com/clevyr/kubedb/internal/tui"
 	"github.com/spf13/cobra"
-	"github.com/spf13/viper"
 	batchv1 "k8s.io/api/batch/v1"
 	corev1 "k8s.io/api/core/v1"
 	networkingv1 "k8s.io/api/networking/v1"
@@ -32,19 +32,17 @@ import (
 )
 
 type SetupOptions struct {
-	Name             string
-	DisableAuthFlags bool
-	NoSurvey         bool
+	Name     string
+	NoSurvey bool
 }
 
-func DefaultSetup(cmd *cobra.Command, conf *config.Global, opts SetupOptions) error {
+func DefaultSetup(cmd *cobra.Command, conf *conftypes.Global, opts SetupOptions) error {
+	if opts.Name == "" {
+		opts.Name = cmd.Name()
+	}
+
 	cmd.SilenceUsage = true
-
 	ctx := cmd.Context()
-
-	conf.Kubeconfig = viper.GetString(consts.KeyKubeConfig)
-	conf.Context = must.Must2(cmd.Flags().GetString(consts.FlagContext))
-	conf.Namespace = must.Must2(cmd.Flags().GetString(consts.FlagNamespace))
 
 	var err error
 	conf.Client, err = kubernetes.NewClient(conf.Kubeconfig, conf.Context, conf.Namespace)
@@ -56,14 +54,13 @@ func DefaultSetup(cmd *cobra.Command, conf *config.Global, opts SetupOptions) er
 	conf.Context = conf.Client.Context
 	conf.Namespace = conf.Client.Namespace
 
-	podFlag := must.Must2(cmd.Flags().GetString(consts.FlagPod))
 	var pods []corev1.Pod
-	if podFlag != "" {
-		slashIdx := strings.IndexRune(podFlag, '/')
-		if slashIdx != 0 && slashIdx+1 < len(podFlag) {
-			podFlag = podFlag[slashIdx+1:]
+	if conf.PodName != "" {
+		slashIdx := strings.IndexRune(conf.PodName, '/')
+		if slashIdx != 0 && slashIdx+1 < len(conf.PodName) {
+			conf.PodName = conf.PodName[slashIdx+1:]
 		}
-		pod, err := conf.Client.Pods().Get(ctx, podFlag, metav1.GetOptions{})
+		pod, err := conf.Client.Pods().Get(ctx, conf.PodName, metav1.GetOptions{})
 		if err != nil {
 			checkNamespaceExists(ctx, conf)
 			return err
@@ -71,14 +68,13 @@ func DefaultSetup(cmd *cobra.Command, conf *config.Global, opts SetupOptions) er
 		pods = []corev1.Pod{*pod}
 	}
 
-	if dialectFlag := must.Must2(cmd.Flags().GetString(consts.FlagDialect)); dialectFlag != "" {
-		// Configure via flag
-		conf.Dialect, err = database.New(dialectFlag)
+	switch {
+	case conf.DialectName != "":
+		conf.Dialect, err = database.New(conf.DialectName)
 		if err != nil {
 			return err
 		}
 		slog.Debug("Configured database", "dialect", conf.Dialect.Name())
-
 		if len(pods) == 0 {
 			pods, err = conf.Client.GetPodsFiltered(ctx, conf.Dialect.PodFilters())
 			if err != nil {
@@ -89,7 +85,7 @@ func DefaultSetup(cmd *cobra.Command, conf *config.Global, opts SetupOptions) er
 				return kubernetes.ErrPodNotFound
 			}
 		}
-	} else if len(pods) == 0 {
+	case len(pods) == 0:
 		result, err := database.DetectDialect(ctx, conf.Client)
 		if err != nil {
 			checkNamespaceExists(ctx, conf)
@@ -102,13 +98,13 @@ func DefaultSetup(cmd *cobra.Command, conf *config.Global, opts SetupOptions) er
 				break
 			}
 		} else {
-			opts := make([]huh.Option[config.Database], 0, len(result))
+			opts := make([]huh.Option[conftypes.Database], 0, len(result))
 			for dialect := range result {
 				opts = append(opts, huh.NewOption(dialect.PrettyName(), dialect))
 			}
-			var chosen config.Database
+			var chosen conftypes.Database
 			if err := tui.NewForm(huh.NewGroup(
-				huh.NewSelect[config.Database]().
+				huh.NewSelect[conftypes.Database]().
 					Title("Select database type").
 					Options(opts...).
 					Value(&chosen),
@@ -119,7 +115,7 @@ func DefaultSetup(cmd *cobra.Command, conf *config.Global, opts SetupOptions) er
 			pods = result[chosen]
 		}
 		slog.Debug("Detected dialect", "dialect", conf.Dialect.Name())
-	} else {
+	default:
 		conf.Dialect, err = database.DetectDialectFromPod(pods[0])
 		if err != nil {
 			checkNamespaceExists(ctx, conf)
@@ -128,7 +124,7 @@ func DefaultSetup(cmd *cobra.Command, conf *config.Global, opts SetupOptions) er
 	}
 
 	if len(pods) > 1 {
-		if db, ok := conf.Dialect.(config.DBFilterer); ok && podFlag == "" {
+		if db, ok := conf.Dialect.(conftypes.DBFilterer); ok && conf.PodName == "" {
 			filtered, err := db.FilterPods(ctx, conf.Client, pods)
 			if err != nil {
 				slog.Warn("Could not query primary instance", "error", err)
@@ -160,9 +156,8 @@ func DefaultSetup(cmd *cobra.Command, conf *config.Global, opts SetupOptions) er
 	}
 
 	// Detect port
-	conf.Port = must.Must2(cmd.Flags().GetUint16(consts.FlagPort))
-	if db, ok := conf.Dialect.(config.DBHasPort); ok && conf.Port == 0 {
-		port, err := db.PortEnvs(*conf).Search(ctx, conf.Client, conf.DBPod)
+	if db, ok := conf.Dialect.(conftypes.DBHasPort); ok && conf.Port == 0 {
+		port, err := db.PortEnvs(conf).Search(ctx, conf.Client, conf.DBPod)
 		if err != nil {
 			slog.Debug("Could not detect port from pod env")
 		} else {
@@ -181,12 +176,8 @@ func DefaultSetup(cmd *cobra.Command, conf *config.Global, opts SetupOptions) er
 	}
 
 	// Detect database
-	if !opts.DisableAuthFlags {
-		conf.Database = must.Must2(cmd.Flags().GetString(consts.FlagDBName))
-	}
-
-	if db, ok := conf.Dialect.(config.DBHasDatabase); ok && conf.Database == "" {
-		conf.Database, err = db.DatabaseEnvs(*conf).Search(ctx, conf.Client, conf.DBPod)
+	if db, ok := conf.Dialect.(conftypes.DBHasDatabase); ok && conf.Database == "" {
+		conf.Database, err = db.DatabaseEnvs(conf).Search(ctx, conf.Client, conf.DBPod)
 		if err != nil {
 			slog.Debug("Could not detect database from pod env", "error", err)
 		} else {
@@ -195,12 +186,8 @@ func DefaultSetup(cmd *cobra.Command, conf *config.Global, opts SetupOptions) er
 	}
 
 	// Detect username
-	if !opts.DisableAuthFlags {
-		conf.Username = must.Must2(cmd.Flags().GetString(consts.FlagUsername))
-	}
-
-	if db, ok := conf.Dialect.(config.DBHasUser); ok && conf.Username == "" {
-		conf.Username, err = db.UserEnvs(*conf).Search(ctx, conf.Client, conf.DBPod)
+	if db, ok := conf.Dialect.(conftypes.DBHasUser); ok && conf.Username == "" {
+		conf.Username, err = db.UserEnvs(conf).Search(ctx, conf.Client, conf.DBPod)
 		if err != nil {
 			conf.Username = db.UserDefault()
 			slog.Debug("Could not detect user from pod env, using default", "error", err, "user", conf.Username)
@@ -210,12 +197,8 @@ func DefaultSetup(cmd *cobra.Command, conf *config.Global, opts SetupOptions) er
 	}
 
 	// Detect password
-	if !opts.DisableAuthFlags {
-		conf.Password = must.Must2(cmd.Flags().GetString(consts.FlagPassword))
-	}
-
-	if db, ok := conf.Dialect.(config.DBHasPassword); ok && conf.Password == "" {
-		conf.Password, err = db.PasswordEnvs(*conf).Search(ctx, conf.Client, conf.DBPod)
+	if db, ok := conf.Dialect.(conftypes.DBHasPassword); ok && conf.Password == "" {
+		conf.Password, err = db.PasswordEnvs(conf).Search(ctx, conf.Client, conf.DBPod)
 		if err != nil {
 			slog.Error("Could not detect password from pod env", "error", err)
 			return err
@@ -223,14 +206,14 @@ func DefaultSetup(cmd *cobra.Command, conf *config.Global, opts SetupOptions) er
 		slog.Debug("Found password in pod env")
 	}
 
-	if conf.Password != "" && viper.GetBool(consts.KeyLogMask) {
+	if conf.Password != "" && conf.Log.Mask {
 		mask.Add(conf.Password)
 	}
 
-	if db, ok := conf.Dialect.(config.DBCanDisableJob); ok && db.DisableJob() {
-		viper.Set(consts.KeyCreateJob, false)
+	if db, ok := conf.Dialect.(conftypes.DBCanDisableJob); ok && db.DisableJob() {
+		must.Must(config.K.Set(consts.FlagCreateJob, false))
 	}
-	if !viper.GetBool(consts.KeyCreateJob) {
+	if !conf.CreateJob {
 		conf.Host = "127.0.0.1"
 		conf.JobPod = conf.DBPod
 	}
@@ -238,8 +221,12 @@ func DefaultSetup(cmd *cobra.Command, conf *config.Global, opts SetupOptions) er
 	return nil
 }
 
-func CreateJob(ctx context.Context, conf *config.Global, opts SetupOptions) error {
-	if viper.GetBool(consts.KeyCreateJob) {
+func CreateJob(ctx context.Context, cmd *cobra.Command, conf *conftypes.Global, opts SetupOptions) error {
+	if opts.Name == "" {
+		opts.Name = cmd.Name()
+	}
+
+	if conf.CreateJob {
 		if err := createJob(ctx, conf, opts.Name); err != nil {
 			return err
 		}
@@ -254,7 +241,7 @@ func CreateJob(ctx context.Context, conf *config.Global, opts SetupOptions) erro
 	return nil
 }
 
-func createJob(ctx context.Context, conf *config.Global, actionName string) error {
+func createJob(ctx context.Context, conf *conftypes.Global, actionName string) error {
 	defaultContainer := conf.DBPod.Spec.Containers[0]
 	if name := conf.DBPod.Annotations[podcmd.DefaultContainerAnnotationName]; name != "" {
 		for _, container := range conf.DBPod.Spec.Containers {
@@ -281,7 +268,7 @@ func createJob(ctx context.Context, conf *config.Global, actionName string) erro
 		"sidecar.istio.io/inject": "false",
 	}
 	maps.Copy(podLabels, standardLabels)
-	maps.Copy(podLabels, viper.GetStringMapString(consts.KeyJobPodLabels))
+	maps.Copy(podLabels, conf.JobPodLabels)
 
 	job := batchv1.Job{
 		ObjectMeta: metav1.ObjectMeta{
@@ -361,7 +348,7 @@ func createJob(ctx context.Context, conf *config.Global, actionName string) erro
 		return err
 	}
 
-	if viper.GetBool(consts.KeyCreateNetworkPolicy) {
+	if conf.CreateNetworkPolicy {
 		jobPodKey, jobPodVal := jobPodNameLabel(conf, conf.Job)
 		policy := networkingv1.NetworkPolicy{
 			ObjectMeta: metav1.ObjectMeta{
@@ -393,7 +380,7 @@ func createJob(ctx context.Context, conf *config.Global, actionName string) erro
 		nsLog.Debug("Creating network policy")
 		if _, err := conf.Client.NetworkPolicies().Create(ctx, &policy, metav1.CreateOptions{}); err != nil {
 			nsLog.Warn("Failed to create network policy", "error", err)
-			viper.Set(consts.KeyCreateNetworkPolicy, "false")
+			conf.CreateNetworkPolicy = false
 		}
 	}
 
@@ -406,7 +393,7 @@ var (
 	ErrJobPodInvalid   = errors.New("unexpected job pod object type")
 )
 
-func watchJobPod(ctx context.Context, conf *config.Global) error {
+func watchJobPod(ctx context.Context, conf *conftypes.Global) error {
 	slog.Info("Waiting for job...",
 		"namespace", conf.Namespace,
 		"job", conf.Job.ObjectMeta.Name,
@@ -448,7 +435,7 @@ func watchJobPod(ctx context.Context, conf *config.Global) error {
 	}
 }
 
-func pollJobPod(ctx context.Context, conf *config.Global) error {
+func pollJobPod(ctx context.Context, conf *conftypes.Global) error {
 	return wait.PollUntilContextCancel(
 		ctx, time.Second, true, func(ctx context.Context) (bool, error) {
 			list, err := conf.Client.Pods().List(ctx, metav1.ListOptions{
@@ -478,7 +465,7 @@ func pollJobPod(ctx context.Context, conf *config.Global) error {
 	)
 }
 
-func jobPodUIDLabel(conf *config.Global, job *batchv1.Job) (string, string) {
+func jobPodUIDLabel(conf *conftypes.Global, job *batchv1.Job) (string, string) {
 	useNewLabel, err := conf.Client.MinServerVersion(1, 27)
 	if err != nil {
 		slog.Warn("Failed to query server version; assuming v1.27+", "error", err)
@@ -494,12 +481,12 @@ func jobPodUIDLabel(conf *config.Global, job *batchv1.Job) (string, string) {
 	return key, string(job.ObjectMeta.UID)
 }
 
-func jobPodLabelSelector(conf *config.Global, job *batchv1.Job) string {
+func jobPodLabelSelector(conf *conftypes.Global, job *batchv1.Job) string {
 	k, v := jobPodUIDLabel(conf, job)
 	return k + "=" + v
 }
 
-func jobPodNameLabel(conf *config.Global, job *batchv1.Job) (string, string) {
+func jobPodNameLabel(conf *conftypes.Global, job *batchv1.Job) (string, string) {
 	useNewLabel, err := conf.Client.MinServerVersion(1, 27)
 	if err != nil {
 		slog.Warn("Failed to query server version; assuming v1.27+", "error", err)
@@ -515,7 +502,7 @@ func jobPodNameLabel(conf *config.Global, job *batchv1.Job) (string, string) {
 	return key, job.Name
 }
 
-func checkNamespaceExists(ctx context.Context, conf *config.Global) {
+func checkNamespaceExists(ctx context.Context, conf *conftypes.Global) {
 	if _, err := conf.Client.Namespaces().Get(ctx, conf.Namespace, metav1.GetOptions{}); err != nil {
 		slog.Warn("Namespace may not exist", "error", err)
 	}

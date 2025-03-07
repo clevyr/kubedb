@@ -9,7 +9,7 @@ import (
 
 	spinner "gabe565.com/spinners"
 	"gabe565.com/utils/termx"
-	"github.com/clevyr/kubedb/internal/config/flags"
+	"github.com/clevyr/kubedb/internal/consts"
 	"github.com/schollz/progressbar/v3"
 )
 
@@ -17,7 +17,7 @@ func New(w io.Writer, total int64, label string, enabled bool, spinnerKey string
 	s, ok := spinner.Map[spinnerKey]
 	if !ok {
 		slog.Warn("Invalid spinner", "spinner", spinnerKey)
-		s = spinner.Map[flags.DefaultSpinner]
+		s = spinner.Map[consts.DefaultSpinner]
 	}
 
 	options := []progressbar.Option{

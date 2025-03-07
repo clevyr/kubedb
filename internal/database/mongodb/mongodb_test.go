@@ -4,7 +4,7 @@ import (
 	"testing"
 
 	"github.com/clevyr/kubedb/internal/command"
-	"github.com/clevyr/kubedb/internal/config"
+	"github.com/clevyr/kubedb/internal/config/conftypes"
 	"github.com/clevyr/kubedb/internal/database/sqlformat"
 	"github.com/clevyr/kubedb/internal/kubernetes"
 	"github.com/stretchr/testify/assert"
@@ -12,7 +12,7 @@ import (
 
 func TestMongoDB_DumpCommand(t *testing.T) {
 	type args struct {
-		conf config.Dump
+		conf *conftypes.Dump
 	}
 	tests := []struct {
 		name string
@@ -21,32 +21,32 @@ func TestMongoDB_DumpCommand(t *testing.T) {
 	}{
 		{
 			"default",
-			args{config.Dump{Global: config.Global{Host: "1.1.1.1", Database: "d", Username: "u", Password: "p"}}},
+			args{&conftypes.Dump{Global: &conftypes.Global{Host: "1.1.1.1", Database: "d", Username: "u", Password: "p"}}},
 			command.NewBuilder("mongodump", "--archive", "--host=1.1.1.1", "--username=u", "--password=p", "--authenticationDatabase=d", "--db=d"),
 		},
 		{
 			"clean",
-			args{config.Dump{Clean: true, Global: config.Global{Host: "1.1.1.1", Database: "d", Username: "u", Password: "p"}}},
+			args{&conftypes.Dump{Clean: true, Global: &conftypes.Global{Host: "1.1.1.1", Database: "d", Username: "u", Password: "p"}}},
 			command.NewBuilder("mongodump", "--archive", "--host=1.1.1.1", "--username=u", "--password=p", "--authenticationDatabase=d", "--db=d"),
 		},
 		{
 			"tables",
-			args{config.Dump{Tables: []string{"table1"}, Global: config.Global{Host: "1.1.1.1", Database: "d", Username: "u", Password: "p"}}},
+			args{&conftypes.Dump{Table: []string{"table1"}, Global: &conftypes.Global{Host: "1.1.1.1", Database: "d", Username: "u", Password: "p"}}},
 			command.NewBuilder("mongodump", "--archive", "--host=1.1.1.1", "--username=u", "--password=p", "--authenticationDatabase=d", "--db=d", "--collection=table1"),
 		},
 		{
 			"exclude-table",
-			args{config.Dump{ExcludeTable: []string{"table1", "table2"}, Global: config.Global{Host: "1.1.1.1", Database: "d", Username: "u", Password: "p"}}},
+			args{&conftypes.Dump{ExcludeTable: []string{"table1", "table2"}, Global: &conftypes.Global{Host: "1.1.1.1", Database: "d", Username: "u", Password: "p"}}},
 			command.NewBuilder("mongodump", "--archive", "--host=1.1.1.1", "--username=u", "--password=p", "--authenticationDatabase=d", "--db=d", "--excludeCollection=table1", "--excludeCollection=table2"),
 		},
 		{
 			"quiet",
-			args{config.Dump{Global: config.Global{Host: "1.1.1.1", Database: "d", Username: "u", Password: "p", Quiet: true}}},
+			args{&conftypes.Dump{Global: &conftypes.Global{Host: "1.1.1.1", Database: "d", Username: "u", Password: "p", Quiet: true}}},
 			command.NewBuilder("mongodump", "--archive", "--host=1.1.1.1", "--username=u", "--password=p", "--authenticationDatabase=d", "--db=d", "--quiet"),
 		},
 		{
 			"port",
-			args{config.Dump{Global: config.Global{Port: 1234}}},
+			args{&conftypes.Dump{Global: &conftypes.Global{Port: 1234}}},
 			command.NewBuilder("mongodump", "--archive", "--host=", "--username=", "--password=", "--authenticationDatabase=", "--port=1234"),
 		},
 	}
@@ -61,7 +61,7 @@ func TestMongoDB_DumpCommand(t *testing.T) {
 
 func TestMongoDB_ExecCommand(t *testing.T) {
 	type args struct {
-		conf config.Exec
+		conf *conftypes.Exec
 	}
 	tests := []struct {
 		name string
@@ -70,22 +70,22 @@ func TestMongoDB_ExecCommand(t *testing.T) {
 	}{
 		{
 			"default",
-			args{config.Exec{Global: config.Global{Host: "1.1.1.1", Database: "d", Username: "u", Password: "p"}}},
+			args{&conftypes.Exec{Global: &conftypes.Global{Host: "1.1.1.1", Database: "d", Username: "u", Password: "p"}}},
 			command.NewBuilder("exec", command.Raw(`"$(which mongosh || which mongo)"`), "--host=1.1.1.1", "--username=u", "--password=p", "--authenticationDatabase=d", "d"),
 		},
 		{
 			"disable-headers",
-			args{config.Exec{DisableHeaders: true, Global: config.Global{Host: "1.1.1.1", Database: "d", Username: "u", Password: "p"}}},
+			args{&conftypes.Exec{DisableHeaders: true, Global: &conftypes.Global{Host: "1.1.1.1", Database: "d", Username: "u", Password: "p"}}},
 			command.NewBuilder("exec", command.Raw(`"$(which mongosh || which mongo)"`), "--host=1.1.1.1", "--username=u", "--password=p", "--authenticationDatabase=d", "--quiet", "d"),
 		},
 		{
 			"command",
-			args{config.Exec{Command: "show databases", Global: config.Global{Host: "1.1.1.1", Database: "d", Username: "u", Password: "p"}}},
+			args{&conftypes.Exec{Command: "show databases", Global: &conftypes.Global{Host: "1.1.1.1", Database: "d", Username: "u", Password: "p"}}},
 			command.NewBuilder("exec", command.Raw(`"$(which mongosh || which mongo)"`), "--host=1.1.1.1", "--username=u", "--password=p", "--authenticationDatabase=d", "--eval=show databases", "d"),
 		},
 		{
 			"port",
-			args{config.Exec{Global: config.Global{Port: 1234}}},
+			args{&conftypes.Exec{Global: &conftypes.Global{Port: 1234}}},
 			command.NewBuilder("exec", command.Raw(`"$(which mongosh || which mongo)"`), "--host=", "--username=", "--password=", "--authenticationDatabase=", "--port=1234"),
 		},
 	}
@@ -100,15 +100,15 @@ func TestMongoDB_ExecCommand(t *testing.T) {
 
 func TestMongoDB_PasswordEnvs(t *testing.T) {
 	type args struct {
-		c config.Global
+		c *conftypes.Global
 	}
 	tests := []struct {
 		name string
 		args args
 		want kubernetes.ConfigLookups
 	}{
-		{"default", args{}, kubernetes.ConfigLookups{kubernetes.LookupEnv{"MONGODB_EXTRA_PASSWORDS"}}},
-		{"root", args{config.Global{Username: "root"}}, kubernetes.ConfigLookups{kubernetes.LookupEnv{"MONGODB_ROOT_PASSWORD"}}},
+		{"default", args{&conftypes.Global{}}, kubernetes.ConfigLookups{kubernetes.LookupEnv{"MONGODB_EXTRA_PASSWORDS"}}},
+		{"root", args{&conftypes.Global{Username: "root"}}, kubernetes.ConfigLookups{kubernetes.LookupEnv{"MONGODB_ROOT_PASSWORD"}}},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -121,7 +121,7 @@ func TestMongoDB_PasswordEnvs(t *testing.T) {
 
 func TestMongoDB_RestoreCommand(t *testing.T) {
 	type args struct {
-		conf        config.Restore
+		conf        *conftypes.Restore
 		inputFormat sqlformat.Format
 	}
 	tests := []struct {
@@ -131,32 +131,32 @@ func TestMongoDB_RestoreCommand(t *testing.T) {
 	}{
 		{
 			"gzip",
-			args{config.Restore{Global: config.Global{Host: "1.1.1.1", Database: "d", Username: "u", Password: "p"}}, sqlformat.Gzip},
+			args{&conftypes.Restore{Global: &conftypes.Global{Host: "1.1.1.1", Database: "d", Username: "u", Password: "p"}}, sqlformat.Gzip},
 			command.NewBuilder("mongorestore", "--archive", "--host=1.1.1.1", "--username=u", "--password=p", "--authenticationDatabase=d", "--db=d"),
 		},
 		{
 			"plain",
-			args{config.Restore{Global: config.Global{Host: "1.1.1.1", Database: "d", Username: "u", Password: "p"}}, sqlformat.Plain},
+			args{&conftypes.Restore{Global: &conftypes.Global{Host: "1.1.1.1", Database: "d", Username: "u", Password: "p"}}, sqlformat.Plain},
 			command.NewBuilder("mongorestore", "--archive", "--host=1.1.1.1", "--username=u", "--password=p", "--authenticationDatabase=d", "--db=d"),
 		},
 		{
 			"custom",
-			args{config.Restore{Global: config.Global{Host: "1.1.1.1", Database: "d", Username: "u", Password: "p"}}, sqlformat.Custom},
+			args{&conftypes.Restore{Global: &conftypes.Global{Host: "1.1.1.1", Database: "d", Username: "u", Password: "p"}}, sqlformat.Custom},
 			command.NewBuilder("mongorestore", "--archive", "--host=1.1.1.1", "--username=u", "--password=p", "--authenticationDatabase=d", "--db=d"),
 		},
 		{
 			"clean",
-			args{config.Restore{Clean: true, Global: config.Global{Host: "1.1.1.1", Database: "d", Username: "u", Password: "p"}}, sqlformat.Gzip},
+			args{&conftypes.Restore{Clean: true, Global: &conftypes.Global{Host: "1.1.1.1", Database: "d", Username: "u", Password: "p"}}, sqlformat.Gzip},
 			command.NewBuilder("mongorestore", "--archive", "--host=1.1.1.1", "--username=u", "--password=p", "--authenticationDatabase=d", "--drop", "--db=d"),
 		},
 		{
 			"quiet",
-			args{config.Restore{Global: config.Global{Host: "1.1.1.1", Database: "d", Username: "u", Password: "p", Quiet: true}}, sqlformat.Gzip},
+			args{&conftypes.Restore{Global: &conftypes.Global{Host: "1.1.1.1", Database: "d", Username: "u", Password: "p", Quiet: true}}, sqlformat.Gzip},
 			command.NewBuilder("mongorestore", "--archive", "--host=1.1.1.1", "--username=u", "--password=p", "--authenticationDatabase=d", "--db=d", "--quiet"),
 		},
 		{
 			"port",
-			args{config.Restore{Global: config.Global{Port: 1234}}, sqlformat.Gzip},
+			args{&conftypes.Restore{Global: &conftypes.Global{Port: 1234}}, sqlformat.Gzip},
 			command.NewBuilder("mongorestore", "--archive", "--host=", "--username=", "--password=", "--authenticationDatabase=", "--port=1234"),
 		},
 	}
@@ -171,14 +171,14 @@ func TestMongoDB_RestoreCommand(t *testing.T) {
 
 func TestMongoDB_AuthenticationDatabase(t *testing.T) {
 	type args struct {
-		c config.Global
+		c *conftypes.Global
 	}
 	tests := []struct {
 		name string
 		args args
 		want string
 	}{
-		{"root", args{config.Global{Host: "1.1.1.1", Username: "root"}}, "admin"},
+		{"root", args{&conftypes.Global{Host: "1.1.1.1", Username: "root"}}, "admin"},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {

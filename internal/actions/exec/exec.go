@@ -8,17 +8,15 @@ import (
 
 	"gabe565.com/utils/slogx"
 	"github.com/clevyr/kubedb/internal/command"
-	"github.com/clevyr/kubedb/internal/config"
-	"github.com/clevyr/kubedb/internal/consts"
+	"github.com/clevyr/kubedb/internal/config/conftypes"
 	"github.com/clevyr/kubedb/internal/kubernetes"
 	"github.com/clevyr/kubedb/internal/util"
-	"github.com/spf13/viper"
 	"k8s.io/client-go/tools/remotecommand"
 	"k8s.io/kubectl/pkg/util/term"
 )
 
 type Exec struct {
-	config.Exec `mapstructure:",squash"`
+	conftypes.Exec `koanf:",squash"`
 }
 
 func (action Exec) Run(ctx context.Context) error {
@@ -59,14 +57,14 @@ func (action Exec) Run(ctx context.Context) error {
 }
 
 func (action Exec) buildCommand() (*command.Builder, error) {
-	db, ok := action.Dialect.(config.DBExecer)
+	db, ok := action.Dialect.(conftypes.DBExecer)
 	if !ok {
 		return nil, fmt.Errorf("%w: %s", util.ErrNoExec, action.Dialect.Name())
 	}
 
-	cmd := db.ExecCommand(action.Exec)
-	if opts := viper.GetString(consts.KeyOpts); opts != "" {
-		cmd.Push(command.Split(opts))
+	cmd := db.ExecCommand(&action.Exec)
+	if action.Opts != "" {
+		cmd.Push(command.Split(action.Opts))
 	}
 
 	slogx.Trace("Finished building command", "cmd", cmd)

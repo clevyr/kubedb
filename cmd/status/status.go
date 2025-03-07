@@ -3,13 +3,15 @@ package status
 import (
 	"errors"
 	"fmt"
-	"log/slog"
 	"os"
 	"strconv"
 	"strings"
 
+	"gabe565.com/utils/must"
+	"gabe565.com/utils/slogx"
 	"github.com/charmbracelet/lipgloss"
 	"github.com/clevyr/kubedb/internal/config"
+	"github.com/clevyr/kubedb/internal/config/conftypes"
 	"github.com/clevyr/kubedb/internal/config/flags"
 	"github.com/clevyr/kubedb/internal/consts"
 	"github.com/clevyr/kubedb/internal/database"
@@ -18,12 +20,8 @@ import (
 	"github.com/clevyr/kubedb/internal/tui"
 	"github.com/clevyr/kubedb/internal/util"
 	"github.com/spf13/cobra"
-	"github.com/spf13/viper"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
-
-//nolint:gochecknoglobals
-var conf config.Global
 
 func New() *cobra.Command {
 	cmd := &cobra.Command{
@@ -47,22 +45,21 @@ func New() *cobra.Command {
 
 func preRun(cmd *cobra.Command, _ []string) error {
 	cmd.SilenceUsage = true
-	viper.Set(consts.FlagLogLevel, slog.LevelWarn.String())
-	if err := log.InitFromCmd(cmd); err != nil {
-		return err
-	}
-	flags.BindJobPodLabels(cmd)
+	must.Must(config.K.Set(consts.FlagLogLevel, slogx.LevelWarn.String()))
+	log.InitGlobal(cmd)
 	return nil
 }
 
 func run(cmd *cobra.Command, _ []string) error {
+	conf := config.Global
+
 	statusStyle := lipgloss.NewStyle().Renderer(tui.Renderer).PaddingLeft(1)
 	prefixOk := statusStyle.Foreground(tui.ColorGreen).Render("✓")
 	prefixNeutral := statusStyle.Foreground(tui.ColorHiBlack).Render("-")
 	prefixErr := statusStyle.Foreground(tui.ColorRed).Render("✗")
 	bold := lipgloss.NewStyle().Renderer(tui.Renderer).Bold(true).Render
 
-	defaultSetupErr := util.DefaultSetup(cmd, &conf, util.SetupOptions{Name: "status"})
+	defaultSetupErr := util.DefaultSetup(cmd, conf, util.SetupOptions{Name: "status"})
 
 	_, _ = fmt.Fprintln(cmd.OutOrStdout(), bold("Cluster Info"))
 	if conf.Client.ClientSet != nil {
@@ -110,7 +107,7 @@ func run(cmd *cobra.Command, _ []string) error {
 		os.Exit(1)
 	}
 
-	if err := util.CreateJob(cmd.Context(), &conf, util.SetupOptions{Name: "status"}); err == nil {
+	if err := util.CreateJob(cmd.Context(), cmd, conf, util.SetupOptions{Name: "status"}); err == nil {
 		_, _ = fmt.Fprintln(cmd.OutOrStdout(), prefixOk, "Jobs can be created")
 	} else {
 		_, _ = fmt.Fprintln(cmd.OutOrStdout(), prefixErr, "Job creation failed:", err.Error())
@@ -119,7 +116,7 @@ func run(cmd *cobra.Command, _ []string) error {
 
 	var buf strings.Builder
 	if db, ok := conf.Dialect.(dbExecList); ok {
-		listTablesCmd := db.ExecCommand(config.Exec{
+		listTablesCmd := db.ExecCommand(&conftypes.Exec{
 			Global:         conf,
 			DisableHeaders: true,
 			Command:        db.TableListQuery(),
@@ -145,6 +142,6 @@ func run(cmd *cobra.Command, _ []string) error {
 }
 
 type dbExecList interface {
-	config.DBExecer
-	config.DBTableLister
+	conftypes.DBExecer
+	conftypes.DBTableLister
 }

@@ -16,8 +16,7 @@ import (
 	"github.com/charmbracelet/huh"
 	"github.com/charmbracelet/lipgloss"
 	"github.com/clevyr/kubedb/internal/command"
-	"github.com/clevyr/kubedb/internal/config"
-	"github.com/clevyr/kubedb/internal/consts"
+	"github.com/clevyr/kubedb/internal/config/conftypes"
 	"github.com/clevyr/kubedb/internal/database/sqlformat"
 	"github.com/clevyr/kubedb/internal/finalizer"
 	"github.com/clevyr/kubedb/internal/kubernetes"
@@ -27,12 +26,11 @@ import (
 	"github.com/clevyr/kubedb/internal/tui"
 	"github.com/clevyr/kubedb/internal/util"
 	"github.com/muesli/termenv"
-	"github.com/spf13/viper"
 	"golang.org/x/sync/errgroup"
 )
 
 type Restore struct {
-	config.Restore `mapstructure:",squash"`
+	conftypes.Restore `koanf:",squash"`
 
 	Analyze bool
 }
@@ -103,7 +101,7 @@ func (action Restore) Run(ctx context.Context) error {
 
 		// Clean database
 		if action.Clean && action.Format != sqlformat.Custom {
-			if db, ok := action.Dialect.(config.DBDatabaseDropper); ok {
+			if db, ok := action.Dialect.(conftypes.DBDatabaseDropper); ok {
 				dropQuery := db.DatabaseDropQuery(action.Database)
 				actionLog.Info("Cleaning existing data")
 				n, err := action.copy(w, strings.NewReader(dropQuery))
@@ -143,7 +141,7 @@ func (action Restore) Run(ctx context.Context) error {
 
 		// Analyze query
 		if action.Analyze {
-			if db, ok := action.Dialect.(config.DBAnalyzer); ok {
+			if db, ok := action.Dialect.(conftypes.DBAnalyzer); ok {
 				analyzeQuery := db.AnalyzeQuery()
 				if action.Format == sqlformat.Custom {
 					defer func() {
@@ -207,14 +205,14 @@ func (action Restore) Run(ctx context.Context) error {
 }
 
 func (action Restore) buildCommand(inputFormat sqlformat.Format) (*command.Builder, error) {
-	db, ok := action.Dialect.(config.DBRestorer)
+	db, ok := action.Dialect.(conftypes.DBRestorer)
 	if !ok {
 		return nil, fmt.Errorf("%w: %s", util.ErrNoRestore, action.Dialect.Name())
 	}
 
-	cmd := db.RestoreCommand(action.Restore, inputFormat)
-	if opts := viper.GetString(consts.KeyOpts); opts != "" {
-		cmd.Push(command.Split(opts))
+	cmd := db.RestoreCommand(&action.Restore, inputFormat)
+	if action.Opts != "" {
+		cmd.Push(command.Split(action.Opts))
 	}
 	cmd.Unshift(command.Raw("{"))
 	cmd.Push(command.Raw("|| { cat >/dev/null; kill $$; }; }"))
@@ -267,7 +265,7 @@ func (action Restore) runInDatabasePod(ctx context.Context, r *io.PipeReader, st
 func (action Restore) Table(r *lipgloss.Renderer) *tui.Table {
 	return tui.MinimalTable(r).
 		RowIfNotEmpty("Context", action.Context).
-		Row("Namespace", tui.NamespaceStyle(r, action.Namespace).Render()).
+		Row("Namespace", tui.NamespaceStyle(r, action.NamespaceColors, action.Namespace).Render()).
 		Row("Pod", action.DBPod.Name).
 		RowIfNotEmpty("Username", action.Username).
 		RowIfNotEmpty("Database", action.Database)

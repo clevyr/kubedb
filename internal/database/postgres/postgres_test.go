@@ -4,7 +4,7 @@ import (
 	"testing"
 
 	"github.com/clevyr/kubedb/internal/command"
-	"github.com/clevyr/kubedb/internal/config"
+	"github.com/clevyr/kubedb/internal/config/conftypes"
 	"github.com/clevyr/kubedb/internal/database/sqlformat"
 	"github.com/clevyr/kubedb/internal/kubernetes"
 	"github.com/stretchr/testify/assert"
@@ -26,7 +26,7 @@ func newCNPGPod() corev1.Pod {
 
 func TestPostgres_DumpCommand(t *testing.T) {
 	type args struct {
-		conf config.Dump
+		conf *conftypes.Dump
 	}
 	tests := []struct {
 		name string
@@ -35,52 +35,52 @@ func TestPostgres_DumpCommand(t *testing.T) {
 	}{
 		{
 			"default",
-			args{config.Dump{Global: config.Global{Host: "1.1.1.1", Database: "d", Username: "u"}}},
+			args{&conftypes.Dump{Global: &conftypes.Global{Host: "1.1.1.1", Database: "d", Username: "u"}}},
 			command.NewBuilder(command.NewEnv("PGPASSWORD", ""), "pg_dump", "--host=1.1.1.1", "--username=u", "--dbname=d", "--verbose"),
 		},
 		{
 			"clean",
-			args{config.Dump{Clean: true, Global: config.Global{Host: "1.1.1.1", Database: "d", Username: "u"}}},
+			args{&conftypes.Dump{Clean: true, Global: &conftypes.Global{Host: "1.1.1.1", Database: "d", Username: "u"}}},
 			command.NewBuilder(command.NewEnv("PGPASSWORD", ""), "pg_dump", "--host=1.1.1.1", "--username=u", "--dbname=d", "--clean", "--verbose"),
 		},
 		{
 			"no-owner",
-			args{config.Dump{NoOwner: true, Global: config.Global{Host: "1.1.1.1", Database: "d", Username: "u"}}},
+			args{&conftypes.Dump{NoOwner: true, Global: &conftypes.Global{Host: "1.1.1.1", Database: "d", Username: "u"}}},
 			command.NewBuilder(command.NewEnv("PGPASSWORD", ""), "pg_dump", "--host=1.1.1.1", "--username=u", "--dbname=d", "--no-owner", "--verbose"),
 		},
 		{
 			"if-exists",
-			args{config.Dump{Clean: true, IfExists: true, Global: config.Global{Host: "1.1.1.1", Database: "d", Username: "u"}}},
+			args{&conftypes.Dump{Clean: true, IfExists: true, Global: &conftypes.Global{Host: "1.1.1.1", Database: "d", Username: "u"}}},
 			command.NewBuilder(command.NewEnv("PGPASSWORD", ""), "pg_dump", "--host=1.1.1.1", "--username=u", "--dbname=d", "--clean", "--if-exists", "--verbose"),
 		},
 		{
 			"if-exists without clean",
-			args{config.Dump{IfExists: true, Global: config.Global{Host: "1.1.1.1", Database: "d", Username: "u"}}},
+			args{&conftypes.Dump{IfExists: true, Global: &conftypes.Global{Host: "1.1.1.1", Database: "d", Username: "u"}}},
 			command.NewBuilder(command.NewEnv("PGPASSWORD", ""), "pg_dump", "--host=1.1.1.1", "--username=u", "--dbname=d", "--verbose"),
 		},
 		{
 			"tables",
-			args{config.Dump{Tables: []string{"table1", "table2"}, Global: config.Global{Host: "1.1.1.1", Database: "d", Username: "u"}}},
+			args{&conftypes.Dump{Table: []string{"table1", "table2"}, Global: &conftypes.Global{Host: "1.1.1.1", Database: "d", Username: "u"}}},
 			command.NewBuilder(command.NewEnv("PGPASSWORD", ""), "pg_dump", "--host=1.1.1.1", "--username=u", "--dbname=d", `--table="table1"`, `--table="table2"`, "--verbose"),
 		},
 		{
 			"exclude-table",
-			args{config.Dump{ExcludeTable: []string{"table1", "table2"}, Global: config.Global{Host: "1.1.1.1", Database: "d", Username: "u"}}},
+			args{&conftypes.Dump{ExcludeTable: []string{"table1", "table2"}, Global: &conftypes.Global{Host: "1.1.1.1", Database: "d", Username: "u"}}},
 			command.NewBuilder(command.NewEnv("PGPASSWORD", ""), "pg_dump", "--host=1.1.1.1", "--username=u", "--dbname=d", `--exclude-table="table1"`, `--exclude-table="table2"`, "--verbose"),
 		},
 		{
 			"exclude-table-data",
-			args{config.Dump{ExcludeTableData: []string{"table1", "table2"}, Global: config.Global{Host: "1.1.1.1", Database: "d", Username: "u"}}},
+			args{&conftypes.Dump{ExcludeTableData: []string{"table1", "table2"}, Global: &conftypes.Global{Host: "1.1.1.1", Database: "d", Username: "u"}}},
 			command.NewBuilder(command.NewEnv("PGPASSWORD", ""), "pg_dump", "--host=1.1.1.1", "--username=u", "--dbname=d", `--exclude-table-data="table1"`, `--exclude-table-data="table2"`, "--verbose"),
 		},
 		{
 			"custom",
-			args{config.Dump{Files: config.Files{Format: sqlformat.Custom}, Global: config.Global{Host: "1.1.1.1", Database: "d", Username: "u"}}},
+			args{&conftypes.Dump{Files: conftypes.Files{Format: sqlformat.Custom}, Global: &conftypes.Global{Host: "1.1.1.1", Database: "d", Username: "u"}}},
 			command.NewBuilder(command.NewEnv("PGPASSWORD", ""), "pg_dump", "--host=1.1.1.1", "--username=u", "--dbname=d", "--format=custom", "--verbose"),
 		},
 		{
 			"port",
-			args{config.Dump{Global: config.Global{Port: 1234}}},
+			args{&conftypes.Dump{Global: &conftypes.Global{Port: 1234}}},
 			command.NewBuilder(command.NewEnv("PGPASSWORD", ""), "pg_dump", "--host=", "--username=", "--port=1234", "--verbose"),
 		},
 	}
@@ -95,7 +95,7 @@ func TestPostgres_DumpCommand(t *testing.T) {
 
 func TestPostgres_ExecCommand(t *testing.T) {
 	type args struct {
-		conf config.Exec
+		conf *conftypes.Exec
 	}
 	tests := []struct {
 		name string
@@ -104,22 +104,22 @@ func TestPostgres_ExecCommand(t *testing.T) {
 	}{
 		{
 			"default",
-			args{config.Exec{Global: config.Global{Host: "1.1.1.1", Database: "d", Username: "u"}}},
+			args{&conftypes.Exec{Global: &conftypes.Global{Host: "1.1.1.1", Database: "d", Username: "u"}}},
 			command.NewBuilder(command.NewEnv("PGPASSWORD", ""), "exec", "psql", "--host=1.1.1.1", "--username=u", "--dbname=d"),
 		},
 		{
 			"disable-headers",
-			args{config.Exec{DisableHeaders: true, Global: config.Global{Host: "1.1.1.1", Database: "d", Username: "u"}}},
+			args{&conftypes.Exec{DisableHeaders: true, Global: &conftypes.Global{Host: "1.1.1.1", Database: "d", Username: "u"}}},
 			command.NewBuilder(command.NewEnv("PGPASSWORD", ""), "exec", "psql", "--host=1.1.1.1", "--username=u", "--dbname=d", "--tuples-only"),
 		},
 		{
 			"command",
-			args{config.Exec{Command: "select true", Global: config.Global{Host: "1.1.1.1", Database: "d", Username: "u"}}},
+			args{&conftypes.Exec{Command: "select true", Global: &conftypes.Global{Host: "1.1.1.1", Database: "d", Username: "u"}}},
 			command.NewBuilder(command.NewEnv("PGPASSWORD", ""), "exec", "psql", "--host=1.1.1.1", "--username=u", "--dbname=d", "--command=select true"),
 		},
 		{
 			"default",
-			args{config.Exec{Global: config.Global{Port: 1234}}},
+			args{&conftypes.Exec{Global: &conftypes.Global{Port: 1234}}},
 			command.NewBuilder(command.NewEnv("PGPASSWORD", ""), "exec", "psql", "--host=", "--username=", "--port=1234"),
 		},
 	}
@@ -175,21 +175,21 @@ func TestPostgres_FilterPods(t *testing.T) {
 
 func TestPostgres_PasswordEnvs(t *testing.T) {
 	type args struct {
-		c config.Global
+		c *conftypes.Global
 	}
 	tests := []struct {
 		name string
 		args args
 		want kubernetes.ConfigLookups
 	}{
-		{"default", args{}, kubernetes.ConfigLookups{
+		{"default", args{&conftypes.Global{}}, kubernetes.ConfigLookups{
 			kubernetes.LookupEnv{
 				"POSTGRES_PASSWORD",
 				"PGPOOL_POSTGRES_PASSWORD",
 				"PGPASSWORD_SUPERUSER",
 			},
 		}},
-		{"postgres", args{config.Global{Username: "postgres"}}, kubernetes.ConfigLookups{
+		{"postgres", args{&conftypes.Global{Username: "postgres"}}, kubernetes.ConfigLookups{
 			kubernetes.LookupEnv{
 				"POSTGRES_POSTGRES_PASSWORD",
 				"POSTGRES_PASSWORD",
@@ -197,7 +197,7 @@ func TestPostgres_PasswordEnvs(t *testing.T) {
 				"PGPASSWORD_SUPERUSER",
 			},
 		}},
-		{"cnpg", args{config.Global{DBPod: newCNPGPod()}}, kubernetes.ConfigLookups{
+		{"cnpg", args{&conftypes.Global{DBPod: newCNPGPod()}}, kubernetes.ConfigLookups{
 			kubernetes.LookupNamedSecret{
 				Name: "postgresql-app",
 				Key:  "password",
@@ -217,7 +217,7 @@ func TestPostgres_RestoreCommand(t *testing.T) {
 	pgpassword := command.NewEnv("PGPASSWORD", "")
 
 	type args struct {
-		conf        config.Restore
+		conf        *conftypes.Restore
 		inputFormat sqlformat.Format
 	}
 	tests := []struct {
@@ -227,52 +227,52 @@ func TestPostgres_RestoreCommand(t *testing.T) {
 	}{
 		{
 			"gzip",
-			args{config.Restore{Global: config.Global{Host: "1.1.1.1", Database: "d", Username: "u"}}, sqlformat.Gzip},
+			args{&conftypes.Restore{Global: &conftypes.Global{Host: "1.1.1.1", Database: "d", Username: "u"}}, sqlformat.Gzip},
 			command.NewBuilder(pgpassword, "psql", "--host=1.1.1.1", "--username=u", "--dbname=d"),
 		},
 		{
 			"plain",
-			args{config.Restore{Global: config.Global{Host: "1.1.1.1", Database: "d", Username: "u"}}, sqlformat.Plain},
+			args{&conftypes.Restore{Global: &conftypes.Global{Host: "1.1.1.1", Database: "d", Username: "u"}}, sqlformat.Plain},
 			command.NewBuilder(pgpassword, "psql", "--host=1.1.1.1", "--username=u", "--dbname=d"),
 		},
 		{
 			"custom",
-			args{config.Restore{Global: config.Global{Host: "1.1.1.1", Database: "d", Username: "u"}}, sqlformat.Custom},
+			args{&conftypes.Restore{Global: &conftypes.Global{Host: "1.1.1.1", Database: "d", Username: "u"}}, sqlformat.Custom},
 			command.NewBuilder(pgpassword, "pg_restore", "--format=custom", "--verbose", "--host=1.1.1.1", "--username=u", "--dbname=d"),
 		},
 		{
 			"custom-no-owner",
-			args{config.Restore{NoOwner: true, Global: config.Global{Host: "1.1.1.1", Database: "d", Username: "u"}}, sqlformat.Custom},
+			args{&conftypes.Restore{NoOwner: true, Global: &conftypes.Global{Host: "1.1.1.1", Database: "d", Username: "u"}}, sqlformat.Custom},
 			command.NewBuilder(pgpassword, "pg_restore", "--format=custom", "--no-owner", "--verbose", "--host=1.1.1.1", "--username=u", "--dbname=d"),
 		},
 		{
 			"single-transaction",
-			args{config.Restore{SingleTransaction: true, Global: config.Global{Host: "1.1.1.1", Database: "d", Username: "u"}}, sqlformat.Custom},
+			args{&conftypes.Restore{SingleTransaction: true, Global: &conftypes.Global{Host: "1.1.1.1", Database: "d", Username: "u"}}, sqlformat.Custom},
 			command.NewBuilder(pgpassword, "pg_restore", "--format=custom", "--verbose", "--host=1.1.1.1", "--username=u", "--dbname=d", "--single-transaction"),
 		},
 		{
 			"custom clean",
-			args{config.Restore{Clean: true, Global: config.Global{Host: "1.1.1.1", Database: "d", Username: "u"}}, sqlformat.Custom},
+			args{&conftypes.Restore{Clean: true, Global: &conftypes.Global{Host: "1.1.1.1", Database: "d", Username: "u"}}, sqlformat.Custom},
 			command.NewBuilder(pgpassword, "pg_restore", "--format=custom", "--clean", "--verbose", "--host=1.1.1.1", "--username=u", "--dbname=d"),
 		},
 		{
 			"custom halt",
-			args{config.Restore{HaltOnError: true, Global: config.Global{Host: "1.1.1.1", Database: "d", Username: "u"}}, sqlformat.Custom},
+			args{&conftypes.Restore{HaltOnError: true, Global: &conftypes.Global{Host: "1.1.1.1", Database: "d", Username: "u"}}, sqlformat.Custom},
 			command.NewBuilder(pgpassword, "pg_restore", "--format=custom", "--exit-on-error", "--verbose", "--host=1.1.1.1", "--username=u", "--dbname=d"),
 		},
 		{
 			"sql-quiet",
-			args{config.Restore{Global: config.Global{Host: "1.1.1.1", Database: "d", Username: "u", Quiet: true}}, sqlformat.Gzip},
+			args{&conftypes.Restore{Global: &conftypes.Global{Host: "1.1.1.1", Database: "d", Username: "u", Quiet: true}}, sqlformat.Gzip},
 			command.NewBuilder(pgpassword, command.NewEnv("PGOPTIONS", "-c client_min_messages=WARNING"), "psql", "--quiet", "--output=/dev/null", "--host=1.1.1.1", "--username=u", "--dbname=d"),
 		},
 		{
 			"port",
-			args{config.Restore{Global: config.Global{Port: 1234}}, sqlformat.Plain},
+			args{&conftypes.Restore{Global: &conftypes.Global{Port: 1234}}, sqlformat.Plain},
 			command.NewBuilder(pgpassword, "psql", "--host=", "--username=", "--dbname=", "--port=1234"),
 		},
 		{
 			"halt_on_error",
-			args{config.Restore{HaltOnError: true}, sqlformat.Plain},
+			args{&conftypes.Restore{HaltOnError: true, Global: &conftypes.Global{}}, sqlformat.Plain},
 			command.NewBuilder(pgpassword, "psql", "--set=ON_ERROR_STOP=1", "--host=", "--username=", "--dbname="),
 		},
 	}
@@ -312,16 +312,16 @@ func TestPostgres_quoteParam(t *testing.T) {
 
 func TestPostgres_cnpgSecretName(t *testing.T) {
 	type args struct {
-		conf config.Global
+		conf *conftypes.Global
 	}
 	tests := []struct {
 		name string
 		args args
 		want string
 	}{
-		{"default", args{config.Global{DBPod: newCNPGPod()}}, "postgresql-app"},
-		{"postgres", args{config.Global{Username: "postgres", DBPod: newCNPGPod()}}, "postgresql-superuser"},
-		{"other", args{}, ""},
+		{"default", args{&conftypes.Global{DBPod: newCNPGPod()}}, "postgresql-app"},
+		{"postgres", args{&conftypes.Global{Username: "postgres", DBPod: newCNPGPod()}}, "postgresql-superuser"},
+		{"other", args{&conftypes.Global{}}, ""},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -333,15 +333,15 @@ func TestPostgres_cnpgSecretName(t *testing.T) {
 
 func TestPostgres_PortEnvs(t *testing.T) {
 	type args struct {
-		conf config.Global
+		conf *conftypes.Global
 	}
 	tests := []struct {
 		name string
 		args args
 		want kubernetes.ConfigLookups
 	}{
-		{"default", args{}, kubernetes.ConfigLookups{kubernetes.LookupEnv{"POSTGRESQL_PORT_NUMBER"}}},
-		{"cnpg", args{config.Global{DBPod: newCNPGPod()}}, kubernetes.ConfigLookups{
+		{"default", args{&conftypes.Global{}}, kubernetes.ConfigLookups{kubernetes.LookupEnv{"POSTGRESQL_PORT_NUMBER"}}},
+		{"cnpg", args{&conftypes.Global{DBPod: newCNPGPod()}}, kubernetes.ConfigLookups{
 			kubernetes.LookupNamedSecret{
 				Name: "postgresql-app",
 				Key:  "port",
@@ -358,15 +358,15 @@ func TestPostgres_PortEnvs(t *testing.T) {
 
 func TestPostgres_DatabaseEnvs(t *testing.T) {
 	type args struct {
-		conf config.Global
+		conf *conftypes.Global
 	}
 	tests := []struct {
 		name string
 		args args
 		want kubernetes.ConfigLookups
 	}{
-		{"default", args{}, kubernetes.ConfigLookups{kubernetes.LookupEnv{"POSTGRES_DATABASE", "POSTGRES_DB"}}},
-		{"cnpg", args{config.Global{DBPod: newCNPGPod()}}, kubernetes.ConfigLookups{
+		{"default", args{&conftypes.Global{}}, kubernetes.ConfigLookups{kubernetes.LookupEnv{"POSTGRES_DATABASE", "POSTGRES_DB"}}},
+		{"cnpg", args{&conftypes.Global{DBPod: newCNPGPod()}}, kubernetes.ConfigLookups{
 			kubernetes.LookupNamedSecret{
 				Name: "postgresql-app",
 				Key:  "dbname",
@@ -383,15 +383,15 @@ func TestPostgres_DatabaseEnvs(t *testing.T) {
 
 func TestPostgres_UserEnvs(t *testing.T) {
 	type args struct {
-		conf config.Global
+		conf *conftypes.Global
 	}
 	tests := []struct {
 		name string
 		args args
 		want kubernetes.ConfigLookups
 	}{
-		{"default", args{}, kubernetes.ConfigLookups{kubernetes.LookupEnv{"POSTGRES_USER", "PGPOOL_POSTGRES_USERNAME", "PGUSER_SUPERUSER"}}},
-		{"cnpg", args{config.Global{DBPod: newCNPGPod()}}, kubernetes.ConfigLookups{
+		{"default", args{&conftypes.Global{}}, kubernetes.ConfigLookups{kubernetes.LookupEnv{"POSTGRES_USER", "PGPOOL_POSTGRES_USERNAME", "PGUSER_SUPERUSER"}}},
+		{"cnpg", args{&conftypes.Global{DBPod: newCNPGPod()}}, kubernetes.ConfigLookups{
 			kubernetes.LookupNamedSecret{
 				Name: "postgresql-app",
 				Key:  "username",

@@ -8,7 +8,7 @@ import (
 	"testing"
 
 	"github.com/clevyr/kubedb/internal/command"
-	"github.com/clevyr/kubedb/internal/config"
+	"github.com/clevyr/kubedb/internal/config/conftypes"
 	"github.com/clevyr/kubedb/internal/database/postgres"
 	"github.com/clevyr/kubedb/internal/database/sqlformat"
 	"github.com/stretchr/testify/assert"
@@ -19,7 +19,7 @@ func TestRestore_buildCommand(t *testing.T) {
 	pgpassword := command.NewEnv("PGPASSWORD", "")
 
 	type fields struct {
-		Restore config.Restore
+		Restore conftypes.Restore
 		Analyze bool
 	}
 	type args struct {
@@ -34,28 +34,28 @@ func TestRestore_buildCommand(t *testing.T) {
 	}{
 		{
 			"postgres-gzip",
-			fields{Restore: config.Restore{Global: config.Global{Dialect: postgres.Postgres{}, Host: "1.1.1.1", Database: "d", Username: "u", RemoteGzip: true}}},
+			fields{Restore: conftypes.Restore{Global: &conftypes.Global{Dialect: postgres.Postgres{}, Host: "1.1.1.1", Database: "d", Username: "u", RemoteGzip: true}}},
 			args{sqlformat.Gzip},
 			command.NewBuilder("gunzip", "--force", command.Pipe, command.Raw("{"), pgpassword, "psql", "--host=1.1.1.1", "--username=u", "--dbname=d", command.Raw("|| { cat >/dev/null; kill $$; }; }")),
 			require.NoError,
 		},
 		{
 			"postgres-plain",
-			fields{Restore: config.Restore{Global: config.Global{Dialect: postgres.Postgres{}, Host: "1.1.1.1", Database: "d", Username: "u", RemoteGzip: true}}},
+			fields{Restore: conftypes.Restore{Global: &conftypes.Global{Dialect: postgres.Postgres{}, Host: "1.1.1.1", Database: "d", Username: "u", RemoteGzip: true}}},
 			args{sqlformat.Gzip},
 			command.NewBuilder("gunzip", "--force", command.Pipe, command.Raw("{"), pgpassword, "psql", "--host=1.1.1.1", "--username=u", "--dbname=d", command.Raw("|| { cat >/dev/null; kill $$; }; }")),
 			require.NoError,
 		},
 		{
 			"postgres-custom",
-			fields{Restore: config.Restore{Global: config.Global{Dialect: postgres.Postgres{}, Host: "1.1.1.1", Database: "d", Username: "u", RemoteGzip: true}}},
+			fields{Restore: conftypes.Restore{Global: &conftypes.Global{Dialect: postgres.Postgres{}, Host: "1.1.1.1", Database: "d", Username: "u", RemoteGzip: true}}},
 			args{sqlformat.Gzip},
 			command.NewBuilder("gunzip", "--force", command.Pipe, command.Raw("{"), pgpassword, "psql", "--host=1.1.1.1", "--username=u", "--dbname=d", command.Raw("|| { cat >/dev/null; kill $$; }; }")),
 			require.NoError,
 		},
 		{
 			"postgres-remote-gzip-disabled",
-			fields{Restore: config.Restore{Global: config.Global{Dialect: postgres.Postgres{}, Host: "1.1.1.1", Database: "d", Username: "u"}}},
+			fields{Restore: conftypes.Restore{Global: &conftypes.Global{Dialect: postgres.Postgres{}, Host: "1.1.1.1", Database: "d", Username: "u"}}},
 			args{sqlformat.Gzip},
 			command.NewBuilder(command.Raw("{"), command.Env{Key: "PGPASSWORD", Value: ""}, "psql", "--host=1.1.1.1", "--username=u", "--dbname=d", command.Raw("|| { cat >/dev/null; kill $$; }; }")),
 			require.NoError,
@@ -83,7 +83,7 @@ func TestRestore_copy(t *testing.T) {
 	require.NoError(t, gzw.Close())
 
 	type fields struct {
-		Restore config.Restore
+		Restore conftypes.Restore
 		Analyze bool
 	}
 	type args struct {
@@ -96,8 +96,8 @@ func TestRestore_copy(t *testing.T) {
 		want    string
 		wantErr require.ErrorAssertionFunc
 	}{
-		{"gzip", fields{Restore: config.Restore{Global: config.Global{RemoteGzip: true}}}, args{strings.NewReader(input)}, gzipped.String(), require.NoError},
-		{"raw", fields{}, args{strings.NewReader(input)}, "hello world", require.NoError},
+		{"gzip", fields{Restore: conftypes.Restore{Global: &conftypes.Global{RemoteGzip: true}}}, args{strings.NewReader(input)}, gzipped.String(), require.NoError},
+		{"raw", fields{Restore: conftypes.Restore{Global: &conftypes.Global{}}}, args{strings.NewReader(input)}, "hello world", require.NoError},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {

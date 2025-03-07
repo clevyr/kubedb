@@ -4,7 +4,7 @@ import (
 	"testing"
 
 	"github.com/clevyr/kubedb/internal/command"
-	"github.com/clevyr/kubedb/internal/config"
+	"github.com/clevyr/kubedb/internal/config/conftypes"
 	"github.com/clevyr/kubedb/internal/database/sqlformat"
 	"github.com/clevyr/kubedb/internal/kubernetes"
 	"github.com/stretchr/testify/assert"
@@ -32,7 +32,7 @@ func TestMariaDB_DatabaseDropQuery(t *testing.T) {
 
 func TestMariaDB_DumpCommand(t *testing.T) {
 	type args struct {
-		conf config.Dump
+		conf *conftypes.Dump
 	}
 	tests := []struct {
 		name string
@@ -41,27 +41,27 @@ func TestMariaDB_DumpCommand(t *testing.T) {
 	}{
 		{
 			"default",
-			args{config.Dump{Global: config.Global{Host: "1.1.1.1", Database: "d", Username: "u"}}},
+			args{&conftypes.Dump{Global: &conftypes.Global{Host: "1.1.1.1", Database: "d", Username: "u"}}},
 			command.NewBuilder(command.NewEnv("MYSQL_PWD", ""), command.Raw(`"$(which mariadb-dump || which mysqldump)"`), "--host=1.1.1.1", "--user=u", "d", "--verbose"),
 		},
 		{
 			"clean",
-			args{config.Dump{Clean: true, Global: config.Global{Host: "1.1.1.1", Database: "d", Username: "u"}}},
+			args{&conftypes.Dump{Clean: true, Global: &conftypes.Global{Host: "1.1.1.1", Database: "d", Username: "u"}}},
 			command.NewBuilder(command.NewEnv("MYSQL_PWD", ""), command.Raw(`"$(which mariadb-dump || which mysqldump)"`), "--host=1.1.1.1", "--user=u", "d", "--add-drop-table", "--verbose"),
 		},
 		{
 			"tables",
-			args{config.Dump{Tables: []string{"table1", "table2"}, Global: config.Global{Host: "1.1.1.1", Database: "d", Username: "u"}}},
+			args{&conftypes.Dump{Table: []string{"table1", "table2"}, Global: &conftypes.Global{Host: "1.1.1.1", Database: "d", Username: "u"}}},
 			command.NewBuilder(command.NewEnv("MYSQL_PWD", ""), command.Raw(`"$(which mariadb-dump || which mysqldump)"`), "--host=1.1.1.1", "--user=u", "d", "table1", "table2", "--verbose"),
 		},
 		{
 			"exclude-table",
-			args{config.Dump{ExcludeTable: []string{"table1", "table2"}, Global: config.Global{Host: "1.1.1.1", Database: "d", Username: "u"}}},
+			args{&conftypes.Dump{ExcludeTable: []string{"table1", "table2"}, Global: &conftypes.Global{Host: "1.1.1.1", Database: "d", Username: "u"}}},
 			command.NewBuilder(command.NewEnv("MYSQL_PWD", ""), command.Raw(`"$(which mariadb-dump || which mysqldump)"`), "--host=1.1.1.1", "--user=u", "d", "--ignore-table=table1", "--ignore-table=table2", "--verbose"),
 		},
 		{
 			"port",
-			args{config.Dump{Global: config.Global{Port: 1234}}},
+			args{&conftypes.Dump{Global: &conftypes.Global{Port: 1234}}},
 			command.NewBuilder(command.NewEnv("MYSQL_PWD", ""), command.Raw(`"$(which mariadb-dump || which mysqldump)"`), "--host=", "--user=", "", "--port=1234", "--verbose"),
 		},
 	}
@@ -76,7 +76,7 @@ func TestMariaDB_DumpCommand(t *testing.T) {
 
 func TestMariaDB_ExecCommand(t *testing.T) {
 	type args struct {
-		conf config.Exec
+		conf *conftypes.Exec
 	}
 	tests := []struct {
 		name string
@@ -85,22 +85,22 @@ func TestMariaDB_ExecCommand(t *testing.T) {
 	}{
 		{
 			"default",
-			args{config.Exec{Global: config.Global{Host: "1.1.1.1", Database: "d", Username: "u"}}},
+			args{&conftypes.Exec{Global: &conftypes.Global{Host: "1.1.1.1", Database: "d", Username: "u"}}},
 			command.NewBuilder(command.Env{Key: "MYSQL_PWD"}, "exec", command.Raw(`"$(which mariadb || which mysql)"`), "--host=1.1.1.1", "--user=u", "--database=d"),
 		},
 		{
 			"disable-headers",
-			args{config.Exec{DisableHeaders: true, Global: config.Global{Host: "1.1.1.1", Database: "d", Username: "u"}}},
+			args{&conftypes.Exec{DisableHeaders: true, Global: &conftypes.Global{Host: "1.1.1.1", Database: "d", Username: "u"}}},
 			command.NewBuilder(command.Env{Key: "MYSQL_PWD"}, "exec", command.Raw(`"$(which mariadb || which mysql)"`), "--host=1.1.1.1", "--user=u", "--database=d", "--skip-column-names"),
 		},
 		{
 			"command",
-			args{config.Exec{Command: "show databases", Global: config.Global{Host: "1.1.1.1", Database: "d", Username: "u"}}},
+			args{&conftypes.Exec{Command: "show databases", Global: &conftypes.Global{Host: "1.1.1.1", Database: "d", Username: "u"}}},
 			command.NewBuilder(command.Env{Key: "MYSQL_PWD"}, "exec", command.Raw(`"$(which mariadb || which mysql)"`), "--host=1.1.1.1", "--user=u", "--database=d", "--execute=show databases"),
 		},
 		{
 			"port",
-			args{config.Exec{Global: config.Global{Port: 1234}}},
+			args{&conftypes.Exec{Global: &conftypes.Global{Port: 1234}}},
 			command.NewBuilder(command.NewEnv("MYSQL_PWD", ""), "exec", command.Raw(`"$(which mariadb || which mysql)"`), "--host=", "--user=", "--port=1234"),
 		},
 	}
@@ -131,15 +131,15 @@ func TestMariaDB_DatabaseListQuery(t *testing.T) {
 
 func TestMariaDB_PasswordEnvs(t *testing.T) {
 	type args struct {
-		c config.Global
+		c *conftypes.Global
 	}
 	tests := []struct {
 		name string
 		args args
 		want kubernetes.ConfigLookups
 	}{
-		{"default", args{}, kubernetes.ConfigLookups{kubernetes.LookupEnv{"MARIADB_PASSWORD", "MYSQL_PASSWORD"}}},
-		{"root", args{config.Global{Username: "root"}}, kubernetes.ConfigLookups{kubernetes.LookupEnv{"MARIADB_ROOT_PASSWORD", "MYSQL_ROOT_PASSWORD"}}},
+		{"default", args{&conftypes.Global{}}, kubernetes.ConfigLookups{kubernetes.LookupEnv{"MARIADB_PASSWORD", "MYSQL_PASSWORD"}}},
+		{"root", args{&conftypes.Global{Username: "root"}}, kubernetes.ConfigLookups{kubernetes.LookupEnv{"MARIADB_ROOT_PASSWORD", "MYSQL_ROOT_PASSWORD"}}},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -152,7 +152,7 @@ func TestMariaDB_PasswordEnvs(t *testing.T) {
 
 func TestMariaDB_RestoreCommand(t *testing.T) {
 	type args struct {
-		conf        config.Restore
+		conf        *conftypes.Restore
 		inputFormat sqlformat.Format
 	}
 	tests := []struct {
@@ -162,22 +162,22 @@ func TestMariaDB_RestoreCommand(t *testing.T) {
 	}{
 		{
 			"gzip",
-			args{config.Restore{Global: config.Global{Host: "1.1.1.1", Database: "d", Username: "u"}}, sqlformat.Gzip},
+			args{&conftypes.Restore{Global: &conftypes.Global{Host: "1.1.1.1", Database: "d", Username: "u"}}, sqlformat.Gzip},
 			command.NewBuilder(command.Env{Key: "MYSQL_PWD"}, command.Raw(`"$(which mariadb || which mysql)"`), "--host=1.1.1.1", "--user=u", "--database=d"),
 		},
 		{
 			"plain",
-			args{config.Restore{Global: config.Global{Host: "1.1.1.1", Database: "d", Username: "u"}}, sqlformat.Plain},
+			args{&conftypes.Restore{Global: &conftypes.Global{Host: "1.1.1.1", Database: "d", Username: "u"}}, sqlformat.Plain},
 			command.NewBuilder(command.Env{Key: "MYSQL_PWD"}, command.Raw(`"$(which mariadb || which mysql)"`), "--host=1.1.1.1", "--user=u", "--database=d"),
 		},
 		{
 			"custom",
-			args{config.Restore{Global: config.Global{Host: "1.1.1.1", Database: "d", Username: "u"}}, sqlformat.Custom},
+			args{&conftypes.Restore{Global: &conftypes.Global{Host: "1.1.1.1", Database: "d", Username: "u"}}, sqlformat.Custom},
 			command.NewBuilder(command.Env{Key: "MYSQL_PWD"}, command.Raw(`"$(which mariadb || which mysql)"`), "--host=1.1.1.1", "--user=u", "--database=d"),
 		},
 		{
 			"port",
-			args{config.Restore{Global: config.Global{Port: 1234}}, sqlformat.Plain},
+			args{&conftypes.Restore{Global: &conftypes.Global{Port: 1234}}, sqlformat.Plain},
 			command.NewBuilder(command.NewEnv("MYSQL_PWD", ""), command.Raw(`"$(which mariadb || which mysql)"`), "--host=", "--user=", "--database=", "--port=1234"),
 		},
 	}

@@ -15,8 +15,7 @@ import (
 	"gabe565.com/utils/slogx"
 	"github.com/charmbracelet/lipgloss"
 	"github.com/clevyr/kubedb/internal/command"
-	"github.com/clevyr/kubedb/internal/config"
-	"github.com/clevyr/kubedb/internal/consts"
+	"github.com/clevyr/kubedb/internal/config/conftypes"
 	"github.com/clevyr/kubedb/internal/database/sqlformat"
 	"github.com/clevyr/kubedb/internal/finalizer"
 	"github.com/clevyr/kubedb/internal/github"
@@ -27,12 +26,11 @@ import (
 	"github.com/clevyr/kubedb/internal/tui"
 	"github.com/clevyr/kubedb/internal/util"
 	"github.com/muesli/termenv"
-	"github.com/spf13/viper"
 	"golang.org/x/sync/errgroup"
 )
 
 type Dump struct {
-	config.Dump `mapstructure:",squash"`
+	conftypes.Dump `koanf:",squash"`
 }
 
 func (action Dump) Run(ctx context.Context) error {
@@ -197,14 +195,14 @@ func (action Dump) Run(ctx context.Context) error {
 }
 
 func (action Dump) buildCommand() (*command.Builder, error) {
-	db, ok := action.Dialect.(config.DBDumper)
+	db, ok := action.Dialect.(conftypes.DBDumper)
 	if !ok {
 		return nil, fmt.Errorf("%w: %s", util.ErrNoDump, action.Dialect.Name())
 	}
 
-	cmd := db.DumpCommand(action.Dump)
-	if opts := viper.GetString(consts.KeyOpts); opts != "" {
-		cmd.Push(command.Split(opts))
+	cmd := db.DumpCommand(&action.Dump)
+	if action.Opts != "" {
+		cmd.Push(command.Split(action.Opts))
 	}
 	cmd.Unshift(command.Raw("{"))
 	cmd.Push(command.Raw("|| kill $$; }"))
@@ -226,7 +224,7 @@ func (action Dump) summary(err error, took time.Duration, written int64, plain b
 
 	t := tui.MinimalTable(r).
 		RowIfNotEmpty("Context", action.Context).
-		Row("Namespace", tui.NamespaceStyle(r, action.Namespace).Render()).
+		Row("Namespace", tui.NamespaceStyle(r, action.Global.NamespaceColors, action.Namespace).Render()).
 		Row("Pod", action.DBPod.Name).
 		RowIfNotEmpty("Username", action.Username).
 		RowIfNotEmpty("Database", action.Database).

@@ -12,22 +12,20 @@ import (
 	"strings"
 	"time"
 
+	"gabe565.com/utils/must"
 	"github.com/clevyr/kubedb/internal/actions/dump"
 	"github.com/clevyr/kubedb/internal/config"
+	"github.com/clevyr/kubedb/internal/config/conftypes"
 	"github.com/clevyr/kubedb/internal/config/flags"
 	"github.com/clevyr/kubedb/internal/consts"
 	"github.com/clevyr/kubedb/internal/database"
 	"github.com/clevyr/kubedb/internal/storage"
 	"github.com/clevyr/kubedb/internal/util"
 	"github.com/spf13/cobra"
-	"github.com/spf13/viper"
 )
 
 //nolint:gochecknoglobals
-var (
-	action       dump.Dump
-	setupOptions = util.SetupOptions{Name: "dump"}
-)
+var action = &dump.Dump{Dump: conftypes.Dump{Global: config.Global}}
 
 func New() *cobra.Command {
 	cmd := &cobra.Command{
@@ -51,18 +49,18 @@ func New() *cobra.Command {
 	flags.Database(cmd)
 	flags.Username(cmd)
 	flags.Password(cmd)
-	flags.Format(cmd, &action.Format)
-	flags.IfExists(cmd, &action.IfExists)
-	flags.Clean(cmd, &action.Clean)
-	flags.NoOwner(cmd, &action.NoOwner)
-	flags.Tables(cmd, &action.Tables)
-	flags.ExcludeTable(cmd, &action.ExcludeTable)
-	flags.ExcludeTableData(cmd, &action.ExcludeTableData)
-	flags.Quiet(cmd, &action.Quiet)
+	flags.Format(cmd)
+	flags.IfExists(cmd)
+	flags.Clean(cmd)
+	flags.NoOwner(cmd)
+	flags.Tables(cmd)
+	flags.ExcludeTable(cmd)
+	flags.ExcludeTableData(cmd)
+	flags.Quiet(cmd)
 	flags.RemoteGzip(cmd)
-	flags.Spinner(cmd, &action.Spinner)
+	flags.Spinner(cmd)
 	flags.Opts(cmd)
-	flags.Progress(cmd, &action.Progress)
+	flags.Progress(cmd)
 
 	return cmd
 }
@@ -72,15 +70,15 @@ func validArgs(cmd *cobra.Command, args []string, toComplete string) ([]string, 
 		return nil, cobra.ShellCompDirectiveNoFileComp
 	}
 
-	viper.Set(consts.KeyCreateJob, false)
-	setupOptions.NoSurvey = true
+	must.Must(config.K.Set(consts.FlagCreateJob, false))
+	config.Global.SkipSurvey = true
 	err := preRun(cmd, args)
 	if err != nil {
 		slog.Error("Pre-run failed", "error", err)
 		return nil, cobra.ShellCompDirectiveError
 	}
 
-	db, ok := action.Dialect.(config.DBDumper)
+	db, ok := action.Dialect.(conftypes.DBDumper)
 	if !ok {
 		slog.Error("Dialect does not support dump", "name", action.Dialect.Name())
 		return nil, cobra.ShellCompDirectiveError
@@ -117,26 +115,20 @@ func validArgs(cmd *cobra.Command, args []string, toComplete string) ([]string, 
 }
 
 func preRun(cmd *cobra.Command, args []string) error {
-	flags.BindJobPodLabels(cmd)
-	flags.BindCreateJob(cmd)
-	flags.BindCreateNetworkPolicy(cmd)
-	flags.BindRemoteGzip(cmd)
-	action.RemoteGzip = viper.GetBool(consts.KeyRemoteGzip)
-	flags.BindSpinner(cmd)
-	action.Spinner = viper.GetString(consts.KeySpinner)
-	flags.BindOpts(cmd)
-	flags.BindProgress(cmd)
-	action.Progress = viper.GetBool(consts.KeyProgress)
+	if err := config.Unmarshal("dump", &action); err != nil {
+		return err
+	}
 
 	if len(args) > 0 {
 		action.Filename = args[0]
 	}
 
-	if err := util.DefaultSetup(cmd, &action.Global, setupOptions); err != nil {
+	setupOpts := util.SetupOptions{NoSurvey: config.Global.SkipSurvey}
+	if err := util.DefaultSetup(cmd, action.Global, setupOpts); err != nil {
 		return err
 	}
 
-	db, ok := action.Dialect.(config.DBDumper)
+	db, ok := action.Dialect.(conftypes.DBDumper)
 	if !ok {
 		return fmt.Errorf("%w: %s", util.ErrNoDump, action.Dialect.Name())
 	}
@@ -169,7 +161,7 @@ func preRun(cmd *cobra.Command, args []string) error {
 		action.Format = database.DetectFormat(db, action.Filename)
 	}
 
-	if err := util.CreateJob(cmd.Context(), &action.Global, setupOptions); err != nil {
+	if err := util.CreateJob(cmd.Context(), cmd, action.Global, setupOpts); err != nil {
 		return err
 	}
 

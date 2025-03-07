@@ -7,27 +7,15 @@ import (
 
 	"gabe565.com/utils/slogx"
 	"gabe565.com/utils/termx"
-	"github.com/clevyr/kubedb/internal/consts"
+	"github.com/clevyr/kubedb/internal/config"
 	"github.com/clevyr/kubedb/internal/log/mask"
 	"github.com/clevyr/kubedb/internal/tui"
 	"github.com/lmittmann/tint"
 	"github.com/spf13/cobra"
-	"github.com/spf13/viper"
 )
 
-func InitFromCmd(cmd *cobra.Command) error {
-	var level slogx.Level
-	if err := level.UnmarshalText([]byte(viper.GetString(consts.KeyLogLevel))); err != nil {
-		return err
-	}
-
-	var format slogx.Format
-	if err := format.UnmarshalText([]byte(viper.GetString(consts.KeyLogFormat))); err != nil {
-		return err
-	}
-
-	Init(cmd.ErrOrStderr(), level, format)
-	return nil
+func InitGlobal(cmd *cobra.Command) {
+	Init(cmd.ErrOrStderr(), config.Global.Log.Level, config.Global.Log.Format)
 }
 
 func Init(w io.Writer, level slogx.Level, format slogx.Format) {

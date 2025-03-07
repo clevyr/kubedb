@@ -4,14 +4,14 @@ import (
 	"context"
 	"errors"
 
-	"github.com/clevyr/kubedb/internal/config"
+	"github.com/clevyr/kubedb/internal/config/conftypes"
 	"github.com/clevyr/kubedb/internal/kubernetes"
 	corev1 "k8s.io/api/core/v1"
 )
 
 var ErrDatabaseNotFound = errors.New("could not detect a database")
 
-type DetectResult map[config.Database][]corev1.Pod
+type DetectResult map[conftypes.Database][]corev1.Pod
 
 func DetectDialect(ctx context.Context, client kubernetes.KubeClient) (DetectResult, error) {
 	podList, err := client.GetNamespacedPods(ctx)
@@ -33,7 +33,7 @@ func DetectDialect(ctx context.Context, client kubernetes.KubeClient) (DetectRes
 		// Find the highest priority dialects
 		var maxPriority uint8
 		for dialect := range result {
-			if dbPriority, ok := dialect.(config.DBOrderer); ok {
+			if dbPriority, ok := dialect.(conftypes.DBOrderer); ok {
 				priority := dbPriority.Priority()
 				if maxPriority < priority {
 					maxPriority = priority
@@ -43,7 +43,7 @@ func DetectDialect(ctx context.Context, client kubernetes.KubeClient) (DetectRes
 		if maxPriority != 0 {
 			// Filter out dialects that are lower than the max
 			for dialect := range result {
-				if dbPriority, ok := dialect.(config.DBOrderer); ok {
+				if dbPriority, ok := dialect.(conftypes.DBOrderer); ok {
 					priority := dbPriority.Priority()
 					if priority < maxPriority {
 						delete(result, dialect)
@@ -57,7 +57,7 @@ func DetectDialect(ctx context.Context, client kubernetes.KubeClient) (DetectRes
 	return result, nil
 }
 
-func DetectDialectFromPod(pod corev1.Pod) (config.Database, error) {
+func DetectDialectFromPod(pod corev1.Pod) (conftypes.Database, error) {
 	for _, db := range All() {
 		if db.PodFilters().Matches(pod) {
 			return db, nil

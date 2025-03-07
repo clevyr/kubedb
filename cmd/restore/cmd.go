@@ -13,7 +13,9 @@ import (
 	"gabe565.com/utils/termx"
 	"github.com/charmbracelet/huh"
 	"github.com/clevyr/kubedb/internal/actions/restore"
+	"github.com/clevyr/kubedb/internal/completion"
 	"github.com/clevyr/kubedb/internal/config"
+	"github.com/clevyr/kubedb/internal/config/conftypes"
 	"github.com/clevyr/kubedb/internal/config/flags"
 	"github.com/clevyr/kubedb/internal/consts"
 	"github.com/clevyr/kubedb/internal/database"
@@ -21,14 +23,10 @@ import (
 	"github.com/clevyr/kubedb/internal/tui"
 	"github.com/clevyr/kubedb/internal/util"
 	"github.com/spf13/cobra"
-	"github.com/spf13/viper"
 )
 
 //nolint:gochecknoglobals
-var (
-	action       restore.Restore
-	setupOptions = util.SetupOptions{Name: "restore"}
-)
+var action = &restore.Restore{Restore: conftypes.Restore{Global: config.Global}}
 
 func New() *cobra.Command {
 	cmd := &cobra.Command{
@@ -48,23 +46,23 @@ func New() *cobra.Command {
 	flags.JobPodLabels(cmd)
 	flags.CreateJob(cmd)
 	flags.CreateNetworkPolicy(cmd)
-	flags.Format(cmd, &action.Format)
+	flags.Format(cmd)
 	flags.Port(cmd)
 	flags.Database(cmd)
 	flags.Username(cmd)
 	flags.Password(cmd)
-	flags.SingleTransaction(cmd, &action.SingleTransaction)
-	flags.Clean(cmd, &action.Clean)
-	flags.NoOwner(cmd, &action.NoOwner)
-	flags.Quiet(cmd, &action.Quiet)
+	flags.SingleTransaction(cmd)
+	flags.Clean(cmd)
+	flags.NoOwner(cmd)
+	flags.Quiet(cmd)
 	flags.RemoteGzip(cmd)
 	flags.Analyze(cmd)
 	flags.HaltOnError(cmd)
-	flags.Spinner(cmd, &action.Spinner)
+	flags.Spinner(cmd)
 	flags.Opts(cmd)
-	flags.Progress(cmd, &action.Progress)
-	cmd.Flags().BoolVarP(&action.Force, consts.FlagForce, "f", false, "Do not prompt before restore")
-	must.Must(cmd.RegisterFlagCompletionFunc(consts.FlagForce, util.BoolCompletion))
+	flags.Progress(cmd)
+	cmd.Flags().BoolP(consts.FlagForce, "f", false, "Do not prompt before restore")
+	must.Must(cmd.RegisterFlagCompletionFunc(consts.FlagForce, completion.BoolCompletion))
 
 	return cmd
 }
@@ -74,18 +72,18 @@ func validArgs(cmd *cobra.Command, args []string, toComplete string) ([]string, 
 		return nil, cobra.ShellCompDirectiveNoFileComp
 	}
 
-	viper.Set(consts.KeyCreateJob, false)
+	must.Must(config.K.Set(consts.FlagCreateJob, false))
 	action.Force = true
 	action.Filename = "-"
-	setupOptions.NoSurvey = true
 
+	config.Global.SkipSurvey = true
 	err := preRun(cmd, args)
 	if err != nil {
 		slog.Error("Pre-run failed", "error", err)
 		return nil, cobra.ShellCompDirectiveError
 	}
 
-	db, ok := action.Dialect.(config.DBRestorer)
+	db, ok := action.Dialect.(conftypes.DBRestorer)
 	if !ok {
 		slog.Error("Dialect does not support restore", "name", action.Dialect.Name())
 		return nil, cobra.ShellCompDirectiveError
@@ -127,22 +125,12 @@ var (
 )
 
 func preRun(cmd *cobra.Command, args []string) error {
-	flags.BindRemoteGzip(cmd)
-	action.RemoteGzip = viper.GetBool(consts.KeyRemoteGzip)
-	flags.BindAnalyze(cmd)
-	action.Analyze = viper.GetBool(consts.KeyAnalyze)
-	flags.BindJobPodLabels(cmd)
-	flags.BindCreateJob(cmd)
-	flags.BindCreateNetworkPolicy(cmd)
-	flags.BindSpinner(cmd)
-	flags.BindHaltOnError(cmd)
-	flags.BindOpts(cmd)
-	flags.BindProgress(cmd)
-	action.Progress = viper.GetBool(consts.KeyProgress)
-	action.HaltOnError = viper.GetBool(consts.KeyHaltOnError)
-	action.Spinner = viper.GetString(consts.KeySpinner)
+	if err := config.Unmarshal("restore", &action); err != nil {
+		return err
+	}
 
-	if err := util.DefaultSetup(cmd, &action.Global, setupOptions); err != nil {
+	setupOpts := util.SetupOptions{NoSurvey: config.Global.SkipSurvey}
+	if err := util.DefaultSetup(cmd, action.Global, setupOpts); err != nil {
 		return err
 	}
 
@@ -154,7 +142,7 @@ func preRun(cmd *cobra.Command, args []string) error {
 	case action.Filename == "-", storage.IsCloud(action.Filename):
 	case action.Filename == "":
 		if termx.IsTerminal(cmd.InOrStdin()) {
-			db, ok := action.Dialect.(config.DBRestorer)
+			db, ok := action.Dialect.(conftypes.DBRestorer)
 			if !ok {
 				return fmt.Errorf("%w: %s", util.ErrNoRestore, action.Dialect.Name())
 			}
@@ -190,7 +178,7 @@ func preRun(cmd *cobra.Command, args []string) error {
 	}
 
 	if !cmd.Flags().Lookup(consts.FlagFormat).Changed {
-		db, ok := action.Dialect.(config.DBRestorer)
+		db, ok := action.Dialect.(conftypes.DBRestorer)
 		if !ok {
 			return fmt.Errorf("%w: %s", util.ErrNoRestore, action.Dialect.Name())
 		}
@@ -210,7 +198,7 @@ func preRun(cmd *cobra.Command, args []string) error {
 		return ErrRestoreRefused
 	}
 
-	if err := util.CreateJob(cmd.Context(), &action.Global, setupOptions); err != nil {
+	if err := util.CreateJob(cmd.Context(), cmd, action.Global, setupOpts); err != nil {
 		return err
 	}
 

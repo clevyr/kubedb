@@ -6,7 +6,7 @@ import (
 	"slices"
 	"strings"
 
-	"github.com/clevyr/kubedb/internal/config"
+	"github.com/clevyr/kubedb/internal/config/conftypes"
 	"github.com/clevyr/kubedb/internal/database/mariadb"
 	"github.com/clevyr/kubedb/internal/database/meilisearch"
 	"github.com/clevyr/kubedb/internal/database/mongodb"
@@ -15,8 +15,8 @@ import (
 	"github.com/clevyr/kubedb/internal/database/sqlformat"
 )
 
-func All() []config.Database {
-	return []config.Database{
+func All() []conftypes.Database {
+	return []conftypes.Database{
 		postgres.Postgres{},
 		mariadb.MariaDB{},
 		mongodb.MongoDB{},
@@ -36,12 +36,12 @@ func Names() []string {
 
 var ErrUnsupportedDatabase = errors.New("unsupported database")
 
-func New(name string) (config.Database, error) {
+func New(name string) (conftypes.Database, error) {
 	for _, db := range All() {
 		if name == db.Name() {
 			return db, nil
 		}
-		if dbAlias, ok := db.(config.DBAliaser); ok {
+		if dbAlias, ok := db.(conftypes.DBAliaser); ok {
 			if slices.Contains(dbAlias.Aliases(), name) {
 				return db, nil
 			}
@@ -61,7 +61,7 @@ func NamesForInterface[T any]() []string {
 	return names
 }
 
-func DetectFormat(db config.DBFiler, path string) sqlformat.Format {
+func DetectFormat(db conftypes.DBFiler, path string) sqlformat.Format {
 	for format, ext := range db.Formats() {
 		if strings.HasSuffix(path, ext) {
 			return format
@@ -70,7 +70,7 @@ func DetectFormat(db config.DBFiler, path string) sqlformat.Format {
 	return sqlformat.Unknown
 }
 
-func GetExtension(db config.DBFiler, format sqlformat.Format) string {
+func GetExtension(db conftypes.DBFiler, format sqlformat.Format) string {
 	if ext, ok := db.Formats()[format]; ok {
 		return ext
 	}
