@@ -51,7 +51,6 @@ func New() *cobra.Command {
 	flags.Database(cmd)
 	flags.Username(cmd)
 	flags.Password(cmd)
-	flags.Directory(cmd, &action.Directory)
 	flags.Format(cmd, &action.Format)
 	flags.IfExists(cmd, &action.IfExists)
 	flags.Clean(cmd, &action.Clean)
@@ -131,10 +130,6 @@ func preRun(cmd *cobra.Command, args []string) error {
 
 	if len(args) > 0 {
 		action.Filename = args[0]
-	}
-	if action.Directory != "" && action.Directory != "." {
-		slog.Warn("Flag --directory has been deprecated, please pass the directory as a positional arg instead.")
-		action.Filename = filepath.Join(action.Directory, action.Filename)
 	}
 
 	if err := util.DefaultSetup(cmd, &action.Global, setupOptions); err != nil {
