@@ -1,11 +1,14 @@
 package cmd
 
 import (
+	"errors"
+	"fmt"
 	"log/slog"
 	"net/http"
 	"os"
 	"os/signal"
 	"path/filepath"
+	"runtime/debug"
 	"syscall"
 
 	"github.com/clevyr/kubedb/cmd/dump"
@@ -22,7 +25,7 @@ import (
 	"github.com/spf13/cobra"
 )
 
-func NewCommand() *cobra.Command {
+func New() *cobra.Command {
 	name := "kubedb"
 	var annotations map[string]string
 	if filepath.Base(os.Args[0]) == "kubectl-db" {
@@ -40,6 +43,7 @@ func NewCommand() *cobra.Command {
 		Version:           buildVersion(),
 		DisableAutoGenTag: true,
 		Annotations:       annotations,
+		SilenceErrors:     true,
 
 		PersistentPreRunE: preRun,
 	}
@@ -90,7 +94,6 @@ func preRun(cmd *cobra.Command, _ []string) error {
 	cmd.SetContext(ctx)
 
 	log.InitGlobal(cmd)
-	cmd.Root().SilenceErrors = true
 
 	if config.Global.HealthchecksPingURL != "" {
 		if handler, err := notifier.NewHealthchecks(config.Global.HealthchecksPingURL); err != nil {
@@ -113,10 +116,29 @@ func preRun(cmd *cobra.Command, _ []string) error {
 	return nil
 }
 
+var errPanic = errors.New("panic")
+
 func buildVersion() string {
 	result := util.GetVersion()
 	if commit := util.GetCommit(); commit != "" {
 		result += " (" + commit + ")"
 	}
 	return result
+}
+
+func Execute(cmd *cobra.Command) (err error) {
+	if cmd == nil {
+		cmd = New()
+	}
+
+	defer finalizer.PostRun(err)
+	defer func() {
+		if msg := recover(); msg != nil {
+			slog.Error("Recovered from panic", "error", msg)
+			err = fmt.Errorf("%w: %v\n\n%s", errPanic, msg, string(debug.Stack()))
+		}
+	}()
+
+	err = cmd.Execute()
+	return
 }

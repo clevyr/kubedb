@@ -35,7 +35,7 @@ func main() {
 		panic(err)
 	}
 
-	rootCmd := cmd.NewCommand()
+	rootCmd := cmd.New()
 	rootName := rootCmd.Name()
 
 	date, err := time.Parse(time.RFC3339, dateParam)
