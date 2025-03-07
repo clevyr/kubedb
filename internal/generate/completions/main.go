@@ -16,7 +16,7 @@ const (
 )
 
 func main() {
-	rootCmd := cmd.NewCommand()
+	rootCmd := cmd.New()
 	var buf bytes.Buffer
 	rootCmd.SetOut(&buf)
 
