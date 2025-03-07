@@ -71,21 +71,22 @@ func (h *Healthchecks) SendStatus(ctx context.Context, status Status, log string
 		return err
 	}
 
-	var resp *http.Response
+	var res *http.Response
 	for i := range 5 {
-		resp, err = client.Do(req)
-		_, _ = io.Copy(io.Discard, resp.Body)
-		_ = resp.Body.Close()
+		if res, err = client.Do(req); err == nil {
+			_, _ = io.Copy(io.Discard, res.Body)
+			_ = res.Body.Close()
 
-		if err == nil && resp.StatusCode < 300 {
-			if h.PingBodyLimit == 0 {
-				if limitStr := resp.Header.Get("Ping-Body-Limit"); limitStr != "" {
-					if limit, err := strconv.Atoi(limitStr); err == nil {
-						h.PingBodyLimit = limit
+			if res.StatusCode < 300 {
+				if h.PingBodyLimit == 0 {
+					if limitStr := res.Header.Get("Ping-Body-Limit"); limitStr != "" {
+						if limit, err := strconv.Atoi(limitStr); err == nil {
+							h.PingBodyLimit = limit
+						}
 					}
 				}
+				return nil
 			}
-			return nil
 		}
 
 		backoff := time.Duration(i+1) * time.Duration(i+1) * time.Second
@@ -99,8 +100,8 @@ func (h *Healthchecks) SendStatus(ctx context.Context, status Status, log string
 	switch {
 	case err != nil:
 		return err
-	case resp != nil:
-		return fmt.Errorf("%w: %s", ErrInvalidResponse, resp.Status)
+	case res != nil:
+		return fmt.Errorf("%w: %s", ErrInvalidResponse, res.Status)
 	default:
 		return ErrRetriesExhausted
 	}
