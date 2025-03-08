@@ -85,10 +85,12 @@ func (db MariaDB) PasswordEnvs(c *conftypes.Global) kubernetes.ConfigLookups {
 	if c.Username == db.UserDefault() {
 		return kubernetes.ConfigLookups{
 			kubernetes.LookupEnv{"MARIADB_ROOT_PASSWORD", "MYSQL_ROOT_PASSWORD"},
+			kubernetes.LookupSecretVolume{Name: "mariadb-credentials", Key: "mariadb-root-password"},
 		}
 	}
 	return kubernetes.ConfigLookups{
 		kubernetes.LookupEnv{"MARIADB_PASSWORD", "MYSQL_PASSWORD"},
+		kubernetes.LookupSecretVolume{Name: "mariadb-credentials", Key: "mariadb-password"},
 	}
 }
 

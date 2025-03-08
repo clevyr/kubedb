@@ -131,6 +131,38 @@ func (f LookupNamedSecret) GetValue(ctx context.Context, client KubeClient, _ co
 	return "", fmt.Errorf("%w: %s", ErrSecretDoesNotHaveKey, f.Key)
 }
 
+type LookupSecretVolume struct {
+	Name string
+	Key  string
+}
+
+var (
+	ErrNotASecretVolume = errors.New("matched volume is not a secret")
+	ErrNoSecretVolume   = errors.New("secret volume does not exist")
+)
+
+func (f LookupSecretVolume) GetValue(ctx context.Context, client KubeClient, pod corev1.Pod) (string, error) {
+	if f.Name == "" || f.Key == "" {
+		return "", ErrNoEnvNames
+	}
+
+	var secretName string
+	for _, volume := range pod.Spec.Volumes {
+		if volume.Name == f.Name {
+			if volume.Secret == nil {
+				return "", fmt.Errorf("%w: %v", ErrNotASecretVolume, f.Name)
+			}
+			secretName = volume.Secret.SecretName
+			break
+		}
+	}
+	if secretName == "" {
+		return "", fmt.Errorf("%w: %v", ErrNoSecretVolume, f.Name)
+	}
+
+	return LookupNamedSecret{Name: secretName, Key: f.Key}.GetValue(ctx, client, pod)
+}
+
 type LookupNop struct{}
 
 func (l LookupNop) GetValue(_ context.Context, _ KubeClient, _ corev1.Pod) (string, error) {

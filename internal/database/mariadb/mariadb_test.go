@@ -138,8 +138,8 @@ func TestMariaDB_PasswordEnvs(t *testing.T) {
 		args args
 		want kubernetes.ConfigLookups
 	}{
-		{"default", args{&conftypes.Global{}}, kubernetes.ConfigLookups{kubernetes.LookupEnv{"MARIADB_PASSWORD", "MYSQL_PASSWORD"}}},
-		{"root", args{&conftypes.Global{Username: "root"}}, kubernetes.ConfigLookups{kubernetes.LookupEnv{"MARIADB_ROOT_PASSWORD", "MYSQL_ROOT_PASSWORD"}}},
+		{"default", args{&conftypes.Global{}}, kubernetes.ConfigLookups{kubernetes.LookupEnv{"MARIADB_PASSWORD", "MYSQL_PASSWORD"}, kubernetes.LookupSecretVolume{Name: "mariadb-credentials", Key: "mariadb-password"}}},
+		{"root", args{&conftypes.Global{Username: "root"}}, kubernetes.ConfigLookups{kubernetes.LookupEnv{"MARIADB_ROOT_PASSWORD", "MYSQL_ROOT_PASSWORD"}, kubernetes.LookupSecretVolume{Name: "mariadb-credentials", Key: "mariadb-root-password"}}},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
