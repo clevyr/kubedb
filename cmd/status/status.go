@@ -20,6 +20,7 @@ import (
 	"github.com/clevyr/kubedb/internal/tui"
 	"github.com/clevyr/kubedb/internal/util"
 	"github.com/spf13/cobra"
+	authorizationv1 "k8s.io/api/authorization/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
@@ -107,11 +108,21 @@ func run(cmd *cobra.Command, _ []string) error {
 		os.Exit(1)
 	}
 
-	if err := util.CreateJob(cmd.Context(), cmd, conf, util.SetupOptions{Name: "status"}); err == nil {
+	if res, err := conf.Client.ClientSet.AuthorizationV1().SelfSubjectAccessReviews().Create(cmd.Context(), &authorizationv1.SelfSubjectAccessReview{
+		Spec: authorizationv1.SelfSubjectAccessReviewSpec{
+			ResourceAttributes: &authorizationv1.ResourceAttributes{
+				Namespace: conf.Client.Namespace,
+				Verb:      "create",
+				Group:     "batch",
+				Resource:  "jobs",
+			},
+		},
+	}, metav1.CreateOptions{}); err != nil {
+		_, _ = fmt.Fprintln(cmd.OutOrStdout(), prefixErr, "Job permission check failed:", err.Error())
+	} else if res.Status.Allowed {
 		_, _ = fmt.Fprintln(cmd.OutOrStdout(), prefixOk, "Jobs can be created")
 	} else {
-		_, _ = fmt.Fprintln(cmd.OutOrStdout(), prefixErr, "Job creation failed:", err.Error())
-		os.Exit(1)
+		_, _ = fmt.Fprintln(cmd.OutOrStdout(), prefixErr, "Missing permission to create jobs")
 	}
 
 	var buf strings.Builder
