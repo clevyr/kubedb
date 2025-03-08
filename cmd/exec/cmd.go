@@ -43,20 +43,15 @@ func New() *cobra.Command {
 }
 
 func preRun(cmd *cobra.Command, _ []string) error {
-	if err := config.Unmarshal("exec", &action); err != nil {
+	if err := config.Unmarshal(cmd, "exec", &action); err != nil {
 		return err
 	}
-
-	if err := util.DefaultSetup(cmd, action.Global, util.SetupOptions{}); err != nil {
-		return err
-	}
-	if err := util.CreateJob(cmd.Context(), cmd, action.Global, util.SetupOptions{}); err != nil {
-		return err
-	}
-
-	return nil
+	return util.DefaultSetup(cmd, action.Global)
 }
 
 func run(cmd *cobra.Command, _ []string) error {
+	if err := util.CreateJob(cmd.Context(), cmd, action.Global); err != nil {
+		return err
+	}
 	return action.Run(cmd.Context())
 }

@@ -72,7 +72,7 @@ func localPortCompletion(cmd *cobra.Command, args []string, _ string) ([]string,
 }
 
 func preRun(cmd *cobra.Command, args []string) error {
-	if err := config.Unmarshal("port-forward", &action); err != nil {
+	if err := config.Unmarshal(cmd, "port-forward", &action); err != nil {
 		return err
 	}
 
@@ -85,8 +85,7 @@ func preRun(cmd *cobra.Command, args []string) error {
 		action.ListenPort = uint16(port)
 	}
 
-	setupOpts := util.SetupOptions{NoSurvey: config.Global.SkipSurvey}
-	err := util.DefaultSetup(cmd, action.Global, setupOpts)
+	err := util.DefaultSetup(cmd, action.Global)
 	if err != nil {
 		return err
 	}

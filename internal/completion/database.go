@@ -28,7 +28,7 @@ func TablesList(cmd *cobra.Command, _ []string, _ string) ([]string, cobra.Shell
 		return nil, cobra.ShellCompDirectiveError
 	}
 
-	if err := util.DefaultSetup(cmd, config.Global, util.SetupOptions{NoSurvey: true}); err != nil {
+	if err := util.DefaultSetup(cmd, config.Global); err != nil {
 		slog.Error("Setup failed", "error", err)
 		return nil, cobra.ShellCompDirectiveError
 	}
@@ -50,7 +50,7 @@ func DatabasesList(cmd *cobra.Command, _ []string, _ string) ([]string, cobra.Sh
 		return nil, cobra.ShellCompDirectiveError
 	}
 
-	if err := util.DefaultSetup(cmd, config.Global, util.SetupOptions{NoSurvey: true}); err != nil {
+	if err := util.DefaultSetup(cmd, config.Global); err != nil {
 		slog.Error("Setup failed", "error", err)
 		return nil, cobra.ShellCompDirectiveError
 	}

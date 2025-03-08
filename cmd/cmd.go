@@ -83,6 +83,11 @@ func New() *cobra.Command {
 func preRun(cmd *cobra.Command, _ []string) error {
 	http.DefaultTransport = util.NewUserAgentTransport()
 
+	if cmd.Name() == "__complete" {
+		config.IsCompletion = true
+		return nil
+	}
+
 	if err := config.Load(cmd); err != nil {
 		return err
 	}

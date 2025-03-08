@@ -127,21 +127,29 @@ var (
 )
 
 func preRun(cmd *cobra.Command, args []string) error {
-	if err := config.Unmarshal("restore", &action); err != nil {
+	if err := config.Unmarshal(cmd, "restore", &action); err != nil {
 		return err
 	}
-
-	setupOpts := util.SetupOptions{NoSurvey: config.Global.SkipSurvey}
-	if err := util.DefaultSetup(cmd, action.Global, setupOpts); err != nil {
+	if err := util.DefaultSetup(cmd, action.Global); err != nil {
 		return err
 	}
-
 	if len(args) > 0 {
 		action.Input = args[0]
 	}
+	if !cmd.Flags().Lookup(consts.FlagFormat).Changed {
+		db, ok := action.Dialect.(conftypes.DBRestorer)
+		if !ok {
+			return fmt.Errorf("%w: %s", util.ErrNoRestore, action.Dialect.Name())
+		}
 
+		action.Format = database.DetectFormat(db, action.Input)
+	}
+	return nil
+}
+
+func run(cmd *cobra.Command, args []string) error {
 	switch {
-	case action.Input == "-", storage.IsCloud(action.Input):
+	case action.Input == "-", storage.IsCloud(action.Input), config.IsCompletion:
 	case action.Input == "":
 		if termx.IsTerminal(cmd.InOrStdin()) {
 			db, ok := action.Dialect.(conftypes.DBRestorer)
@@ -200,13 +208,9 @@ func preRun(cmd *cobra.Command, args []string) error {
 		return ErrRestoreRefused
 	}
 
-	if err := util.CreateJob(cmd.Context(), cmd, action.Global, setupOpts); err != nil {
+	if err := util.CreateJob(cmd.Context(), cmd, action.Global); err != nil {
 		return err
 	}
 
-	return nil
-}
-
-func run(cmd *cobra.Command, _ []string) error {
 	return action.Run(cmd.Context())
 }

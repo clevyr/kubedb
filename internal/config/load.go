@@ -19,8 +19,10 @@ import (
 
 //nolint:gochecknoglobals
 var (
-	K      = koanf.New(".")
-	Global = &conftypes.Global{}
+	K            = koanf.New(".")
+	Global       = &conftypes.Global{}
+	Loaded       bool
+	IsCompletion bool
 )
 
 const EnvPrefix = "KUBEDB_"
@@ -106,5 +108,6 @@ func Load(cmd *cobra.Command) error {
 		}
 	}
 
-	return Unmarshal("", Global)
+	Loaded = true
+	return Unmarshal(nil, "", Global)
 }

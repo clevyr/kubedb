@@ -33,16 +33,7 @@ import (
 	"k8s.io/utils/ptr"
 )
 
-type SetupOptions struct {
-	Name     string
-	NoSurvey bool
-}
-
-func DefaultSetup(cmd *cobra.Command, conf *conftypes.Global, opts SetupOptions) error {
-	if opts.Name == "" {
-		opts.Name = cmd.Name()
-	}
-
+func DefaultSetup(cmd *cobra.Command, conf *conftypes.Global) error {
 	cmd.SilenceUsage = true
 	ctx := cmd.Context()
 
@@ -93,7 +84,7 @@ func DefaultSetup(cmd *cobra.Command, conf *conftypes.Global, opts SetupOptions)
 			checkNamespaceExists(ctx, conf)
 			return err
 		}
-		if len(result) == 1 || opts.NoSurvey {
+		if len(result) == 1 || config.IsCompletion {
 			for _, v := range result {
 				conf.Dialect = v.Dialect
 				pods = v.Pods
@@ -141,7 +132,7 @@ func DefaultSetup(cmd *cobra.Command, conf *conftypes.Global, opts SetupOptions)
 		}
 	}
 
-	if len(pods) == 1 || opts.NoSurvey {
+	if len(pods) == 1 || config.IsCompletion {
 		conf.DBPod = pods[0]
 	} else {
 		opts := make([]huh.Option[int], 0, len(pods))
@@ -226,13 +217,9 @@ func DefaultSetup(cmd *cobra.Command, conf *conftypes.Global, opts SetupOptions)
 	return nil
 }
 
-func CreateJob(ctx context.Context, cmd *cobra.Command, conf *conftypes.Global, opts SetupOptions) error {
-	if opts.Name == "" {
-		opts.Name = cmd.Name()
-	}
-
+func CreateJob(ctx context.Context, cmd *cobra.Command, conf *conftypes.Global) error {
 	if conf.CreateJob {
-		if err := createJob(ctx, conf, opts.Name); err != nil {
+		if err := createJob(ctx, conf, cmd.Name()); err != nil {
 			return err
 		}
 		finalizer.Add(func(_ error) {

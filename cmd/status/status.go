@@ -61,7 +61,7 @@ func run(cmd *cobra.Command, _ []string) error {
 	prefixErr := statusStyle.Foreground(tui.ColorRed).Render("✗")
 	bold := lipgloss.NewStyle().Renderer(tui.Renderer).Bold(true).Render
 
-	defaultSetupErr := util.DefaultSetup(cmd, conf, util.SetupOptions{Name: "status"})
+	defaultSetupErr := util.DefaultSetup(cmd, conf)
 
 	_, _ = fmt.Fprintln(cmd.OutOrStdout(), bold("Cluster Info"))
 	if conf.Client.ClientSet != nil {

@@ -117,19 +117,16 @@ func validArgs(cmd *cobra.Command, args []string, toComplete string) ([]string, 
 }
 
 func preRun(cmd *cobra.Command, args []string) error {
-	if err := config.Unmarshal("dump", &action); err != nil {
+	if err := config.Unmarshal(cmd, "dump", &action); err != nil {
 		return err
 	}
-
 	if len(args) > 0 {
 		action.Output = args[0]
 	}
+	return util.DefaultSetup(cmd, action.Global)
+}
 
-	setupOpts := util.SetupOptions{NoSurvey: config.Global.SkipSurvey}
-	if err := util.DefaultSetup(cmd, action.Global, setupOpts); err != nil {
-		return err
-	}
-
+func run(cmd *cobra.Command, _ []string) error {
 	db, ok := action.Dialect.(conftypes.DBDumper)
 	if !ok {
 		return fmt.Errorf("%w: %s", util.ErrNoDump, action.Dialect.Name())
@@ -163,13 +160,9 @@ func preRun(cmd *cobra.Command, args []string) error {
 		action.Format = database.DetectFormat(db, action.Output)
 	}
 
-	if err := util.CreateJob(cmd.Context(), cmd, action.Global, setupOpts); err != nil {
+	if err := util.CreateJob(cmd.Context(), cmd, action.Global); err != nil {
 		return err
 	}
 
-	return nil
-}
-
-func run(cmd *cobra.Command, _ []string) error {
 	return action.Run(cmd.Context())
 }
