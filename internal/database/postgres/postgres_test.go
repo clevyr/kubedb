@@ -75,7 +75,7 @@ func TestPostgres_DumpCommand(t *testing.T) {
 		},
 		{
 			"custom",
-			args{&conftypes.Dump{Files: conftypes.Files{Format: sqlformat.Custom}, Global: &conftypes.Global{Host: "1.1.1.1", Database: "d", Username: "u", Password: "p"}}},
+			args{&conftypes.Dump{Format: sqlformat.Custom, Global: &conftypes.Global{Host: "1.1.1.1", Database: "d", Username: "u", Password: "p"}}},
 			command.NewBuilder(command.NewEnv("PGPASSWORD", "p"), "pg_dump", "--host=1.1.1.1", "--username=u", "--dbname=d", "--format=custom", "--verbose"),
 		},
 		{

@@ -39,9 +39,9 @@ func (action Dump) Run(ctx context.Context) error {
 	var f io.WriteCloser
 	var rename bool
 	switch {
-	case action.Filename == "-":
+	case action.Output == "-":
 		f = os.Stdout
-	case storage.IsS3(action.Filename):
+	case storage.IsS3(action.Output):
 		pr, pw := io.Pipe()
 		f = pw
 		defer func(pw *io.PipeWriter) {
@@ -52,23 +52,23 @@ func (action Dump) Run(ctx context.Context) error {
 			defer func() {
 				_ = pr.Close()
 			}()
-			return storage.UploadS3(ctx, pr, action.Filename)
+			return storage.UploadS3(ctx, pr, action.Output)
 		})
-	case storage.IsGCS(action.Filename):
+	case storage.IsGCS(action.Output):
 		var err error
-		if f, err = storage.UploadGCS(ctx, action.Filename); err != nil {
+		if f, err = storage.UploadGCS(ctx, action.Output); err != nil {
 			return err
 		}
 		defer func(f io.WriteCloser) {
 			_ = f.Close()
 		}(f)
 	default:
-		dir := filepath.Dir(action.Filename)
+		dir := filepath.Dir(action.Output)
 		if err := os.MkdirAll(dir, 0o755); err != nil && !os.IsExist(err) {
 			return err
 		}
 
-		tmp, err := os.CreateTemp(dir, filepath.Base(action.Filename)+"-*")
+		tmp, err := os.CreateTemp(dir, filepath.Base(action.Output)+"-*")
 		if err != nil {
 			return err
 		}
@@ -84,12 +84,12 @@ func (action Dump) Run(ctx context.Context) error {
 	actionLog := slog.With(
 		"namespace", action.Client.Namespace,
 		"pod", action.DBPod.Name,
-		"file", action.Filename,
+		"file", action.Output,
 	)
 
 	actionLog.Info("Exporting database")
 
-	if err := github.SetOutput("filename", action.Filename); err != nil {
+	if err := github.SetOutput("filename", action.Output); err != nil {
 		return err
 	}
 
@@ -175,7 +175,7 @@ func (action Dump) Run(ctx context.Context) error {
 
 	if rename {
 		if f, ok := f.(*os.File); ok {
-			if err := os.Rename(f.Name(), action.Filename); err != nil {
+			if err := os.Rename(f.Name(), action.Output); err != nil {
 				return err
 			}
 		}
@@ -228,7 +228,7 @@ func (action Dump) summary(err error, took time.Duration, written int64, plain b
 		Row("Pod", action.DBPod.Name).
 		RowIfNotEmpty("Username", action.Username).
 		RowIfNotEmpty("Database", action.Database).
-		Row("File", tui.OutPath(action.Filename, r)).
+		Row("File", tui.OutPath(action.Output, r)).
 		Row("Took", took.String())
 	if err != nil {
 		t.Row("Error", tui.ErrStyle(r).Render(err.Error()))
@@ -248,7 +248,7 @@ func (action Dump) summary(err error, took time.Duration, written int64, plain b
 
 func (action Dump) printSummary(err error, took time.Duration, written int64) {
 	out := os.Stdout
-	if action.Filename == "-" {
+	if action.Output == "-" {
 		out = os.Stderr
 	}
 	_, _ = io.WriteString(out, "\n"+action.summary(err, took, written, false)+"\n")

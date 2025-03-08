@@ -61,6 +61,8 @@ func New() *cobra.Command {
 	flags.Spinner(cmd)
 	flags.Opts(cmd)
 	flags.Progress(cmd)
+	cmd.Flags().StringP(consts.FlagInput, "i", "", "Input file path (can also be set using a positional arg)")
+	must.Must(cmd.RegisterFlagCompletionFunc(consts.FlagInput, validArgs))
 	cmd.Flags().BoolP(consts.FlagForce, "f", false, "Do not prompt before restore")
 	must.Must(cmd.RegisterFlagCompletionFunc(consts.FlagForce, completion.BoolCompletion))
 
@@ -68,13 +70,13 @@ func New() *cobra.Command {
 }
 
 func validArgs(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
-	if len(args) != 0 {
+	if len(args) != 0 || must.Must2(cmd.Flags().GetString(consts.FlagInput)) != "" {
 		return nil, cobra.ShellCompDirectiveNoFileComp
 	}
 
 	must.Must(config.K.Set(consts.FlagCreateJob, false))
 	action.Force = true
-	action.Filename = "-"
+	action.Input = "-"
 
 	config.Global.SkipSurvey = true
 	err := preRun(cmd, args)
@@ -135,12 +137,12 @@ func preRun(cmd *cobra.Command, args []string) error {
 	}
 
 	if len(args) > 0 {
-		action.Filename = args[0]
+		action.Input = args[0]
 	}
 
 	switch {
-	case action.Filename == "-", storage.IsCloud(action.Filename):
-	case action.Filename == "":
+	case action.Input == "-", storage.IsCloud(action.Input):
+	case action.Input == "":
 		if termx.IsTerminal(cmd.InOrStdin()) {
 			db, ok := action.Dialect.(conftypes.DBRestorer)
 			if !ok {
@@ -161,7 +163,7 @@ func preRun(cmd *cobra.Command, args []string) error {
 					ShowPermissions(false).
 					Height(15).
 					AllowedTypes(slices.Collect(maps.Values(db.Formats()))).
-					Value(&action.Filename),
+					Value(&action.Input),
 			))
 
 			if err := form.Run(); err != nil {
@@ -172,7 +174,7 @@ func preRun(cmd *cobra.Command, args []string) error {
 		}
 		fallthrough
 	default:
-		if _, err := os.Stat(action.Filename); err != nil {
+		if _, err := os.Stat(action.Input); err != nil {
 			return err
 		}
 	}
@@ -183,7 +185,7 @@ func preRun(cmd *cobra.Command, args []string) error {
 			return fmt.Errorf("%w: %s", util.ErrNoRestore, action.Dialect.Name())
 		}
 
-		action.Format = database.DetectFormat(db, action.Filename)
+		action.Format = database.DetectFormat(db, action.Input)
 	}
 
 	switch {

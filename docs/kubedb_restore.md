@@ -34,6 +34,7 @@ kubedb restore filename [flags]
   -F, --format string                   Output file format (one of gzip, custom, plain) (default "gzip")
       --halt-on-error                   Halt on error (Postgres only) (default true)
   -h, --help                            help for restore
+  -i, --input string                    Input file path (can also be set using a positional arg)
       --job-pod-labels stringToString   Pod labels to add to the job (default [])
   -O, --no-owner                        Skip restoration of object ownership in plain-text format (default true)
       --opts string                     Additional options to pass to the database client command

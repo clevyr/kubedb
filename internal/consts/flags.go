@@ -41,6 +41,8 @@ const (
 	FlagListenPort = "listen-port"
 	FlagAddress    = "address"
 	FlagCommand    = "command"
+	FlagInput      = "input"
+	FlagOutput     = "output"
 	FlagForce      = "force"
 
 	KeyNamespaceColor = "ui.colors.namespace"

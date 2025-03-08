@@ -61,12 +61,14 @@ func New() *cobra.Command {
 	flags.Spinner(cmd)
 	flags.Opts(cmd)
 	flags.Progress(cmd)
+	cmd.Flags().StringP(consts.FlagOutput, "o", "", "Output file path (can also be set using a positional arg)")
+	must.Must(cmd.RegisterFlagCompletionFunc(consts.FlagOutput, validArgs))
 
 	return cmd
 }
 
 func validArgs(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
-	if len(args) != 0 {
+	if len(args) != 0 || must.Must2(cmd.Flags().GetString(consts.FlagOutput)) != "" {
 		return nil, cobra.ShellCompDirectiveNoFileComp
 	}
 
@@ -120,7 +122,7 @@ func preRun(cmd *cobra.Command, args []string) error {
 	}
 
 	if len(args) > 0 {
-		action.Filename = args[0]
+		action.Output = args[0]
 	}
 
 	setupOpts := util.SetupOptions{NoSurvey: config.Global.SkipSurvey}
@@ -133,9 +135,9 @@ func preRun(cmd *cobra.Command, args []string) error {
 		return fmt.Errorf("%w: %s", util.ErrNoDump, action.Dialect.Name())
 	}
 
-	isDir := action.Filename == "" || strings.HasSuffix(action.Filename, string(os.PathSeparator)) || storage.IsCloudDir(action.Filename)
-	if !isDir && !storage.IsCloud(action.Filename) {
-		if stat, err := os.Stat(action.Filename); err == nil {
+	isDir := action.Output == "" || strings.HasSuffix(action.Output, string(os.PathSeparator)) || storage.IsCloudDir(action.Output)
+	if !isDir && !storage.IsCloud(action.Output) {
+		if stat, err := os.Stat(action.Output); err == nil {
 			isDir = stat.IsDir()
 		}
 	}
@@ -147,18 +149,18 @@ func preRun(cmd *cobra.Command, args []string) error {
 			Ext:       database.GetExtension(db, action.Format),
 			Date:      time.Now(),
 		}.Generate()
-		if storage.IsCloud(action.Filename) {
-			u, err := url.Parse(action.Filename)
+		if storage.IsCloud(action.Output) {
+			u, err := url.Parse(action.Output)
 			if err != nil {
 				return err
 			}
 			u.Path = path.Join(u.Path, generated)
-			action.Filename = u.String()
+			action.Output = u.String()
 		} else {
-			action.Filename = filepath.Join(action.Filename, generated)
+			action.Output = filepath.Join(action.Output, generated)
 		}
 	} else if !cmd.Flags().Lookup(consts.FlagFormat).Changed {
-		action.Format = database.DetectFormat(db, action.Filename)
+		action.Format = database.DetectFormat(db, action.Output)
 	}
 
 	if err := util.CreateJob(cmd.Context(), cmd, action.Global, setupOpts); err != nil {

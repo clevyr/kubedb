@@ -40,6 +40,7 @@ kubedb dump [filename | bucket URI] [flags]
       --job-pod-labels stringToString   Pod labels to add to the job (default [])
   -O, --no-owner                        Skip restoration of object ownership in plain-text format (default true)
       --opts string                     Additional options to pass to the database client command
+  -o, --output string                   Output file path (can also be set using a positional arg)
   -p, --password string                 Database password (default discovered)
       --port uint16                     Database port (default discovered)
       --progress                        Enables the progress bar (default true)

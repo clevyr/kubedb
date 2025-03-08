@@ -40,9 +40,9 @@ func (action Restore) Run(ctx context.Context) error {
 
 	var f io.ReadCloser
 	switch {
-	case action.Filename == "-":
+	case action.Input == "-":
 		f = os.Stdin
-	case storage.IsS3(action.Filename):
+	case storage.IsS3(action.Input):
 		pipe := storage.NewS3DownloadPipe()
 		f = pipe
 		defer func(pipe *storage.S3DownloadPipe) {
@@ -50,11 +50,11 @@ func (action Restore) Run(ctx context.Context) error {
 		}(pipe)
 
 		errGroup.Go(func() error {
-			return storage.DownloadS3(ctx, pipe, action.Filename)
+			return storage.DownloadS3(ctx, pipe, action.Input)
 		})
-	case storage.IsGCS(action.Filename):
+	case storage.IsGCS(action.Input):
 		var err error
-		if f, err = storage.DownloadGCS(ctx, action.Filename); err != nil {
+		if f, err = storage.DownloadGCS(ctx, action.Input); err != nil {
 			return err
 		}
 		defer func(f io.ReadCloser) {
@@ -62,7 +62,7 @@ func (action Restore) Run(ctx context.Context) error {
 		}(f)
 	default:
 		var err error
-		if f, err = os.Open(action.Filename); err != nil {
+		if f, err = os.Open(action.Input); err != nil {
 			return err
 		}
 		defer func(f io.ReadCloser) {
@@ -71,7 +71,7 @@ func (action Restore) Run(ctx context.Context) error {
 	}
 
 	actionLog := slog.With(
-		"file", action.Filename,
+		"file", action.Input,
 		"namespace", action.Client.Namespace,
 		"pod", action.DBPod.Name,
 	)
@@ -274,9 +274,9 @@ func (action Restore) Table(r *lipgloss.Renderer) *tui.Table {
 func (action Restore) Confirm() (bool, error) {
 	table := action.Table(nil)
 	var description string
-	if action.Filename != "-" && !strings.Contains(action.Filename, action.Namespace) {
+	if action.Input != "-" && !strings.Contains(action.Input, action.Namespace) {
 		warnStyle := tui.WarnStyle(nil)
-		table.Row("File", warnStyle.Render(tui.InPath(action.Filename, nil)))
+		table.Row("File", warnStyle.Render(tui.InPath(action.Input, nil)))
 
 		description = lipgloss.JoinVertical(lipgloss.Left,
 			table.Render(),
@@ -285,7 +285,7 @@ func (action Restore) Confirm() (bool, error) {
 			"Please verify you are restoring to the correct namespace.",
 		)
 	} else {
-		description = table.Row("File", tui.InPath(action.Filename, nil)).Render()
+		description = table.Row("File", tui.InPath(action.Input, nil)).Render()
 	}
 
 	theme := huh.ThemeCharm()
@@ -310,7 +310,7 @@ func (action Restore) summary(err error, took time.Duration, written int64, plai
 	}
 
 	t := action.Table(r).
-		Row("File", tui.InPath(action.Filename, r)).
+		Row("File", tui.InPath(action.Input, r)).
 		Row("Took", took.String())
 	if err != nil {
 		t.Row("Error", tui.ErrStyle(r).Render(err.Error()))
@@ -330,7 +330,7 @@ func (action Restore) summary(err error, took time.Duration, written int64, plai
 
 func (action Restore) printSummary(err error, took time.Duration, written int64) {
 	out := os.Stdout
-	if action.Filename == "-" {
+	if action.Input == "-" {
 		out = os.Stderr
 	}
 	_, _ = io.WriteString(out, "\n"+action.summary(err, took, written, false)+"\n")
