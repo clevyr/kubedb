@@ -5,7 +5,6 @@ import (
 
 	"gabe565.com/utils/must"
 	"github.com/clevyr/kubedb/internal/completion"
-	"github.com/clevyr/kubedb/internal/config/conftypes"
 	"github.com/clevyr/kubedb/internal/consts"
 	"github.com/clevyr/kubedb/internal/database"
 	"github.com/clevyr/kubedb/internal/database/sqlformat"
@@ -16,20 +15,7 @@ func Dialect(cmd *cobra.Command) {
 	cmd.PersistentFlags().String(consts.FlagDialect, "", "Database dialect. (one of "+strings.Join(database.Names(), ", ")+") (default discovered)")
 	must.Must(cmd.RegisterFlagCompletionFunc(consts.FlagDialect,
 		func(_ *cobra.Command, _ []string, _ string) ([]string, cobra.ShellCompDirective) {
-			dbs := database.All()
-			s := make([]string, 0, len(dbs))
-			for _, db := range dbs {
-				name := db.Name()
-				s = append(s, name+"\t"+name)
-				if aliaser, ok := db.(conftypes.DBAliaser); ok {
-					aliases := aliaser.Aliases()
-					for i, alias := range aliases {
-						aliases[i] = alias + "\t" + name
-					}
-					s = append(s, aliases...)
-				}
-			}
-			return s, cobra.ShellCompDirectiveNoFileComp
+			return database.Names(), cobra.ShellCompDirectiveNoFileComp
 		}),
 	)
 }
