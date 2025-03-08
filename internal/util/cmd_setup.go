@@ -205,10 +205,10 @@ func DefaultSetup(cmd *cobra.Command, conf *conftypes.Global, opts SetupOptions)
 	if db, ok := conf.Dialect.(conftypes.DBHasPassword); ok && conf.Password == "" {
 		conf.Password, err = db.PasswordEnvs(conf).Search(ctx, conf.Client, conf.DBPod)
 		if err != nil {
-			slog.Error("Could not detect password", "error", err)
-			return err
+			slog.Warn("Could not detect password", "error", err)
+		} else {
+			slog.Debug("Found password")
 		}
-		slog.Debug("Found password")
 	}
 
 	if conf.Password != "" && conf.Log.Mask {

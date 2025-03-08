@@ -13,9 +13,6 @@ import (
 )
 
 func Test_buildCommand(t *testing.T) {
-	pgpassword := command.NewEnv("PGPASSWORD", "")
-	mysqlPwd := command.NewEnv("MYSQL_PWD", "")
-
 	type args struct {
 		conf Dump
 	}
@@ -28,31 +25,31 @@ func Test_buildCommand(t *testing.T) {
 		{
 			"postgres-gzip",
 			args{Dump{Dump: conftypes.Dump{Global: &conftypes.Global{Dialect: postgres.Postgres{}, Host: "1.1.1.1", Database: "d", Username: "u", RemoteGzip: true}}}},
-			command.NewBuilder(command.Raw("{"), pgpassword, "pg_dump", "--host=1.1.1.1", "--username=u", "--dbname=d", "--verbose", command.Raw("|| kill $$; }"), command.Pipe, "gzip", "--force"),
+			command.NewBuilder(command.Raw("{"), "pg_dump", "--host=1.1.1.1", "--username=u", "--dbname=d", "--verbose", command.Raw("|| kill $$; }"), command.Pipe, "gzip", "--force"),
 			require.NoError,
 		},
 		{
 			"postgres-gzip-no-compression",
 			args{Dump{Dump: conftypes.Dump{Global: &conftypes.Global{Dialect: postgres.Postgres{}, Host: "1.1.1.1", Database: "d", Username: "u"}}}},
-			command.NewBuilder(command.Raw("{"), pgpassword, "pg_dump", "--host=1.1.1.1", "--username=u", "--dbname=d", "--verbose", command.Raw("|| kill $$; }")),
+			command.NewBuilder(command.Raw("{"), "pg_dump", "--host=1.1.1.1", "--username=u", "--dbname=d", "--verbose", command.Raw("|| kill $$; }")),
 			require.NoError,
 		},
 		{
 			"postgres-plain",
 			args{Dump{Dump: conftypes.Dump{Files: conftypes.Files{Format: sqlformat.Plain}, Global: &conftypes.Global{Dialect: postgres.Postgres{}, Host: "1.1.1.1", Database: "d", Username: "u", RemoteGzip: true}}}},
-			command.NewBuilder(command.Raw("{"), pgpassword, "pg_dump", "--host=1.1.1.1", "--username=u", "--dbname=d", "--verbose", command.Raw("|| kill $$; }"), command.Pipe, "gzip", "--force"),
+			command.NewBuilder(command.Raw("{"), "pg_dump", "--host=1.1.1.1", "--username=u", "--dbname=d", "--verbose", command.Raw("|| kill $$; }"), command.Pipe, "gzip", "--force"),
 			require.NoError,
 		},
 		{
 			"postgres-custom",
 			args{Dump{Dump: conftypes.Dump{Files: conftypes.Files{Format: sqlformat.Custom}, Global: &conftypes.Global{Dialect: postgres.Postgres{}, Host: "1.1.1.1", Database: "d", Username: "u", RemoteGzip: true}}}},
-			command.NewBuilder(command.Raw("{"), pgpassword, "pg_dump", "--host=1.1.1.1", "--username=u", "--dbname=d", "--format=custom", "--verbose", command.Raw("|| kill $$; }")),
+			command.NewBuilder(command.Raw("{"), "pg_dump", "--host=1.1.1.1", "--username=u", "--dbname=d", "--format=custom", "--verbose", command.Raw("|| kill $$; }")),
 			require.NoError,
 		},
 		{
 			"mariadb-gzip",
 			args{Dump{Dump: conftypes.Dump{Files: conftypes.Files{Format: sqlformat.Gzip}, Global: &conftypes.Global{Dialect: mariadb.MariaDB{}, Host: "1.1.1.1", Database: "d", Username: "u", RemoteGzip: true}}}},
-			command.NewBuilder(command.Raw("{"), mysqlPwd, command.Raw(`"$(which mariadb-dump || which mysqldump)"`), "--host=1.1.1.1", "--user=u", "d", "--verbose", command.Raw("|| kill $$; }"), command.Pipe, "gzip", "--force"),
+			command.NewBuilder(command.Raw("{"), command.Raw(`"$(which mariadb-dump || which mysqldump)"`), "--host=1.1.1.1", "--user=u", "d", "--verbose", command.Raw("|| kill $$; }"), command.Pipe, "gzip", "--force"),
 			require.NoError,
 		},
 	}

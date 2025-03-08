@@ -113,9 +113,11 @@ func (db Redis) PasswordEnvs(_ *conftypes.Global) kubernetes.ConfigLookups {
 
 func (Redis) ExecCommand(conf *conftypes.Exec) *command.Builder {
 	cmd := command.NewBuilder(
-		command.NewEnv("REDISCLI_AUTH", conf.Password),
 		"exec", command.Raw(`"$(which redis-cli || which valkey-cli)"`), "-h", conf.Host,
 	)
+	if conf.Password != "" {
+		cmd.Unshift(command.NewEnv("REDISCLI_AUTH", conf.Password))
+	}
 	if conf.Port != 0 {
 		cmd.Push("-p", strconv.Itoa(int(conf.Port)))
 	}

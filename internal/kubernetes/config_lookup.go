@@ -162,9 +162,3 @@ func (f LookupSecretVolume) GetValue(ctx context.Context, client KubeClient, pod
 
 	return LookupNamedSecret{Name: secretName, Key: f.Key}.GetValue(ctx, client, pod)
 }
-
-type LookupNop struct{}
-
-func (l LookupNop) GetValue(_ context.Context, _ KubeClient, _ corev1.Pod) (string, error) {
-	return "", nil
-}

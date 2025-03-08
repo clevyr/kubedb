@@ -94,9 +94,11 @@ func (db MongoDB) ExecCommand(conf *conftypes.Exec) *command.Builder {
 		"exec", command.Raw(`"$(which mongosh || which mongo)"`),
 		"--host="+conf.Host,
 		"--username="+conf.Username,
-		"--password="+conf.Password,
 		"--authenticationDatabase="+db.AuthenticationDatabase(conf.Global),
 	)
+	if conf.Password != "" {
+		cmd.Push("--password=" + conf.Password)
+	}
 	if conf.Port != 0 {
 		cmd.Push("--port=" + strconv.Itoa(int(conf.Port)))
 	}
@@ -118,9 +120,11 @@ func (db MongoDB) DumpCommand(conf *conftypes.Dump) *command.Builder {
 		"--archive",
 		"--host="+conf.Host,
 		"--username="+conf.Username,
-		"--password="+conf.Password,
 		"--authenticationDatabase="+db.AuthenticationDatabase(conf.Global),
 	)
+	if conf.Password != "" {
+		cmd.Push("--password=" + conf.Password)
+	}
 	if conf.Port != 0 {
 		cmd.Push("--port=" + strconv.Itoa(int(conf.Port)))
 	}
@@ -145,9 +149,11 @@ func (db MongoDB) RestoreCommand(conf *conftypes.Restore, _ sqlformat.Format) *c
 		"--archive",
 		"--host="+conf.Host,
 		"--username="+conf.Username,
-		"--password="+conf.Password,
 		"--authenticationDatabase="+db.AuthenticationDatabase(conf.Global),
 	)
+	if conf.Password != "" {
+		cmd.Push("--password=" + conf.Password)
+	}
 	if conf.Port != 0 {
 		cmd.Push("--port=" + strconv.Itoa(int(conf.Port)))
 	}

@@ -16,8 +16,6 @@ import (
 )
 
 func TestRestore_buildCommand(t *testing.T) {
-	pgpassword := command.NewEnv("PGPASSWORD", "")
-
 	type fields struct {
 		Restore conftypes.Restore
 		Analyze bool
@@ -36,28 +34,28 @@ func TestRestore_buildCommand(t *testing.T) {
 			"postgres-gzip",
 			fields{Restore: conftypes.Restore{Global: &conftypes.Global{Dialect: postgres.Postgres{}, Host: "1.1.1.1", Database: "d", Username: "u", RemoteGzip: true}}},
 			args{sqlformat.Gzip},
-			command.NewBuilder("gunzip", "--force", command.Pipe, command.Raw("{"), pgpassword, "psql", "--host=1.1.1.1", "--username=u", "--dbname=d", command.Raw("|| { cat >/dev/null; kill $$; }; }")),
+			command.NewBuilder("gunzip", "--force", command.Pipe, command.Raw("{"), "psql", "--host=1.1.1.1", "--username=u", "--dbname=d", command.Raw("|| { cat >/dev/null; kill $$; }; }")),
 			require.NoError,
 		},
 		{
 			"postgres-plain",
 			fields{Restore: conftypes.Restore{Global: &conftypes.Global{Dialect: postgres.Postgres{}, Host: "1.1.1.1", Database: "d", Username: "u", RemoteGzip: true}}},
 			args{sqlformat.Gzip},
-			command.NewBuilder("gunzip", "--force", command.Pipe, command.Raw("{"), pgpassword, "psql", "--host=1.1.1.1", "--username=u", "--dbname=d", command.Raw("|| { cat >/dev/null; kill $$; }; }")),
+			command.NewBuilder("gunzip", "--force", command.Pipe, command.Raw("{"), "psql", "--host=1.1.1.1", "--username=u", "--dbname=d", command.Raw("|| { cat >/dev/null; kill $$; }; }")),
 			require.NoError,
 		},
 		{
 			"postgres-custom",
 			fields{Restore: conftypes.Restore{Global: &conftypes.Global{Dialect: postgres.Postgres{}, Host: "1.1.1.1", Database: "d", Username: "u", RemoteGzip: true}}},
 			args{sqlformat.Gzip},
-			command.NewBuilder("gunzip", "--force", command.Pipe, command.Raw("{"), pgpassword, "psql", "--host=1.1.1.1", "--username=u", "--dbname=d", command.Raw("|| { cat >/dev/null; kill $$; }; }")),
+			command.NewBuilder("gunzip", "--force", command.Pipe, command.Raw("{"), "psql", "--host=1.1.1.1", "--username=u", "--dbname=d", command.Raw("|| { cat >/dev/null; kill $$; }; }")),
 			require.NoError,
 		},
 		{
 			"postgres-remote-gzip-disabled",
 			fields{Restore: conftypes.Restore{Global: &conftypes.Global{Dialect: postgres.Postgres{}, Host: "1.1.1.1", Database: "d", Username: "u"}}},
 			args{sqlformat.Gzip},
-			command.NewBuilder(command.Raw("{"), command.Env{Key: "PGPASSWORD", Value: ""}, "psql", "--host=1.1.1.1", "--username=u", "--dbname=d", command.Raw("|| { cat >/dev/null; kill $$; }; }")),
+			command.NewBuilder(command.Raw("{"), "psql", "--host=1.1.1.1", "--username=u", "--dbname=d", command.Raw("|| { cat >/dev/null; kill $$; }; }")),
 			require.NoError,
 		},
 	}

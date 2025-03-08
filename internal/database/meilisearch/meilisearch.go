@@ -38,7 +38,6 @@ func (Meilisearch) PodFilters() filter.Filter {
 func (Meilisearch) PasswordEnvs(_ *conftypes.Global) kubernetes.ConfigLookups {
 	return kubernetes.ConfigLookups{
 		kubernetes.LookupEnv{"MEILI_MASTER_KEY"},
-		kubernetes.LookupNop{},
 	}
 }
 

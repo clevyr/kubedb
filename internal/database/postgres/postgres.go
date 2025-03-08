@@ -211,10 +211,10 @@ func (db Postgres) PasswordEnvs(conf *conftypes.Global) kubernetes.ConfigLookups
 }
 
 func (Postgres) ExecCommand(conf *conftypes.Exec) *command.Builder {
-	cmd := command.NewBuilder(
-		command.NewEnv("PGPASSWORD", conf.Password),
-		"exec", "psql", "--host="+conf.Host, "--username="+conf.Username,
-	)
+	cmd := command.NewBuilder("exec", "psql", "--host="+conf.Host, "--username="+conf.Username)
+	if conf.Password != "" {
+		cmd.Unshift(command.NewEnv("PGPASSWORD", conf.Password))
+	}
 	if conf.Port != 0 {
 		cmd.Push("--port=" + strconv.Itoa(int(conf.Port)))
 	}
@@ -237,10 +237,10 @@ func (Postgres) quoteParam(param string) string {
 }
 
 func (db Postgres) DumpCommand(conf *conftypes.Dump) *command.Builder {
-	cmd := command.NewBuilder(
-		command.NewEnv("PGPASSWORD", conf.Password),
-		"pg_dump", "--host="+conf.Host, "--username="+conf.Username,
-	)
+	cmd := command.NewBuilder("pg_dump", "--host="+conf.Host, "--username="+conf.Username)
+	if conf.Password != "" {
+		cmd.Unshift(command.NewEnv("PGPASSWORD", conf.Password))
+	}
 	if conf.Port != 0 {
 		cmd.Push("--port=" + strconv.Itoa(int(conf.Port)))
 	}
@@ -275,9 +275,10 @@ func (db Postgres) DumpCommand(conf *conftypes.Dump) *command.Builder {
 }
 
 func (Postgres) RestoreCommand(conf *conftypes.Restore, inputFormat sqlformat.Format) *command.Builder {
-	cmd := command.NewBuilder(
-		command.NewEnv("PGPASSWORD", conf.Password),
-	)
+	cmd := command.NewBuilder()
+	if conf.Password != "" {
+		cmd.Push(command.NewEnv("PGPASSWORD", conf.Password))
+	}
 	if conf.Quiet {
 		cmd.Push(command.NewEnv("PGOPTIONS", "-c client_min_messages=WARNING"))
 	}
