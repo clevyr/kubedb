@@ -164,14 +164,14 @@ func DefaultSetup(cmd *cobra.Command, conf *conftypes.Global, opts SetupOptions)
 	if db, ok := conf.Dialect.(conftypes.DBHasPort); ok && conf.Port == 0 {
 		port, err := db.PortEnvs(conf).Search(ctx, conf.Client, conf.DBPod)
 		if err != nil {
-			slog.Debug("Could not detect port from pod env")
+			slog.Debug("Could not detect port")
 		} else {
 			port, err := strconv.ParseUint(port, 10, 16)
 			if err != nil {
-				slog.Debug("Failed to parse port from pod env", "error", err)
+				slog.Debug("Failed to parse port", "error", err)
 			} else {
 				conf.Port = uint16(port)
-				slog.Debug("Found port in pod env", "port", conf.Port)
+				slog.Debug("Found port", "port", conf.Port)
 			}
 		}
 
@@ -184,9 +184,9 @@ func DefaultSetup(cmd *cobra.Command, conf *conftypes.Global, opts SetupOptions)
 	if db, ok := conf.Dialect.(conftypes.DBHasDatabase); ok && conf.Database == "" {
 		conf.Database, err = db.DatabaseEnvs(conf).Search(ctx, conf.Client, conf.DBPod)
 		if err != nil {
-			slog.Debug("Could not detect database from pod env", "error", err)
+			slog.Debug("Could not detect db name", "error", err)
 		} else {
-			slog.Debug("Found db name in pod env", "database", conf.Database)
+			slog.Debug("Found db name", "database", conf.Database)
 		}
 	}
 
@@ -195,9 +195,9 @@ func DefaultSetup(cmd *cobra.Command, conf *conftypes.Global, opts SetupOptions)
 		conf.Username, err = db.UserEnvs(conf).Search(ctx, conf.Client, conf.DBPod)
 		if err != nil {
 			conf.Username = db.UserDefault()
-			slog.Debug("Could not detect user from pod env, using default", "error", err, "user", conf.Username)
+			slog.Debug("Could not detect user, using default", "error", err, "user", conf.Username)
 		} else {
-			slog.Debug("Found user in pod env", "user", conf.Username)
+			slog.Debug("Found user", "user", conf.Username)
 		}
 	}
 
@@ -205,10 +205,10 @@ func DefaultSetup(cmd *cobra.Command, conf *conftypes.Global, opts SetupOptions)
 	if db, ok := conf.Dialect.(conftypes.DBHasPassword); ok && conf.Password == "" {
 		conf.Password, err = db.PasswordEnvs(conf).Search(ctx, conf.Client, conf.DBPod)
 		if err != nil {
-			slog.Error("Could not detect password from pod env", "error", err)
+			slog.Error("Could not detect password", "error", err)
 			return err
 		}
-		slog.Debug("Found password in pod env")
+		slog.Debug("Found password")
 	}
 
 	if conf.Password != "" && conf.Log.Mask {
