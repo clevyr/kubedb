@@ -72,7 +72,9 @@ func run(cmd *cobra.Command, _ []string) error {
 			bold(conf.Client.ClientConfig.Host),
 		)
 	} else {
-		_, _ = fmt.Fprintln(cmd.OutOrStdout(), prefixErr, "Failed to load cluster config:", defaultSetupErr.Error())
+		if defaultSetupErr != nil {
+			_, _ = fmt.Fprintln(cmd.OutOrStdout(), prefixErr, "Failed to load cluster config:", defaultSetupErr.Error())
+		}
 		os.Exit(1)
 	}
 
