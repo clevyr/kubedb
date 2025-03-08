@@ -38,7 +38,7 @@ func TestDetectDialect(t *testing.T) {
 	tests := []struct {
 		name    string
 		args    args
-		want    DetectResult
+		want    []DetectResult
 		wantErr require.ErrorAssertionFunc
 	}{
 		{
@@ -48,7 +48,7 @@ func TestDetectDialect(t *testing.T) {
 					ClientSet: kubernetesfake.NewSimpleClientset(&postgresPod),
 				},
 			},
-			DetectResult{postgres.Postgres{}: []corev1.Pod{postgresPod}},
+			[]DetectResult{{postgres.Postgres{}, []corev1.Pod{postgresPod}}},
 			require.NoError,
 		},
 		{
@@ -58,7 +58,7 @@ func TestDetectDialect(t *testing.T) {
 					ClientSet: kubernetesfake.NewSimpleClientset(&mariadbPod),
 				},
 			},
-			DetectResult{mariadb.MariaDB{}: []corev1.Pod{mariadbPod}},
+			[]DetectResult{{mariadb.MariaDB{}, []corev1.Pod{mariadbPod}}},
 			require.NoError,
 		},
 		{

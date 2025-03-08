@@ -2,10 +2,12 @@
 package util
 
 import (
+	"cmp"
 	"context"
 	"errors"
 	"log/slog"
 	"maps"
+	"slices"
 	"strconv"
 	"strings"
 	"time"
@@ -92,27 +94,30 @@ func DefaultSetup(cmd *cobra.Command, conf *conftypes.Global, opts SetupOptions)
 			return err
 		}
 		if len(result) == 1 || opts.NoSurvey {
-			for dialect, p := range result {
-				conf.Dialect = dialect
-				pods = p
+			for _, v := range result {
+				conf.Dialect = v.Dialect
+				pods = v.Pods
 				break
 			}
 		} else {
-			opts := make([]huh.Option[conftypes.Database], 0, len(result))
-			for dialect := range result {
-				opts = append(opts, huh.NewOption(dialect.PrettyName(), dialect))
+			slices.SortFunc(result, func(a, b database.DetectResult) int {
+				return cmp.Compare(a.Dialect.PrettyName(), b.Dialect.PrettyName())
+			})
+			opts := make([]huh.Option[int], 0, len(result))
+			for i, v := range result {
+				opts = append(opts, huh.NewOption(v.Dialect.PrettyName(), i))
 			}
-			var chosen conftypes.Database
+			var chosen int
 			if err := tui.NewForm(huh.NewGroup(
-				huh.NewSelect[conftypes.Database]().
+				huh.NewSelect[int]().
 					Title("Select database type").
 					Options(opts...).
 					Value(&chosen),
 			)).Run(); err != nil {
 				return err
 			}
-			conf.Dialect = chosen
-			pods = result[chosen]
+			conf.Dialect = result[chosen].Dialect
+			pods = result[chosen].Pods
 		}
 		slog.Debug("Detected dialect", "dialect", conf.Dialect.Name())
 	default:

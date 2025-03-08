@@ -3,6 +3,7 @@ package database
 import (
 	"context"
 	"errors"
+	"slices"
 
 	"github.com/clevyr/kubedb/internal/config/conftypes"
 	"github.com/clevyr/kubedb/internal/kubernetes"
@@ -11,47 +12,46 @@ import (
 
 var ErrDatabaseNotFound = errors.New("could not detect a database")
 
-type DetectResult map[conftypes.Database][]corev1.Pod
+type DetectResult struct {
+	Dialect conftypes.Database
+	Pods    []corev1.Pod
+}
 
-func DetectDialect(ctx context.Context, client kubernetes.KubeClient) (DetectResult, error) {
+func DetectDialect(ctx context.Context, client kubernetes.KubeClient) ([]DetectResult, error) {
 	podList, err := client.GetNamespacedPods(ctx)
 	if err != nil {
 		return nil, err
 	}
 
-	result := make(DetectResult)
-	for _, db := range All() {
-		pods := kubernetes.FilterPodList(podList.Items, db.PodFilters())
-		if len(pods) != 0 {
-			result[db] = pods
-		}
-	}
-	if len(result) == 0 {
-		return nil, ErrDatabaseNotFound
-	}
-	if len(result) > 1 {
-		// Find the highest priority dialects
-		var maxPriority uint8
-		for dialect := range result {
-			if dbPriority, ok := dialect.(conftypes.DBOrderer); ok {
-				priority := dbPriority.Priority()
-				if maxPriority < priority {
+	dialects := All()
+	result := make([]DetectResult, 0, len(dialects))
+	var maxPriority uint8
+	for _, db := range dialects {
+		if pods := kubernetes.FilterPodList(podList.Items, db.PodFilters()); len(pods) != 0 {
+			result = append(result, DetectResult{db, pods})
+
+			// Find the highest priority dialects
+			if dbPriority, ok := db.(conftypes.DBOrderer); ok {
+				if priority := dbPriority.Priority(); maxPriority < priority {
 					maxPriority = priority
 				}
 			}
 		}
+	}
+
+	switch len(result) {
+	case 0:
+		return nil, ErrDatabaseNotFound
+	case 1:
+	default:
 		if maxPriority != 0 {
 			// Filter out dialects that are lower than the max
-			for dialect := range result {
-				if dbPriority, ok := dialect.(conftypes.DBOrderer); ok {
-					priority := dbPriority.Priority()
-					if priority < maxPriority {
-						delete(result, dialect)
-					}
-				} else {
-					delete(result, dialect)
+			result = slices.DeleteFunc(result, func(v DetectResult) bool {
+				if dbPriority, ok := v.Dialect.(conftypes.DBOrderer); ok {
+					return dbPriority.Priority() < maxPriority
 				}
-			}
+				return true
+			})
 		}
 	}
 	return result, nil
