@@ -323,7 +323,7 @@ func (action Restore) summary(err error, took time.Duration, written int64, plai
 	}
 
 	return lipgloss.JoinVertical(lipgloss.Center,
-		tui.HeaderStyle(nil).PaddingTop(1).Render("Restore Summary"),
+		tui.HeaderStyle(nil).Render("Restore Summary"),
 		t.Render(),
 	)
 }
