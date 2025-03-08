@@ -35,6 +35,7 @@ func New() *cobra.Command {
 		Args:              cobra.NoArgs,
 		ValidArgsFunction: cobra.NoFileCompletions,
 	}
+
 	flags.JobPodLabels(cmd)
 	flags.Port(cmd)
 	flags.Database(cmd)
@@ -141,8 +142,12 @@ func run(cmd *cobra.Command, _ []string) error {
 			Stderr: os.Stderr,
 		}
 		if err := conf.Client.Exec(cmd.Context(), execOpts); err == nil {
-			names := strings.Split(buf.String(), "\n")
-			_, _ = fmt.Fprintln(cmd.OutOrStdout(), prefixOk, "Database has", bold(strconv.Itoa(len(names))), "tables")
+			var count int
+			output := strings.TrimSpace(buf.String())
+			if len(output) != 0 {
+				count = strings.Count(output, "\n") + 1
+			}
+			_, _ = fmt.Fprintln(cmd.OutOrStdout(), prefixOk, "Database has", bold(strconv.Itoa(count)), "tables")
 		} else {
 			_, _ = fmt.Fprintln(cmd.OutOrStdout(), prefixErr, "Failed to connect to database", err.Error())
 			os.Exit(1)
