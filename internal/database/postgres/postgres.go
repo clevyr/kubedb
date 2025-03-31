@@ -64,8 +64,9 @@ func (Postgres) PortDefault() uint16 { return 5432 }
 
 func (db Postgres) DatabaseEnvs(conf *conftypes.Global) kubernetes.ConfigLookups {
 	if secret := db.cnpgSecretName(conf); secret != "" {
+		cluster, _ := db.cnpgClusterName(conf)
 		return kubernetes.ConfigLookups{kubernetes.LookupNamedSecret{
-			Name: secret,
+			Name: cluster + "-app", // Always use the app secret since superuser dbname is `*`
 			Key:  "dbname",
 		}}
 	}
@@ -357,8 +358,13 @@ func (Postgres) zalandoQuery() filter.Filter {
 	return filter.Label{Name: "application", Value: "spilo"}
 }
 
+func (Postgres) cnpgClusterName(conf *conftypes.Global) (string, bool) {
+	v, ok := conf.DBPod.Labels["cnpg.io/cluster"]
+	return v, ok
+}
+
 func (db Postgres) cnpgSecretName(conf *conftypes.Global) string {
-	if cluster, ok := conf.DBPod.Labels["cnpg.io/cluster"]; ok {
+	if cluster, ok := db.cnpgClusterName(conf); ok {
 		if conf.Username == db.UserDefault() {
 			return cluster + "-superuser"
 		}
