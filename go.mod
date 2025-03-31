@@ -3,7 +3,7 @@ module github.com/clevyr/kubedb
 go 1.24.1
 
 require (
-	al.essio.dev/pkg/shellescape v1.5.1
+	al.essio.dev/pkg/shellescape v1.6.0
 	cloud.google.com/go/storage v1.50.0
 	gabe565.com/spinners v1.3.0
 	gabe565.com/utils v0.0.0-20250302063333-ede73b14282c
