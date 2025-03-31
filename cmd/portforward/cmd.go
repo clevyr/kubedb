@@ -36,7 +36,12 @@ func New() *cobra.Command {
 	cmd.Flags().StringSlice(consts.FlagAddress, []string{"127.0.0.1", "::1"}, "Local listen address")
 	must.Must(cmd.RegisterFlagCompletionFunc(consts.FlagAddress,
 		func(_ *cobra.Command, _ []string, _ string) ([]string, cobra.ShellCompDirective) {
-			return []string{"127.0.0.1\tprivate", "::1\tprivate", "0.0.0.0\tpublic", "::\tpublic"}, cobra.ShellCompDirectiveNoFileComp
+			return []string{
+				"127.0.0.1\tprivate",
+				"::1\tprivate",
+				"0.0.0.0\tpublic",
+				"::\tpublic",
+			}, cobra.ShellCompDirectiveNoFileComp
 		}),
 	)
 

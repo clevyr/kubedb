@@ -41,6 +41,7 @@ var (
 	ErrConfigMapDoesNotHaveKey = errors.New("config map does not have key")
 )
 
+//nolint:nestif,gocognit
 func (e LookupEnv) GetValue(ctx context.Context, client KubeClient, pod corev1.Pod) (string, error) {
 	if len(e) == 0 {
 		return "", ErrNoEnvNames

@@ -1,23 +1,19 @@
-run:
-  timeout: 5m
+version: "2"
 
 issues:
   max-same-issues: 50
-  exclude-rules:
-    - path: "_test\\.go"
-      linters:
-        - dupl
 
-linters-settings:
-  gosec:
-    excludes:
-      - G110
-  importas:
-    alias:
-      - pkg: k8s.io/api/(\w+)/(v[\w\d]+)
-        alias: $1$2
-      - pkg: k8s.io/apimachinery/pkg/apis/(\w+)/(v[\w\d]+)
-        alias: $1$2
+formatters:
+  enable:
+    - gci
+    - gofmt
+    - goimports
+    - golines
+  exclusions:
+    generated: lax
+  settings:
+    golines:
+      max-len: 120
 
 linters:
   enable:
@@ -25,46 +21,50 @@ linters:
     - asciicheck
     - bidichk
     - bodyclose
-    - copyloopvar
+    - canonicalheader
     - copyloopvar
     - decorder
+    - cyclop
+    - depguard
     - dupl
     - durationcheck
     - err113
     - errcheck
     - errname
     - errorlint
+    - exptostd
+    - fatcontext
     - forbidigo
-    - gci
-    - ginkgolinter
+    - funlen
     - gocheckcompilerdirectives
     - gochecknoglobals
     - gochecknoinits
     - gochecksumtype
+    - gocognit
     - goconst
     - gocritic
     - gocyclo
     - godox
-    - gofumpt
     - goheader
-    - goimports
+    - godot
     - gomoddirectives
-    - gomodguard
     - goprintffuncname
     - gosec
-    - gosimple
-    - govet
     - importas
     - inamedparam
-    - ineffassign
     - interfacebloat
+    - govet
+    - iface
+    - ineffassign
     - intrange
     - loggercheck
     - makezero
     - mirror
     - musttag
     - nakedret
+    - nestif
     - nilerr
+    - nilnesserr
     - nilnil
     - noctx
     - nolintlint
@@ -76,16 +76,15 @@ linters:
     - promlinter
     - protogetter
     - reassign
+    - recvcheck
     - revive
     - rowserrcheck
     - sloglint
     - spancheck
     - sqlclosecheck
     - staticcheck
-    - stylecheck
     - testableexamples
     - testifylint
-    - typecheck
     - unconvert
     - unparam
     - unused
@@ -93,3 +92,83 @@ linters:
     - usetesting
     - wastedassign
     - whitespace
+  settings:
+    cyclop:
+      max-complexity: 30
+    depguard:
+      rules:
+        "deprecated":
+          files:
+            - "$all"
+          deny:
+            - pkg: github.com/golang/protobuf
+              desc: Use google.golang.org/protobuf instead, see https://developers.google.com/protocol-buffers/docs/reference/go/faq#modules
+            - pkg: github.com/satori/go.uuid
+              desc: Use github.com/google/uuid instead, satori's package is not maintained
+            - pkg: github.com/gofrs/uuid$
+              desc: Use github.com/gofrs/uuid/v5 or later, it was not a go module before v5
+        "non-test files":
+          files:
+            - "!$test"
+          deny:
+            - pkg: math/rand$
+              desc: Use math/rand/v2 instead, see https://go.dev/blog/randv2
+        "non-main files":
+          files:
+            - "!**/main.go"
+          deny:
+            - pkg: log$
+              desc: Use log/slog instead, see https://go.dev/blog/slog
+    errcheck:
+      check-type-assertions: true
+    funlen:
+      lines: 200
+      statements: 50
+    gocognit:
+      min-complexity: 50
+    gocritic:
+      settings:
+        captLocal:
+          paramsOnly: false
+        underef:
+          skipRecvDeref: false
+    gosec:
+      excludes:
+        - G306
+    govet:
+      enable-all: true
+      disable:
+        - fieldalignment
+        - shadow
+    inamedparam:
+      skip-single-param: true
+    nakedret:
+      max-func-lines: 0
+    nestif:
+      min-complexity: 15
+    nolintlint:
+      allow-no-explanation: [funlen, gocognit, golines]
+      require-specific: true
+    perfsprint:
+      strconcat: false
+    usetesting:
+      os-temp-dir: true
+
+  exclusions:
+    warn-unused: true
+    generated: lax
+    presets:
+      - comments
+      - common-false-positives
+      - legacy
+      - std-error-handling
+    rules:
+      - path: _test\.go
+        linters:
+          - dupl
+          - err113
+          - errcheck
+          - funlen
+          - gocognit
+          - gocyclo
+          - gosec

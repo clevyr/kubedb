@@ -8,6 +8,8 @@ import (
 )
 
 func RemoteGzip(cmd *cobra.Command) {
-	cmd.Flags().Bool(consts.FlagRemoteGzip, true, "Compress data over the wire. Results in lower bandwidth usage, but higher database load. May improve speed on slow connections.")
+	cmd.Flags().Bool(consts.FlagRemoteGzip, true,
+		"Compress data over the wire. Results in lower bandwidth usage, but higher database load. May improve speed on slow connections.",
+	)
 	must.Must(cmd.RegisterFlagCompletionFunc(consts.FlagRemoteGzip, completion.BoolCompletion))
 }

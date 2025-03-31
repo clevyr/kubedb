@@ -22,6 +22,8 @@ func Config(cmd *cobra.Command) {
 }
 
 func Spinner(cmd *cobra.Command) {
-	cmd.Flags().String(consts.FlagSpinner, consts.DefaultSpinner, "Spinner from https://jsfiddle.net/sindresorhus/2eLtsbey/embedded/result/")
+	cmd.Flags().String(consts.FlagSpinner, consts.DefaultSpinner,
+		"Spinner from https://jsfiddle.net/sindresorhus/2eLtsbey/embedded/result/",
+	)
 	must.Must(cmd.Flags().MarkHidden(consts.FlagSpinner))
 }

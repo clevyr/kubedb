@@ -132,7 +132,8 @@ func run(cmd *cobra.Command, _ []string) error {
 		return fmt.Errorf("%w: %s", util.ErrNoDump, action.Dialect.Name())
 	}
 
-	isDir := action.Output == "" || strings.HasSuffix(action.Output, string(os.PathSeparator)) || storage.IsCloudDir(action.Output)
+	isDir := action.Output == "" || strings.HasSuffix(action.Output, string(os.PathSeparator)) ||
+		storage.IsCloudDir(action.Output)
 	if !isDir && !storage.IsCloud(action.Output) {
 		if stat, err := os.Stat(action.Output); err == nil {
 			isDir = stat.IsDir()

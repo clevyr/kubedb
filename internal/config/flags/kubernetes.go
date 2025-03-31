@@ -15,7 +15,9 @@ import (
 )
 
 func Kubeconfig(cmd *cobra.Command) {
-	cmd.PersistentFlags().String(consts.FlagKubeConfig, filepath.Join("$HOME", ".kube", "config"), "Paths to the kubeconfig file")
+	cmd.PersistentFlags().String(consts.FlagKubeConfig, filepath.Join("$HOME", ".kube", "config"),
+		"Paths to the kubeconfig file",
+	)
 }
 
 func Context(cmd *cobra.Command) {
@@ -52,7 +54,11 @@ func Namespace(cmd *cobra.Command) {
 				return nil, cobra.ShellCompDirectiveError
 			}
 
-			client, err := kubernetes.NewClient(config.Global.Kubeconfig, config.Global.Context, config.Global.Namespace)
+			client, err := kubernetes.NewClient(
+				config.Global.Kubeconfig,
+				config.Global.Context,
+				config.Global.Namespace,
+			)
 			if err != nil {
 				slog.Error("Failed to create Kubernetes client", "error", err)
 				return nil, cobra.ShellCompDirectiveError
@@ -79,7 +85,11 @@ func Pod(cmd *cobra.Command) {
 				return nil, cobra.ShellCompDirectiveError
 			}
 
-			client, err := kubernetes.NewClient(config.Global.Kubeconfig, config.Global.Context, config.Global.Namespace)
+			client, err := kubernetes.NewClient(
+				config.Global.Kubeconfig,
+				config.Global.Context,
+				config.Global.Namespace,
+			)
 			if err != nil {
 				slog.Error("Failed to create Kubernetes client", "error", err)
 				return nil, cobra.ShellCompDirectiveError
@@ -109,6 +119,8 @@ func CreateJob(cmd *cobra.Command) {
 }
 
 func CreateNetworkPolicy(cmd *cobra.Command) {
-	cmd.Flags().Bool(consts.FlagCreateNetworkPolicy, true, "Creates a network policy allowing the KubeDB job to talk to the database.")
+	cmd.Flags().Bool(consts.FlagCreateNetworkPolicy, true,
+		"Creates a network policy allowing the KubeDB job to talk to the database.",
+	)
 	must.Must(cmd.RegisterFlagCompletionFunc(consts.FlagCreateNetworkPolicy, completion.BoolCompletion))
 }

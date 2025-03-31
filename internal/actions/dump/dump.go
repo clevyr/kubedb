@@ -33,6 +33,7 @@ type Dump struct {
 	conftypes.Dump `koanf:",squash"`
 }
 
+//nolint:funlen
 func (action Dump) Run(ctx context.Context) error {
 	errGroup, ctx := errgroup.WithContext(ctx)
 
@@ -155,7 +156,7 @@ func (action Dump) Run(ctx context.Context) error {
 			}
 		}
 
-		n, err := io.Copy(io.MultiWriter(f, bar), r)
+		n, err := io.Copy(io.MultiWriter(f, bar), r) //nolint:gosec
 		written.Add(n)
 		if err != nil {
 			return err
@@ -188,7 +189,9 @@ func (action Dump) Run(ctx context.Context) error {
 
 	if handler, ok := notifier.FromContext(ctx); ok {
 		if logger, ok := handler.(notifier.Logs); ok {
-			logger.SetLog(action.summary(nil, time.Since(startTime).Truncate(10*time.Millisecond), written.Load(), true))
+			logger.SetLog(
+				action.summary(nil, time.Since(startTime).Truncate(10*time.Millisecond), written.Load(), true),
+			)
 		}
 	}
 	return nil

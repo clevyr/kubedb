@@ -22,8 +22,20 @@ func TestBuilder_Push(t *testing.T) {
 		want      *Builder
 		wantPanic panicFunc
 	}{
-		{"empty", fields{[]any{}}, args{[]any{"echo", "hello world"}}, &Builder{[]any{"echo", "hello world"}}, assert.NotPanics},
-		{"append", fields{[]any{"echo"}}, args{[]any{"hello world"}}, &Builder{[]any{"echo", "hello world"}}, assert.NotPanics},
+		{
+			"empty",
+			fields{[]any{}},
+			args{[]any{"echo", "hello world"}},
+			&Builder{[]any{"echo", "hello world"}},
+			assert.NotPanics,
+		},
+		{
+			"append",
+			fields{[]any{"echo"}},
+			args{[]any{"hello world"}},
+			&Builder{[]any{"echo", "hello world"}},
+			assert.NotPanics,
+		},
 		{"panic", fields{}, args{[]any{0}}, nil, assert.Panics},
 	}
 	for _, tt := range tests {
@@ -52,7 +64,12 @@ func TestBuilder_String(t *testing.T) {
 		{"simple", fields{[]any{"echo", "hello", "world"}}, "echo hello world", assert.NotPanics},
 		{"pipe", fields{[]any{"echo", "hello", "world", Pipe, "cat"}}, "echo hello world | cat", assert.NotPanics},
 		{"escape", fields{[]any{"echo", "hello world"}}, "echo 'hello world'", assert.NotPanics},
-		{"env", fields{[]any{Env{"MESSAGE", "hello world"}, "env"}}, Env{"MESSAGE", "hello world"}.Quote() + " env", assert.NotPanics},
+		{
+			"env",
+			fields{[]any{Env{"MESSAGE", "hello world"}, "env"}},
+			Env{"MESSAGE", "hello world"}.Quote() + " env",
+			assert.NotPanics,
+		},
 		{"panic", fields{[]any{0}}, "", assert.Panics},
 	}
 	for _, tt := range tests {
@@ -82,8 +99,20 @@ func TestBuilder_Unshift(t *testing.T) {
 		want      *Builder
 		wantPanic panicFunc
 	}{
-		{"empty", fields{[]any{}}, args{[]any{"echo", "hello", "world"}}, &Builder{[]any{"echo", "hello", "world"}}, assert.NotPanics},
-		{"prepend", fields{[]any{"hello", "world"}}, args{[]any{"echo"}}, &Builder{[]any{"echo", "hello", "world"}}, assert.NotPanics},
+		{
+			"empty",
+			fields{[]any{}},
+			args{[]any{"echo", "hello", "world"}},
+			&Builder{[]any{"echo", "hello", "world"}},
+			assert.NotPanics,
+		},
+		{
+			"prepend",
+			fields{[]any{"hello", "world"}},
+			args{[]any{"echo"}},
+			&Builder{[]any{"echo", "hello", "world"}},
+			assert.NotPanics,
+		},
 		{"panic", fields{}, args{[]any{0}}, nil, assert.Panics},
 	}
 	for _, tt := range tests {

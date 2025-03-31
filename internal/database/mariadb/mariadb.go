@@ -118,7 +118,12 @@ func (MariaDB) ExecCommand(conf *conftypes.Exec) *command.Builder {
 
 func (MariaDB) DumpCommand(conf *conftypes.Dump) *command.Builder {
 	cmd := command.NewBuilder(
-		command.Raw(`"$(which mariadb-dump || which mysqldump)"`), "--host="+conf.Host, "--user="+conf.Username, conf.Database,
+		command.Raw(
+			`"$(which mariadb-dump || which mysqldump)"`,
+		),
+		"--host="+conf.Host,
+		"--user="+conf.Username,
+		conf.Database,
 	)
 	if conf.Password != "" {
 		cmd.Unshift(command.NewEnv("MYSQL_PWD", conf.Password))
@@ -143,7 +148,12 @@ func (MariaDB) DumpCommand(conf *conftypes.Dump) *command.Builder {
 
 func (MariaDB) RestoreCommand(conf *conftypes.Restore, _ sqlformat.Format) *command.Builder {
 	cmd := command.NewBuilder(
-		command.Raw(`"$(which mariadb || which mysql)"`), "--host="+conf.Host, "--user="+conf.Username, "--database="+conf.Database,
+		command.Raw(
+			`"$(which mariadb || which mysql)"`,
+		),
+		"--host="+conf.Host,
+		"--user="+conf.Username,
+		"--database="+conf.Database,
 	)
 	if conf.Password != "" {
 		cmd.Unshift(command.NewEnv("MYSQL_PWD", conf.Password))

@@ -145,5 +145,5 @@ func Execute(cmd *cobra.Command) (err error) {
 	}()
 
 	err = cmd.Execute()
-	return
+	return err
 }

@@ -64,7 +64,10 @@ func TestDetectFormat(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			assert.Equalf(t, tt.want, DetectFormat(tt.args.db, tt.args.path), "DetectFormat(%v, %v)", tt.args.db, tt.args.path)
+			assert.Equalf(t,
+				tt.want, DetectFormat(tt.args.db, tt.args.path),
+				"DetectFormat(%v, %v)", tt.args.db, tt.args.path,
+			)
 		})
 	}
 }
@@ -90,7 +93,10 @@ func TestGetExtension(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			assert.Equalf(t, tt.want, GetExtension(tt.args.db, tt.args.format), "GetExtension(%v, %v)", tt.args.db, tt.args.format)
+			assert.Equalf(t,
+				tt.want, GetExtension(tt.args.db, tt.args.format),
+				"GetExtension(%v, %v)", tt.args.db, tt.args.format,
+			)
 		})
 	}
 }

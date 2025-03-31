@@ -113,7 +113,11 @@ func (db Postgres) PodFilters() filter.Filter {
 	}
 }
 
-func (db Postgres) FilterPods(ctx context.Context, client kubernetes.KubeClient, pods []corev1.Pod) ([]corev1.Pod, error) {
+func (db Postgres) FilterPods(
+	ctx context.Context,
+	client kubernetes.KubeClient,
+	pods []corev1.Pod,
+) ([]corev1.Pod, error) {
 	preferred := make([]corev1.Pod, 0, len(pods))
 
 	// bitnami/postgres

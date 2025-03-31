@@ -49,32 +49,34 @@ func New(w io.Writer, total int64, label string, enabled bool, spinnerKey string
 	}
 	bar.logger = NewBarSafeLogger(w, bar)
 	if enabled {
-		go func() {
-			for {
-				select {
-				case <-ctx.Done():
-					return
-				case <-time.After(throttle):
-					if bar.IsFinished() {
-						return
-					}
-					if bar.mu.TryLock() {
-						if !bar.logger.canOverwrite && time.Since(bar.logger.lastWrite) > 10*time.Millisecond {
-							_, _ = io.WriteString(w, "\n")
-							bar.logger.canOverwrite = true
-						}
-						if bar.logger.canOverwrite {
-							_ = bar.RenderBlank()
-							_, _ = io.WriteString(w, bar.String())
-						}
-						bar.mu.Unlock()
-					}
-				}
-			}
-		}()
+		go timingCoordinator(ctx, bar, w, throttle)
 	}
 
 	return bar
+}
+
+func timingCoordinator(ctx context.Context, bar *ProgressBar, w io.Writer, throttle time.Duration) {
+	for {
+		select {
+		case <-ctx.Done():
+			return
+		case <-time.After(throttle):
+			if bar.IsFinished() {
+				return
+			}
+			if bar.mu.TryLock() {
+				if !bar.logger.canOverwrite && time.Since(bar.logger.lastWrite) > 10*time.Millisecond {
+					_, _ = io.WriteString(w, "\n")
+					bar.logger.canOverwrite = true
+				}
+				if bar.logger.canOverwrite {
+					_ = bar.RenderBlank()
+					_, _ = io.WriteString(w, bar.String())
+				}
+				bar.mu.Unlock()
+			}
+		}
+	}
 }
 
 type ProgressBar struct {

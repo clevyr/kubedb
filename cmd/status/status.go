@@ -86,7 +86,9 @@ func run(cmd *cobra.Command, _ []string) error {
 	}
 
 	if namespaces, err := conf.Client.Namespaces().List(cmd.Context(), metav1.ListOptions{}); err == nil {
-		_, _ = fmt.Fprintln(cmd.OutOrStdout(), prefixOk, "Cluster has", bold(strconv.Itoa(len(namespaces.Items))), "namespaces")
+		_, _ = fmt.Fprintln(cmd.OutOrStdout(),
+			prefixOk, "Cluster has", bold(strconv.Itoa(len(namespaces.Items))), "namespaces",
+		)
 	} else {
 		_, _ = fmt.Fprintln(cmd.OutOrStdout(), prefixErr, "Failed to list namespaces:", err.Error())
 	}
@@ -96,11 +98,7 @@ func run(cmd *cobra.Command, _ []string) error {
 	_, _ = fmt.Fprintln(cmd.OutOrStdout(), bold("Database Info"))
 	if defaultSetupErr == nil {
 		_, _ = fmt.Fprintln(cmd.OutOrStdout(),
-			prefixOk,
-			"Found",
-			bold(conf.Dialect.Name()),
-			"database",
-			bold(conf.DBPod.ObjectMeta.Name),
+			prefixOk, "Found", bold(conf.Dialect.Name()), "database", bold(conf.DBPod.Name),
 		)
 	} else {
 		if errors.Is(defaultSetupErr, database.ErrDatabaseNotFound) {

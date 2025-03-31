@@ -21,8 +21,18 @@ func TestFilename_Generate(t *testing.T) {
 		wantErr bool
 	}{
 		{"no database", fields{"", "test", ".sql.gz", time.Time{}}, "test_0001-01-01_000000.sql.gz", false},
-		{"with database", fields{"postgres", "test", ".sql.gz", time.Time{}}, "test_postgres_0001-01-01_000000.sql.gz", false},
-		{"database matches namespace", fields{"test", "test", ".sql.gz", time.Time{}}, "test_0001-01-01_000000.sql.gz", false},
+		{
+			"with database",
+			fields{"postgres", "test", ".sql.gz", time.Time{}},
+			"test_postgres_0001-01-01_000000.sql.gz",
+			false,
+		},
+		{
+			"database matches namespace",
+			fields{"test", "test", ".sql.gz", time.Time{}},
+			"test_0001-01-01_000000.sql.gz",
+			false,
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {

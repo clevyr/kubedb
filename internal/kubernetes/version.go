@@ -9,7 +9,7 @@ import (
 
 var ErrInvalidVersion = errors.New("invalid version")
 
-func (client *KubeClient) MinServerVersion(wantMajor, wantMinor int) (bool, error) {
+func (client KubeClient) MinServerVersion(wantMajor, wantMinor int) (bool, error) {
 	serverVersion, err := client.Discovery.ServerVersion()
 	if err != nil {
 		return false, err

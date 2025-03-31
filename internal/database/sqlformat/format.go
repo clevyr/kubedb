@@ -8,6 +8,7 @@ import (
 
 //go:generate go tool stringer -type Format -linecomment
 
+//nolint:recvcheck
 type Format uint8
 
 const (

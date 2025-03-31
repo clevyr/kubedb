@@ -12,7 +12,9 @@ import (
 )
 
 func Dialect(cmd *cobra.Command) {
-	cmd.PersistentFlags().String(consts.FlagDialect, "", "Database dialect. (one of "+strings.Join(database.Names(), ", ")+") (default discovered)")
+	cmd.PersistentFlags().String(consts.FlagDialect, "",
+		"Database dialect. (one of "+strings.Join(database.Names(), ", ")+") (default discovered)",
+	)
 	must.Must(cmd.RegisterFlagCompletionFunc(consts.FlagDialect,
 		func(_ *cobra.Command, _ []string, _ string) ([]string, cobra.ShellCompDirective) {
 			return database.Names(), cobra.ShellCompDirectiveNoFileComp

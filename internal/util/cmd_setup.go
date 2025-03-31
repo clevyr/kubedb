@@ -33,6 +33,7 @@ import (
 	"k8s.io/utils/ptr"
 )
 
+//nolint:gocognit,cyclop,funlen
 func DefaultSetup(cmd *cobra.Command, conf *conftypes.Global) error {
 	cmd.SilenceUsage = true
 	ctx := cmd.Context()
@@ -290,7 +291,7 @@ func createJob(ctx context.Context, conf *conftypes.Global, actionName string) e
 									PodAffinityTerm: corev1.PodAffinityTerm{
 										TopologyKey: "kubernetes.io/hostname",
 										LabelSelector: &metav1.LabelSelector{
-											MatchLabels: conf.DBPod.ObjectMeta.Labels,
+											MatchLabels: conf.DBPod.Labels,
 										},
 									},
 								},
@@ -299,7 +300,7 @@ func createJob(ctx context.Context, conf *conftypes.Global, actionName string) e
 									PodAffinityTerm: corev1.PodAffinityTerm{
 										TopologyKey: "topology.kubernetes.io/zone",
 										LabelSelector: &metav1.LabelSelector{
-											MatchLabels: conf.DBPod.ObjectMeta.Labels,
+											MatchLabels: conf.DBPod.Labels,
 										},
 									},
 								},
@@ -308,7 +309,7 @@ func createJob(ctx context.Context, conf *conftypes.Global, actionName string) e
 									PodAffinityTerm: corev1.PodAffinityTerm{
 										TopologyKey: "topology.kubernetes.io/region",
 										LabelSelector: &metav1.LabelSelector{
-											MatchLabels: conf.DBPod.ObjectMeta.Labels,
+											MatchLabels: conf.DBPod.Labels,
 										},
 									},
 								},
@@ -388,7 +389,7 @@ var (
 func watchJobPod(ctx context.Context, conf *conftypes.Global) error {
 	slog.Info("Waiting for job...",
 		"namespace", conf.Namespace,
-		"job", conf.Job.ObjectMeta.Name,
+		"job", conf.Job.Name,
 	)
 
 	ctx, cancel := context.WithTimeout(ctx, 5*time.Minute)
@@ -470,7 +471,7 @@ func jobPodUIDLabel(conf *conftypes.Global, job *batchv1.Job) (string, string) {
 	} else {
 		key = "controller-uid"
 	}
-	return key, string(job.ObjectMeta.UID)
+	return key, string(job.UID)
 }
 
 func jobPodLabelSelector(conf *conftypes.Global, job *batchv1.Job) string {

@@ -32,30 +32,106 @@ func TestRestore_buildCommand(t *testing.T) {
 	}{
 		{
 			"postgres-gzip",
-			fields{Restore: conftypes.Restore{Global: &conftypes.Global{Dialect: postgres.Postgres{}, Host: "1.1.1.1", Database: "d", Username: "u", RemoteGzip: true}}},
+			fields{
+				Restore: conftypes.Restore{
+					Global: &conftypes.Global{
+						Dialect:    postgres.Postgres{},
+						Host:       "1.1.1.1",
+						Database:   "d",
+						Username:   "u",
+						RemoteGzip: true,
+					},
+				},
+			},
 			args{sqlformat.Gzip},
-			command.NewBuilder("gunzip", "--force", command.Pipe, command.Raw("{"), "psql", "--host=1.1.1.1", "--username=u", "--dbname=d", command.Raw("|| { cat >/dev/null; kill $$; }; }")),
+			command.NewBuilder(
+				"gunzip",
+				"--force",
+				command.Pipe,
+				command.Raw("{"),
+				"psql",
+				"--host=1.1.1.1",
+				"--username=u",
+				"--dbname=d",
+				command.Raw("|| { cat >/dev/null; kill $$; }; }"),
+			),
 			require.NoError,
 		},
 		{
 			"postgres-plain",
-			fields{Restore: conftypes.Restore{Global: &conftypes.Global{Dialect: postgres.Postgres{}, Host: "1.1.1.1", Database: "d", Username: "u", RemoteGzip: true}}},
+			fields{
+				Restore: conftypes.Restore{
+					Global: &conftypes.Global{
+						Dialect:    postgres.Postgres{},
+						Host:       "1.1.1.1",
+						Database:   "d",
+						Username:   "u",
+						RemoteGzip: true,
+					},
+				},
+			},
 			args{sqlformat.Gzip},
-			command.NewBuilder("gunzip", "--force", command.Pipe, command.Raw("{"), "psql", "--host=1.1.1.1", "--username=u", "--dbname=d", command.Raw("|| { cat >/dev/null; kill $$; }; }")),
+			command.NewBuilder(
+				"gunzip",
+				"--force",
+				command.Pipe,
+				command.Raw("{"),
+				"psql",
+				"--host=1.1.1.1",
+				"--username=u",
+				"--dbname=d",
+				command.Raw("|| { cat >/dev/null; kill $$; }; }"),
+			),
 			require.NoError,
 		},
 		{
 			"postgres-custom",
-			fields{Restore: conftypes.Restore{Global: &conftypes.Global{Dialect: postgres.Postgres{}, Host: "1.1.1.1", Database: "d", Username: "u", RemoteGzip: true}}},
+			fields{
+				Restore: conftypes.Restore{
+					Global: &conftypes.Global{
+						Dialect:    postgres.Postgres{},
+						Host:       "1.1.1.1",
+						Database:   "d",
+						Username:   "u",
+						RemoteGzip: true,
+					},
+				},
+			},
 			args{sqlformat.Gzip},
-			command.NewBuilder("gunzip", "--force", command.Pipe, command.Raw("{"), "psql", "--host=1.1.1.1", "--username=u", "--dbname=d", command.Raw("|| { cat >/dev/null; kill $$; }; }")),
+			command.NewBuilder(
+				"gunzip",
+				"--force",
+				command.Pipe,
+				command.Raw("{"),
+				"psql",
+				"--host=1.1.1.1",
+				"--username=u",
+				"--dbname=d",
+				command.Raw("|| { cat >/dev/null; kill $$; }; }"),
+			),
 			require.NoError,
 		},
 		{
 			"postgres-remote-gzip-disabled",
-			fields{Restore: conftypes.Restore{Global: &conftypes.Global{Dialect: postgres.Postgres{}, Host: "1.1.1.1", Database: "d", Username: "u"}}},
+			fields{
+				Restore: conftypes.Restore{
+					Global: &conftypes.Global{
+						Dialect:  postgres.Postgres{},
+						Host:     "1.1.1.1",
+						Database: "d",
+						Username: "u",
+					},
+				},
+			},
 			args{sqlformat.Gzip},
-			command.NewBuilder(command.Raw("{"), "psql", "--host=1.1.1.1", "--username=u", "--dbname=d", command.Raw("|| { cat >/dev/null; kill $$; }; }")),
+			command.NewBuilder(
+				command.Raw("{"),
+				"psql",
+				"--host=1.1.1.1",
+				"--username=u",
+				"--dbname=d",
+				command.Raw("|| { cat >/dev/null; kill $$; }; }"),
+			),
 			require.NoError,
 		},
 	}
@@ -94,8 +170,20 @@ func TestRestore_copy(t *testing.T) {
 		want    string
 		wantErr require.ErrorAssertionFunc
 	}{
-		{"gzip", fields{Restore: conftypes.Restore{Global: &conftypes.Global{RemoteGzip: true}}}, args{strings.NewReader(input)}, gzipped.String(), require.NoError},
-		{"raw", fields{Restore: conftypes.Restore{Global: &conftypes.Global{}}}, args{strings.NewReader(input)}, "hello world", require.NoError},
+		{
+			"gzip",
+			fields{Restore: conftypes.Restore{Global: &conftypes.Global{RemoteGzip: true}}},
+			args{strings.NewReader(input)},
+			gzipped.String(),
+			require.NoError,
+		},
+		{
+			"raw",
+			fields{Restore: conftypes.Restore{Global: &conftypes.Global{}}},
+			args{strings.NewReader(input)},
+			"hello world",
+			require.NoError,
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {

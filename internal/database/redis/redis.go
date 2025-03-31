@@ -66,8 +66,14 @@ func (db Redis) FilterPods(ctx context.Context, client kubernetes.KubeClient, po
 		slog.Debug("Querying Sentinel for primary instance")
 		cmd := command.NewBuilder(
 			command.Raw(`REDISCLI_AUTH="${REDIS_PASSWORD:-$VALKEY_PASSWORD}"`),
-			command.Raw(`"$(which redis-cli || which valkey-cli)"`), "-p", command.Raw(`"${REDIS_SENTINEL_PORT:-$VALKEY_SENTINEL_PORT}"`), "--raw",
-			"SENTINEL", "MASTERS",
+			command.Raw(
+				`"$(which redis-cli || which valkey-cli)"`,
+			),
+			"-p",
+			command.Raw(`"${REDIS_SENTINEL_PORT:-$VALKEY_SENTINEL_PORT}"`),
+			"--raw",
+			"SENTINEL",
+			"MASTERS",
 		)
 
 		var buf strings.Builder

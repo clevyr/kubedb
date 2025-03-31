@@ -126,7 +126,7 @@ func (action Restore) Run(ctx context.Context) error {
 				}(f)
 			}
 
-			n, err := io.Copy(w, f)
+			n, err := io.Copy(w, f) //nolint:gosec
 			written.Add(n)
 			if err != nil {
 				return err
@@ -198,7 +198,9 @@ func (action Restore) Run(ctx context.Context) error {
 
 	if handler, ok := notifier.FromContext(ctx); ok {
 		if logger, ok := handler.(notifier.Logs); ok {
-			logger.SetLog(action.summary(nil, time.Since(startTime).Truncate(10*time.Millisecond), written.Load(), true))
+			logger.SetLog(
+				action.summary(nil, time.Since(startTime).Truncate(10*time.Millisecond), written.Load(), true),
+			)
 		}
 	}
 	return nil
@@ -238,7 +240,12 @@ func (action Restore) copy(w io.Writer, r io.Reader) (int64, error) {
 	return n, err
 }
 
-func (action Restore) runInDatabasePod(ctx context.Context, r *io.PipeReader, stdout, stderr io.Writer, inputFormat sqlformat.Format) error {
+func (action Restore) runInDatabasePod(
+	ctx context.Context,
+	r *io.PipeReader,
+	stdout, stderr io.Writer,
+	inputFormat sqlformat.Format,
+) error {
 	defer func(r *io.PipeReader) {
 		_ = r.Close()
 	}(r)
