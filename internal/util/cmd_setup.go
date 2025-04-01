@@ -260,6 +260,9 @@ func createJob(ctx context.Context, conf *conftypes.Global, actionName string) e
 	podLabels := map[string]string{
 		"sidecar.istio.io/inject": "false",
 	}
+	if instance, ok := conf.DBPod.Labels["app.kubernetes.io/instance"]; ok {
+		podLabels[instance+"-client"] = "true"
+	}
 	maps.Copy(podLabels, standardLabels)
 	maps.Copy(podLabels, conf.JobPodLabels)
 
