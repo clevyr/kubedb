@@ -114,6 +114,8 @@ func (db Redis) FilterPods(ctx context.Context, client kubernetes.KubeClient, po
 func (db Redis) PasswordEnvs(_ *conftypes.Global) kubernetes.ConfigLookups {
 	return kubernetes.ConfigLookups{
 		kubernetes.LookupEnv{"REDIS_PASSWORD", "VALKEY_PASSWORD", "KEYDB_PASSWORD"},
+		kubernetes.LookupSecretVolume{Name: "redis-password", Key: "redis-password"},
+		kubernetes.LookupSecretVolume{Name: "valkey-password", Key: "valkey-password"},
 	}
 }
 

@@ -250,6 +250,7 @@ func TestMariaDB_PasswordEnvs(t *testing.T) {
 			kubernetes.ConfigLookups{
 				kubernetes.LookupEnv{"MARIADB_PASSWORD", "MYSQL_PASSWORD"},
 				kubernetes.LookupSecretVolume{Name: "mariadb-credentials", Key: "mariadb-password"},
+				kubernetes.LookupSecretVolume{Name: "mysql-credentials", Key: "mysql-password"},
 			},
 		},
 		{
@@ -258,6 +259,7 @@ func TestMariaDB_PasswordEnvs(t *testing.T) {
 			kubernetes.ConfigLookups{
 				kubernetes.LookupEnv{"MARIADB_ROOT_PASSWORD", "MYSQL_ROOT_PASSWORD"},
 				kubernetes.LookupSecretVolume{Name: "mariadb-credentials", Key: "mariadb-root-password"},
+				kubernetes.LookupSecretVolume{Name: "mysql-credentials", Key: "mysql-root-password"},
 			},
 		},
 	}
