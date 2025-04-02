@@ -2,6 +2,7 @@ package portforward
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"log/slog"
 	"net/http"
@@ -10,11 +11,13 @@ import (
 	"path"
 	"slices"
 	"strconv"
+	"time"
 
 	"github.com/charmbracelet/lipgloss"
 	"github.com/clevyr/kubedb/internal/config/conftypes"
 	"github.com/clevyr/kubedb/internal/log"
 	"github.com/clevyr/kubedb/internal/tui"
+	"golang.org/x/time/rate"
 	"k8s.io/client-go/tools/portforward"
 	"k8s.io/client-go/transport/spdy"
 )
@@ -40,24 +43,13 @@ func (a PortForward) Run(ctx context.Context) error {
 		return err
 	}
 
-	dialer := spdy.NewDialer(upgrader, &http.Client{Transport: transport}, http.MethodPost, hostURL)
-	ports := []string{fmt.Sprintf("%d:%d", a.ListenPort, a.Port)}
-	stopCh := make(chan struct{}, 1)
-	readyCh := make(chan struct{}, 1)
-	outWriter := log.NewWriter(slog.Default(), slog.LevelInfo)
-	errWriter := log.NewWriter(slog.Default(), slog.LevelError)
-	fw, err := portforward.NewOnAddresses(dialer, a.Address, ports, stopCh, readyCh, outWriter, errWriter)
-	if err != nil {
-		return err
-	}
-
-	ctx, cancel := context.WithCancel(ctx)
-	defer cancel()
+	readyCh, stopCh := make(chan struct{}), make(chan struct{})
 
 	go func() {
 		select {
 		case <-ctx.Done():
 		case <-readyCh:
+			readyCh = nil
 			a.printTable()
 		}
 	}()
@@ -67,7 +59,34 @@ func (a PortForward) Run(ctx context.Context) error {
 		close(stopCh)
 	}()
 
-	return fw.ForwardPorts()
+	dialer := spdy.NewDialer(upgrader, &http.Client{Transport: transport}, http.MethodPost, hostURL)
+	ports := []string{fmt.Sprintf("%d:%d", a.ListenPort, a.Port)}
+	outWriter := log.NewWriter(slog.Default(), slog.LevelInfo)
+	errWriter := log.NewWriter(slog.Default(), slog.LevelError)
+
+	limiter := rate.NewLimiter(rate.Every(time.Second), 3)
+	for {
+		fw, err := portforward.NewOnAddresses(dialer, a.Address, ports, stopCh, readyCh, outWriter, errWriter)
+		if err != nil {
+			return err
+		}
+
+		err = fw.ForwardPorts()
+		switch {
+		case err == nil:
+			return nil
+		case ctx.Err() != nil:
+			return ctx.Err()
+		case errors.Is(err, portforward.ErrLostConnectionToPod):
+		default:
+			return err
+		}
+
+		if err := limiter.Wait(ctx); err != nil {
+			return err
+		}
+		slog.Info("Reconnecting")
+	}
 }
 
 func (a PortForward) printTable() {

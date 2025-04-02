@@ -19,6 +19,6 @@ type Writer struct {
 }
 
 func (l Writer) Write(p []byte) (int, error) {
-	l.logger.Log(context.Background(), l.level, string(bytes.TrimRight(p, "\n")))
+	l.logger.Log(context.Background(), l.level, string(bytes.TrimSpace(p)))
 	return len(p), nil
 }
