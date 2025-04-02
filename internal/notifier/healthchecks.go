@@ -13,6 +13,7 @@ import (
 	"time"
 
 	"github.com/google/uuid"
+	"golang.org/x/time/rate"
 )
 
 var _ Logs = &Healthchecks{}
@@ -72,7 +73,13 @@ func (h *Healthchecks) SendStatus(ctx context.Context, status Status, log string
 	}
 
 	var res *http.Response
+	limit := rate.NewLimiter(rate.Every(time.Second), 1)
 	for i := range 5 {
+		if err := limit.Wait(ctx); err != nil {
+			return err
+		}
+		limit.SetLimit(limit.Limit() / 2)
+
 		if res, err = client.Do(req); err == nil {
 			_, _ = io.Copy(io.Discard, res.Body)
 			_ = res.Body.Close()
@@ -89,13 +96,7 @@ func (h *Healthchecks) SendStatus(ctx context.Context, status Status, log string
 			}
 		}
 
-		backoff := time.Duration(i+1) * time.Duration(i+1) * time.Second
-		slog.Debug("Healthchecks ping failed", "try", i+1, "backoff", backoff)
-		select {
-		case <-ctx.Done():
-			return ctx.Err()
-		case <-time.After(backoff):
-		}
+		slog.Debug("Healthchecks ping failed", "try", i+1)
 	}
 	switch {
 	case err != nil:
