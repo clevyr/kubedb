@@ -14,7 +14,9 @@ import (
 	"time"
 
 	"github.com/charmbracelet/lipgloss"
+	"github.com/charmbracelet/lipgloss/list"
 	"github.com/clevyr/kubedb/internal/config/conftypes"
+	"github.com/clevyr/kubedb/internal/database/postgres"
 	"github.com/clevyr/kubedb/internal/log"
 	"github.com/clevyr/kubedb/internal/tui"
 	"golang.org/x/time/rate"
@@ -127,6 +129,21 @@ func (a PortForward) printTable() {
 
 	headerStyle := tui.HeaderStyle(nil)
 	italicStyle := tui.TextStyle(nil).Italic(true)
+
+	tips := list.New(
+		tui.TextStyle(nil).Render("To connect from a Docker container, set the hostname to ") +
+			italicStyle.Render("host.docker.internal"),
+	).Enumerator(func(list.Items, int) string {
+		return " •"
+	})
+
+	if _, ok := a.Dialect.(postgres.Postgres); ok {
+		tips.Item(
+			tui.TextStyle(nil).Render("Postgres causes reconnects when SSL is enabled. Disable SSL by adding ") +
+				italicStyle.Render("sslmode=disable") + " to your connection string",
+		)
+	}
+
 	data := lipgloss.JoinVertical(lipgloss.Left,
 		lipgloss.JoinVertical(lipgloss.Center,
 			headerStyle.Render("Database Instance"),
@@ -138,9 +155,8 @@ func (a PortForward) printTable() {
 			params.Render(),
 		),
 		"",
-		headerStyle.Render("Tip:")+
-			tui.TextStyle(nil).Render(" If you're connecting from a Docker container, set the hostname to ")+
-			italicStyle.Render("host.docker.internal"),
+		headerStyle.Render("Tips:"),
+		tips.String(),
 	)
 
 	baseStyle := lipgloss.NewStyle().
