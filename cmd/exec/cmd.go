@@ -2,6 +2,7 @@ package exec
 
 import (
 	"gabe565.com/utils/must"
+	"github.com/clevyr/kubedb/internal/actions"
 	"github.com/clevyr/kubedb/internal/actions/exec"
 	"github.com/clevyr/kubedb/internal/config"
 	"github.com/clevyr/kubedb/internal/config/conftypes"
@@ -10,9 +11,6 @@ import (
 	"github.com/clevyr/kubedb/internal/util"
 	"github.com/spf13/cobra"
 )
-
-//nolint:gochecknoglobals
-var action = &exec.Exec{Exec: conftypes.Exec{Global: config.Global}}
 
 func New() *cobra.Command {
 	cmd := &cobra.Command{
@@ -43,13 +41,23 @@ func New() *cobra.Command {
 }
 
 func preRun(cmd *cobra.Command, _ []string) error {
+	action := &exec.Exec{Exec: conftypes.Exec{Global: config.Global}}
+
 	if err := config.Unmarshal(cmd, "exec", &action); err != nil {
 		return err
 	}
-	return util.DefaultSetup(cmd, action.Global)
+
+	if err := util.DefaultSetup(cmd, action.Global); err != nil {
+		return err
+	}
+
+	cmd.SetContext(actions.NewContext(cmd.Context(), action))
+	return nil
 }
 
 func run(cmd *cobra.Command, _ []string) error {
+	action := actions.FromContext[*exec.Exec](cmd.Context())
+
 	if err := util.CreateJob(cmd.Context(), cmd, action.Global); err != nil {
 		return err
 	}

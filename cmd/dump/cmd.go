@@ -13,6 +13,7 @@ import (
 	"time"
 
 	"gabe565.com/utils/must"
+	"github.com/clevyr/kubedb/internal/actions"
 	"github.com/clevyr/kubedb/internal/actions/dump"
 	"github.com/clevyr/kubedb/internal/config"
 	"github.com/clevyr/kubedb/internal/config/conftypes"
@@ -23,9 +24,6 @@ import (
 	"github.com/clevyr/kubedb/internal/util"
 	"github.com/spf13/cobra"
 )
-
-//nolint:gochecknoglobals
-var action = &dump.Dump{Dump: conftypes.Dump{Global: config.Global}}
 
 func New() *cobra.Command {
 	cmd := &cobra.Command{
@@ -67,6 +65,24 @@ func New() *cobra.Command {
 	return cmd
 }
 
+func preRun(cmd *cobra.Command, args []string) error {
+	action := &dump.Dump{Dump: conftypes.Dump{Global: config.Global}}
+
+	if err := config.Unmarshal(cmd, "dump", &action); err != nil {
+		return err
+	}
+	if len(args) > 0 {
+		action.Output = args[0]
+	}
+
+	if err := util.DefaultSetup(cmd, action.Global); err != nil {
+		return err
+	}
+
+	cmd.SetContext(actions.NewContext(cmd.Context(), action))
+	return nil
+}
+
 func validArgs(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
 	if len(args) != 0 || must.Must2(cmd.Flags().GetString(consts.FlagOutput)) != "" {
 		return nil, cobra.ShellCompDirectiveNoFileComp
@@ -79,6 +95,8 @@ func validArgs(cmd *cobra.Command, args []string, toComplete string) ([]string, 
 		slog.Error("Pre-run failed", "error", err)
 		return nil, cobra.ShellCompDirectiveError
 	}
+
+	action := actions.FromContext[*dump.Dump](cmd.Context())
 
 	db, ok := action.Dialect.(conftypes.DBDumper)
 	if !ok {
@@ -116,17 +134,9 @@ func validArgs(cmd *cobra.Command, args []string, toComplete string) ([]string, 
 	return exts, cobra.ShellCompDirectiveFilterFileExt
 }
 
-func preRun(cmd *cobra.Command, args []string) error {
-	if err := config.Unmarshal(cmd, "dump", &action); err != nil {
-		return err
-	}
-	if len(args) > 0 {
-		action.Output = args[0]
-	}
-	return util.DefaultSetup(cmd, action.Global)
-}
-
 func run(cmd *cobra.Command, _ []string) error {
+	action := actions.FromContext[*dump.Dump](cmd.Context())
+
 	db, ok := action.Dialect.(conftypes.DBDumper)
 	if !ok {
 		return fmt.Errorf("%w: %s", util.ErrNoDump, action.Dialect.Name())

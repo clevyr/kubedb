@@ -6,6 +6,7 @@ import (
 	"strconv"
 
 	"gabe565.com/utils/must"
+	"github.com/clevyr/kubedb/internal/actions"
 	"github.com/clevyr/kubedb/internal/actions/portforward"
 	"github.com/clevyr/kubedb/internal/config"
 	"github.com/clevyr/kubedb/internal/config/conftypes"
@@ -14,9 +15,6 @@ import (
 	"github.com/clevyr/kubedb/internal/util"
 	"github.com/spf13/cobra"
 )
-
-//nolint:gochecknoglobals
-var action = &portforward.PortForward{PortForward: conftypes.PortForward{Global: config.Global}}
 
 func New() *cobra.Command {
 	cmd := &cobra.Command{
@@ -51,32 +49,9 @@ func New() *cobra.Command {
 	return cmd
 }
 
-func localPortCompletion(cmd *cobra.Command, args []string, _ string) ([]string, cobra.ShellCompDirective) {
-	if len(args) != 0 {
-		return nil, cobra.ShellCompDirectiveNoFileComp
-	}
-
-	config.Global.SkipSurvey = true
-	if err := preRun(cmd, args); err != nil {
-		slog.Error("Pre-run failed", "error", err)
-		return nil, cobra.ShellCompDirectiveError
-	}
-
-	db, ok := action.Dialect.(conftypes.DBHasPort)
-	if !ok {
-		slog.Error("Dialect does not support port-forwarding", "name", action.Dialect.Name())
-		return nil, cobra.ShellCompDirectiveError
-	}
-
-	defaultPort := db.PortDefault()
-	return []string{
-		strconv.Itoa(int(action.ListenPort)),
-		strconv.Itoa(int(defaultPort)),
-		strconv.Itoa(int(defaultPort + 1)),
-	}, cobra.ShellCompDirectiveNoFileComp
-}
-
 func preRun(cmd *cobra.Command, args []string) error {
+	action := &portforward.PortForward{PortForward: conftypes.PortForward{Global: config.Global}}
+
 	if err := config.Unmarshal(cmd, "port-forward", &action); err != nil {
 		return err
 	}
@@ -104,9 +79,38 @@ func preRun(cmd *cobra.Command, args []string) error {
 		action.ListenPort = 30000 + db.PortDefault()
 	}
 
+	cmd.SetContext(actions.NewContext(cmd.Context(), action))
 	return nil
 }
 
+func localPortCompletion(cmd *cobra.Command, args []string, _ string) ([]string, cobra.ShellCompDirective) {
+	if len(args) != 0 {
+		return nil, cobra.ShellCompDirectiveNoFileComp
+	}
+
+	config.Global.SkipSurvey = true
+	if err := preRun(cmd, args); err != nil {
+		slog.Error("Pre-run failed", "error", err)
+		return nil, cobra.ShellCompDirectiveError
+	}
+
+	action := actions.FromContext[*portforward.PortForward](cmd.Context())
+
+	db, ok := action.Dialect.(conftypes.DBHasPort)
+	if !ok {
+		slog.Error("Dialect does not support port-forwarding", "name", action.Dialect.Name())
+		return nil, cobra.ShellCompDirectiveError
+	}
+
+	defaultPort := db.PortDefault()
+	return []string{
+		strconv.Itoa(int(action.ListenPort)),
+		strconv.Itoa(int(defaultPort)),
+		strconv.Itoa(int(defaultPort + 1)),
+	}, cobra.ShellCompDirectiveNoFileComp
+}
+
 func run(cmd *cobra.Command, _ []string) error {
+	action := actions.FromContext[*portforward.PortForward](cmd.Context())
 	return action.Run(cmd.Context())
 }

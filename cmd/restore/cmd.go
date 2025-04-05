@@ -12,6 +12,7 @@ import (
 	"gabe565.com/utils/must"
 	"gabe565.com/utils/termx"
 	"github.com/charmbracelet/huh"
+	"github.com/clevyr/kubedb/internal/actions"
 	"github.com/clevyr/kubedb/internal/actions/restore"
 	"github.com/clevyr/kubedb/internal/completion"
 	"github.com/clevyr/kubedb/internal/config"
@@ -24,9 +25,6 @@ import (
 	"github.com/clevyr/kubedb/internal/util"
 	"github.com/spf13/cobra"
 )
-
-//nolint:gochecknoglobals
-var action = &restore.Restore{Restore: conftypes.Restore{Global: config.Global}}
 
 func New() *cobra.Command {
 	cmd := &cobra.Command{
@@ -69,14 +67,37 @@ func New() *cobra.Command {
 	return cmd
 }
 
+func preRun(cmd *cobra.Command, args []string) error {
+	action := &restore.Restore{Restore: conftypes.Restore{Global: config.Global}}
+
+	if err := config.Unmarshal(cmd, "restore", &action); err != nil {
+		return err
+	}
+	if err := util.DefaultSetup(cmd, action.Global); err != nil {
+		return err
+	}
+	if len(args) > 0 {
+		action.Input = args[0]
+	}
+	if !cmd.Flags().Lookup(consts.FlagFormat).Changed {
+		db, ok := action.Dialect.(conftypes.DBRestorer)
+		if !ok {
+			return fmt.Errorf("%w: %s", util.ErrNoRestore, action.Dialect.Name())
+		}
+
+		action.Format = database.DetectFormat(db, action.Input)
+	}
+
+	cmd.SetContext(actions.NewContext(cmd.Context(), action))
+	return nil
+}
+
 func validArgs(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
 	if len(args) != 0 || must.Must2(cmd.Flags().GetString(consts.FlagInput)) != "" {
 		return nil, cobra.ShellCompDirectiveNoFileComp
 	}
 
 	must.Must(config.K.Set(consts.FlagCreateJob, false))
-	action.Force = true
-	action.Input = "-"
 
 	config.Global.SkipSurvey = true
 	err := preRun(cmd, args)
@@ -84,6 +105,8 @@ func validArgs(cmd *cobra.Command, args []string, toComplete string) ([]string, 
 		slog.Error("Pre-run failed", "error", err)
 		return nil, cobra.ShellCompDirectiveError
 	}
+
+	action := actions.FromContext[*restore.Restore](cmd.Context())
 
 	db, ok := action.Dialect.(conftypes.DBRestorer)
 	if !ok {
@@ -126,28 +149,9 @@ var (
 	ErrRestoreRefused  = errors.New("refusing to restore a database non-interactively without the --force flag")
 )
 
-func preRun(cmd *cobra.Command, args []string) error {
-	if err := config.Unmarshal(cmd, "restore", &action); err != nil {
-		return err
-	}
-	if err := util.DefaultSetup(cmd, action.Global); err != nil {
-		return err
-	}
-	if len(args) > 0 {
-		action.Input = args[0]
-	}
-	if !cmd.Flags().Lookup(consts.FlagFormat).Changed {
-		db, ok := action.Dialect.(conftypes.DBRestorer)
-		if !ok {
-			return fmt.Errorf("%w: %s", util.ErrNoRestore, action.Dialect.Name())
-		}
-
-		action.Format = database.DetectFormat(db, action.Input)
-	}
-	return nil
-}
-
 func run(cmd *cobra.Command, args []string) error {
+	action := actions.FromContext[*restore.Restore](cmd.Context())
+
 	switch {
 	case action.Input == "-", storage.IsCloud(action.Input), config.IsCompletion:
 	case action.Input == "":
