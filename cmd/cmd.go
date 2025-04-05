@@ -93,9 +93,7 @@ func preRun(cmd *cobra.Command, _ []string) error {
 	}
 
 	ctx, cancel := signal.NotifyContext(cmd.Context(), os.Interrupt, syscall.SIGTERM, syscall.SIGQUIT)
-	finalizer.Add(func(_ error) {
-		cancel()
-	})
+	defer finalizer.Add(func(_ error) { cancel() })
 	cmd.SetContext(ctx)
 
 	log.InitGlobal(cmd)
