@@ -73,6 +73,7 @@ func (db Postgres) DatabaseEnvs(conf *conftypes.Global) kubernetes.ConfigLookups
 
 	return kubernetes.ConfigLookups{
 		kubernetes.LookupEnv{"POSTGRES_DATABASE", "POSTGRES_DB"},
+		kubernetes.LookupDefault("postgres"),
 	}
 }
 

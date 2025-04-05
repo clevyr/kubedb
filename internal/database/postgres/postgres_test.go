@@ -632,7 +632,10 @@ func TestPostgres_DatabaseEnvs(t *testing.T) {
 		{
 			"default",
 			args{&conftypes.Global{}},
-			kubernetes.ConfigLookups{kubernetes.LookupEnv{"POSTGRES_DATABASE", "POSTGRES_DB"}},
+			kubernetes.ConfigLookups{
+				kubernetes.LookupEnv{"POSTGRES_DATABASE", "POSTGRES_DB"},
+				kubernetes.LookupDefault("postgres"),
+			},
 		},
 		{"cnpg", args{&conftypes.Global{DBPod: newCNPGPod()}}, kubernetes.ConfigLookups{
 			kubernetes.LookupNamedSecret{
