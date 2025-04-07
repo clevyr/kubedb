@@ -58,11 +58,24 @@ func NewConfigLoader(kubeconfig, context string) clientcmd.ClientConfig {
 }
 
 func NewClient(kubeconfig, context, namespace string) (KubeClient, error) {
-	configLoader := NewConfigLoader(kubeconfig, context)
-	var client KubeClient
+	client := KubeClient{
+		Context:   context,
+		Namespace: namespace,
+	}
 
-	if rawConfig, err := configLoader.RawConfig(); err == nil {
-		client.Context = rawConfig.CurrentContext
+	configLoader := NewConfigLoader(kubeconfig, context)
+
+	if client.Context == "" {
+		if rawConfig, err := configLoader.RawConfig(); err == nil {
+			client.Context = rawConfig.CurrentContext
+		}
+	}
+
+	if client.Namespace == "" {
+		var err error
+		if client.Namespace, _, err = configLoader.Namespace(); err != nil {
+			return client, err
+		}
 	}
 
 	var err error
@@ -72,14 +85,6 @@ func NewClient(kubeconfig, context, namespace string) (KubeClient, error) {
 
 	client.ClientConfig.UserAgent = rest.DefaultKubernetesUserAgent()
 
-	if namespace == "" {
-		if client.Namespace, _, err = configLoader.Namespace(); err != nil {
-			return client, err
-		}
-	} else {
-		client.Namespace = namespace
-	}
-
 	if client.ClientSet, err = kubernetes.NewForConfig(client.ClientConfig); err != nil {
 		return client, err
 	}
@@ -88,5 +93,5 @@ func NewClient(kubeconfig, context, namespace string) (KubeClient, error) {
 		return client, err
 	}
 
-	return client, err
+	return client, nil
 }
