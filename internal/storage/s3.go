@@ -125,68 +125,24 @@ func UploadS3(ctx context.Context, r io.ReadCloser, key string) error {
 	return err
 }
 
-func DownloadS3(ctx context.Context, w *S3DownloadPipe, key string) error {
-	defer func() {
-		_ = w.w.Close()
-	}()
-
+func DownloadS3(ctx context.Context, key string) (io.ReadCloser, error) {
 	client, err := initAWS(ctx)
 	if err != nil {
-		return err
+		return nil, err
 	}
 
 	u, err := url.Parse(key)
 	if err != nil {
-		return err
+		return nil, err
 	}
 	u.Path = strings.TrimLeft(u.Path, "/")
 
-	downloader := manager.NewDownloader(client)
-	downloader.Concurrency = 1
-	_, err = downloader.Download(ctx, w, &s3.GetObjectInput{
+	res, err := client.GetObject(ctx, &s3.GetObjectInput{
 		Bucket: ptr.To(u.Host),
 		Key:    ptr.To(u.Path),
 	})
-	return err
-}
-
-type S3DownloadPipe struct {
-	r   *io.PipeReader
-	w   *io.PipeWriter
-	off int64
-}
-
-func NewS3DownloadPipe() *S3DownloadPipe {
-	r, w := io.Pipe()
-	return &S3DownloadPipe{
-		r:   r,
-		w:   w,
-		off: 0,
-	}
-}
-
-func (s *S3DownloadPipe) Read(p []byte) (int, error) {
-	return s.r.Read(p)
-}
-
-func (s *S3DownloadPipe) WriteAt(p []byte, off int64) (int, error) {
-	if s.off != off {
-		return 0, io.EOF
-	}
-
-	n, err := s.w.Write(p)
 	if err != nil {
-		return n, err
+		return nil, err
 	}
-
-	s.off += int64(n)
-	return n, nil
-}
-
-func (s *S3DownloadPipe) Close() error {
-	return s.r.Close()
-}
-
-func (s *S3DownloadPipe) CloseWithError(err error) error {
-	return s.r.CloseWithError(err)
+	return res.Body, nil
 }

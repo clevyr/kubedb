@@ -35,7 +35,7 @@ type Restore struct {
 	Analyze bool
 }
 
-func (action Restore) Run(ctx context.Context) error {
+func (action Restore) Run(ctx context.Context) error { //nolint:gocognit
 	errGroup, ctx := errgroup.WithContext(ctx)
 
 	var f io.ReadCloser
@@ -43,15 +43,14 @@ func (action Restore) Run(ctx context.Context) error {
 	case action.Input == "-":
 		f = os.Stdin
 	case storage.IsS3(action.Input):
-		pipe := storage.NewS3DownloadPipe()
-		f = pipe
-		defer func(pipe *storage.S3DownloadPipe) {
-			_ = pipe.Close()
-		}(pipe)
-
-		errGroup.Go(func() error {
-			return storage.DownloadS3(ctx, pipe, action.Input)
-		})
+		var err error
+		f, err = storage.DownloadS3(ctx, action.Input)
+		if err != nil {
+			return err
+		}
+		defer func(f io.ReadCloser) {
+			_ = f.Close()
+		}(f)
 	case storage.IsGCS(action.Input):
 		var err error
 		if f, err = storage.DownloadGCS(ctx, action.Input); err != nil {
