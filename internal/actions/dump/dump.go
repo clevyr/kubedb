@@ -42,7 +42,12 @@ func (action Dump) Run(ctx context.Context) error {
 	switch {
 	case action.Output == "-":
 		f = os.Stdout
-	case storage.IsS3(action.Output):
+	case storage.IsCloud(action.Output):
+		client, err := storage.NewClient(ctx, action.Output)
+		if err != nil {
+			return err
+		}
+
 		pr, pw := io.Pipe()
 		f = pw
 		defer func(pw *io.PipeWriter) {
@@ -53,16 +58,8 @@ func (action Dump) Run(ctx context.Context) error {
 			defer func() {
 				_ = pr.Close()
 			}()
-			return storage.UploadS3(ctx, pr, action.Output)
+			return client.PutObject(ctx, pr, action.Output)
 		})
-	case storage.IsGCS(action.Output):
-		var err error
-		if f, err = storage.UploadGCS(ctx, action.Output); err != nil {
-			return err
-		}
-		defer func(f io.WriteCloser) {
-			_ = f.Close()
-		}(f)
 	default:
 		dir := filepath.Dir(action.Output)
 		if err := os.MkdirAll(dir, 0o755); err != nil && !os.IsExist(err) {

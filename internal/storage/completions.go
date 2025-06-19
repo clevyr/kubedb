@@ -5,35 +5,25 @@ import (
 	"fmt"
 	"log/slog"
 	"net/url"
-	"os"
 
 	"gabe565.com/utils/bytefmt"
 	"github.com/clevyr/kubedb/internal/util"
 	"github.com/spf13/cobra"
 )
 
-func CompleteBucketsGCS(u *url.URL, projectID string) ([]string, cobra.ShellCompDirective) {
-	if projectID == "" {
-		if val := os.Getenv("GOOGLE_CLOUD_PROJECT"); val != "" {
-			projectID = val
-		} else if val := os.Getenv("GCLOUD_PROJECT"); val != "" {
-			projectID = val
-		} else if val := os.Getenv("GCP_PROJECT"); val != "" {
-			projectID = val
-		}
-	}
-
+func CompleteBuckets(u *url.URL) ([]string, cobra.ShellCompDirective) {
 	u.Path = "/"
 
-	buckets, count, err := ListBucketsGCS(context.Background(), projectID)
+	client, err := NewClient(context.Background(), u.String())
 	if err != nil {
+		slog.Error("Failed to create storage client", "error", err)
 		return nil, cobra.ShellCompDirectiveError
 	}
 
-	names := make([]string, 0, count)
-	for bucket, err := range buckets {
+	names := make([]string, 0, 16)
+	for bucket, err := range client.ListBuckets(context.Background()) {
 		if err != nil {
-			slog.Error("Failed to list GCS buckets", "error", err)
+			slog.Error("Failed to list storage buckets", "error", err)
 			return nil, cobra.ShellCompDirectiveError
 		}
 
@@ -43,16 +33,17 @@ func CompleteBucketsGCS(u *url.URL, projectID string) ([]string, cobra.ShellComp
 	return names, cobra.ShellCompDirectiveNoFileComp | cobra.ShellCompDirectiveNoSpace
 }
 
-func CompleteObjectsGCS(u *url.URL, exts []string, dirOnly bool) ([]string, cobra.ShellCompDirective) {
-	objects, count, err := ListObjectsGCS(context.Background(), u.String())
+func CompleteObjects(u *url.URL, exts []string, dirOnly bool) ([]string, cobra.ShellCompDirective) {
+	client, err := NewClient(context.Background(), u.String())
 	if err != nil {
+		slog.Error("Failed to create storage client", "error", err)
 		return nil, cobra.ShellCompDirectiveError
 	}
 
-	paths := make([]string, 0, count)
-	for object, err := range objects {
+	paths := make([]string, 0, 16)
+	for object, err := range client.ListObjects(context.Background(), u.String()) {
 		if err != nil {
-			slog.Error("Failed to list GCS objects", "error", err)
+			slog.Error("Failed to list storage bucket objects", "error", err)
 			return nil, cobra.ShellCompDirectiveError
 		}
 
@@ -64,7 +55,7 @@ func CompleteObjectsGCS(u *url.URL, exts []string, dirOnly bool) ([]string, cobr
 			paths = append(paths,
 				fmt.Sprintf("%s\t%s; %s",
 					u.String(),
-					object.Updated.Local().Format("Jan _2 15:04"),
+					object.LastModified.Local().Format("Jan _2 15:04"),
 					bytefmt.Encode(object.Size),
 				),
 			)

@@ -42,18 +42,14 @@ func (action Restore) Run(ctx context.Context) error { //nolint:gocognit
 	switch {
 	case action.Input == "-":
 		f = os.Stdin
-	case storage.IsS3(action.Input):
-		var err error
-		f, err = storage.DownloadS3(ctx, action.Input)
+	case storage.IsCloud(action.Input):
+		client, err := storage.NewClient(ctx, action.Input)
 		if err != nil {
 			return err
 		}
-		defer func(f io.ReadCloser) {
-			_ = f.Close()
-		}(f)
-	case storage.IsGCS(action.Input):
-		var err error
-		if f, err = storage.DownloadGCS(ctx, action.Input); err != nil {
+
+		f, err = client.GetObject(ctx, action.Input)
+		if err != nil {
 			return err
 		}
 		defer func(f io.ReadCloser) {

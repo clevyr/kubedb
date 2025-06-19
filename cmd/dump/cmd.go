@@ -113,18 +113,10 @@ func validArgs(cmd *cobra.Command, args []string, toComplete string) ([]string, 
 			return nil, cobra.ShellCompDirectiveError
 		}
 
-		switch {
-		case storage.IsS3(toComplete):
-			if u.Host == "" || u.Path == "" {
-				return storage.CompleteBucketsS3(u)
-			}
-			return storage.CompleteObjectsS3(u, slices.Collect(maps.Values(formats)), true)
-		case storage.IsGCS(toComplete):
-			if u.Host == "" || u.Path == "" {
-				return storage.CompleteBucketsGCS(u, "")
-			}
-			return storage.CompleteObjectsGCS(u, slices.Collect(maps.Values(formats)), true)
+		if u.Host == "" || u.Path == "" {
+			return storage.CompleteBuckets(u)
 		}
+		return storage.CompleteObjects(u, slices.Collect(maps.Values(formats)), true)
 	}
 
 	exts := make([]string, 0, len(formats))

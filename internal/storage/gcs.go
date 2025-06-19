@@ -3,8 +3,10 @@ package storage
 import (
 	"context"
 	"errors"
+	"io"
 	"iter"
 	"net/url"
+	"os"
 	"strings"
 
 	"cloud.google.com/go/storage"
@@ -29,94 +31,104 @@ func IsGCSDir(path string) bool {
 	return !strings.Contains(trimmed, "/")
 }
 
-func newGCSClient(ctx context.Context, scope string) (*storage.Client, error) {
-	return storage.NewClient(ctx, option.WithScopes(scope))
+type GCS struct {
+	client    *storage.Client
+	projectID string
 }
 
-func ListBucketsGCS(ctx context.Context, projectID string) (iter.Seq2[*storage.BucketAttrs, error], int, error) {
-	client, err := newGCSClient(ctx, storage.ScopeReadOnly)
+func NewGCS(ctx context.Context, scope, projectID string) (*GCS, error) {
+	client, err := storage.NewClient(ctx, option.WithScopes(scope))
 	if err != nil {
-		return nil, 0, err
+		return nil, err
 	}
 
-	objects := client.Buckets(ctx, projectID)
+	if projectID == "" {
+		if val := os.Getenv("GOOGLE_CLOUD_PROJECT"); val != "" {
+			projectID = val
+		} else if val := os.Getenv("GCLOUD_PROJECT"); val != "" {
+			projectID = val
+		} else if val := os.Getenv("GCP_PROJECT"); val != "" {
+			projectID = val
+		}
+	}
 
-	return func(yield func(*storage.BucketAttrs, error) bool) {
+	return &GCS{
+		client:    client,
+		projectID: projectID,
+	}, nil
+}
+
+func (g *GCS) ListBuckets(ctx context.Context) iter.Seq2[*Bucket, error] {
+	return func(yield func(*Bucket, error) bool) {
+		objects := g.client.Buckets(ctx, g.projectID)
+
 		for {
 			attrs, err := objects.Next()
 			if err != nil && errors.Is(err, iterator.Done) {
 				return
 			}
-			if !yield(attrs, err) {
+			if !yield(&Bucket{Name: attrs.Name}, err) {
 				return
 			}
 		}
-	}, objects.PageInfo().Remaining(), nil
+	}
 }
 
-func ListObjectsGCS(ctx context.Context, key string) (iter.Seq2[*storage.ObjectAttrs, error], int, error) {
-	client, err := newGCSClient(ctx, storage.ScopeReadOnly)
-	if err != nil {
-		return nil, 0, err
-	}
+func (g *GCS) ListObjects(ctx context.Context, key string) iter.Seq2[*Object, error] {
+	return func(yield func(*Object, error) bool) {
+		u, err := url.Parse(key)
+		if err != nil {
+			yield(nil, err)
+			return
+		}
+		u.Path = strings.TrimLeft(u.Path, "/")
 
-	u, err := url.Parse(key)
-	if err != nil {
-		return nil, 0, err
-	}
-	u.Path = strings.TrimLeft(u.Path, "/")
+		query := &storage.Query{
+			Delimiter:                "/",
+			Prefix:                   u.Path,
+			Projection:               storage.ProjectionNoACL,
+			IncludeFoldersAsPrefixes: true,
+		}
 
-	query := &storage.Query{
-		Delimiter:                "/",
-		Prefix:                   u.Path,
-		Projection:               storage.ProjectionNoACL,
-		IncludeFoldersAsPrefixes: true,
-	}
+		objects := g.client.Bucket(u.Host).Objects(ctx, query)
 
-	objects := client.Bucket(u.Host).Objects(ctx, query)
-
-	return func(yield func(*storage.ObjectAttrs, error) bool) {
 		for {
 			attrs, err := objects.Next()
 			if err != nil && errors.Is(err, iterator.Done) {
 				return
 			}
-			if !yield(attrs, err) {
+			if !yield(&Object{
+				Prefix:       attrs.Prefix,
+				Name:         attrs.Name,
+				LastModified: attrs.Updated,
+				Size:         attrs.Size,
+			}, err) {
 				return
 			}
 		}
-	}, objects.PageInfo().Remaining(), nil
+	}
 }
 
-func UploadGCS(ctx context.Context, key string) (*storage.Writer, error) {
-	client, err := newGCSClient(ctx, storage.ScopeReadWrite)
+func (g *GCS) PutObject(ctx context.Context, r io.Reader, key string) error {
+	u, err := url.Parse(key)
 	if err != nil {
-		return nil, err
+		return err
 	}
+	u.Path = strings.TrimLeft(u.Path, "/")
 
+	w := g.client.Bucket(u.Host).Object(u.Path).NewWriter(ctx)
+	_, err = io.Copy(w, r)
+	return err
+}
+
+func (g *GCS) GetObject(ctx context.Context, key string) (io.ReadCloser, error) {
 	u, err := url.Parse(key)
 	if err != nil {
 		return nil, err
 	}
 	u.Path = strings.TrimLeft(u.Path, "/")
 
-	w := client.Bucket(u.Host).Object(u.Path).NewWriter(ctx)
-	return w, nil
-}
-
-func DownloadGCS(ctx context.Context, key string) (*storage.Reader, error) {
-	client, err := newGCSClient(ctx, storage.ScopeReadOnly)
-	if err != nil {
-		return nil, err
-	}
-
-	u, err := url.Parse(key)
-	if err != nil {
-		return nil, err
-	}
-	u.Path = strings.TrimLeft(u.Path, "/")
-
-	r, err := client.Bucket(u.Host).Object(u.Path).NewReader(ctx)
+	r, err := g.client.Bucket(u.Host).Object(u.Path).NewReader(ctx)
 	if err != nil {
 		return nil, err
 	}

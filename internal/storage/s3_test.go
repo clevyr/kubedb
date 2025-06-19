@@ -1,6 +1,10 @@
 package storage
 
-import "testing"
+import (
+	"testing"
+
+	"github.com/stretchr/testify/assert"
+)
 
 func TestIsS3(t *testing.T) {
 	type args struct {
@@ -18,9 +22,7 @@ func TestIsS3(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if got := IsS3(tt.args.path); got != tt.want {
-				t.Errorf("IsS3() = %v, want %v", got, tt.want)
-			}
+			assert.Equal(t, tt.want, IsS3(tt.args.path))
 		})
 	}
 }
@@ -42,9 +44,7 @@ func TestIsS3Dir(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if got := IsS3Dir(tt.args.path); got != tt.want {
-				t.Errorf("IsS3Dir() = %v, want %v", got, tt.want)
-			}
+			assert.Equal(t, tt.want, IsS3Dir(tt.args.path))
 		})
 	}
 }

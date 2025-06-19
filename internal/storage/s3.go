@@ -30,32 +30,35 @@ func IsS3Dir(path string) bool {
 	return !strings.Contains(trimmed, "/")
 }
 
-func initAWS(ctx context.Context) (*s3.Client, error) {
+type S3 struct {
+	client *s3.Client
+}
+
+func NewS3(ctx context.Context) (*S3, error) {
 	awsCfg, err := config.LoadDefaultConfig(ctx)
 	if err != nil {
 		return nil, err
 	}
 
 	client := s3.NewFromConfig(awsCfg)
-	return client, nil
+	return &S3{client: client}, nil
 }
 
-func ListBucketsS3(ctx context.Context, input *s3.ListBucketsInput) iter.Seq2[*s3.ListBucketsOutput, error] {
-	return func(yield func(*s3.ListBucketsOutput, error) bool) {
-		client, err := initAWS(ctx)
-		if err != nil {
-			yield(nil, err)
-			return
-		}
-
-		if input == nil {
-			input = &s3.ListBucketsInput{}
-		}
+func (s *S3) ListBuckets(ctx context.Context) iter.Seq2[*Bucket, error] {
+	return func(yield func(*Bucket, error) bool) {
+		input := &s3.ListBucketsInput{}
 
 		for {
-			buckets, err := client.ListBuckets(ctx, input)
-			if !yield(buckets, err) {
+			buckets, err := s.client.ListBuckets(ctx, input)
+			if err != nil {
+				yield(nil, err)
 				return
+			}
+
+			for _, bucket := range buckets.Buckets {
+				if !yield(&Bucket{Name: *bucket.Name}, nil) {
+					return
+				}
 			}
 
 			input.ContinuationToken = buckets.ContinuationToken
@@ -66,14 +69,8 @@ func ListBucketsS3(ctx context.Context, input *s3.ListBucketsInput) iter.Seq2[*s
 	}
 }
 
-func ListObjectsS3(ctx context.Context, key string) iter.Seq2[*s3.ListObjectsV2Output, error] {
-	return func(yield func(*s3.ListObjectsV2Output, error) bool) {
-		client, err := initAWS(ctx)
-		if err != nil {
-			yield(nil, err)
-			return
-		}
-
+func (s *S3) ListObjects(ctx context.Context, key string) iter.Seq2[*Object, error] {
+	return func(yield func(*Object, error) bool) {
 		u, err := url.Parse(key)
 		if err != nil {
 			yield(nil, err)
@@ -88,9 +85,29 @@ func ListObjectsS3(ctx context.Context, key string) iter.Seq2[*s3.ListObjectsV2O
 		}
 
 		for {
-			objects, err := client.ListObjectsV2(ctx, input)
-			if !yield(objects, err) {
+			objects, err := s.client.ListObjectsV2(ctx, input)
+			if err != nil {
+				yield(nil, err)
 				return
+			}
+
+			for _, prefix := range objects.CommonPrefixes {
+				if !yield(&Object{Prefix: *prefix.Prefix}, nil) {
+					return
+				}
+			}
+
+			for _, object := range objects.Contents {
+				if strings.HasSuffix(*object.Key, "/") {
+					continue
+				}
+				if !yield(&Object{
+					Name:         *object.Key,
+					LastModified: *object.LastModified,
+					Size:         *object.Size,
+				}, nil) {
+					return
+				}
 			}
 
 			input.ContinuationToken = objects.NextContinuationToken
@@ -101,23 +118,14 @@ func ListObjectsS3(ctx context.Context, key string) iter.Seq2[*s3.ListObjectsV2O
 	}
 }
 
-func UploadS3(ctx context.Context, r io.ReadCloser, key string) error {
-	defer func(r io.ReadCloser) {
-		_ = r.Close()
-	}(r)
-
-	client, err := initAWS(ctx)
-	if err != nil {
-		return err
-	}
-
+func (s *S3) PutObject(ctx context.Context, r io.Reader, key string) error {
 	u, err := url.Parse(key)
 	if err != nil {
 		return err
 	}
 	u.Path = strings.TrimLeft(u.Path, "/")
 
-	_, err = manager.NewUploader(client).Upload(ctx, &s3.PutObjectInput{
+	_, err = manager.NewUploader(s.client).Upload(ctx, &s3.PutObjectInput{
 		Bucket: ptr.To(u.Host),
 		Key:    ptr.To(u.Path),
 		Body:   r,
@@ -125,19 +133,14 @@ func UploadS3(ctx context.Context, r io.ReadCloser, key string) error {
 	return err
 }
 
-func DownloadS3(ctx context.Context, key string) (io.ReadCloser, error) {
-	client, err := initAWS(ctx)
-	if err != nil {
-		return nil, err
-	}
-
+func (s *S3) GetObject(ctx context.Context, key string) (io.ReadCloser, error) {
 	u, err := url.Parse(key)
 	if err != nil {
 		return nil, err
 	}
 	u.Path = strings.TrimLeft(u.Path, "/")
 
-	res, err := client.GetObject(ctx, &s3.GetObjectInput{
+	res, err := s.client.GetObject(ctx, &s3.GetObjectInput{
 		Bucket: ptr.To(u.Host),
 		Key:    ptr.To(u.Path),
 	})
