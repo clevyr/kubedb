@@ -28,6 +28,8 @@ gabe565.com/utils v0.0.0-20250302063333-ede73b14282c h1:740ifPX0340EHhAPnr5PJ5Fg
 gabe565.com/utils v0.0.0-20250302063333-ede73b14282c/go.mod h1:zPhcEoKWZOPz7CH+g3nzkKY/AOs+QEo9SokKKkJyq2U=
 github.com/Azure/go-ansiterm v0.0.0-20230124172434-306776ec8161 h1:L/gRVlceqvL25UVaW/CKtUDjefjrs0SPonmDGUVOYP0=
 github.com/Azure/go-ansiterm v0.0.0-20230124172434-306776ec8161/go.mod h1:xomTg63KZ2rFqZQzSB4Vz2SUXa1BpHTVz9L5PTmPC4E=
+github.com/Backblaze/blazer v0.7.2 h1:UWNHMLB+Nf+UmbO2qkVvgriODLEMz4kIyr2Hm+DVXQM=
+github.com/Backblaze/blazer v0.7.2/go.mod h1:T4y3EYa9IQ5J0PKc/C/J8/CEnSd3qa/lgNw938wZg10=
 github.com/GoogleCloudPlatform/opentelemetry-operations-go/detectors/gcp v1.25.0 h1:3c8yed4lgqTt+oTQ+JNMDo+F4xprBf+O/il4ZC0nRLw=
 github.com/GoogleCloudPlatform/opentelemetry-operations-go/detectors/gcp v1.25.0/go.mod h1:obipzmGjfSjam60XLwGfqUkJsfiheAl+TUjG+4yzyPM=
 github.com/GoogleCloudPlatform/opentelemetry-operations-go/exporter/metric v0.51.0 h1:fYE9p3esPxA/C0rQ0AHhP0drtPXDRhaWiwg1DPqO7IU=

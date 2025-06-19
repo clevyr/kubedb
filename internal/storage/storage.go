@@ -30,11 +30,11 @@ type Client interface {
 }
 
 func IsCloud(path string) bool {
-	return IsS3(path) || IsGCS(path)
+	return IsS3(path) || IsGCS(path) || IsB2(path)
 }
 
 func IsCloudDir(path string) bool {
-	return IsS3Dir(path) || IsGCSDir(path)
+	return IsS3Dir(path) || IsGCSDir(path) || IsB2Dir(path)
 }
 
 var ErrUnknownPrefix = errors.New("unknown prefix")
@@ -45,6 +45,8 @@ func NewClient(ctx context.Context, path string) (Client, error) {
 		return NewS3(ctx)
 	case IsGCS(path):
 		return NewGCS(ctx, storage.ScopeReadWrite, "")
+	case IsB2(path):
+		return NewB2(ctx)
 	default:
 		return nil, fmt.Errorf("%w: %s", ErrUnknownPrefix, path)
 	}

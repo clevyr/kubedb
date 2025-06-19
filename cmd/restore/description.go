@@ -21,6 +21,6 @@ File Path:
   - For Postgres: custom dump file. Typically with a ".dmp" file extension
 
 Cloud Download:
-- Use "s3://" for S3 and "gs://" for GCS.
-- Cloud config is loaded from the environment (similar to the aws and gcloud tools).`
+  - Use "s3://" for S3, "gs://" for GCS, or "b2://" for Backblaze B2.
+  - Cloud config is loaded from the environment (similar to the aws and gcloud tools).`
 }
