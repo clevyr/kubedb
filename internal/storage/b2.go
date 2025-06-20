@@ -55,7 +55,7 @@ func NewB2(ctx context.Context) (*B2, error) {
 
 func (b *B2) ListBuckets(ctx context.Context) iter.Seq2[*Bucket, error] {
 	return func(yield func(*Bucket, error) bool) {
-		buckets, err := b.client.ListBuckets(ctx)
+		buckets, err := b.client.ListBuckets(ctx, b2.Public, b2.Private)
 		if err != nil {
 			yield(nil, err)
 			return
