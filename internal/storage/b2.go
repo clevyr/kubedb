@@ -102,7 +102,7 @@ func (b *B2) ListObjects(ctx context.Context, key string) iter.Seq2[*Object, err
 			myObj := &Object{
 				Name:         attrs.Name,
 				IsDir:        strings.HasSuffix(attrs.Name, "/"),
-				LastModified: attrs.LastModified,
+				LastModified: attrs.UploadTimestamp,
 				Size:         attrs.Size,
 			}
 
