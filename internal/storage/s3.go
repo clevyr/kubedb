@@ -92,7 +92,10 @@ func (s *S3) ListObjects(ctx context.Context, key string) iter.Seq2[*Object, err
 			}
 
 			for _, prefix := range objects.CommonPrefixes {
-				if !yield(&Object{Prefix: *prefix.Prefix}, nil) {
+				if !yield(&Object{
+					Name:  *prefix.Prefix,
+					IsDir: true,
+				}, nil) {
 					return
 				}
 			}

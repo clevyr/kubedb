@@ -97,12 +97,19 @@ func (g *GCS) ListObjects(ctx context.Context, key string) iter.Seq2[*Object, er
 			if err != nil && errors.Is(err, iterator.Done) {
 				return
 			}
-			if !yield(&Object{
-				Prefix:       attrs.Prefix,
+
+			myObj := &Object{
 				Name:         attrs.Name,
 				LastModified: attrs.Updated,
 				Size:         attrs.Size,
-			}, err) {
+			}
+
+			if attrs.Prefix != "" {
+				myObj.Name = attrs.Prefix
+				myObj.IsDir = true
+			}
+
+			if !yield(myObj, nil) {
 				return
 			}
 		}

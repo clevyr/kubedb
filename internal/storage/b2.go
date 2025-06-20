@@ -100,14 +100,10 @@ func (b *B2) ListObjects(ctx context.Context, key string) iter.Seq2[*Object, err
 			}
 
 			myObj := &Object{
+				Name:         attrs.Name,
+				IsDir:        strings.HasSuffix(attrs.Name, "/"),
 				LastModified: attrs.LastModified,
 				Size:         attrs.Size,
-			}
-
-			if strings.HasSuffix(attrs.Name, "/") {
-				myObj.Prefix = attrs.Name
-			} else {
-				myObj.Name = attrs.Name
 			}
 
 			if !yield(myObj, it.Err()) {

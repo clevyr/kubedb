@@ -16,8 +16,8 @@ type Bucket struct {
 }
 
 type Object struct {
-	Prefix       string
 	Name         string
+	IsDir        bool
 	LastModified time.Time
 	Size         int64
 }

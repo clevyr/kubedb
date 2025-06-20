@@ -47,11 +47,10 @@ func CompleteObjects(u *url.URL, exts []string, dirOnly bool) ([]string, cobra.S
 			return nil, cobra.ShellCompDirectiveError
 		}
 
-		if object.Prefix != "" {
-			u.Path = object.Prefix
+		u.Path = object.Name
+		if object.IsDir {
 			paths = append(paths, u.String())
 		} else if !dirOnly && util.FilterExts(exts, object.Name) {
-			u.Path = object.Name
 			paths = append(paths,
 				fmt.Sprintf("%s\t%s; %s",
 					u.String(),
