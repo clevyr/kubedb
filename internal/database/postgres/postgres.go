@@ -351,7 +351,11 @@ func (Postgres) query() filter.Or {
 func (Postgres) postgresqlHaQuery() filter.Filter {
 	return filter.And{
 		filter.Label{Name: "app.kubernetes.io/name", Value: "postgresql-ha"},
-		filter.Label{Name: "app.kubernetes.io/component", Value: "postgresql"},
+		filter.Label{
+			Name:     "app.kubernetes.io/component",
+			Operator: selection.NotEquals,
+			Value:    "pgpool",
+		},
 	}
 }
 

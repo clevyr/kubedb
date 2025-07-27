@@ -66,10 +66,17 @@ func (MongoDB) UserDefault() string { return "root" }
 
 func (MongoDB) PodFilters() filter.Filter {
 	return filter.Or{
-		filter.Label{
-			Name:     "app.kubernetes.io/name",
-			Operator: selection.In,
-			Values:   []string{"mongodb", "mongo"},
+		filter.And{
+			filter.Label{
+				Name:     "app.kubernetes.io/name",
+				Operator: selection.In,
+				Values:   []string{"mongodb", "mongo"},
+			},
+			filter.Label{
+				Name:     "app.kubernetes.io/component",
+				Operator: selection.NotEquals,
+				Value:    "arbiter",
+			},
 		},
 		filter.And{
 			filter.Label{Name: "app.kubernetes.io/name", Value: "mongodb-sharded"},
@@ -102,8 +109,10 @@ func (db MongoDB) ExecCommand(conf *conftypes.Exec) *command.Builder {
 		"exec", command.Raw(`"$(which mongosh || which mongo)"`),
 		"--host="+conf.Host,
 		"--username="+conf.Username,
-		"--authenticationDatabase="+db.AuthenticationDatabase(conf.Global),
 	)
+	if authDB := db.AuthenticationDatabase(conf.Global); authDB != "" {
+		cmd.Push("--authenticationDatabase=" + authDB)
+	}
 	if conf.Password != "" {
 		cmd.Push("--password=" + conf.Password)
 	}
@@ -128,8 +137,10 @@ func (db MongoDB) DumpCommand(conf *conftypes.Dump) *command.Builder {
 		"--archive",
 		"--host="+conf.Host,
 		"--username="+conf.Username,
-		"--authenticationDatabase="+db.AuthenticationDatabase(conf.Global),
 	)
+	if authDB := db.AuthenticationDatabase(conf.Global); authDB != "" {
+		cmd.Push("--authenticationDatabase=" + authDB)
+	}
 	if conf.Password != "" {
 		cmd.Push("--password=" + conf.Password)
 	}
@@ -157,8 +168,10 @@ func (db MongoDB) RestoreCommand(conf *conftypes.Restore, _ sqlformat.Format) *c
 		"--archive",
 		"--host="+conf.Host,
 		"--username="+conf.Username,
-		"--authenticationDatabase="+db.AuthenticationDatabase(conf.Global),
 	)
+	if authDB := db.AuthenticationDatabase(conf.Global); authDB != "" {
+		cmd.Push("--authenticationDatabase=" + authDB)
+	}
 	if conf.Password != "" {
 		cmd.Push("--password=" + conf.Password)
 	}
