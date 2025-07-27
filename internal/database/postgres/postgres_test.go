@@ -338,22 +338,25 @@ func TestPostgres_PasswordEnvs(t *testing.T) {
 		args args
 		want kubernetes.ConfigLookups
 	}{
-		{"default", args{&conftypes.Global{}}, kubernetes.ConfigLookups{
-			kubernetes.LookupEnv{"POSTGRES_PASSWORD", "PGPOOL_POSTGRES_PASSWORD", "PGPASSWORD_SUPERUSER"},
-			kubernetes.LookupSecretVolume{Name: "password", Key: "password"},
-			kubernetes.LookupSecretVolume{Name: "postgresql-password", Key: "password"},
-		}},
-		{"postgres", args{&conftypes.Global{Username: "postgres"}}, kubernetes.ConfigLookups{
-			kubernetes.LookupSecretVolume{Name: "postgresql-password", Key: "postgres-password"},
-			kubernetes.LookupEnv{
-				"POSTGRES_POSTGRES_PASSWORD",
-				"POSTGRES_PASSWORD",
-				"PGPOOL_POSTGRES_PASSWORD",
-				"PGPASSWORD_SUPERUSER",
+		{
+			"default",
+			args{&conftypes.Global{}},
+			kubernetes.ConfigLookups{
+				kubernetes.LookupEnv{"POSTGRES_PASSWORD", "PGPOOL_POSTGRES_PASSWORD", "PGPASSWORD_SUPERUSER"},
 			},
-			kubernetes.LookupSecretVolume{Name: "password", Key: "password"},
-			kubernetes.LookupSecretVolume{Name: "postgresql-password", Key: "password"},
-		}},
+		},
+		{
+			"postgres",
+			args{&conftypes.Global{Username: "postgres"}},
+			kubernetes.ConfigLookups{
+				kubernetes.LookupEnv{
+					"POSTGRES_POSTGRES_PASSWORD",
+					"POSTGRES_PASSWORD",
+					"PGPOOL_POSTGRES_PASSWORD",
+					"PGPASSWORD_SUPERUSER",
+				},
+			},
+		},
 		{"cnpg", args{&conftypes.Global{DBPod: newCNPGPod()}}, kubernetes.ConfigLookups{
 			kubernetes.LookupNamedSecret{
 				Name: "postgresql-app",

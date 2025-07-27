@@ -208,21 +208,12 @@ func (db Postgres) PasswordEnvs(conf *conftypes.Global) kubernetes.ConfigLookups
 		}}
 	}
 
-	var lookups kubernetes.ConfigLookups
 	var envs kubernetes.LookupEnv
 	if conf.Username == db.UserDefault() {
 		envs = append(envs, "POSTGRES_POSTGRES_PASSWORD")
-		lookups = append(lookups,
-			kubernetes.LookupSecretVolume{Name: "postgresql-password", Key: "postgres-password"},
-		)
 	}
 	envs = append(envs, "POSTGRES_PASSWORD", "PGPOOL_POSTGRES_PASSWORD", "PGPASSWORD_SUPERUSER")
-	lookups = append(lookups,
-		envs,
-		kubernetes.LookupSecretVolume{Name: "password", Key: "password"},
-		kubernetes.LookupSecretVolume{Name: "postgresql-password", Key: "password"},
-	)
-	return lookups
+	return kubernetes.ConfigLookups{envs}
 }
 
 func (Postgres) ExecCommand(conf *conftypes.Exec) *command.Builder {

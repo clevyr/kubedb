@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"path"
 	"strings"
 
 	corev1 "k8s.io/api/core/v1"
@@ -41,16 +42,17 @@ var (
 	ErrConfigMapDoesNotHaveKey = errors.New("config map does not have key")
 )
 
-//nolint:nestif,gocognit
+//nolint:gocognit,funlen
 func (e LookupEnv) GetValue(ctx context.Context, client KubeClient, pod corev1.Pod) (string, error) {
 	if len(e) == 0 {
 		return "", ErrNoEnvNames
 	}
 
-	for _, envName := range e {
+	for _, lookupName := range e {
 		for _, container := range pod.Spec.Containers {
 			for _, env := range container.Env {
-				if env.Name == envName {
+				switch env.Name {
+				case lookupName:
 					if env.Value != "" {
 						return env.Value, nil
 					}
@@ -80,6 +82,17 @@ func (e LookupEnv) GetValue(ctx context.Context, client KubeClient, pod corev1.P
 							return data, nil
 						}
 					}
+				case lookupName + "_FILE":
+					if env.Value != "" {
+						base, key := path.Split(env.Value)
+						base = path.Clean(base)
+						for _, volume := range container.VolumeMounts {
+							mountPath := path.Clean(volume.MountPath)
+							if mountPath == base || (volume.SubPath == key && mountPath == path.Clean(env.Value)) {
+								return LookupSecretVolume{Name: volume.Name, Key: key}.GetValue(ctx, client, pod)
+							}
+						}
+					}
 				}
 			}
 
@@ -89,7 +102,7 @@ func (e LookupEnv) GetValue(ctx context.Context, client KubeClient, pod corev1.P
 					if err != nil {
 						return "", err
 					}
-					data, ok := secret.Data[envName]
+					data, ok := secret.Data[lookupName]
 					if ok {
 						return string(data), nil
 					}
@@ -99,7 +112,7 @@ func (e LookupEnv) GetValue(ctx context.Context, client KubeClient, pod corev1.P
 					if err != nil {
 						return "", err
 					}
-					data, ok := configMap.Data[envName]
+					data, ok := configMap.Data[lookupName]
 					if ok {
 						return data, nil
 					}
