@@ -44,7 +44,10 @@ func (MongoDB) PortEnvs(_ *conftypes.Global) kubernetes.ConfigLookups {
 func (MongoDB) PortDefault() uint16 { return 27017 }
 
 func (MongoDB) DatabaseEnvs(_ *conftypes.Global) kubernetes.ConfigLookups {
-	return kubernetes.ConfigLookups{kubernetes.LookupEnv{"MONGODB_EXTRA_DATABASES"}}
+	return kubernetes.ConfigLookups{
+		kubernetes.LookupEnv{"MONGODB_EXTRA_DATABASES"},
+		kubernetes.LookupEnv{"MONGO_INITDB_DATABASE"},
+	}
 }
 
 func (MongoDB) DatabaseListQuery() string {
