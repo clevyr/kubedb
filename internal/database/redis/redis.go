@@ -12,6 +12,7 @@ import (
 	"github.com/clevyr/kubedb/internal/kubernetes"
 	"github.com/clevyr/kubedb/internal/kubernetes/filter"
 	corev1 "k8s.io/api/core/v1"
+	"k8s.io/apimachinery/pkg/selection"
 )
 
 var (
@@ -43,19 +44,22 @@ func (Redis) DatabaseEnvs(_ *conftypes.Global) kubernetes.ConfigLookups {
 func (db Redis) PodFilters() filter.Filter {
 	return filter.Or{
 		filter.And{
-			filter.Label{Name: "app.kubernetes.io/name", Value: "redis"},
-			filter.Label{Name: "app.kubernetes.io/component", Value: "master"},
-		},
-		filter.And{
-			filter.Label{Name: "app.kubernetes.io/name", Value: "valkey"},
-			filter.Label{Name: "app.kubernetes.io/component", Value: "primary"},
+			filter.Label{
+				Name:     "app.kubernetes.io/name",
+				Operator: selection.In,
+				Values:   []string{"redis", "valkey", "keydb"},
+			},
+			filter.Label{
+				Name:     "app.kubernetes.io/component",
+				Operator: selection.NotEquals,
+				Value:    "replica",
+			},
 		},
 		db.sentinelQuery(),
 		filter.And{
 			filter.Label{Name: "app", Value: "redis"},
 			filter.Label{Name: "role", Value: "master"},
 		},
-		filter.Label{Name: "app.kubernetes.io/component", Value: "keydb"},
 	}
 }
 
@@ -141,9 +145,10 @@ func (Redis) ExecCommand(conf *conftypes.Exec) *command.Builder {
 
 func (Redis) sentinelQuery() filter.And {
 	return filter.And{
-		filter.Or{
-			filter.Label{Name: "app.kubernetes.io/name", Value: "redis"},
-			filter.Label{Name: "app.kubernetes.io/name", Value: "valkey"},
+		filter.Label{
+			Name:     "app.kubernetes.io/name",
+			Operator: selection.In,
+			Values:   []string{"redis", "valkey"},
 		},
 		filter.Label{Name: "app.kubernetes.io/component", Value: "node"},
 	}

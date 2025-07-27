@@ -333,12 +333,16 @@ func (Postgres) Formats() map[sqlformat.Format]string {
 func (Postgres) query() filter.Or {
 	return filter.Or{
 		filter.And{
-			filter.Label{Name: "app.kubernetes.io/name", Value: "postgresql"},
-			filter.Label{Name: "app.kubernetes.io/component", Value: "primary"},
-		},
-		filter.And{
-			filter.Label{Name: "app.kubernetes.io/name", Value: "postgres"},
-			filter.Label{Name: "app.kubernetes.io/component", Value: "primary"},
+			filter.Label{
+				Name:     "app.kubernetes.io/name",
+				Operator: selection.In,
+				Values:   []string{"postgresql", "postgres"},
+			},
+			filter.Label{
+				Name:     "app.kubernetes.io/component",
+				Operator: selection.NotIn,
+				Values:   []string{"read", "replica"},
+			},
 		},
 		filter.Label{Name: "app", Value: "postgresql"},
 	}

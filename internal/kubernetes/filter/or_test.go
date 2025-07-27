@@ -30,7 +30,7 @@ func TestLabelQueryOr_Matches(t *testing.T) {
 			"0 found",
 			Or{
 				Label{Name: "key", Value: "wrong"},
-				Label{Name: "key2", Value: "also wrong"},
+				Label{Name: "key2", Value: "also-wrong"},
 			},
 			args{stubPod()},
 			false,

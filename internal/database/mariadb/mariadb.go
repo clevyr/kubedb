@@ -9,6 +9,7 @@ import (
 	"github.com/clevyr/kubedb/internal/database/sqlformat"
 	"github.com/clevyr/kubedb/internal/kubernetes"
 	"github.com/clevyr/kubedb/internal/kubernetes/filter"
+	"k8s.io/apimachinery/pkg/selection"
 )
 
 var (
@@ -66,18 +67,23 @@ func (db MariaDB) DatabaseDropQuery(database string) string {
 func (MariaDB) PodFilters() filter.Filter {
 	return filter.Or{
 		filter.And{
-			filter.Label{Name: "app.kubernetes.io/name", Value: "mariadb"},
-			filter.Label{Name: "app.kubernetes.io/component", Value: "primary"},
+			filter.Label{
+				Name:     "app.kubernetes.io/name",
+				Operator: selection.In,
+				Values:   []string{"mariadb", "mysql"},
+			},
+			filter.Label{
+				Name:     "app.kubernetes.io/component",
+				Operator: selection.NotEquals,
+				Value:    "secondary",
+			},
 		},
-		filter.And{
-			filter.Label{Name: "app.kubernetes.io/name", Value: "mariadb-galera"},
+		filter.Label{Name: "app.kubernetes.io/name", Value: "mariadb-galera"},
+		filter.Label{
+			Name:     "app",
+			Operator: selection.In,
+			Values:   []string{"mariadb", "mysql"},
 		},
-		filter.And{
-			filter.Label{Name: "app.kubernetes.io/name", Value: "mysql"},
-			filter.Label{Name: "app.kubernetes.io/component", Value: "primary"},
-		},
-		filter.Label{Name: "app", Value: "mariadb"},
-		filter.Label{Name: "app", Value: "mysql"},
 	}
 }
 

@@ -8,6 +8,7 @@ import (
 	"github.com/clevyr/kubedb/internal/database/sqlformat"
 	"github.com/clevyr/kubedb/internal/kubernetes"
 	"github.com/clevyr/kubedb/internal/kubernetes/filter"
+	"k8s.io/apimachinery/pkg/selection"
 )
 
 var (
@@ -62,16 +63,20 @@ func (MongoDB) UserDefault() string { return "root" }
 
 func (MongoDB) PodFilters() filter.Filter {
 	return filter.Or{
-		filter.And{
-			filter.Label{Name: "app.kubernetes.io/name", Value: "mongodb"},
-			filter.Label{Name: "app.kubernetes.io/component", Value: "mongodb"},
+		filter.Label{
+			Name:     "app.kubernetes.io/name",
+			Operator: selection.In,
+			Values:   []string{"mongodb", "mongo"},
 		},
 		filter.And{
 			filter.Label{Name: "app.kubernetes.io/name", Value: "mongodb-sharded"},
 			filter.Label{Name: "app.kubernetes.io/component", Value: "mongos"},
 		},
-		filter.Label{Name: "app", Value: "mongodb"},
-		filter.Label{Name: "app", Value: "mongodb-replicaset"},
+		filter.Label{
+			Name:     "app",
+			Operator: selection.In,
+			Values:   []string{"mongodb", "mongodb-replicaset"},
+		},
 	}
 }
 
