@@ -200,7 +200,7 @@ func TestPostgres_DumpCommand(t *testing.T) {
 		{
 			"port",
 			args{&conftypes.Dump{Global: &conftypes.Global{Port: 1234}}},
-			command.NewBuilder("pg_dump", "--host=", "--username=", "--port=1234", "--verbose"),
+			command.NewBuilder("pg_dump", "--port=1234", "--verbose"),
 		},
 	}
 	for _, tt := range tests {
@@ -276,7 +276,7 @@ func TestPostgres_ExecCommand(t *testing.T) {
 		{
 			"default",
 			args{&conftypes.Exec{Global: &conftypes.Global{Port: 1234}}},
-			command.NewBuilder("exec", "psql", "--host=", "--username=", "--port=1234"),
+			command.NewBuilder("exec", "psql", "--port=1234"),
 		},
 	}
 	for _, tt := range tests {
@@ -417,10 +417,10 @@ func TestPostgres_RestoreCommand(t *testing.T) {
 				pgpassword,
 				"pg_restore",
 				"--format=custom",
-				"--verbose",
 				"--host=1.1.1.1",
 				"--username=u",
 				"--dbname=d",
+				"--verbose",
 			),
 		},
 		{
@@ -436,11 +436,11 @@ func TestPostgres_RestoreCommand(t *testing.T) {
 				pgpassword,
 				"pg_restore",
 				"--format=custom",
-				"--no-owner",
-				"--verbose",
 				"--host=1.1.1.1",
 				"--username=u",
 				"--dbname=d",
+				"--no-owner",
+				"--verbose",
 			),
 		},
 		{
@@ -456,10 +456,10 @@ func TestPostgres_RestoreCommand(t *testing.T) {
 				pgpassword,
 				"pg_restore",
 				"--format=custom",
-				"--verbose",
 				"--host=1.1.1.1",
 				"--username=u",
 				"--dbname=d",
+				"--verbose",
 				"--single-transaction",
 			),
 		},
@@ -476,11 +476,11 @@ func TestPostgres_RestoreCommand(t *testing.T) {
 				pgpassword,
 				"pg_restore",
 				"--format=custom",
-				"--clean",
-				"--verbose",
 				"--host=1.1.1.1",
 				"--username=u",
 				"--dbname=d",
+				"--clean",
+				"--verbose",
 			),
 		},
 		{
@@ -496,11 +496,11 @@ func TestPostgres_RestoreCommand(t *testing.T) {
 				pgpassword,
 				"pg_restore",
 				"--format=custom",
-				"--exit-on-error",
-				"--verbose",
 				"--host=1.1.1.1",
 				"--username=u",
 				"--dbname=d",
+				"--exit-on-error",
+				"--verbose",
 			),
 		},
 		{
@@ -518,25 +518,25 @@ func TestPostgres_RestoreCommand(t *testing.T) {
 				sqlformat.Gzip,
 			},
 			command.NewBuilder(
-				pgpassword,
 				command.NewEnv("PGOPTIONS", "-c client_min_messages=WARNING"),
+				pgpassword,
 				"psql",
-				"--quiet",
-				"--output=/dev/null",
 				"--host=1.1.1.1",
 				"--username=u",
 				"--dbname=d",
+				"--quiet",
+				"--output=/dev/null",
 			),
 		},
 		{
 			"port",
 			args{&conftypes.Restore{Global: &conftypes.Global{Port: 1234}}, sqlformat.Plain},
-			command.NewBuilder("psql", "--host=", "--username=", "--dbname=", "--port=1234"),
+			command.NewBuilder("psql", "--port=1234"),
 		},
 		{
 			"halt_on_error",
 			args{&conftypes.Restore{HaltOnError: true, Global: &conftypes.Global{}}, sqlformat.Plain},
-			command.NewBuilder("psql", "--set=ON_ERROR_STOP=1", "--host=", "--username=", "--dbname="),
+			command.NewBuilder("psql", "--set=ON_ERROR_STOP=1"),
 		},
 	}
 	for _, tt := range tests {

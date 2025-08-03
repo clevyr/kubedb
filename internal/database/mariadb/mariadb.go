@@ -98,16 +98,27 @@ func (db MariaDB) PasswordEnvs(c *conftypes.Global) kubernetes.ConfigLookups {
 	}
 }
 
-func (MariaDB) ExecCommand(conf *conftypes.Exec) *command.Builder {
-	cmd := command.NewBuilder(
-		"exec", command.Raw(`"$(which mariadb || which mysql)"`), "--host="+conf.Host, "--user="+conf.Username,
-	)
-	if conf.Password != "" {
-		cmd.Unshift(command.NewEnv("MYSQL_PWD", conf.Password))
+func (MariaDB) newCmd(conf *conftypes.Global, p ...any) *command.Builder {
+	cmd := command.NewBuilder(p...)
+	if conf.Host != "" {
+		cmd.Push("--host=" + conf.Host)
 	}
 	if conf.Port != 0 {
 		cmd.Push("--port=" + strconv.Itoa(int(conf.Port)))
 	}
+	if conf.Username != "" {
+		cmd.Push("--user=" + conf.Username)
+	}
+	if conf.Password != "" {
+		cmd.Unshift(command.NewEnv("MYSQL_PWD", conf.Password))
+	}
+	return cmd
+}
+
+const mariaDBCmd command.Raw = `"$(which mariadb || which mysql)"`
+
+func (db MariaDB) ExecCommand(conf *conftypes.Exec) *command.Builder {
+	cmd := db.newCmd(conf.Global, "exec", mariaDBCmd)
 	if conf.Database != "" {
 		cmd.Push("--database=" + conf.Database)
 	}
@@ -120,20 +131,12 @@ func (MariaDB) ExecCommand(conf *conftypes.Exec) *command.Builder {
 	return cmd
 }
 
-func (MariaDB) DumpCommand(conf *conftypes.Dump) *command.Builder {
-	cmd := command.NewBuilder(
-		command.Raw(
-			`"$(which mariadb-dump || which mysqldump)"`,
-		),
-		"--host="+conf.Host,
-		"--user="+conf.Username,
-		conf.Database,
-	)
-	if conf.Password != "" {
-		cmd.Unshift(command.NewEnv("MYSQL_PWD", conf.Password))
-	}
-	if conf.Port != 0 {
-		cmd.Push("--port=" + strconv.Itoa(int(conf.Port)))
+const mariaDBDumpCmd command.Raw = `"$(which mariadb-dump || which mysqldump)"`
+
+func (db MariaDB) DumpCommand(conf *conftypes.Dump) *command.Builder {
+	cmd := db.newCmd(conf.Global, mariaDBDumpCmd)
+	if conf.Database != "" {
+		cmd.Push(conf.Database)
 	}
 	if conf.Clean {
 		cmd.Push("--add-drop-table")
@@ -150,20 +153,10 @@ func (MariaDB) DumpCommand(conf *conftypes.Dump) *command.Builder {
 	return cmd
 }
 
-func (MariaDB) RestoreCommand(conf *conftypes.Restore, _ sqlformat.Format) *command.Builder {
-	cmd := command.NewBuilder(
-		command.Raw(
-			`"$(which mariadb || which mysql)"`,
-		),
-		"--host="+conf.Host,
-		"--user="+conf.Username,
-		"--database="+conf.Database,
-	)
-	if conf.Password != "" {
-		cmd.Unshift(command.NewEnv("MYSQL_PWD", conf.Password))
-	}
-	if conf.Port != 0 {
-		cmd.Push("--port=" + strconv.Itoa(int(conf.Port)))
+func (db MariaDB) RestoreCommand(conf *conftypes.Restore, _ sqlformat.Format) *command.Builder {
+	cmd := db.newCmd(conf.Global, mariaDBCmd)
+	if conf.Database != "" {
+		cmd.Push("--database=" + conf.Database)
 	}
 	return cmd
 }

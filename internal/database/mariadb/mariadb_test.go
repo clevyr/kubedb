@@ -120,9 +120,6 @@ func TestMariaDB_DumpCommand(t *testing.T) {
 			args{&conftypes.Dump{Global: &conftypes.Global{Port: 1234}}},
 			command.NewBuilder(
 				command.Raw(`"$(which mariadb-dump || which mysqldump)"`),
-				"--host=",
-				"--user=",
-				"",
 				"--port=1234",
 				"--verbose",
 			),
@@ -204,8 +201,6 @@ func TestMariaDB_ExecCommand(t *testing.T) {
 			command.NewBuilder(
 				"exec",
 				command.Raw(`"$(which mariadb || which mysql)"`),
-				"--host=",
-				"--user=",
 				"--port=1234",
 			),
 		},
@@ -327,9 +322,6 @@ func TestMariaDB_RestoreCommand(t *testing.T) {
 			args{&conftypes.Restore{Global: &conftypes.Global{Port: 1234}}, sqlformat.Plain},
 			command.NewBuilder(
 				command.Raw(`"$(which mariadb || which mysql)"`),
-				"--host=",
-				"--user=",
-				"--database=",
 				"--port=1234",
 			),
 		},

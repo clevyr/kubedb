@@ -104,21 +104,28 @@ func (db MongoDB) AuthenticationDatabase(c *conftypes.Global) string {
 	return c.Database
 }
 
-func (db MongoDB) ExecCommand(conf *conftypes.Exec) *command.Builder {
-	cmd := command.NewBuilder(
-		"exec", command.Raw(`"$(which mongosh || which mongo)"`),
-		"--host="+conf.Host,
-		"--username="+conf.Username,
-	)
-	if authDB := db.AuthenticationDatabase(conf.Global); authDB != "" {
-		cmd.Push("--authenticationDatabase=" + authDB)
-	}
-	if conf.Password != "" {
-		cmd.Push("--password=" + conf.Password)
+func (db MongoDB) newCmd(conf *conftypes.Global, p ...any) *command.Builder {
+	cmd := command.NewBuilder(p...)
+	if conf.Host != "" {
+		cmd.Push("--host=" + conf.Host)
 	}
 	if conf.Port != 0 {
 		cmd.Push("--port=" + strconv.Itoa(int(conf.Port)))
 	}
+	if authDB := db.AuthenticationDatabase(conf); authDB != "" {
+		cmd.Push("--authenticationDatabase=" + authDB)
+	}
+	if conf.Username != "" {
+		cmd.Push("--username=" + conf.Username)
+	}
+	if conf.Password != "" {
+		cmd.Push("--password=" + conf.Password)
+	}
+	return cmd
+}
+
+func (db MongoDB) ExecCommand(conf *conftypes.Exec) *command.Builder {
+	cmd := db.newCmd(conf.Global, "exec", command.Raw(`"$(which mongosh || which mongo)"`))
 	if conf.DisableHeaders {
 		cmd.Push("--quiet")
 	}
@@ -132,21 +139,7 @@ func (db MongoDB) ExecCommand(conf *conftypes.Exec) *command.Builder {
 }
 
 func (db MongoDB) DumpCommand(conf *conftypes.Dump) *command.Builder {
-	cmd := command.NewBuilder(
-		"mongodump",
-		"--archive",
-		"--host="+conf.Host,
-		"--username="+conf.Username,
-	)
-	if authDB := db.AuthenticationDatabase(conf.Global); authDB != "" {
-		cmd.Push("--authenticationDatabase=" + authDB)
-	}
-	if conf.Password != "" {
-		cmd.Push("--password=" + conf.Password)
-	}
-	if conf.Port != 0 {
-		cmd.Push("--port=" + strconv.Itoa(int(conf.Port)))
-	}
+	cmd := db.newCmd(conf.Global, "mongodump", "--archive")
 	if conf.Database != "" {
 		cmd.Push("--db=" + conf.Database)
 	}
@@ -163,21 +156,7 @@ func (db MongoDB) DumpCommand(conf *conftypes.Dump) *command.Builder {
 }
 
 func (db MongoDB) RestoreCommand(conf *conftypes.Restore, _ sqlformat.Format) *command.Builder {
-	cmd := command.NewBuilder(
-		"mongorestore",
-		"--archive",
-		"--host="+conf.Host,
-		"--username="+conf.Username,
-	)
-	if authDB := db.AuthenticationDatabase(conf.Global); authDB != "" {
-		cmd.Push("--authenticationDatabase=" + authDB)
-	}
-	if conf.Password != "" {
-		cmd.Push("--password=" + conf.Password)
-	}
-	if conf.Port != 0 {
-		cmd.Push("--port=" + strconv.Itoa(int(conf.Port)))
-	}
+	cmd := db.newCmd(conf.Global, "mongorestore", "--archive")
 	if conf.Database != "" {
 		if conf.Clean {
 			cmd.Push("--drop")

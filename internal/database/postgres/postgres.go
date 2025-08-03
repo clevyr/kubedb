@@ -216,17 +216,28 @@ func (db Postgres) PasswordEnvs(conf *conftypes.Global) kubernetes.ConfigLookups
 	return kubernetes.ConfigLookups{envs}
 }
 
-func (Postgres) ExecCommand(conf *conftypes.Exec) *command.Builder {
-	cmd := command.NewBuilder("exec", "psql", "--host="+conf.Host, "--username="+conf.Username)
-	if conf.Password != "" {
-		cmd.Unshift(command.NewEnv("PGPASSWORD", conf.Password))
+func (Postgres) newCmd(conf *conftypes.Global, p ...any) *command.Builder {
+	cmd := command.NewBuilder(p...)
+	if conf.Host != "" {
+		cmd.Push("--host=" + conf.Host)
 	}
 	if conf.Port != 0 {
 		cmd.Push("--port=" + strconv.Itoa(int(conf.Port)))
 	}
+	if conf.Username != "" {
+		cmd.Push("--username=" + conf.Username)
+	}
+	if conf.Password != "" {
+		cmd.Unshift(command.NewEnv("PGPASSWORD", conf.Password))
+	}
 	if conf.Database != "" {
 		cmd.Push("--dbname=" + conf.Database)
 	}
+	return cmd
+}
+
+func (db Postgres) ExecCommand(conf *conftypes.Exec) *command.Builder {
+	cmd := db.newCmd(conf.Global, "exec", "psql")
 	if conf.DisableHeaders {
 		cmd.Push("--tuples-only")
 	}
@@ -243,16 +254,7 @@ func (Postgres) quoteParam(param string) string {
 }
 
 func (db Postgres) DumpCommand(conf *conftypes.Dump) *command.Builder {
-	cmd := command.NewBuilder("pg_dump", "--host="+conf.Host, "--username="+conf.Username)
-	if conf.Password != "" {
-		cmd.Unshift(command.NewEnv("PGPASSWORD", conf.Password))
-	}
-	if conf.Port != 0 {
-		cmd.Push("--port=" + strconv.Itoa(int(conf.Port)))
-	}
-	if conf.Database != "" {
-		cmd.Push("--dbname=" + conf.Database)
-	}
+	cmd := db.newCmd(conf.Global, "pg_dump")
 	if conf.Clean {
 		cmd.Push("--clean")
 		if conf.IfExists {
@@ -280,25 +282,10 @@ func (db Postgres) DumpCommand(conf *conftypes.Dump) *command.Builder {
 	return cmd
 }
 
-func (Postgres) RestoreCommand(conf *conftypes.Restore, inputFormat sqlformat.Format) *command.Builder {
-	cmd := command.NewBuilder()
-	if conf.Password != "" {
-		cmd.Push(command.NewEnv("PGPASSWORD", conf.Password))
-	}
-	if conf.Quiet {
-		cmd.Push(command.NewEnv("PGOPTIONS", "-c client_min_messages=WARNING"))
-	}
-	switch inputFormat {
-	case sqlformat.Gzip, sqlformat.Plain, sqlformat.Unknown:
-		cmd.Push("psql")
-		if conf.Quiet {
-			cmd.Push("--quiet", "--output=/dev/null")
-		}
-		if conf.HaltOnError {
-			cmd.Push("--set=ON_ERROR_STOP=1")
-		}
-	case sqlformat.Custom:
-		cmd.Push("pg_restore", "--format=custom")
+func (db Postgres) RestoreCommand(conf *conftypes.Restore, inputFormat sqlformat.Format) *command.Builder {
+	var cmd *command.Builder
+	if inputFormat == sqlformat.Custom {
+		cmd = db.newCmd(conf.Global, "pg_restore", "--format=custom")
 		if conf.Clean {
 			cmd.Push("--clean")
 		}
@@ -311,10 +298,17 @@ func (Postgres) RestoreCommand(conf *conftypes.Restore, inputFormat sqlformat.Fo
 		if !conf.Quiet {
 			cmd.Push("--verbose")
 		}
+	} else {
+		cmd = db.newCmd(conf.Global, "psql")
+		if conf.Quiet {
+			cmd.Push("--quiet", "--output=/dev/null")
+		}
+		if conf.HaltOnError {
+			cmd.Push("--set=ON_ERROR_STOP=1")
+		}
 	}
-	cmd.Push("--host="+conf.Host, "--username="+conf.Username, "--dbname="+conf.Database)
-	if conf.Port != 0 {
-		cmd.Push("--port=" + strconv.Itoa(int(conf.Port)))
+	if conf.Quiet {
+		cmd.Unshift(command.NewEnv("PGOPTIONS", "-c client_min_messages=WARNING"))
 	}
 	if conf.SingleTransaction {
 		cmd.Push("--single-transaction")
