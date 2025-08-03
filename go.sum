@@ -205,8 +205,8 @@ github.com/knadh/koanf/providers/confmap v1.0.0 h1:mHKLJTE7iXEys6deO5p6olAiZdG5z
 github.com/knadh/koanf/providers/confmap v1.0.0/go.mod h1:txHYHiI2hAtF0/0sCmcuol4IDcuQbKTybiB1nOcUo1A=
 github.com/knadh/koanf/providers/env v1.0.0 h1:ufePaI9BnWH+ajuxGGiJ8pdTG0uLEUWC7/HDDPGLah0=
 github.com/knadh/koanf/providers/env v1.0.0/go.mod h1:mzFyRZueYhb37oPmC1HAv/oGEEuyvJDA98r3XAa8Gak=
-github.com/knadh/koanf/providers/posflag v0.1.0 h1:mKJlLrKPcAP7Ootf4pBZWJ6J+4wHYujwipe7Ie3qW6U=
-github.com/knadh/koanf/providers/posflag v0.1.0/go.mod h1:SYg03v/t8ISBNrMBRMlojH8OsKowbkXV7giIbBVgbz0=
+github.com/knadh/koanf/providers/posflag v1.0.1 h1:EnMxHSrPkYCFnKgBUl5KBgrjed8gVFrcXDzaW4l/C6Y=
+github.com/knadh/koanf/providers/posflag v1.0.1/go.mod h1:3Wn3+YG3f4ljzRyCUgIwH7G0sZ1pMjCOsNBovrbKmAk=
 github.com/knadh/koanf/providers/rawbytes v1.0.0 h1:MrKDh/HksJlKJmaZjgs4r8aVBb/zsJyc/8qaSnzcdNI=
 github.com/knadh/koanf/providers/rawbytes v1.0.0/go.mod h1:KxwYJf1uezTKy6PBtfE+m725NGp4GPVA7XoNTJ/PtLo=
 github.com/knadh/koanf/v2 v2.1.2 h1:I2rtLRqXRy1p01m/utEtpZSSA6dcJbgGVuE27kW2PzQ=
