@@ -67,11 +67,14 @@ func Load(cmd *cobra.Command) error {
 	}
 
 	// Load envs
-	if err := K.Load(env.Provider(EnvPrefix, ".", func(s string) string {
-		s = strings.TrimPrefix(s, EnvPrefix)
-		s = strings.ToLower(s)
-		s = strings.ReplaceAll(s, "_", "-")
-		return s
+	if err := K.Load(env.Provider(".", env.Opt{
+		Prefix: EnvPrefix,
+		TransformFunc: func(k, v string) (string, any) {
+			k = strings.TrimPrefix(k, EnvPrefix)
+			k = strings.ToLower(k)
+			k = strings.ReplaceAll(k, "_", "-")
+			return k, v
+		},
 	}), nil); err != nil {
 		return err
 	}
