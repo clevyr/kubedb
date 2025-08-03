@@ -20,7 +20,7 @@ require (
 	github.com/knadh/koanf/providers/posflag v0.1.0
 	github.com/knadh/koanf/providers/rawbytes v0.1.0
 	github.com/knadh/koanf/v2 v2.1.2
-	github.com/lmittmann/tint v1.0.7
+	github.com/lmittmann/tint v1.1.2
 	github.com/muesli/termenv v0.16.0
 	github.com/schollz/progressbar/v3 v3.18.0
 	github.com/spf13/cobra v1.9.1
