@@ -44,10 +44,12 @@ func (MongoDB) PortEnvs(_ *conftypes.Global) kubernetes.ConfigLookups {
 func (MongoDB) PortDefault() uint16 { return 27017 }
 
 func (MongoDB) DatabaseEnvs(_ *conftypes.Global) kubernetes.ConfigLookups {
-	return kubernetes.ConfigLookups{
-		kubernetes.LookupEnv{"MONGODB_EXTRA_DATABASES"},
-		kubernetes.LookupEnv{"MONGO_INITDB_DATABASE"},
-	}
+	return kubernetes.ConfigLookups{kubernetes.LookupEnv{
+		"MONGO_INITDB_DATABASE",
+		"MONGO_DATABASE",
+		"MONGODB_DATABASE",
+		"MONGODB_EXTRA_DATABASES",
+	}}
 }
 
 func (MongoDB) DatabaseListQuery() string {
@@ -59,7 +61,14 @@ func (MongoDB) TableListQuery() string {
 }
 
 func (MongoDB) UserEnvs(_ *conftypes.Global) kubernetes.ConfigLookups {
-	return kubernetes.ConfigLookups{kubernetes.LookupEnv{"MONGODB_EXTRA_USERNAMES", "MONGODB_ROOT_USER"}}
+	return kubernetes.ConfigLookups{kubernetes.LookupEnv{
+		"MONGODB_EXTRA_USERNAMES",
+		"MONGO_INITDB_USERNAME",
+		"MONGODB_USERNAME",
+		"MONGO_USERNAME",
+		"MONGO_INITDB_ROOT_USERNAME",
+		"MONGODB_ROOT_USER",
+	}}
 }
 
 func (MongoDB) UserDefault() string { return "root" }
@@ -92,9 +101,18 @@ func (MongoDB) PodFilters() filter.Filter {
 
 func (db MongoDB) PasswordEnvs(c *conftypes.Global) kubernetes.ConfigLookups {
 	if c.Username == db.UserDefault() {
-		return kubernetes.ConfigLookups{kubernetes.LookupEnv{"MONGODB_ROOT_PASSWORD"}}
+		return kubernetes.ConfigLookups{kubernetes.LookupEnv{
+			"MONGODB_ROOT_PASSWORD",
+			"MONGO_INITDB_ROOT_PASSWORD",
+			"MONGO_ROOT_PASSWORD",
+		}}
 	}
-	return kubernetes.ConfigLookups{kubernetes.LookupEnv{"MONGODB_EXTRA_PASSWORDS"}}
+	return kubernetes.ConfigLookups{kubernetes.LookupEnv{
+		"MONGODB_EXTRA_PASSWORDS",
+		"MONGO_INITDB_PASSWORD",
+		"MONGODB_PASSWORD",
+		"MONGO_PASSWORD",
+	}}
 }
 
 func (db MongoDB) AuthenticationDatabase(c *conftypes.Global) string {

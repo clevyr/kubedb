@@ -231,12 +231,21 @@ func TestMongoDB_PasswordEnvs(t *testing.T) {
 		{
 			"default",
 			args{&conftypes.Global{}},
-			kubernetes.ConfigLookups{kubernetes.LookupEnv{"MONGODB_EXTRA_PASSWORDS"}},
+			kubernetes.ConfigLookups{kubernetes.LookupEnv{
+				"MONGODB_EXTRA_PASSWORDS",
+				"MONGO_INITDB_PASSWORD",
+				"MONGODB_PASSWORD",
+				"MONGO_PASSWORD",
+			}},
 		},
 		{
 			"root",
 			args{&conftypes.Global{Username: "root"}},
-			kubernetes.ConfigLookups{kubernetes.LookupEnv{"MONGODB_ROOT_PASSWORD"}},
+			kubernetes.ConfigLookups{kubernetes.LookupEnv{
+				"MONGODB_ROOT_PASSWORD",
+				"MONGO_INITDB_ROOT_PASSWORD",
+				"MONGO_ROOT_PASSWORD",
+			}},
 		},
 	}
 	for _, tt := range tests {
