@@ -1,4 +1,4 @@
-FROM alpine:3.22.2
+FROM alpine:3.23.0
 LABEL org.opencontainers.image.source="https://github.com/clevyr/kubedb"
 WORKDIR /data
 
