@@ -18,7 +18,7 @@ RUN --mount=type=cache,target=/root/.cache \
   CGO_ENABLED=0 xx-go build -ldflags='-w -s' -trimpath -tags disable_grpc_modules,grpcnotrace
 
 
-FROM alpine:3.23.0
+FROM alpine:3.23.2
 LABEL org.opencontainers.image.source="https://github.com/clevyr/kubedb"
 WORKDIR /data
 
