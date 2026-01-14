@@ -22,7 +22,7 @@ require (
 	github.com/knadh/koanf/v2 v2.2.2
 	github.com/lmittmann/tint v1.1.2
 	github.com/muesli/termenv v0.16.0
-	github.com/schollz/progressbar/v3 v3.18.0
+	github.com/schollz/progressbar/v3 v3.19.0
 	github.com/spf13/cobra v1.9.1
 	github.com/spf13/pflag v1.0.7
 	github.com/stretchr/testify v1.10.0
