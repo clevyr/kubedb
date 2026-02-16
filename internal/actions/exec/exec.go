@@ -33,7 +33,9 @@ func (action Exec) Run(ctx context.Context) error {
 	t.Raw = t.IsTerminalIn()
 	var sizeQueue remotecommand.TerminalSizeQueue
 	if t.Raw {
-		sizeQueue = t.MonitorSize(t.GetSize())
+		sizeQueue = &terminalSizeQueueAdapter{
+			delegate: t.MonitorSize(t.GetSize()),
+		}
 		// unset stderr because both stdout and stderr go over t.Out in raw mode
 		stderr = nil
 	}
@@ -69,4 +71,23 @@ func (action Exec) buildCommand() (*command.Builder, error) {
 
 	slogx.Trace("Finished building command", "cmd", cmd)
 	return cmd, nil
+}
+
+type terminalSizeQueueAdapter struct {
+	delegate term.TerminalSizeQueue
+}
+
+func (a *terminalSizeQueueAdapter) Next() *remotecommand.TerminalSize {
+	if a.delegate == nil {
+		return nil
+	}
+
+	next := a.delegate.Next()
+	if next == nil {
+		return nil
+	}
+	return &remotecommand.TerminalSize{
+		Width:  next.Width,
+		Height: next.Height,
+	}
 }
