@@ -8,7 +8,7 @@ import (
 	"strings"
 
 	"github.com/aws/aws-sdk-go-v2/config"
-	"github.com/aws/aws-sdk-go-v2/feature/s3/manager"
+	"github.com/aws/aws-sdk-go-v2/feature/s3/transfermanager"
 	"github.com/aws/aws-sdk-go-v2/service/s3"
 	"k8s.io/utils/ptr"
 )
@@ -32,6 +32,7 @@ func IsS3Dir(path string) bool {
 
 type S3 struct {
 	client *s3.Client
+	tm     *transfermanager.Client
 }
 
 func NewS3(ctx context.Context) (*S3, error) {
@@ -41,7 +42,10 @@ func NewS3(ctx context.Context) (*S3, error) {
 	}
 
 	client := s3.NewFromConfig(awsCfg)
-	return &S3{client: client}, nil
+	return &S3{
+		client: client,
+		tm:     transfermanager.New(client),
+	}, nil
 }
 
 func (s *S3) ListBuckets(ctx context.Context) iter.Seq2[*Bucket, error] {
@@ -128,7 +132,7 @@ func (s *S3) PutObject(ctx context.Context, r io.Reader, key string) error {
 	}
 	u.Path = strings.TrimLeft(u.Path, "/")
 
-	_, err = manager.NewUploader(s.client).Upload(ctx, &s3.PutObjectInput{
+	_, err = s.tm.UploadObject(ctx, &transfermanager.UploadObjectInput{
 		Bucket: ptr.To(u.Host),
 		Key:    ptr.To(u.Path),
 		Body:   r,
@@ -143,12 +147,16 @@ func (s *S3) GetObject(ctx context.Context, key string) (io.ReadCloser, error) {
 	}
 	u.Path = strings.TrimLeft(u.Path, "/")
 
-	res, err := s.client.GetObject(ctx, &s3.GetObjectInput{
+	res, err := s.tm.GetObject(ctx, &transfermanager.GetObjectInput{
 		Bucket: ptr.To(u.Host),
 		Key:    ptr.To(u.Path),
 	})
 	if err != nil {
 		return nil, err
 	}
-	return res.Body, nil
+
+	if rc, ok := res.Body.(io.ReadCloser); ok {
+		return rc, nil
+	}
+	return io.NopCloser(res.Body), nil
 }
