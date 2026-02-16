@@ -7,7 +7,6 @@
 [![GitHub release (latest by date)](https://img.shields.io/github/v/release/clevyr/kubedb)](https://github.com/clevyr/kubedb/releases)
 [![Build](https://github.com/clevyr/kubedb/actions/workflows/build.yml/badge.svg)](https://github.com/clevyr/kubedb/actions/workflows/build.yml)
 [![Go Report Card](https://goreportcard.com/badge/github.com/clevyr/kubedb)](https://goreportcard.com/report/github.com/clevyr/kubedb)
-[![Quality Gate Status](https://sonarcloud.io/api/project_badges/measure?project=clevyr_kubedb&metric=alert_status)](https://sonarcloud.io/summary/new_code?id=clevyr_kubedb)
 
 <br>
 </div>
