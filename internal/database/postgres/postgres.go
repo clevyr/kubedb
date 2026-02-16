@@ -108,7 +108,7 @@ func (Postgres) AnalyzeQuery() string { return "analyze;" }
 
 func (db Postgres) PodFilters() filter.Filter {
 	return filter.Or{
-		db.query(),
+		db.baseQuery(),
 		db.postgresqlHaQuery(),
 		db.cnpgQuery(),
 		db.zalandoQuery(),
@@ -123,7 +123,7 @@ func (db Postgres) FilterPods(
 	preferred := make([]corev1.Pod, 0, len(pods))
 
 	// bitnami/postgres
-	if matched := filter.Pods(pods, db.query()); len(pods) != 0 {
+	if matched := filter.Pods(pods, db.primaryQuery()); len(matched) != 0 {
 		preferred = append(preferred, matched...)
 	}
 
@@ -324,7 +324,7 @@ func (Postgres) Formats() map[sqlformat.Format]string {
 	}
 }
 
-func (Postgres) query() filter.Or {
+func (Postgres) baseQuery() filter.Or {
 	return filter.Or{
 		filter.And{
 			filter.Label{
@@ -336,6 +336,24 @@ func (Postgres) query() filter.Or {
 				Name:     "app.kubernetes.io/component",
 				Operator: selection.NotIn,
 				Values:   []string{"read", "replica"},
+			},
+		},
+		filter.Label{Name: "app", Value: "postgresql"},
+	}
+}
+
+func (Postgres) primaryQuery() filter.Or {
+	return filter.Or{
+		filter.And{
+			filter.Label{
+				Name:     "app.kubernetes.io/name",
+				Operator: selection.In,
+				Values:   []string{"postgresql", "postgres"},
+			},
+			filter.Label{
+				Name:     "app.kubernetes.io/component",
+				Operator: selection.In,
+				Values:   []string{"primary", "master"},
 			},
 		},
 		filter.Label{Name: "app", Value: "postgresql"},

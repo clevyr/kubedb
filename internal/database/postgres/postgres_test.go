@@ -289,11 +289,22 @@ func TestPostgres_ExecCommand(t *testing.T) {
 }
 
 func TestPostgres_FilterPods(t *testing.T) {
-	postgresPod := corev1.Pod{
+	primaryPod := corev1.Pod{
 		ObjectMeta: metav1.ObjectMeta{
+			Name: "postgresql-primary",
 			Labels: map[string]string{
 				"app.kubernetes.io/name":      "postgresql",
 				"app.kubernetes.io/component": "primary",
+			},
+		},
+	}
+
+	replicaPod := corev1.Pod{
+		ObjectMeta: metav1.ObjectMeta{
+			Name: "postgresql-replica",
+			Labels: map[string]string{
+				"app.kubernetes.io/name":      "postgresql",
+				"app.kubernetes.io/component": "replica",
 			},
 		},
 	}
@@ -312,9 +323,18 @@ func TestPostgres_FilterPods(t *testing.T) {
 			"postgresql",
 			args{
 				kubernetes.KubeClient{},
-				[]corev1.Pod{postgresPod},
+				[]corev1.Pod{primaryPod},
 			},
-			[]corev1.Pod{postgresPod},
+			[]corev1.Pod{primaryPod},
+			require.NoError,
+		},
+		{
+			"postgresql-mixed",
+			args{
+				kubernetes.KubeClient{},
+				[]corev1.Pod{primaryPod, replicaPod},
+			},
+			[]corev1.Pod{primaryPod},
 			require.NoError,
 		},
 	}
