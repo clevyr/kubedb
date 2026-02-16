@@ -19,8 +19,9 @@ const _Format_name = "unknowngzipplaincustom"
 var _Format_index = [...]uint8{0, 7, 11, 16, 22}
 
 func (i Format) String() string {
-	if i >= Format(len(_Format_index)-1) {
+	idx := int(i) - 0
+	if i < 0 || idx >= len(_Format_index)-1 {
 		return "Format(" + strconv.FormatInt(int64(i), 10) + ")"
 	}
-	return _Format_name[_Format_index[i]:_Format_index[i+1]]
+	return _Format_name[_Format_index[idx]:_Format_index[idx+1]]
 }
