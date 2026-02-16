@@ -5,12 +5,13 @@ import (
 	"io"
 	"iter"
 	"net/url"
+	"os"
+	"path/filepath"
 	"strings"
 
-	"github.com/aws/aws-sdk-go-v2/config"
-	"github.com/aws/aws-sdk-go-v2/feature/s3/transfermanager"
-	"github.com/aws/aws-sdk-go-v2/service/s3"
-	"k8s.io/utils/ptr"
+	"github.com/go-ini/ini"
+	"github.com/minio/minio-go/v7"
+	"github.com/minio/minio-go/v7/pkg/credentials"
 )
 
 const S3Schema = "s3://"
@@ -31,42 +32,147 @@ func IsS3Dir(path string) bool {
 }
 
 type S3 struct {
-	client *s3.Client
-	tm     *transfermanager.Client
+	client *minio.Client
 }
 
-func NewS3(ctx context.Context) (*S3, error) {
-	awsCfg, err := config.LoadDefaultConfig(ctx)
+type s3Config struct {
+	Endpoint string
+	Region   string
+	Secure   bool
+}
+
+func NewS3() (*S3, error) {
+	cfg, err := loadS3Config()
 	if err != nil {
 		return nil, err
 	}
 
-	client := s3.NewFromConfig(awsCfg)
-	return &S3{
-		client: client,
-		tm:     transfermanager.New(client),
-	}, nil
+	if cfg.Endpoint == "s3.amazonaws.com" {
+		cfg.Region = ""
+	}
+
+	opts := &minio.Options{
+		Creds: credentials.NewChainCredentials([]credentials.Provider{
+			&credentials.EnvAWS{},
+			&credentials.FileAWSCredentials{},
+			&credentials.IAM{},
+		}),
+		Secure: cfg.Secure,
+		Region: cfg.Region,
+	}
+
+	client, err := minio.New(cfg.Endpoint, opts)
+	if err != nil {
+		return nil, err
+	}
+	return &S3{client: client}, nil
+}
+
+func loadS3Config() (s3Config, error) {
+	endpoint := os.Getenv("AWS_ENDPOINT_URL")
+	region := os.Getenv("AWS_REGION")
+
+	var cfg s3Config
+	var err error
+
+	if endpoint != "" {
+		cfg.Endpoint, cfg.Secure, err = parseEndpoint(endpoint)
+		if err != nil {
+			return s3Config{}, err
+		}
+	}
+
+	if cfg.Endpoint != "" && region != "" {
+		cfg.Region = region
+		return cfg, nil
+	}
+
+	fileEndpoint, fileRegion := loadConfigFromFile()
+
+	if cfg.Endpoint == "" && fileEndpoint != "" {
+		cfg.Endpoint, cfg.Secure, err = parseEndpoint(fileEndpoint)
+		if err != nil {
+			return s3Config{}, err
+		}
+	}
+
+	if region == "" {
+		region = fileRegion
+	}
+	cfg.Region = region
+
+	if cfg.Endpoint == "" {
+		cfg.Endpoint = "s3.amazonaws.com"
+		cfg.Secure = true
+	}
+
+	return cfg, nil
+}
+
+func loadConfigFromFile() (string, string) {
+	configFile := os.Getenv("AWS_CONFIG_FILE")
+	if configFile == "" {
+		home, err := os.UserHomeDir()
+		if err != nil {
+			return "", ""
+		}
+		configFile = filepath.Join(home, ".aws", "config")
+	}
+
+	cfg, err := ini.Load(configFile)
+	if err != nil {
+		return "", ""
+	}
+
+	profile := os.Getenv("AWS_PROFILE")
+	if profile == "" {
+		profile = "default"
+	}
+
+	sectionName := profile
+	if profile != "default" {
+		sectionName = "profile " + profile
+	}
+
+	section, err := cfg.GetSection(sectionName)
+	if err != nil {
+		return "", ""
+	}
+
+	var endpoint string
+	if k, err := section.GetKey("endpoint_url"); err == nil {
+		endpoint = k.String()
+	}
+
+	var region string
+	if k, err := section.GetKey("region"); err == nil {
+		region = k.String()
+	}
+
+	return endpoint, region
+}
+
+func parseEndpoint(e string) (string, bool, error) {
+	if !strings.Contains(e, "://") {
+		e = "https://" + e
+	}
+	u, err := url.Parse(e)
+	if err != nil {
+		return "", false, err
+	}
+	return u.Host, u.Scheme == "https", nil
 }
 
 func (s *S3) ListBuckets(ctx context.Context) iter.Seq2[*Bucket, error] {
 	return func(yield func(*Bucket, error) bool) {
-		input := &s3.ListBucketsInput{}
+		buckets, err := s.client.ListBuckets(ctx)
+		if err != nil {
+			yield(nil, err)
+			return
+		}
 
-		for {
-			buckets, err := s.client.ListBuckets(ctx, input)
-			if err != nil {
-				yield(nil, err)
-				return
-			}
-
-			for _, bucket := range buckets.Buckets {
-				if !yield(&Bucket{Name: *bucket.Name}, nil) {
-					return
-				}
-			}
-
-			input.ContinuationToken = buckets.ContinuationToken
-			if input.ContinuationToken == nil {
+		for _, bucket := range buckets {
+			if !yield(&Bucket{Name: bucket.Name}, nil) {
 				return
 			}
 		}
@@ -81,44 +187,35 @@ func (s *S3) ListObjects(ctx context.Context, key string) iter.Seq2[*Object, err
 			return
 		}
 		u.Path = strings.TrimLeft(u.Path, "/")
+		bucket := u.Host
+		prefix := u.Path
 
-		input := &s3.ListObjectsV2Input{
-			Bucket:    ptr.To(u.Host),
-			Delimiter: ptr.To("/"),
-			Prefix:    ptr.To(u.Path),
+		opts := minio.ListObjectsOptions{
+			Prefix:    prefix,
+			Recursive: false,
 		}
 
-		for {
-			objects, err := s.client.ListObjectsV2(ctx, input)
-			if err != nil {
-				yield(nil, err)
+		for object := range s.client.ListObjects(ctx, bucket, opts) {
+			if object.Err != nil {
+				yield(nil, object.Err)
 				return
 			}
 
-			for _, prefix := range objects.CommonPrefixes {
+			if strings.HasSuffix(object.Key, "/") {
 				if !yield(&Object{
-					Name:  *prefix.Prefix,
+					Name:  object.Key,
 					IsDir: true,
 				}, nil) {
 					return
 				}
+				continue
 			}
 
-			for _, object := range objects.Contents {
-				if strings.HasSuffix(*object.Key, "/") {
-					continue
-				}
-				if !yield(&Object{
-					Name:         *object.Key,
-					LastModified: *object.LastModified,
-					Size:         *object.Size,
-				}, nil) {
-					return
-				}
-			}
-
-			input.ContinuationToken = objects.NextContinuationToken
-			if input.ContinuationToken == nil {
+			if !yield(&Object{
+				Name:         object.Key,
+				LastModified: object.LastModified,
+				Size:         object.Size,
+			}, nil) {
 				return
 			}
 		}
@@ -132,11 +229,8 @@ func (s *S3) PutObject(ctx context.Context, r io.Reader, key string) error {
 	}
 	u.Path = strings.TrimLeft(u.Path, "/")
 
-	_, err = s.tm.UploadObject(ctx, &transfermanager.UploadObjectInput{
-		Bucket: ptr.To(u.Host),
-		Key:    ptr.To(u.Path),
-		Body:   r,
-	})
+	// -1 for object size tells MinIO to automatically use multipart upload
+	_, err = s.client.PutObject(ctx, u.Host, u.Path, r, -1, minio.PutObjectOptions{})
 	return err
 }
 
@@ -147,16 +241,5 @@ func (s *S3) GetObject(ctx context.Context, key string) (io.ReadCloser, error) {
 	}
 	u.Path = strings.TrimLeft(u.Path, "/")
 
-	res, err := s.tm.GetObject(ctx, &transfermanager.GetObjectInput{
-		Bucket: ptr.To(u.Host),
-		Key:    ptr.To(u.Path),
-	})
-	if err != nil {
-		return nil, err
-	}
-
-	if rc, ok := res.Body.(io.ReadCloser); ok {
-		return rc, nil
-	}
-	return io.NopCloser(res.Body), nil
+	return s.client.GetObject(ctx, u.Host, u.Path, minio.GetObjectOptions{})
 }

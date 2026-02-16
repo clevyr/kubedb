@@ -42,7 +42,7 @@ var ErrUnknownPrefix = errors.New("unknown prefix")
 func NewClient(ctx context.Context, path string) (Client, error) {
 	switch {
 	case IsS3(path):
-		return NewS3(ctx)
+		return NewS3()
 	case IsGCS(path):
 		return NewGCS(ctx, storage.ScopeReadWrite, "")
 	case IsB2(path):
