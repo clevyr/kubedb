@@ -45,7 +45,7 @@ func TestDetectDialect(t *testing.T) {
 			"postgres",
 			args{
 				kubernetes.KubeClient{
-					ClientSet: kubernetesfake.NewSimpleClientset(&postgresPod),
+					ClientSet: kubernetesfake.NewClientset(&postgresPod),
 				},
 			},
 			[]DetectResult{{postgres.Postgres{}, []corev1.Pod{postgresPod}}},
@@ -55,7 +55,7 @@ func TestDetectDialect(t *testing.T) {
 			"mariadb",
 			args{
 				kubernetes.KubeClient{
-					ClientSet: kubernetesfake.NewSimpleClientset(&mariadbPod),
+					ClientSet: kubernetesfake.NewClientset(&mariadbPod),
 				},
 			},
 			[]DetectResult{{mariadb.MariaDB{}, []corev1.Pod{mariadbPod}}},
@@ -65,7 +65,7 @@ func TestDetectDialect(t *testing.T) {
 			"no database",
 			args{
 				kubernetes.KubeClient{
-					ClientSet: kubernetesfake.NewSimpleClientset(&corev1.Pod{}),
+					ClientSet: kubernetesfake.NewClientset(&corev1.Pod{}),
 				},
 			},
 			nil,
@@ -75,7 +75,7 @@ func TestDetectDialect(t *testing.T) {
 			"no pods in namespace",
 			args{
 				kubernetes.KubeClient{
-					ClientSet: kubernetesfake.NewSimpleClientset(),
+					ClientSet: kubernetesfake.NewClientset(),
 				},
 			},
 			nil,
