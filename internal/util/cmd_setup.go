@@ -30,7 +30,6 @@ import (
 	"k8s.io/apimachinery/pkg/util/intstr"
 	"k8s.io/apimachinery/pkg/util/wait"
 	"k8s.io/kubectl/pkg/cmd/util/podcmd"
-	"k8s.io/utils/ptr"
 )
 
 //nolint:gocognit,cyclop,funlen
@@ -273,9 +272,9 @@ func createJob(ctx context.Context, conf *conftypes.Global, actionName string) e
 			Labels:       standardLabels,
 		},
 		Spec: batchv1.JobSpec{
-			ActiveDeadlineSeconds:   ptr.To(int64(24 * time.Hour.Seconds())),
-			TTLSecondsAfterFinished: ptr.To(int32(time.Hour.Seconds())),
-			BackoffLimit:            ptr.To(int32(0)),
+			ActiveDeadlineSeconds:   new(int64(24 * time.Hour.Seconds())),
+			TTLSecondsAfterFinished: new(int32(time.Hour.Seconds())),
+			BackoffLimit:            new(int32(0)),
 			Template: corev1.PodTemplateSpec{
 				ObjectMeta: metav1.ObjectMeta{
 					Annotations: map[string]string{
@@ -285,7 +284,7 @@ func createJob(ctx context.Context, conf *conftypes.Global, actionName string) e
 				},
 				Spec: corev1.PodSpec{
 					RestartPolicy:                 corev1.RestartPolicyNever,
-					TerminationGracePeriodSeconds: ptr.To(int64(0)),
+					TerminationGracePeriodSeconds: new(int64(0)),
 					Affinity: &corev1.Affinity{
 						PodAffinity: &corev1.PodAffinity{
 							PreferredDuringSchedulingIgnoredDuringExecution: []corev1.WeightedPodAffinityTerm{
@@ -361,12 +360,12 @@ func createJob(ctx context.Context, conf *conftypes.Global, actionName string) e
 				Egress: []networkingv1.NetworkPolicyEgressRule{
 					{
 						To: []networkingv1.NetworkPolicyPeer{{
-							NamespaceSelector: ptr.To(metav1.LabelSelector{MatchLabels: map[string]string{
+							NamespaceSelector: new(metav1.LabelSelector{MatchLabels: map[string]string{
 								"kubernetes.io/metadata.name": conf.Client.Namespace,
 							}}),
 						}},
 						Ports: []networkingv1.NetworkPolicyPort{{
-							Port: ptr.To(intstr.FromInt32(int32(conf.Port))),
+							Port: new(intstr.FromInt32(int32(conf.Port))),
 						}},
 					},
 				},

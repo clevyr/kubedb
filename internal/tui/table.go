@@ -1,6 +1,8 @@
 package tui
 
 import (
+	"slices"
+
 	"github.com/charmbracelet/lipgloss"
 	"github.com/charmbracelet/lipgloss/table"
 )
@@ -15,10 +17,8 @@ func (t *Table) Row(row ...string) *Table {
 }
 
 func (t *Table) RowIfNotEmpty(row ...string) *Table {
-	for _, cell := range row {
-		if cell == "" {
-			return t
-		}
+	if slices.Contains(row, "") {
+		return t
 	}
 	t.Table.Row(row...)
 	return t

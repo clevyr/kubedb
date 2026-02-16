@@ -8,7 +8,6 @@ import (
 	"github.com/clevyr/kubedb/internal/config"
 	"github.com/clevyr/kubedb/internal/config/conftypes"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"k8s.io/utils/ptr"
 )
 
 func Teardown(conf *conftypes.Global) {
@@ -16,7 +15,8 @@ func Teardown(conf *conftypes.Global) {
 		ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
 		defer cancel()
 
-		opts := metav1.DeleteOptions{PropagationPolicy: ptr.To(metav1.DeletePropagationForeground)}
+		foreground := metav1.DeletePropagationForeground
+		opts := metav1.DeleteOptions{PropagationPolicy: &foreground}
 
 		jobLog := slog.With("name", conf.Job.Name)
 		jobLog.Info("Cleaning up job")
