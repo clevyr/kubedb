@@ -109,16 +109,18 @@ func run(cmd *cobra.Command, _ []string) error {
 		os.Exit(1)
 	}
 
-	if res, err := conf.Client.ClientSet.AuthorizationV1().SelfSubjectAccessReviews().Create(cmd.Context(), &authorizationv1.SelfSubjectAccessReview{
-		Spec: authorizationv1.SelfSubjectAccessReviewSpec{
-			ResourceAttributes: &authorizationv1.ResourceAttributes{
-				Namespace: conf.Client.Namespace,
-				Verb:      "create",
-				Group:     "batch",
-				Resource:  "jobs",
+	if res, err := conf.Client.ClientSet.AuthorizationV1().
+		SelfSubjectAccessReviews().
+		Create(cmd.Context(), &authorizationv1.SelfSubjectAccessReview{
+			Spec: authorizationv1.SelfSubjectAccessReviewSpec{
+				ResourceAttributes: &authorizationv1.ResourceAttributes{
+					Namespace: conf.Client.Namespace,
+					Verb:      "create",
+					Group:     "batch",
+					Resource:  "jobs",
+				},
 			},
-		},
-	}, metav1.CreateOptions{}); err != nil {
+		}, metav1.CreateOptions{}); err != nil {
 		_, _ = fmt.Fprintln(cmd.OutOrStdout(), prefixErr, "Job permission check failed:", err.Error())
 	} else if res.Status.Allowed {
 		_, _ = fmt.Fprintln(cmd.OutOrStdout(), prefixOk, "Jobs can be created")
