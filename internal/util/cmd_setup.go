@@ -1,4 +1,3 @@
-//nolint:gocyclo
 package util
 
 import (
@@ -9,7 +8,6 @@ import (
 	"maps"
 	"slices"
 	"strconv"
-	"strings"
 	"time"
 
 	"gabe565.com/utils/must"
@@ -17,7 +15,7 @@ import (
 	"github.com/clevyr/kubedb/internal/config"
 	"github.com/clevyr/kubedb/internal/config/conftypes"
 	"github.com/clevyr/kubedb/internal/consts"
-	"github.com/clevyr/kubedb/internal/database"
+	"github.com/clevyr/kubedb/internal/discovery"
 	"github.com/clevyr/kubedb/internal/finalizer"
 	"github.com/clevyr/kubedb/internal/kubernetes"
 	"github.com/clevyr/kubedb/internal/log/mask"
@@ -46,90 +44,37 @@ func DefaultSetup(cmd *cobra.Command, conf *conftypes.Global) error {
 	conf.Context = conf.Client.Context
 	conf.Namespace = conf.Client.Namespace
 
+	results, err := discovery.Discover(ctx, conf.Client, conf.PodName, conf.DialectName)
+	if err != nil {
+		checkNamespaceExists(ctx, conf)
+		return err
+	}
+
 	var pods []corev1.Pod
-	if conf.PodName != "" {
-		slashIdx := strings.IndexRune(conf.PodName, '/')
-		if slashIdx != 0 && slashIdx+1 < len(conf.PodName) {
-			conf.PodName = conf.PodName[slashIdx+1:]
+	if len(results) == 1 || config.IsCompletion {
+		conf.Dialect = results[0].Dialect
+		pods = results[0].Pods
+	} else {
+		slices.SortFunc(results, func(a, b discovery.Result) int {
+			return cmp.Compare(a.Dialect.PrettyName(), b.Dialect.PrettyName())
+		})
+		opts := make([]huh.Option[int], 0, len(results))
+		for i, v := range results {
+			opts = append(opts, huh.NewOption(v.Dialect.PrettyName(), i))
 		}
-		pod, err := conf.Client.Pods().Get(ctx, conf.PodName, metav1.GetOptions{})
-		if err != nil {
-			checkNamespaceExists(ctx, conf)
+		var chosen int
+		if err := tui.NewForm(huh.NewGroup(
+			huh.NewSelect[int]().
+				Title("Select database type").
+				Options(opts...).
+				Value(&chosen),
+		)).Run(); err != nil {
 			return err
 		}
-		pods = []corev1.Pod{*pod}
+		conf.Dialect = results[chosen].Dialect
+		pods = results[chosen].Pods
 	}
-
-	switch {
-	case conf.DialectName != "":
-		conf.Dialect, err = database.New(conf.DialectName)
-		if err != nil {
-			return err
-		}
-		slog.Debug("Configured database", "dialect", conf.Dialect.Name())
-		if len(pods) == 0 {
-			pods, err = conf.Client.GetPodsFiltered(ctx, conf.Dialect.PodFilters())
-			if err != nil {
-				return err
-			}
-
-			if len(pods) == 0 {
-				return kubernetes.ErrPodNotFound
-			}
-		}
-	case len(pods) == 0:
-		result, err := database.DetectDialect(ctx, conf.Client)
-		if err != nil {
-			checkNamespaceExists(ctx, conf)
-			return err
-		}
-		if len(result) == 1 || config.IsCompletion {
-			for _, v := range result {
-				conf.Dialect = v.Dialect
-				pods = v.Pods
-				break
-			}
-		} else {
-			slices.SortFunc(result, func(a, b database.DetectResult) int {
-				return cmp.Compare(a.Dialect.PrettyName(), b.Dialect.PrettyName())
-			})
-			opts := make([]huh.Option[int], 0, len(result))
-			for i, v := range result {
-				opts = append(opts, huh.NewOption(v.Dialect.PrettyName(), i))
-			}
-			var chosen int
-			if err := tui.NewForm(huh.NewGroup(
-				huh.NewSelect[int]().
-					Title("Select database type").
-					Options(opts...).
-					Value(&chosen),
-			)).Run(); err != nil {
-				return err
-			}
-			conf.Dialect = result[chosen].Dialect
-			pods = result[chosen].Pods
-		}
-		slog.Debug("Detected dialect", "dialect", conf.Dialect.Name())
-	default:
-		conf.Dialect, err = database.DetectDialectFromPod(pods[0])
-		if err != nil {
-			checkNamespaceExists(ctx, conf)
-			return err
-		}
-	}
-
-	if len(pods) > 1 {
-		if db, ok := conf.Dialect.(conftypes.DBFilterer); ok && conf.PodName == "" {
-			filtered, err := db.FilterPods(ctx, conf.Client, pods)
-			if err != nil {
-				slog.Warn("Could not query primary instance", "error", err)
-			}
-
-			if len(filtered) != 0 {
-				pods = filtered
-			}
-		}
-	}
+	slog.Debug("Detected dialect", "dialect", conf.Dialect.Name())
 
 	if len(pods) == 1 || config.IsCompletion {
 		conf.DBPod = pods[0]

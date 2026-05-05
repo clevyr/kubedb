@@ -19,9 +19,11 @@ import (
 	"k8s.io/client-go/tools/remotecommand"
 )
 
-var ErrNoPods = errors.New("no pods in namespace")
-
-var ErrPodNotFound = errors.New("no pods with matching label")
+var (
+	ErrNoPods         = errors.New("no pods in namespace")
+	ErrPodNotFound    = errors.New("no pods with matching label")
+	ErrNoClientConfig = errors.New("no REST client config")
+)
 
 func (client KubeClient) GetNamespacedPods(ctx context.Context) (*corev1.PodList, error) {
 	pods, err := client.Pods().List(ctx, metav1.ListOptions{})
@@ -48,6 +50,10 @@ type ExecOptions struct {
 }
 
 func (client KubeClient) Exec(ctx context.Context, opt ExecOptions) error {
+	if client.ClientConfig == nil {
+		return ErrNoClientConfig
+	}
+
 	req := client.ClientSet.CoreV1().RESTClient().Post().
 		Resource("pods").
 		Namespace(client.Namespace).
