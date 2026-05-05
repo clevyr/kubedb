@@ -8,6 +8,7 @@ const OutputEnv = "GITHUB_OUTPUT"
 
 func SetOutput(name, value string) error {
 	if filename := os.Getenv(OutputEnv); filename != "" {
+		//nolint:gosec
 		f, err := os.OpenFile(filename, os.O_APPEND|os.O_WRONLY, 0o755)
 		if err != nil {
 			return err

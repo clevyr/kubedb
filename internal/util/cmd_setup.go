@@ -32,7 +32,6 @@ import (
 	"k8s.io/kubectl/pkg/cmd/util/podcmd"
 )
 
-//nolint:gocognit,cyclop,funlen
 func DefaultSetup(cmd *cobra.Command, conf *conftypes.Global) error {
 	cmd.SilenceUsage = true
 	ctx := cmd.Context()
