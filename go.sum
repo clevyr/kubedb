@@ -24,8 +24,8 @@ cloud.google.com/go/trace v1.11.7 h1:kDNDX8JkaAG3R2nq1lIdkb7FCSi1rCmsEtKVsty7p+U
 cloud.google.com/go/trace v1.11.7/go.mod h1:TNn9d5V3fQVf6s4SCveVMIBS2LJUqo73GACmq/Tky0s=
 gabe565.com/spinners v1.3.0 h1:JB8z8HvZ0p8E6UdTG4VYeU/12hmc9JBGME7057viuKI=
 gabe565.com/spinners v1.3.0/go.mod h1:PE/pE+TNQbtgr5/t3DmvvaY4ld8x8hpFK2aYLb3e5M4=
-gabe565.com/utils v0.0.0-20251001054419-00a1424779a7 h1:LpqtS+K3N9FMO/bH1JeQWrO7KyKmHdB/YrvBet0O2jo=
-gabe565.com/utils v0.0.0-20251001054419-00a1424779a7/go.mod h1:77YiYvy0oeBVtnmUje+xrvOHUBo8o2ZlsnI5spIDJ6Q=
+gabe565.com/utils v0.0.0-20260511235214-4059440fa83b h1:VSXnLVVh89Wc28Kch1q3Rzn9WWcubj2W4V1ZRVp62Bo=
+gabe565.com/utils v0.0.0-20260511235214-4059440fa83b/go.mod h1:77YiYvy0oeBVtnmUje+xrvOHUBo8o2ZlsnI5spIDJ6Q=
 github.com/Azure/go-ansiterm v0.0.0-20230124172434-306776ec8161 h1:L/gRVlceqvL25UVaW/CKtUDjefjrs0SPonmDGUVOYP0=
 github.com/Azure/go-ansiterm v0.0.0-20230124172434-306776ec8161/go.mod h1:xomTg63KZ2rFqZQzSB4Vz2SUXa1BpHTVz9L5PTmPC4E=
 github.com/Backblaze/blazer v0.7.2 h1:UWNHMLB+Nf+UmbO2qkVvgriODLEMz4kIyr2Hm+DVXQM=
