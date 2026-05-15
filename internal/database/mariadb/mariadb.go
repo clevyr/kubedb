@@ -29,11 +29,16 @@ var (
 
 type MariaDB struct{}
 
-func (MariaDB) Name() string { return "mariadb" }
+const (
+	dialectMariaDB = "mariadb"
+	dialectMySQL   = "mysql"
+)
+
+func (MariaDB) Name() string { return dialectMariaDB }
 
 func (MariaDB) PrettyName() string { return "MariaDB" }
 
-func (MariaDB) Aliases() []string { return []string{"maria", "mysql"} }
+func (MariaDB) Aliases() []string { return []string{"maria", dialectMySQL} }
 
 func (MariaDB) Priority() uint8 { return 255 }
 
@@ -70,7 +75,7 @@ func (MariaDB) PodFilters() filter.Filter {
 			filter.Label{
 				Name:     "app.kubernetes.io/name",
 				Operator: selection.In,
-				Values:   []string{"mariadb", "mysql"},
+				Values:   []string{dialectMariaDB, dialectMySQL},
 			},
 			filter.Label{
 				Name:     "app.kubernetes.io/component",
@@ -82,7 +87,7 @@ func (MariaDB) PodFilters() filter.Filter {
 		filter.Label{
 			Name:     "app",
 			Operator: selection.In,
-			Values:   []string{"mariadb", "mysql"},
+			Values:   []string{dialectMariaDB, dialectMySQL},
 		},
 	}
 }

@@ -25,11 +25,16 @@ var (
 
 type Redis struct{}
 
-func (Redis) Name() string { return "redis" }
+const (
+	dialectRedis  = "redis"
+	dialectValkey = "valkey"
+)
+
+func (Redis) Name() string { return dialectRedis }
 
 func (Redis) PrettyName() string { return "Redis" }
 
-func (Redis) Aliases() []string { return []string{"valkey", "keydb"} }
+func (Redis) Aliases() []string { return []string{dialectValkey, "keydb"} }
 
 func (Redis) PortEnvs(_ *conftypes.Global) kubernetes.ConfigLookups {
 	return kubernetes.ConfigLookups{kubernetes.LookupEnv{"REDIS_PORT", "VALKEY_PORT"}}
@@ -47,7 +52,7 @@ func (db Redis) PodFilters() filter.Filter {
 			filter.Label{
 				Name:     "app.kubernetes.io/name",
 				Operator: selection.In,
-				Values:   []string{"redis", "valkey", "keydb"},
+				Values:   []string{dialectRedis, dialectValkey, "keydb"},
 			},
 			filter.Label{
 				Name:     "app.kubernetes.io/component",
@@ -57,7 +62,7 @@ func (db Redis) PodFilters() filter.Filter {
 		},
 		db.sentinelQuery(),
 		filter.And{
-			filter.Label{Name: "app", Value: "redis"},
+			filter.Label{Name: "app", Value: dialectRedis},
 			filter.Label{Name: "role", Value: "master"},
 		},
 	}
@@ -148,7 +153,7 @@ func (Redis) sentinelQuery() filter.And {
 		filter.Label{
 			Name:     "app.kubernetes.io/name",
 			Operator: selection.In,
-			Values:   []string{"redis", "valkey"},
+			Values:   []string{dialectRedis, dialectValkey},
 		},
 		filter.Label{Name: "app.kubernetes.io/component", Value: "node"},
 	}

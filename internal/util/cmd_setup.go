@@ -188,14 +188,16 @@ func createJob(ctx context.Context, conf *conftypes.Global, actionName string) e
 		}
 	}
 
-	name := "kubedb-"
+	const appName = "kubedb"
+
+	name := appName + "-"
 	if actionName != "" {
 		name += actionName + "-"
 	}
 
 	standardLabels := map[string]string{
-		"app.kubernetes.io/name":      "kubedb",
-		"app.kubernetes.io/instance":  "kubedb",
+		"app.kubernetes.io/name":      appName,
+		"app.kubernetes.io/instance":  appName,
 		"app.kubernetes.io/component": actionName,
 		"app.kubernetes.io/version":   GetVersion(),
 	}

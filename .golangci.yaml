@@ -132,6 +132,8 @@ linters:
           paramsOnly: false
         underef:
           skipRecvDeref: false
+    goconst:
+      ignore-tests: true
     gosec:
       excludes:
         - G306

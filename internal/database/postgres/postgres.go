@@ -39,11 +39,19 @@ var (
 
 type Postgres struct{}
 
-func (Postgres) Name() string { return "postgres" }
+const (
+	dialectPostgres   = "postgres"
+	dialectPostgresql = "postgresql"
+	rolePrimary       = "primary"
+	labelName         = "app.kubernetes.io/name"
+	labelComponent    = "app.kubernetes.io/component"
+)
+
+func (Postgres) Name() string { return dialectPostgres }
 
 func (Postgres) PrettyName() string { return "Postgres" }
 
-func (Postgres) Aliases() []string { return []string{"postgresql", "psql", "pg"} }
+func (Postgres) Aliases() []string { return []string{dialectPostgresql, "psql", "pg"} }
 
 func (Postgres) Priority() uint8 { return 255 }
 
@@ -73,7 +81,7 @@ func (db Postgres) DatabaseEnvs(conf *conftypes.Global) kubernetes.ConfigLookups
 
 	return kubernetes.ConfigLookups{
 		kubernetes.LookupEnv{"POSTGRES_DATABASE", "POSTGRES_DB"},
-		kubernetes.LookupDefault("postgres"),
+		kubernetes.LookupDefault(dialectPostgres),
 	}
 }
 
@@ -98,7 +106,7 @@ func (db Postgres) UserEnvs(conf *conftypes.Global) kubernetes.ConfigLookups {
 	}
 }
 
-func (Postgres) UserDefault() string { return "postgres" }
+func (Postgres) UserDefault() string { return dialectPostgres }
 
 func (Postgres) DatabaseDropQuery(_ string) string {
 	return "drop schema public cascade; create schema public;"
@@ -161,7 +169,7 @@ func (db Postgres) FilterPods(
 				}
 				return pods, err
 			}
-			if row[2] == "primary" {
+			if row[2] == rolePrimary {
 				primaryName = row[1]
 				break
 			}
@@ -180,7 +188,7 @@ func (db Postgres) FilterPods(
 		logger.Debug("Finding CloudNativePG Leader")
 
 		for _, pod := range matched {
-			if role, ok := pod.Labels["cnpg.io/instanceRole"]; ok && role == "primary" {
+			if role, ok := pod.Labels["cnpg.io/instanceRole"]; ok && role == rolePrimary {
 				preferred = append(preferred, pod)
 			}
 		}
@@ -328,17 +336,17 @@ func (Postgres) baseQuery() filter.Or {
 	return filter.Or{
 		filter.And{
 			filter.Label{
-				Name:     "app.kubernetes.io/name",
+				Name:     labelName,
 				Operator: selection.In,
-				Values:   []string{"postgresql", "postgres"},
+				Values:   []string{dialectPostgresql, dialectPostgres},
 			},
 			filter.Label{
-				Name:     "app.kubernetes.io/component",
+				Name:     labelComponent,
 				Operator: selection.NotIn,
 				Values:   []string{"read", "replica"},
 			},
 		},
-		filter.Label{Name: "app", Value: "postgresql"},
+		filter.Label{Name: "app", Value: dialectPostgresql},
 	}
 }
 
@@ -346,25 +354,25 @@ func (Postgres) primaryQuery() filter.Or {
 	return filter.Or{
 		filter.And{
 			filter.Label{
-				Name:     "app.kubernetes.io/name",
+				Name:     labelName,
 				Operator: selection.In,
-				Values:   []string{"postgresql", "postgres"},
+				Values:   []string{dialectPostgresql, dialectPostgres},
 			},
 			filter.Label{
-				Name:     "app.kubernetes.io/component",
+				Name:     labelComponent,
 				Operator: selection.In,
-				Values:   []string{"primary", "master"},
+				Values:   []string{rolePrimary, "master"},
 			},
 		},
-		filter.Label{Name: "app", Value: "postgresql"},
+		filter.Label{Name: "app", Value: dialectPostgresql},
 	}
 }
 
 func (Postgres) postgresqlHaQuery() filter.Filter {
 	return filter.And{
-		filter.Label{Name: "app.kubernetes.io/name", Value: "postgresql-ha"},
+		filter.Label{Name: labelName, Value: "postgresql-ha"},
 		filter.Label{
-			Name:     "app.kubernetes.io/component",
+			Name:     labelComponent,
 			Operator: selection.NotEquals,
 			Value:    "pgpool",
 		},

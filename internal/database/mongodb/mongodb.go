@@ -27,8 +27,10 @@ var (
 
 type MongoDB struct{}
 
+const dialectMongoDB = "mongodb"
+
 func (MongoDB) Name() string {
-	return "mongodb"
+	return dialectMongoDB
 }
 
 func (MongoDB) PrettyName() string { return "MongoDB" }
@@ -79,7 +81,7 @@ func (MongoDB) PodFilters() filter.Filter {
 			filter.Label{
 				Name:     "app.kubernetes.io/name",
 				Operator: selection.In,
-				Values:   []string{"mongodb", "mongo"},
+				Values:   []string{dialectMongoDB, "mongo"},
 			},
 			filter.Label{
 				Name:     "app.kubernetes.io/component",
@@ -94,7 +96,7 @@ func (MongoDB) PodFilters() filter.Filter {
 		filter.Label{
 			Name:     "app",
 			Operator: selection.In,
-			Values:   []string{"mongodb", "mongodb-replicaset"},
+			Values:   []string{dialectMongoDB, "mongodb-replicaset"},
 		},
 	}
 }
