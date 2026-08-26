@@ -4,7 +4,7 @@ go 1.27.0
 
 require (
 	al.essio.dev/pkg/shellescape v1.6.0
-	cloud.google.com/go/storage v1.65.0
+	cloud.google.com/go/storage v1.65.1
 	gabe565.com/spinners v1.3.0
 	gabe565.com/utils v0.0.0-20260511235214-4059440fa83b
 	github.com/Backblaze/blazer v0.7.2
