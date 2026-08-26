@@ -17,7 +17,7 @@ require (
 	github.com/knadh/koanf/providers/posflag v1.0.2
 	github.com/knadh/koanf/providers/rawbytes v1.0.0
 	github.com/knadh/koanf/v2 v2.3.6
-	github.com/lmittmann/tint v1.1.3
+	github.com/lmittmann/tint v1.2.0
 	github.com/minio/minio-go/v7 v7.0.98
 	github.com/muesli/termenv v0.16.0
 	github.com/schollz/progressbar/v3 v3.19.1
