@@ -13,10 +13,11 @@ import (
 	"github.com/clevyr/kubedb/internal/kubernetes/filter"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"k8s.io/apimachinery/pkg/util/httpstream/spdy"
 	"k8s.io/client-go/kubernetes/scheme"
 	"k8s.io/client-go/rest"
 	"k8s.io/client-go/tools/remotecommand"
+	transportspdy "k8s.io/client-go/transport/spdy"
+	"k8s.io/streaming/pkg/httpstream/spdy"
 )
 
 var (
@@ -96,7 +97,9 @@ func (client KubeClient) Exec(ctx context.Context, opt ExecOptions) error {
 		return err
 	}
 
-	exec, err := remotecommand.NewSPDYExecutorForTransports(wrapper, upgradeRoundTripper, "POST", req.URL())
+	upgrader := transportspdy.NewUpgraderForStreaming(upgradeRoundTripper)
+
+	exec, err := remotecommand.NewSPDYExecutorForTransports(wrapper, upgrader, "POST", req.URL())
 	if err != nil {
 		return err
 	}
