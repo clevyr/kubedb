@@ -10,16 +10,13 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	corev1 "k8s.io/api/core/v1"
-	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
 func newCNPGPod() corev1.Pod {
 	return corev1.Pod{
-		ObjectMeta: metav1.ObjectMeta{
-			Name: "postgresql-1",
-			Labels: map[string]string{
-				"cnpg.io/cluster": "postgresql",
-			},
+		Name: "postgresql-1",
+		Labels: map[string]string{
+			"cnpg.io/cluster": "postgresql",
 		},
 	}
 }
@@ -290,22 +287,18 @@ func TestPostgres_ExecCommand(t *testing.T) {
 
 func TestPostgres_FilterPods(t *testing.T) {
 	primaryPod := corev1.Pod{
-		ObjectMeta: metav1.ObjectMeta{
-			Name: "postgresql-primary",
-			Labels: map[string]string{
-				"app.kubernetes.io/name":      "postgresql",
-				"app.kubernetes.io/component": "primary",
-			},
+		Name: "postgresql-primary",
+		Labels: map[string]string{
+			"app.kubernetes.io/name":      "postgresql",
+			"app.kubernetes.io/component": "primary",
 		},
 	}
 
 	replicaPod := corev1.Pod{
-		ObjectMeta: metav1.ObjectMeta{
-			Name: "postgresql-replica",
-			Labels: map[string]string{
-				"app.kubernetes.io/name":      "postgresql",
-				"app.kubernetes.io/component": "replica",
-			},
+		Name: "postgresql-replica",
+		Labels: map[string]string{
+			"app.kubernetes.io/name":      "postgresql",
+			"app.kubernetes.io/component": "replica",
 		},
 	}
 

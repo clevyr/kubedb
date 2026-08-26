@@ -68,7 +68,7 @@ func New() *cobra.Command {
 }
 
 func preRun(cmd *cobra.Command, args []string) error {
-	action := &restore.Restore{Restore: conftypes.Restore{Global: config.Global}}
+	action := &restore.Restore{Global: config.Global}
 
 	if err := config.Unmarshal(cmd, "restore", &action); err != nil {
 		return err

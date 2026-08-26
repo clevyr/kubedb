@@ -66,7 +66,7 @@ func New() *cobra.Command {
 }
 
 func preRun(cmd *cobra.Command, args []string) error {
-	action := &dump.Dump{Dump: conftypes.Dump{Global: config.Global}}
+	action := &dump.Dump{Global: config.Global}
 
 	if err := config.Unmarshal(cmd, "dump", &action); err != nil {
 		return err

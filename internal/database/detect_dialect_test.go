@@ -9,26 +9,21 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	corev1 "k8s.io/api/core/v1"
-	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	kubernetesfake "k8s.io/client-go/kubernetes/fake"
 )
 
 func TestDetectDialect(t *testing.T) {
 	postgresPod := corev1.Pod{
-		ObjectMeta: metav1.ObjectMeta{
-			Labels: map[string]string{
-				"app.kubernetes.io/name":      "postgresql",
-				"app.kubernetes.io/component": "primary",
-			},
+		Labels: map[string]string{
+			"app.kubernetes.io/name":      "postgresql",
+			"app.kubernetes.io/component": "primary",
 		},
 	}
 
 	mariadbPod := corev1.Pod{
-		ObjectMeta: metav1.ObjectMeta{
-			Labels: map[string]string{
-				"app.kubernetes.io/name":      "mariadb",
-				"app.kubernetes.io/component": "primary",
-			},
+		Labels: map[string]string{
+			"app.kubernetes.io/name":      "mariadb",
+			"app.kubernetes.io/component": "primary",
 		},
 	}
 

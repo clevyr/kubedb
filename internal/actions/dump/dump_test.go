@@ -26,14 +26,12 @@ func Test_buildCommand(t *testing.T) {
 			"postgres-gzip",
 			args{
 				Dump{
-					Dump: conftypes.Dump{
-						Global: &conftypes.Global{
-							Dialect:    postgres.Postgres{},
-							Host:       "1.1.1.1",
-							Database:   "d",
-							Username:   "u",
-							RemoteGzip: true,
-						},
+					Global: &conftypes.Global{
+						Dialect:    postgres.Postgres{},
+						Host:       "1.1.1.1",
+						Database:   "d",
+						Username:   "u",
+						RemoteGzip: true,
 					},
 				},
 			},
@@ -55,13 +53,11 @@ func Test_buildCommand(t *testing.T) {
 			"postgres-gzip-no-compression",
 			args{
 				Dump{
-					Dump: conftypes.Dump{
-						Global: &conftypes.Global{
-							Dialect:  postgres.Postgres{},
-							Host:     "1.1.1.1",
-							Database: "d",
-							Username: "u",
-						},
+					Global: &conftypes.Global{
+						Dialect:  postgres.Postgres{},
+						Host:     "1.1.1.1",
+						Database: "d",
+						Username: "u",
 					},
 				},
 			},
@@ -80,15 +76,13 @@ func Test_buildCommand(t *testing.T) {
 			"postgres-plain",
 			args{
 				Dump{
-					Dump: conftypes.Dump{
-						Format: sqlformat.Plain,
-						Global: &conftypes.Global{
-							Dialect:    postgres.Postgres{},
-							Host:       "1.1.1.1",
-							Database:   "d",
-							Username:   "u",
-							RemoteGzip: true,
-						},
+					Format: sqlformat.Plain,
+					Global: &conftypes.Global{
+						Dialect:    postgres.Postgres{},
+						Host:       "1.1.1.1",
+						Database:   "d",
+						Username:   "u",
+						RemoteGzip: true,
 					},
 				},
 			},
@@ -110,15 +104,13 @@ func Test_buildCommand(t *testing.T) {
 			"postgres-custom",
 			args{
 				Dump{
-					Dump: conftypes.Dump{
-						Format: sqlformat.Custom,
-						Global: &conftypes.Global{
-							Dialect:    postgres.Postgres{},
-							Host:       "1.1.1.1",
-							Database:   "d",
-							Username:   "u",
-							RemoteGzip: true,
-						},
+					Format: sqlformat.Custom,
+					Global: &conftypes.Global{
+						Dialect:    postgres.Postgres{},
+						Host:       "1.1.1.1",
+						Database:   "d",
+						Username:   "u",
+						RemoteGzip: true,
 					},
 				},
 			},
@@ -138,15 +130,13 @@ func Test_buildCommand(t *testing.T) {
 			"mariadb-gzip",
 			args{
 				Dump{
-					Dump: conftypes.Dump{
-						Format: sqlformat.Gzip,
-						Global: &conftypes.Global{
-							Dialect:    mariadb.MariaDB{},
-							Host:       "1.1.1.1",
-							Database:   "d",
-							Username:   "u",
-							RemoteGzip: true,
-						},
+					Format: sqlformat.Gzip,
+					Global: &conftypes.Global{
+						Dialect:    mariadb.MariaDB{},
+						Host:       "1.1.1.1",
+						Database:   "d",
+						Username:   "u",
+						RemoteGzip: true,
 					},
 				},
 			},

@@ -50,7 +50,7 @@ func New() *cobra.Command {
 }
 
 func preRun(cmd *cobra.Command, args []string) error {
-	action := &portforward.PortForward{PortForward: conftypes.PortForward{Global: config.Global}}
+	action := &portforward.PortForward{Global: config.Global}
 
 	if err := config.Unmarshal(cmd, "port-forward", &action); err != nil {
 		return err

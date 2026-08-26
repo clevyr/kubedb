@@ -5,7 +5,6 @@ import (
 	"github.com/clevyr/kubedb/internal/actions"
 	"github.com/clevyr/kubedb/internal/actions/exec"
 	"github.com/clevyr/kubedb/internal/config"
-	"github.com/clevyr/kubedb/internal/config/conftypes"
 	"github.com/clevyr/kubedb/internal/config/flags"
 	"github.com/clevyr/kubedb/internal/consts"
 	"github.com/clevyr/kubedb/internal/util"
@@ -41,7 +40,7 @@ func New() *cobra.Command {
 }
 
 func preRun(cmd *cobra.Command, _ []string) error {
-	action := &exec.Exec{Exec: conftypes.Exec{Global: config.Global}}
+	action := &exec.Exec{Global: config.Global}
 
 	if err := config.Unmarshal(cmd, "exec", &action); err != nil {
 		return err

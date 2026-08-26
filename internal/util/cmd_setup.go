@@ -212,11 +212,9 @@ func createJob(ctx context.Context, conf *conftypes.Global, actionName string) e
 	maps.Copy(podLabels, conf.JobPodLabels)
 
 	job := batchv1.Job{
-		ObjectMeta: metav1.ObjectMeta{
-			GenerateName: name,
-			Namespace:    conf.Namespace,
-			Labels:       standardLabels,
-		},
+		GenerateName: name,
+		Namespace:    conf.Namespace,
+		Labels:       standardLabels,
 		Spec: batchv1.JobSpec{
 			ActiveDeadlineSeconds:   new(int64(24 * time.Hour.Seconds())),
 			TTLSecondsAfterFinished: new(int32(time.Hour.Seconds())),
@@ -292,11 +290,9 @@ func createJob(ctx context.Context, conf *conftypes.Global, actionName string) e
 	if conf.CreateNetworkPolicy {
 		jobPodKey, jobPodVal := jobPodNameLabel(conf, conf.Job)
 		policy := networkingv1.NetworkPolicy{
-			ObjectMeta: metav1.ObjectMeta{
-				Name:      conf.Job.Name,
-				Namespace: conf.Client.Namespace,
-				Labels:    standardLabels,
-			},
+			Name:      conf.Job.Name,
+			Namespace: conf.Client.Namespace,
+			Labels:    standardLabels,
 			Spec: networkingv1.NetworkPolicySpec{
 				PodSelector: metav1.LabelSelector{MatchLabels: map[string]string{
 					jobPodKey: jobPodVal,
