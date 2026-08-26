@@ -92,40 +92,26 @@ brews:
       bash_completion.install Dir["completions/bash/*"]
       zsh_completion.install Dir["completions/zsh/*"]
       fish_completion.install Dir["completions/fish/*"]
-dockers:
-  - &dockers
-    image_templates:
-      - ghcr.io/clevyr/{{ .ProjectName }}:{{ .Version }}-amd64
-    use: buildx
-    dockerfile: goreleaser.Dockerfile
-    build_flag_templates:
-      - "--platform=linux/amd64"
-  - <<: *dockers
-    image_templates:
-      - ghcr.io/clevyr/{{ .ProjectName }}:{{ .Version }}-armv7
-    goarch: arm
-    goarm: 7
-    build_flag_templates:
-      - "--platform=linux/arm/v7"
-  - <<: *dockers
-    image_templates:
-      - ghcr.io/clevyr/{{ .ProjectName }}:{{ .Version }}-arm64v8
-    goarch: arm64
-    build_flag_templates:
-      - "--platform=linux/arm64/v8"
-docker_manifests:
-  - &docker_manifests
-    name_template: ghcr.io/clevyr/{{ .ProjectName }}:latest
-    image_templates:
-      - ghcr.io/clevyr/{{ .ProjectName }}:{{ .Version }}-amd64
-      - ghcr.io/clevyr/{{ .ProjectName }}:{{ .Version }}-armv7
-      - ghcr.io/clevyr/{{ .ProjectName }}:{{ .Version }}-arm64v8
-  - <<: *docker_manifests
-    name_template: ghcr.io/clevyr/{{ .ProjectName }}:{{ .Version }}
-  - <<: *docker_manifests
-    name_template: ghcr.io/clevyr/{{ .ProjectName }}:{{ .Major }}
-  - <<: *docker_manifests
-    name_template: ghcr.io/clevyr/{{ .ProjectName }}:{{ .Major }}.{{ .Minor }}
+dockers_v2:
+  - dockerfile: goreleaser.Dockerfile
+    images:
+      - ghcr.io/clevyr/{{ .ProjectName }}
+    tags:
+      - "{{ if not .IsSnapshot }}{{ .Version }}{{ end }}"
+      - "{{ if not .IsSnapshot }}{{ .Major }}.{{ .Minor }}{{ end }}"
+      - "{{ if not .IsSnapshot }}{{ .Major }}{{ end }}"
+      - "{{ if not .IsSnapshot }}latest{{ else }}beta{{ end }}"
+    platforms:
+      - linux/amd64
+      - linux/arm/v7
+      - linux/arm64
+    labels:
+      org.opencontainers.image.description: "Painlessly work with Kubernetes databases"
+      org.opencontainers.image.created: "{{ .Date }}"
+      org.opencontainers.image.name: "{{ .ProjectName }}"
+      org.opencontainers.image.revision: "{{ .FullCommit }}"
+      org.opencontainers.image.version: "{{ .Version }}"
+      org.opencontainers.image.source: "{{ .GitURL }}"
 nfpms:
   - id: packages
     vendor: Clevyr
