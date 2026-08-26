@@ -1,18 +1,28 @@
 package tui
 
 import (
+	"io"
 	"os"
+	"strings"
 
+	"charm.land/lipgloss/v2"
 	"gabe565.com/utils/slogx"
 	"gabe565.com/utils/termx"
-	"github.com/charmbracelet/lipgloss"
-	"github.com/muesli/termenv"
+	"github.com/charmbracelet/colorprofile"
 )
 
+// HasDarkBackground reports whether the terminal has a dark background.
+//
+// The value is set during init because remotecommand.Executor breaks
+// detection of the stdin stream.
+//
 //nolint:gochecknoglobals
-var Renderer *lipgloss.Renderer
+var HasDarkBackground = lipgloss.HasDarkBackground(os.Stdin, os.Stdout)
 
-func InitRenderer(format slogx.Format) {
+//nolint:gochecknoglobals
+var lightDark = lipgloss.LightDark(HasDarkBackground)
+
+func InitColorProfile(format slogx.Format) {
 	var color bool
 	switch format {
 	case slogx.FormatAuto:
@@ -20,18 +30,22 @@ func InitRenderer(format slogx.Format) {
 	case slogx.FormatColor:
 		color = true
 	}
-	Renderer = lipgloss.NewRenderer(os.Stdout, termenv.WithTTY(color))
 	if color {
-		Renderer.SetColorProfile(termenv.ANSI256)
+		lipgloss.Writer.Profile = colorprofile.ANSI256
 	} else {
-		Renderer.SetColorProfile(termenv.Ascii)
+		lipgloss.Writer.Profile = colorprofile.Ascii
 	}
-	Renderer.SetHasDarkBackground(lipgloss.HasDarkBackground())
 }
 
-func init() { //nolint:gochecknoinits
-	// Make lipgloss cache the current background color.
-	// Attempting to use stdin after remotecommand.Executor results in an EOF,
-	// so this value must be cached early to allow KubeDB to print tables post-exec.
-	_ = lipgloss.HasDarkBackground()
+// NewWriter wraps w so that colors are downsampled to the configured profile.
+func NewWriter(w io.Writer) *colorprofile.Writer {
+	return &colorprofile.Writer{Forward: w, Profile: lipgloss.Writer.Profile}
+}
+
+// Plain strips all styling from a rendered string.
+func Plain(s string) string {
+	var buf strings.Builder
+	w := colorprofile.Writer{Forward: &buf, Profile: colorprofile.NoTTY}
+	_, _ = w.WriteString(s)
+	return buf.String()
 }

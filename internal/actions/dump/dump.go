@@ -11,9 +11,9 @@ import (
 	"sync/atomic"
 	"time"
 
+	"charm.land/lipgloss/v2"
 	"gabe565.com/utils/bytefmt"
 	"gabe565.com/utils/slogx"
-	"github.com/charmbracelet/lipgloss"
 	"github.com/clevyr/kubedb/internal/command"
 	"github.com/clevyr/kubedb/internal/config/conftypes"
 	"github.com/clevyr/kubedb/internal/database/sqlformat"
@@ -25,7 +25,6 @@ import (
 	"github.com/clevyr/kubedb/internal/storage"
 	"github.com/clevyr/kubedb/internal/tui"
 	"github.com/clevyr/kubedb/internal/util"
-	"github.com/muesli/termenv"
 	"golang.org/x/sync/errgroup"
 )
 
@@ -215,23 +214,16 @@ func (action Dump) buildCommand() (*command.Builder, error) {
 }
 
 func (action Dump) summary(err error, took time.Duration, written int64, plain bool) string {
-	var r *lipgloss.Renderer
-	if plain {
-		r = lipgloss.NewRenderer(os.Stdout, termenv.WithTTY(false))
-		r.SetColorProfile(termenv.Ascii)
-		r.SetHasDarkBackground(lipgloss.HasDarkBackground())
-	}
-
-	t := tui.MinimalTable(r).
+	t := tui.MinimalTable().
 		RowIfNotEmpty("Context", action.Context).
-		Row("Namespace", tui.NamespaceStyle(r, action.Global.NamespaceColors, action.Namespace).Render()).
+		Row("Namespace", tui.NamespaceStyle(action.Global.NamespaceColors, action.Namespace).Render()).
 		Row("Pod", action.DBPod.Name).
 		RowIfNotEmpty("Username", action.Username).
 		RowIfNotEmpty("Database", action.Database).
-		Row("File", tui.OutPath(action.Output, r)).
+		Row("File", tui.OutPath(action.Output)).
 		Row("Took", took.String())
 	if err != nil {
-		t.Row("Error", tui.ErrStyle(r).Render(err.Error()))
+		t.Row("Error", tui.ErrStyle().Render(err.Error()))
 	} else {
 		t.Row("Size", bytefmt.Encode(written))
 	}
@@ -240,10 +232,14 @@ func (action Dump) summary(err error, took time.Duration, written int64, plain b
 		t.Border(lipgloss.NormalBorder())
 	}
 
-	return lipgloss.JoinVertical(lipgloss.Center,
-		tui.HeaderStyle(r).Render("Dump Summary"),
+	summary := lipgloss.JoinVertical(lipgloss.Center,
+		tui.HeaderStyle().Render("Dump Summary"),
 		t.Render(),
 	)
+	if plain {
+		return tui.Plain(summary)
+	}
+	return summary
 }
 
 func (action Dump) printSummary(err error, took time.Duration, written int64) {
@@ -251,5 +247,5 @@ func (action Dump) printSummary(err error, took time.Duration, written int64) {
 	if action.Output == "-" {
 		out = os.Stderr
 	}
-	_, _ = io.WriteString(out, "\n"+action.summary(err, took, written, false)+"\n")
+	_, _ = io.WriteString(tui.NewWriter(out), "\n"+action.summary(err, took, written, false)+"\n")
 }

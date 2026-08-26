@@ -11,10 +11,10 @@ import (
 	"sync/atomic"
 	"time"
 
+	"charm.land/huh/v2"
+	"charm.land/lipgloss/v2"
 	"gabe565.com/utils/bytefmt"
 	"gabe565.com/utils/slogx"
-	"github.com/charmbracelet/huh"
-	"github.com/charmbracelet/lipgloss"
 	"github.com/clevyr/kubedb/internal/command"
 	"github.com/clevyr/kubedb/internal/config/conftypes"
 	"github.com/clevyr/kubedb/internal/database/sqlformat"
@@ -25,7 +25,6 @@ import (
 	"github.com/clevyr/kubedb/internal/storage"
 	"github.com/clevyr/kubedb/internal/tui"
 	"github.com/clevyr/kubedb/internal/util"
-	"github.com/muesli/termenv"
 	"golang.org/x/sync/errgroup"
 )
 
@@ -264,34 +263,37 @@ func (action Restore) runInDatabasePod(
 	return nil
 }
 
-func (action Restore) Table(r *lipgloss.Renderer) *tui.Table {
-	return tui.MinimalTable(r).
+func (action Restore) Table() *tui.Table {
+	return tui.MinimalTable().
 		RowIfNotEmpty("Context", action.Context).
-		Row("Namespace", tui.NamespaceStyle(r, action.NamespaceColors, action.Namespace).Render()).
+		Row("Namespace", tui.NamespaceStyle(action.NamespaceColors, action.Namespace).Render()).
 		Row("Pod", action.DBPod.Name).
 		RowIfNotEmpty("Username", action.Username).
 		RowIfNotEmpty("Database", action.Database)
 }
 
 func (action Restore) Confirm() (bool, error) {
-	table := action.Table(nil)
+	table := action.Table()
 	var description string
 	if action.Input != "-" && !strings.Contains(action.Input, action.Namespace) {
-		warnStyle := tui.WarnStyle(nil)
-		table.Row("File", warnStyle.Render(tui.InPath(action.Input, nil)))
+		warnStyle := tui.WarnStyle()
+		table.Row("File", warnStyle.Render(tui.InPath(action.Input)))
 
 		description = lipgloss.JoinVertical(lipgloss.Left,
 			table.Render(),
 			warnStyle.Render("WARNING: ")+
-				tui.TextStyle(nil).Render("Filename does not contain the current namespace."),
+				tui.TextStyle().Render("Filename does not contain the current namespace."),
 			"Please verify you are restoring to the correct namespace.",
 		)
 	} else {
-		description = table.Row("File", tui.InPath(action.Input, nil)).Render()
+		description = table.Row("File", tui.InPath(action.Input)).Render()
 	}
 
-	theme := huh.ThemeCharm()
-	theme.Focused.Description = tui.TextStyle(nil)
+	theme := huh.ThemeFunc(func(isDark bool) *huh.Styles {
+		styles := huh.ThemeCharm(isDark)
+		styles.Focused.Description = tui.TextStyle()
+		return styles
+	})
 
 	var response bool
 	err := tui.NewForm(huh.NewGroup(
@@ -304,18 +306,11 @@ func (action Restore) Confirm() (bool, error) {
 }
 
 func (action Restore) summary(err error, took time.Duration, written int64, plain bool) string {
-	var r *lipgloss.Renderer
-	if plain {
-		r = lipgloss.NewRenderer(os.Stdout, termenv.WithTTY(false))
-		r.SetColorProfile(termenv.Ascii)
-		r.SetHasDarkBackground(lipgloss.HasDarkBackground())
-	}
-
-	t := action.Table(r).
-		Row("File", tui.InPath(action.Input, r)).
+	t := action.Table().
+		Row("File", tui.InPath(action.Input)).
 		Row("Took", took.String())
 	if err != nil {
-		t.Row("Error", tui.ErrStyle(r).Render(err.Error()))
+		t.Row("Error", tui.ErrStyle().Render(err.Error()))
 	} else {
 		t.Row("Size", bytefmt.Encode(written))
 	}
@@ -324,10 +319,14 @@ func (action Restore) summary(err error, took time.Duration, written int64, plai
 		t.Border(lipgloss.NormalBorder())
 	}
 
-	return lipgloss.JoinVertical(lipgloss.Center,
-		tui.HeaderStyle(nil).Render("Restore Summary"),
+	summary := lipgloss.JoinVertical(lipgloss.Center,
+		tui.HeaderStyle().Render("Restore Summary"),
 		t.Render(),
 	)
+	if plain {
+		summary = tui.Plain(summary)
+	}
+	return summary
 }
 
 func (action Restore) printSummary(err error, took time.Duration, written int64) {
@@ -335,5 +334,5 @@ func (action Restore) printSummary(err error, took time.Duration, written int64)
 	if action.Input == "-" {
 		out = os.Stderr
 	}
-	_, _ = io.WriteString(out, "\n"+action.summary(err, took, written, false)+"\n")
+	_, _ = io.WriteString(tui.NewWriter(out), "\n"+action.summary(err, took, written, false)+"\n")
 }

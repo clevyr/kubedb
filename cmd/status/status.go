@@ -7,9 +7,9 @@ import (
 	"strconv"
 	"strings"
 
+	"charm.land/lipgloss/v2"
 	"gabe565.com/utils/must"
 	"gabe565.com/utils/slogx"
-	"github.com/charmbracelet/lipgloss"
 	"github.com/clevyr/kubedb/internal/config"
 	"github.com/clevyr/kubedb/internal/config/conftypes"
 	"github.com/clevyr/kubedb/internal/config/flags"
@@ -55,17 +55,19 @@ func preRun(cmd *cobra.Command, _ []string) error {
 func run(cmd *cobra.Command, _ []string) error {
 	conf := config.Global
 
-	statusStyle := lipgloss.NewStyle().Renderer(tui.Renderer).PaddingLeft(1)
+	out := tui.NewWriter(cmd.OutOrStdout())
+
+	statusStyle := lipgloss.NewStyle().PaddingLeft(1)
 	prefixOk := statusStyle.Foreground(tui.ColorGreen).Render("✓")
 	prefixNeutral := statusStyle.Foreground(tui.ColorHiBlack).Render("-")
 	prefixErr := statusStyle.Foreground(tui.ColorRed).Render("✗")
-	bold := lipgloss.NewStyle().Renderer(tui.Renderer).Bold(true).Render
+	bold := lipgloss.NewStyle().Bold(true).Render
 
 	defaultSetupErr := util.DefaultSetup(cmd, conf)
 
-	_, _ = fmt.Fprintln(cmd.OutOrStdout(), bold("Cluster Info"))
+	_, _ = fmt.Fprintln(out, bold("Cluster Info"))
 	if conf.Client.ClientSet != nil {
-		_, _ = fmt.Fprintln(cmd.OutOrStdout(),
+		_, _ = fmt.Fprintln(out,
 			prefixOk,
 			"Using cluster",
 			bold(conf.Context),
@@ -74,37 +76,37 @@ func run(cmd *cobra.Command, _ []string) error {
 		)
 	} else {
 		if defaultSetupErr != nil {
-			_, _ = fmt.Fprintln(cmd.OutOrStdout(), prefixErr, "Failed to load cluster config:", defaultSetupErr.Error())
+			_, _ = fmt.Fprintln(out, prefixErr, "Failed to load cluster config:", defaultSetupErr.Error())
 		}
 		os.Exit(1)
 	}
 
 	if serverVersion, err := conf.Client.Discovery.ServerVersion(); err == nil {
-		_, _ = fmt.Fprintln(cmd.OutOrStdout(), prefixOk, "Cluster version is", bold(serverVersion.String()))
+		_, _ = fmt.Fprintln(out, prefixOk, "Cluster version is", bold(serverVersion.String()))
 	} else {
-		_, _ = fmt.Fprintln(cmd.OutOrStdout(), prefixErr, "Cluster version check failed:", err.Error())
+		_, _ = fmt.Fprintln(out, prefixErr, "Cluster version check failed:", err.Error())
 	}
 
 	if namespaces, err := conf.Client.Namespaces().List(cmd.Context(), metav1.ListOptions{}); err == nil {
-		_, _ = fmt.Fprintln(cmd.OutOrStdout(),
+		_, _ = fmt.Fprintln(out,
 			prefixOk, "Cluster has", bold(strconv.Itoa(len(namespaces.Items))), "namespaces",
 		)
 	} else {
-		_, _ = fmt.Fprintln(cmd.OutOrStdout(), prefixErr, "Failed to list namespaces:", err.Error())
+		_, _ = fmt.Fprintln(out, prefixErr, "Failed to list namespaces:", err.Error())
 	}
 
-	_, _ = fmt.Fprintln(cmd.OutOrStdout(), prefixOk, "Using namespace", bold(conf.Client.Namespace))
+	_, _ = fmt.Fprintln(out, prefixOk, "Using namespace", bold(conf.Client.Namespace))
 
-	_, _ = fmt.Fprintln(cmd.OutOrStdout(), bold("Database Info"))
+	_, _ = fmt.Fprintln(out, bold("Database Info"))
 	if defaultSetupErr == nil {
-		_, _ = fmt.Fprintln(cmd.OutOrStdout(),
+		_, _ = fmt.Fprintln(out,
 			prefixOk, "Found", bold(conf.Dialect.Name()), "database", bold(conf.DBPod.Name),
 		)
 	} else {
 		if errors.Is(defaultSetupErr, database.ErrDatabaseNotFound) {
-			_, _ = fmt.Fprintln(cmd.OutOrStdout(), prefixErr, "Could not detect a database")
+			_, _ = fmt.Fprintln(out, prefixErr, "Could not detect a database")
 		} else {
-			_, _ = fmt.Fprintln(cmd.OutOrStdout(), prefixErr, "Failed to search for database:", defaultSetupErr.Error())
+			_, _ = fmt.Fprintln(out, prefixErr, "Failed to search for database:", defaultSetupErr.Error())
 		}
 		os.Exit(1)
 	}
@@ -121,11 +123,11 @@ func run(cmd *cobra.Command, _ []string) error {
 				},
 			},
 		}, metav1.CreateOptions{}); err != nil {
-		_, _ = fmt.Fprintln(cmd.OutOrStdout(), prefixErr, "Job permission check failed:", err.Error())
+		_, _ = fmt.Fprintln(out, prefixErr, "Job permission check failed:", err.Error())
 	} else if res.Status.Allowed {
-		_, _ = fmt.Fprintln(cmd.OutOrStdout(), prefixOk, "Jobs can be created")
+		_, _ = fmt.Fprintln(out, prefixOk, "Jobs can be created")
 	} else {
-		_, _ = fmt.Fprintln(cmd.OutOrStdout(), prefixErr, "Missing permission to create jobs")
+		_, _ = fmt.Fprintln(out, prefixErr, "Missing permission to create jobs")
 	}
 
 	var buf strings.Builder
@@ -147,13 +149,13 @@ func run(cmd *cobra.Command, _ []string) error {
 			if len(output) != 0 {
 				count = strings.Count(output, "\n") + 1
 			}
-			_, _ = fmt.Fprintln(cmd.OutOrStdout(), prefixOk, "Database has", bold(strconv.Itoa(count)), "tables")
+			_, _ = fmt.Fprintln(out, prefixOk, "Database has", bold(strconv.Itoa(count)), "tables")
 		} else {
-			_, _ = fmt.Fprintln(cmd.OutOrStdout(), prefixErr, "Failed to connect to database", err.Error())
+			_, _ = fmt.Fprintln(out, prefixErr, "Failed to connect to database", err.Error())
 			os.Exit(1)
 		}
 	} else {
-		_, _ = fmt.Fprintln(cmd.OutOrStdout(), prefixNeutral, "Database does not support listing tables")
+		_, _ = fmt.Fprintln(out, prefixNeutral, "Database does not support listing tables")
 	}
 
 	return nil

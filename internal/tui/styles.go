@@ -3,30 +3,24 @@ package tui
 import (
 	"regexp"
 
-	"github.com/charmbracelet/lipgloss"
+	"charm.land/lipgloss/v2"
 )
 
 const (
-	ColorRed     = lipgloss.Color("1")
-	ColorGreen   = lipgloss.Color("2")
-	ColorYellow  = lipgloss.Color("3")
-	ColorHiBlack = lipgloss.Color("8")
+	ColorRed     = lipgloss.Red
+	ColorGreen   = lipgloss.Green
+	ColorYellow  = lipgloss.Yellow
+	ColorHiBlack = lipgloss.BrightBlack
 )
 
-func HeaderStyle(r *lipgloss.Renderer) lipgloss.Style {
-	if r == nil {
-		r = Renderer
-	}
-	return lipgloss.NewStyle().Renderer(r).
+func HeaderStyle() lipgloss.Style {
+	return lipgloss.NewStyle().
 		Bold(true).
-		Foreground(lipgloss.AdaptiveColor{Light: "#5A56E0", Dark: "#7571F9"})
+		Foreground(lightDark(lipgloss.Color("#5A56E0"), lipgloss.Color("#7571F9")))
 }
 
-func NamespaceStyle(r *lipgloss.Renderer, colors map[string]string, namespace string) lipgloss.Style {
-	if r == nil {
-		r = Renderer
-	}
-	style := lipgloss.NewStyle().Renderer(r).SetString(namespace)
+func NamespaceStyle(colors map[string]string, namespace string) lipgloss.Style {
+	style := lipgloss.NewStyle().SetString(namespace)
 
 	for k, v := range colors {
 		if regexp.MustCompile(k).MatchString(namespace) {
@@ -38,16 +32,10 @@ func NamespaceStyle(r *lipgloss.Renderer, colors map[string]string, namespace st
 	return style
 }
 
-func WarnStyle(r *lipgloss.Renderer) lipgloss.Style {
-	if r == nil {
-		r = Renderer
-	}
-	return lipgloss.NewStyle().Renderer(r).Foreground(ColorYellow)
+func WarnStyle() lipgloss.Style {
+	return lipgloss.NewStyle().Foreground(ColorYellow)
 }
 
-func ErrStyle(r *lipgloss.Renderer) lipgloss.Style {
-	if r == nil {
-		r = Renderer
-	}
-	return lipgloss.NewStyle().Renderer(r).Foreground(ColorRed)
+func ErrStyle() lipgloss.Style {
+	return lipgloss.NewStyle().Foreground(ColorRed)
 }

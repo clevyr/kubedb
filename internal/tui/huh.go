@@ -1,6 +1,6 @@
 package tui
 
-import "github.com/charmbracelet/huh"
+import "charm.land/huh/v2"
 
 func NewForm(groups ...*huh.Group) *huh.Form {
 	keymap := huh.NewDefaultKeyMap()

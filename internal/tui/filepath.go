@@ -4,29 +4,21 @@ import (
 	"os"
 	"strings"
 
-	"github.com/charmbracelet/lipgloss"
+	"charm.land/lipgloss/v2"
 )
 
-func InPath(path string, r *lipgloss.Renderer) string {
-	if r == nil {
-		r = Renderer
-	}
-	style := lipgloss.NewStyle().Renderer(r).Italic(true)
+func InPath(path string) string {
 	if path == "-" {
 		return "stdin"
 	}
-	return style.Render(CleanPath(path))
+	return lipgloss.NewStyle().Italic(true).Render(CleanPath(path))
 }
 
-func OutPath(path string, r *lipgloss.Renderer) string {
-	if r == nil {
-		r = Renderer
-	}
-	style := lipgloss.NewStyle().Renderer(r).Italic(true)
+func OutPath(path string) string {
 	if path == "-" {
 		return "stdout"
 	}
-	return style.Render(CleanPath(path))
+	return lipgloss.NewStyle().Italic(true).Render(CleanPath(path))
 }
 
 func CleanPath(path string) string {

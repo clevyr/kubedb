@@ -9,9 +9,9 @@ import (
 	"os"
 	"slices"
 
+	"charm.land/huh/v2"
 	"gabe565.com/utils/must"
 	"gabe565.com/utils/termx"
-	"github.com/charmbracelet/huh"
 	"github.com/clevyr/kubedb/internal/actions"
 	"github.com/clevyr/kubedb/internal/actions/restore"
 	"github.com/clevyr/kubedb/internal/completion"

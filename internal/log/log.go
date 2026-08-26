@@ -34,7 +34,7 @@ func Init(w io.Writer, level slogx.Level, format slogx.Format) {
 			color = true
 		}
 
-		tui.InitRenderer(format)
+		tui.InitColorProfile(format)
 
 		slog.SetDefault(slog.New(
 			tint.NewHandler(w, &tint.Options{

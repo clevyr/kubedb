@@ -3,8 +3,8 @@ package tui
 import (
 	"slices"
 
-	"github.com/charmbracelet/lipgloss"
-	"github.com/charmbracelet/lipgloss/table"
+	"charm.land/lipgloss/v2"
+	"charm.land/lipgloss/v2/table"
 )
 
 type Table struct {
@@ -24,32 +24,23 @@ func (t *Table) RowIfNotEmpty(row ...string) *Table {
 	return t
 }
 
-func BorderStyle(r *lipgloss.Renderer) lipgloss.Style {
-	if r == nil {
-		r = Renderer
-	}
-	return lipgloss.NewStyle().Renderer(r).
-		Foreground(lipgloss.AdaptiveColor{Light: "246", Dark: "241"})
+func BorderStyle() lipgloss.Style {
+	return lipgloss.NewStyle().
+		Foreground(lightDark(lipgloss.Color("246"), lipgloss.Color("241")))
 }
 
-func TextStyle(r *lipgloss.Renderer) lipgloss.Style {
-	if r == nil {
-		r = Renderer
-	}
-	return lipgloss.NewStyle().Renderer(r).
-		Foreground(lipgloss.AdaptiveColor{Light: "234", Dark: "250"})
+func TextStyle() lipgloss.Style {
+	return lipgloss.NewStyle().
+		Foreground(lightDark(lipgloss.Color("234"), lipgloss.Color("250")))
 }
 
-func MinimalTable(r *lipgloss.Renderer) *Table {
-	if r == nil {
-		r = Renderer
-	}
-	colStyle := TextStyle(r).Padding(0, 1)
+func MinimalTable() *Table {
+	colStyle := TextStyle().Padding(0, 1)
 	firstColStyle := colStyle.Align(lipgloss.Right).Bold(true)
 
 	return &Table{
 		Table: table.New().
-			BorderStyle(BorderStyle(r)).
+			BorderStyle(BorderStyle()).
 			StyleFunc(func(_, col int) lipgloss.Style {
 				if col == 0 {
 					return firstColStyle

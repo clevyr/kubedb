@@ -13,8 +13,8 @@ import (
 	"strconv"
 	"time"
 
-	"github.com/charmbracelet/lipgloss"
-	"github.com/charmbracelet/lipgloss/list"
+	"charm.land/lipgloss/v2"
+	"charm.land/lipgloss/v2/list"
 	"github.com/clevyr/kubedb/internal/config/conftypes"
 	"github.com/clevyr/kubedb/internal/database/postgres"
 	"github.com/clevyr/kubedb/internal/log"
@@ -97,12 +97,12 @@ func (a PortForward) printTable() {
 		"remote", a.Port,
 	)
 
-	info := tui.MinimalTable(nil).
+	info := tui.MinimalTable().
 		RowIfNotEmpty("Context", a.Context).
-		Row("Namespace", tui.NamespaceStyle(nil, a.NamespaceColors, a.Namespace).Render()).
+		Row("Namespace", tui.NamespaceStyle(a.NamespaceColors, a.Namespace).Render()).
 		Row("Pod", a.DBPod.Name)
 
-	params := tui.MinimalTable(nil).
+	params := tui.MinimalTable().
 		Row("Type", a.Dialect.PrettyName()).
 		Row("Namespace", a.Namespace).
 		Row("Hostname", "localhost").
@@ -127,11 +127,11 @@ func (a PortForward) printTable() {
 		}
 	}
 
-	headerStyle := tui.HeaderStyle(nil)
-	italicStyle := tui.TextStyle(nil).Italic(true)
+	headerStyle := tui.HeaderStyle()
+	italicStyle := tui.TextStyle().Italic(true)
 
 	tips := list.New(
-		tui.TextStyle(nil).Render("To connect from a Docker container, set the hostname to ") +
+		tui.TextStyle().Render("To connect from a Docker container, set the hostname to ") +
 			italicStyle.Render("host.docker.internal"),
 	).Enumerator(func(list.Items, int) string {
 		return " •"
@@ -139,7 +139,7 @@ func (a PortForward) printTable() {
 
 	if _, ok := a.Dialect.(postgres.Postgres); ok {
 		tips.Item(
-			tui.TextStyle(nil).Render("Postgres causes reconnects when SSL is enabled. Disable SSL by adding ") +
+			tui.TextStyle().Render("Postgres causes reconnects when SSL is enabled. Disable SSL by adding ") +
 				italicStyle.Render("sslmode=disable") + " to your connection string",
 		)
 	}
@@ -165,5 +165,5 @@ func (a PortForward) printTable() {
 		BorderStyle(lipgloss.ThickBorder()).
 		BorderLeft(true).
 		BorderForeground(lipgloss.Color("238"))
-	_, _ = fmt.Fprintln(os.Stdout, baseStyle.Render(data))
+	_, _ = fmt.Fprintln(tui.NewWriter(os.Stdout), baseStyle.Render(data))
 }

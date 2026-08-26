@@ -10,8 +10,8 @@ import (
 	"strconv"
 	"time"
 
+	"charm.land/huh/v2"
 	"gabe565.com/utils/must"
-	"github.com/charmbracelet/huh"
 	"github.com/clevyr/kubedb/internal/config"
 	"github.com/clevyr/kubedb/internal/config/conftypes"
 	"github.com/clevyr/kubedb/internal/consts"
