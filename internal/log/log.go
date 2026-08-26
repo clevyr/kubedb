@@ -37,7 +37,7 @@ func Init(w io.Writer, level slogx.Level, format slogx.Format) {
 		tui.InitColorProfile(format)
 
 		slog.SetDefault(slog.New(
-			tint.NewHandler(w, &tint.Options{
+			tint.NewTextHandler(w, &tint.Options{
 				Level:       level,
 				TimeFormat:  time.Kitchen,
 				NoColor:     !color,
