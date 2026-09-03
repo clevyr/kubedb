@@ -1,6 +1,6 @@
 module github.com/clevyr/kubedb
 
-go 1.27.0
+go 1.27.1
 
 require (
 	al.essio.dev/pkg/shellescape v1.6.0
