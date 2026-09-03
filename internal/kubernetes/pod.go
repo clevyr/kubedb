@@ -6,18 +6,13 @@ import (
 	"fmt"
 	"io"
 	"log/slog"
-	"net/http"
-	"time"
 
 	"gabe565.com/utils/slogx"
 	"github.com/clevyr/kubedb/internal/kubernetes/filter"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/kubernetes/scheme"
-	"k8s.io/client-go/rest"
 	"k8s.io/client-go/tools/remotecommand"
-	transportspdy "k8s.io/client-go/transport/spdy"
-	"k8s.io/streaming/pkg/httpstream/spdy"
 )
 
 var (
@@ -47,7 +42,6 @@ type ExecOptions struct {
 	Stdout, Stderr io.Writer
 	TTY            bool
 	SizeQueue      remotecommand.TerminalSizeQueue
-	DisablePing    bool
 }
 
 func (client KubeClient) Exec(ctx context.Context, opt ExecOptions) error {
@@ -69,37 +63,7 @@ func (client KubeClient) Exec(ctx context.Context, opt ExecOptions) error {
 			TTY:       opt.TTY,
 		}, scheme.ParameterCodec)
 
-	tlsConfig, err := rest.TLSConfigFor(client.ClientConfig)
-	if err != nil {
-		return err
-	}
-	proxy := http.ProxyFromEnvironment
-	if client.ClientConfig.Proxy != nil {
-		proxy = client.ClientConfig.Proxy
-	}
-
-	pingPeriod := 5 * time.Second
-	if opt.DisablePing {
-		pingPeriod = 0
-	}
-	upgradeRoundTripper, err := spdy.NewRoundTripperWithConfig(spdy.RoundTripperConfig{
-		TLS:     tlsConfig,
-		Proxier: proxy,
-		// Needs to be 0 for dump/restore to prevent unexpected EOF.
-		// See https://github.com/kubernetes/kubernetes/issues/60140#issuecomment-1411477275
-		PingPeriod: pingPeriod,
-	})
-	if err != nil {
-		return err
-	}
-	wrapper, err := rest.HTTPWrappersForConfig(client.ClientConfig, upgradeRoundTripper)
-	if err != nil {
-		return err
-	}
-
-	upgrader := transportspdy.NewUpgraderForStreaming(upgradeRoundTripper)
-
-	exec, err := remotecommand.NewSPDYExecutorForTransports(wrapper, upgrader, "POST", req.URL())
+	exec, err := remotecommand.NewSPDYExecutor(client.ClientConfig, "POST", req.URL())
 	if err != nil {
 		return err
 	}

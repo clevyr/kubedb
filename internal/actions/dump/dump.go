@@ -107,12 +107,11 @@ func (action Dump) Run(ctx context.Context) error {
 		}
 
 		return action.Client.Exec(ctx, kubernetes.ExecOptions{
-			Pod:         action.JobPod,
-			Cmd:         cmd.String(),
-			Stdin:       os.Stdin,
-			Stdout:      pw,
-			Stderr:      bar.Logger(),
-			DisablePing: true,
+			Pod:    action.JobPod,
+			Cmd:    cmd.String(),
+			Stdin:  os.Stdin,
+			Stdout: pw,
+			Stderr: bar.Logger(),
 		})
 	})
 
