@@ -9,7 +9,7 @@ require (
 	cloud.google.com/go/storage v1.67.0
 	gabe565.com/spinners v1.3.0
 	gabe565.com/utils v0.0.0-20260511235214-4059440fa83b
-	github.com/Backblaze/blazer v0.7.2
+	github.com/Backblaze/blazer v0.8.0
 	github.com/charmbracelet/colorprofile v0.4.3
 	github.com/google/uuid v1.6.0
 	github.com/knadh/koanf/parsers/yaml v1.1.1
