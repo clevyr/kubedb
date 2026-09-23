@@ -1,0 +1,9 @@
+{
+  "name": "kubedb",
+  "description": "Teaches agents to use kubedb for databases in Kubernetes",
+  "version": "1.0.0",
+  "author": { "name": "Clevyr" },
+  "homepage": "https://github.com/clevyr/kubedb",
+  "repository": "https://github.com/clevyr/kubedb",
+  "license": "GPL-3.0"
+}

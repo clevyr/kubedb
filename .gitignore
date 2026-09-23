@@ -4,6 +4,6 @@
 /manpages/
 coverage.out
 dist
-kubedb
+/kubedb
 out
 vendor
