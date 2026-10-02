@@ -1,6 +1,7 @@
 package dump
 
 import (
+	"path/filepath"
 	"time"
 )
 
@@ -15,11 +16,12 @@ type Filename struct {
 
 func (vars Filename) Generate() string {
 	result := vars.Namespace + "_"
-	switch vars.Database {
-	case "":
-	case vars.Namespace:
+	// The database may be discovered from the cluster, so strip any directory
+	// components to prevent the filename from escaping the output directory.
+	switch database := filepath.Base(vars.Database); database {
+	case "", ".", "..", string(filepath.Separator), vars.Namespace:
 	default:
-		result += vars.Database + "_"
+		result += database + "_"
 	}
 	result += vars.Date.Format(DateFormat) + vars.Ext
 	return result

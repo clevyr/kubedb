@@ -33,6 +33,24 @@ func TestFilename_Generate(t *testing.T) {
 			"test_0001-01-01_000000.sql.gz",
 			false,
 		},
+		{
+			"database with path traversal",
+			fields{"../../../tmp/postgres", "test", ".sql.gz", time.Time{}},
+			"test_postgres_0001-01-01_000000.sql.gz",
+			false,
+		},
+		{
+			"database is parent dir",
+			fields{"..", "test", ".sql.gz", time.Time{}},
+			"test_0001-01-01_000000.sql.gz",
+			false,
+		},
+		{
+			"database is root",
+			fields{"/", "test", ".sql.gz", time.Time{}},
+			"test_0001-01-01_000000.sql.gz",
+			false,
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
