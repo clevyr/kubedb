@@ -153,7 +153,7 @@ func (db MongoDB) ExecCommand(conf *conftypes.Exec) *command.Builder {
 		cmd.Push("--eval=" + conf.Command)
 	}
 	if conf.Database != "" {
-		cmd.Push(conf.Database)
+		cmd.Push(command.EndOfOpts, conf.Database)
 	}
 	return cmd
 }

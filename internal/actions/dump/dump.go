@@ -200,7 +200,7 @@ func (action Dump) buildCommand() (*command.Builder, error) {
 
 	cmd := db.DumpCommand(&action.Dump)
 	if action.Opts != "" {
-		cmd.Push(command.Split(action.Opts))
+		cmd.PushOpts(command.Split(action.Opts))
 	}
 	cmd.Unshift(command.Raw("{"))
 	cmd.Push(command.Raw("|| kill $$; }"))

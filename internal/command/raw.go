@@ -6,4 +6,8 @@ func (r Raw) Quote() string {
 	return string(r)
 }
 
-const Pipe = Raw("|")
+const (
+	Pipe = Raw("|")
+	// EndOfOpts marks the end of options. All following values are treated as positional arguments.
+	EndOfOpts = Raw("--")
+)

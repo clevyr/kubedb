@@ -3,6 +3,7 @@ package command
 import (
 	"errors"
 	"fmt"
+	"slices"
 	"strings"
 
 	"al.essio.dev/pkg/shellescape"
@@ -42,6 +43,20 @@ func checkType(p ...any) error {
 func (j *Builder) Push(p ...any) *Builder {
 	if err := checkType(p...); err != nil {
 		panic(err)
+	}
+	j.cmd = append(j.cmd, p...)
+	return j
+}
+
+// PushOpts appends options to the command. If the command contains EndOfOpts,
+// the options are inserted before it so they are not treated as positional arguments.
+func (j *Builder) PushOpts(p ...any) *Builder {
+	if err := checkType(p...); err != nil {
+		panic(err)
+	}
+	if i := slices.Index(j.cmd, any(EndOfOpts)); i != -1 {
+		j.cmd = slices.Insert(j.cmd, i, p...)
+		return j
 	}
 	j.cmd = append(j.cmd, p...)
 	return j

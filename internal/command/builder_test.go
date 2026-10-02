@@ -85,6 +85,49 @@ func TestBuilder_String(t *testing.T) {
 	}
 }
 
+func TestBuilder_PushOpts(t *testing.T) {
+	type fields struct {
+		cmd []any
+	}
+	type args struct {
+		p []any
+	}
+	tests := []struct {
+		name      string
+		fields    fields
+		args      args
+		want      *Builder
+		wantPanic panicFunc
+	}{
+		{
+			"no end of opts",
+			fields{[]any{"echo"}},
+			args{[]any{"-n"}},
+			&Builder{[]any{"echo", "-n"}},
+			assert.NotPanics,
+		},
+		{
+			"before end of opts",
+			fields{[]any{"echo", EndOfOpts, "hello"}},
+			args{[]any{"-n", "-e"}},
+			&Builder{[]any{"echo", "-n", "-e", EndOfOpts, "hello"}},
+			assert.NotPanics,
+		},
+		{"panic", fields{}, args{[]any{0}}, nil, assert.Panics},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			tt.wantPanic(t, func() {
+				j := &Builder{
+					cmd: tt.fields.cmd,
+				}
+				got := j.PushOpts(tt.args.p...)
+				assert.Equal(t, tt.want, got)
+			})
+		})
+	}
+}
+
 func TestBuilder_Unshift(t *testing.T) {
 	type fields struct {
 		cmd []any

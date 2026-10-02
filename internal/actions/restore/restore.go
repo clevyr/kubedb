@@ -208,7 +208,7 @@ func (action Restore) buildCommand(inputFormat sqlformat.Format) (*command.Build
 
 	cmd := db.RestoreCommand(&action.Restore, inputFormat)
 	if action.Opts != "" {
-		cmd.Push(command.Split(action.Opts))
+		cmd.PushOpts(command.Split(action.Opts))
 	}
 	cmd.Unshift(command.Raw("{"))
 	cmd.Push(command.Raw("|| { cat >/dev/null; kill $$; }; }"))

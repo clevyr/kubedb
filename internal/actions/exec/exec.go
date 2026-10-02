@@ -66,7 +66,7 @@ func (action Exec) buildCommand() (*command.Builder, error) {
 
 	cmd := db.ExecCommand(&action.Exec)
 	if action.Opts != "" {
-		cmd.Push(command.Split(action.Opts))
+		cmd.PushOpts(command.Split(action.Opts))
 	}
 
 	slogx.Trace("Finished building command", "cmd", cmd)

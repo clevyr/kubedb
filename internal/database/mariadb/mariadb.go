@@ -140,20 +140,23 @@ const mariaDBDumpCmd command.Raw = `"$(which mariadb-dump || which mysqldump)"`
 
 func (db MariaDB) DumpCommand(conf *conftypes.Dump) *command.Builder {
 	cmd := db.newCmd(conf.Global, mariaDBDumpCmd)
-	if conf.Database != "" {
-		cmd.Push(conf.Database)
-	}
 	if conf.Clean {
 		cmd.Push("--add-drop-table")
-	}
-	for _, table := range conf.Table {
-		cmd.Push(table)
 	}
 	for _, table := range conf.ExcludeTable {
 		cmd.Push("--ignore-table=" + table)
 	}
 	if !conf.Quiet {
 		cmd.Push("--verbose")
+	}
+	if conf.Database != "" || len(conf.Table) != 0 {
+		cmd.Push(command.EndOfOpts)
+		if conf.Database != "" {
+			cmd.Push(conf.Database)
+		}
+		for _, table := range conf.Table {
+			cmd.Push(table)
+		}
 	}
 	return cmd
 }
