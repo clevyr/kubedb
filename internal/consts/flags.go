@@ -25,6 +25,7 @@ const (
 	FlagContext             = "context"
 	FlagNamespace           = "namespace"
 	FlagPod                 = "pod"
+	FlagReplica             = "replica"
 	FlagJobPodLabels        = "job-pod-labels"
 	FlagCreateJob           = "create-job"
 	FlagCreateNetworkPolicy = "create-network-policy"

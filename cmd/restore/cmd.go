@@ -73,6 +73,7 @@ func preRun(cmd *cobra.Command, args []string) error {
 	if err := config.Unmarshal(cmd, "restore", &action); err != nil {
 		return err
 	}
+	action.Replica = false
 	if err := util.DefaultSetup(cmd, action.Global); err != nil {
 		return err
 	}

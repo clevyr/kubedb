@@ -10,6 +10,8 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	corev1 "k8s.io/api/core/v1"
+	"k8s.io/apimachinery/pkg/runtime"
+	kubernetesfake "k8s.io/client-go/kubernetes/fake"
 )
 
 func newCNPGPod() corev1.Pod {
@@ -337,6 +339,109 @@ func TestPostgres_FilterPods(t *testing.T) {
 			got, err := po.FilterPods(t.Context(), tt.args.client, tt.args.pods)
 			tt.wantErr(t, err)
 
+			assert.Equal(t, tt.want, got)
+		})
+	}
+}
+
+func TestPostgres_FilterReplicaPods(t *testing.T) {
+	bitnamiPrimary := corev1.Pod{
+		Name:      "postgresql-primary-0",
+		Namespace: "default",
+		Labels: map[string]string{
+			"app.kubernetes.io/name":      "postgresql",
+			"app.kubernetes.io/instance":  "postgresql",
+			"app.kubernetes.io/component": "primary",
+		},
+	}
+	bitnamiRead := corev1.Pod{
+		Name:      "postgresql-read-0",
+		Namespace: "default",
+		Labels: map[string]string{
+			"app.kubernetes.io/name":      "postgresql",
+			"app.kubernetes.io/instance":  "postgresql",
+			"app.kubernetes.io/component": "read",
+		},
+	}
+	otherRead := corev1.Pod{
+		Name:      "other-read-0",
+		Namespace: "default",
+		Labels: map[string]string{
+			"app.kubernetes.io/name":      "postgresql",
+			"app.kubernetes.io/instance":  "other",
+			"app.kubernetes.io/component": "read",
+		},
+	}
+
+	cnpgPod := func(name, cluster, role string) corev1.Pod {
+		return corev1.Pod{
+			Name:      name,
+			Namespace: "default",
+			Labels:    map[string]string{"cnpg.io/cluster": cluster, "cnpg.io/instanceRole": role},
+		}
+	}
+	cnpgPrimary := cnpgPod("postgresql-1", "postgresql", "primary")
+	cnpgReplica := cnpgPod("postgresql-2", "postgresql", "replica")
+	cnpgOtherReplica := cnpgPod("other-2", "other", "replica")
+
+	zalandoPod := func(name, cluster, role string) corev1.Pod {
+		return corev1.Pod{
+			Name:      name,
+			Namespace: "default",
+			Labels:    map[string]string{"application": "spilo", "cluster-name": cluster, "spilo-role": role},
+		}
+	}
+	zalandoPrimary := zalandoPod("postgresql-0", "postgresql", "master")
+	zalandoReplica := zalandoPod("postgresql-1", "postgresql", "replica")
+	zalandoOtherReplica := zalandoPod("other-1", "other", "replica")
+
+	newClient := func(pods ...corev1.Pod) kubernetes.KubeClient {
+		objects := make([]runtime.Object, 0, len(pods))
+		for _, pod := range pods {
+			objects = append(objects, &pod)
+		}
+		return kubernetes.KubeClient{ClientSet: kubernetesfake.NewClientset(objects...), Namespace: "default"}
+	}
+
+	type args struct {
+		client  kubernetes.KubeClient
+		primary corev1.Pod
+	}
+	tests := []struct {
+		name    string
+		args    args
+		want    []corev1.Pod
+		wantErr require.ErrorAssertionFunc
+	}{
+		{
+			"bitnami",
+			args{newClient(bitnamiPrimary, bitnamiRead, otherRead), bitnamiPrimary},
+			[]corev1.Pod{bitnamiRead},
+			require.NoError,
+		},
+		{
+			"cnpg",
+			args{newClient(cnpgPrimary, cnpgReplica, cnpgOtherReplica), cnpgPrimary},
+			[]corev1.Pod{cnpgReplica},
+			require.NoError,
+		},
+		{
+			"cnpg-no-replica",
+			args{newClient(cnpgPrimary, cnpgOtherReplica), cnpgPrimary},
+			[]corev1.Pod{},
+			require.NoError,
+		},
+		{
+			"zalando",
+			args{newClient(zalandoPrimary, zalandoReplica, zalandoOtherReplica), zalandoPrimary},
+			[]corev1.Pod{zalandoReplica},
+			require.NoError,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got, err := Postgres{}.FilterReplicaPods(t.Context(), tt.args.client, tt.args.primary)
+			tt.wantErr(t, err)
 			assert.Equal(t, tt.want, got)
 		})
 	}

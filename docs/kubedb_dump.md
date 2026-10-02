@@ -46,6 +46,7 @@ kubedb dump [filename | bucket URI] [flags]
       --progress                        Enables the progress bar (default true)
   -q, --quiet                           Silence remote log output
       --remote-gzip                     Compress data over the wire. Results in lower bandwidth usage, but higher database load. May improve speed on slow connections. (default true)
+      --replica                         Connect to a read replica instead of the primary (falls back to the primary if none are ready)
   -t, --table strings                   Dump the specified table(s) only
   -U, --username string                 Database username (default discovered)
 ```

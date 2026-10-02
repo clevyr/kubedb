@@ -45,6 +45,12 @@ type DBFilterer interface {
 	FilterPods(ctx context.Context, client kubernetes.KubeClient, pods []corev1.Pod) ([]corev1.Pod, error)
 }
 
+// DBReplicaFilterer is implemented by dialects with read replicas.
+// It returns the replicas that belong to the same cluster as the given primary.
+type DBReplicaFilterer interface {
+	FilterReplicaPods(ctx context.Context, client kubernetes.KubeClient, primary corev1.Pod) ([]corev1.Pod, error)
+}
+
 type DBFiler interface {
 	Formats() map[sqlformat.Format]string
 }

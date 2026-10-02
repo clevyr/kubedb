@@ -27,6 +27,7 @@ var (
 	_ conftypes.DBExecer          = Postgres{}
 	_ conftypes.DBRestorer        = Postgres{}
 	_ conftypes.DBFilterer        = Postgres{}
+	_ conftypes.DBReplicaFilterer = Postgres{}
 	_ conftypes.DBHasUser         = Postgres{}
 	_ conftypes.DBHasPort         = Postgres{}
 	_ conftypes.DBHasPassword     = Postgres{}
@@ -43,8 +44,10 @@ const (
 	dialectPostgres   = "postgres"
 	dialectPostgresql = "postgresql"
 	rolePrimary       = "primary"
+	roleReplica       = "replica"
 	labelName         = "app.kubernetes.io/name"
 	labelComponent    = "app.kubernetes.io/component"
+	labelInstance     = "app.kubernetes.io/instance"
 )
 
 func (Postgres) Name() string { return dialectPostgres }
@@ -141,42 +144,13 @@ func (db Postgres) FilterPods(
 	if matched := filter.Pods(pods, db.postgresqlHaQuery()); len(matched) != 0 {
 		// HA chart. Need to detect primary.
 		logger.Debug("Querying Bitnami repmgr for primary instance")
-		cmd := command.NewBuilder(
-			command.NewEnv("DISABLE_WELCOME_MESSAGE", "true"),
-			"/opt/bitnami/scripts/postgresql-repmgr/entrypoint.sh",
-			"repmgr", "--config-file=/opt/bitnami/repmgr/conf/repmgr.conf",
-			"service", "status", "--csv",
-		)
-
-		var buf bytes.Buffer
-		var errBuf strings.Builder
-		if err := client.Exec(ctx, kubernetes.ExecOptions{
-			Pod:    matched[0],
-			Cmd:    cmd.String(),
-			Stdout: &buf,
-			Stderr: &errBuf,
-		}); err != nil {
-			return pods, fmt.Errorf("%w: %s", err, errBuf.String())
-		}
-
-		var primaryName string
-		r := csv.NewReader(&buf)
-		for {
-			row, err := r.Read()
-			if err != nil {
-				if errors.Is(err, io.EOF) {
-					break
-				}
-				return pods, err
-			}
-			if row[2] == rolePrimary {
-				primaryName = row[1]
-				break
-			}
+		roles, err := db.repmgrRoles(ctx, client, matched[0])
+		if err != nil {
+			return pods, err
 		}
 
 		for _, pod := range matched {
-			if pod.Name == primaryName {
+			if roles[pod.Name] == rolePrimary {
 				preferred = append(preferred, pod)
 				break
 			}
@@ -206,6 +180,127 @@ func (db Postgres) FilterPods(
 	}
 
 	return preferred, nil
+}
+
+// FilterReplicaPods returns the replicas that belong to the same cluster as primary.
+func (db Postgres) FilterReplicaPods(
+	ctx context.Context,
+	client kubernetes.KubeClient,
+	primary corev1.Pod,
+) ([]corev1.Pod, error) {
+	logger := slog.With("dialect", db.Name(), "primary", primary.Name)
+
+	switch {
+	case db.primaryQuery().Matches(primary):
+		// bitnami/postgres
+		// Read replicas are excluded by PodFilters, so look them up by the primary's instance.
+		instance, ok := primary.Labels[labelInstance]
+		if !ok || primary.Labels[labelComponent] == "" {
+			return nil, nil
+		}
+		logger.Debug("Finding Bitnami read replicas")
+		return client.GetPodsFiltered(ctx, filter.And{
+			filter.Label{
+				Name:     labelName,
+				Operator: selection.In,
+				Values:   []string{dialectPostgresql, dialectPostgres},
+			},
+			filter.Label{
+				Name:     labelComponent,
+				Operator: selection.In,
+				Values:   []string{"read", roleReplica},
+			},
+			filter.Label{Name: labelInstance, Value: instance},
+		})
+	case db.postgresqlHaQuery().Matches(primary):
+		// bitnami/postgresql-ha
+		logger.Debug("Querying Bitnami repmgr for standby instances")
+		roles, err := db.repmgrRoles(ctx, client, primary)
+		if err != nil {
+			return nil, err
+		}
+		pods, err := client.GetPodsFiltered(ctx, filter.And{
+			db.postgresqlHaQuery(),
+			sameLabel(primary, labelInstance),
+		})
+		if err != nil {
+			return nil, err
+		}
+		replicas := make([]corev1.Pod, 0, len(pods))
+		for _, pod := range pods {
+			if roles[pod.Name] == "standby" {
+				replicas = append(replicas, pod)
+			}
+		}
+		return replicas, nil
+	case db.cnpgQuery().Matches(primary):
+		// CloudNativePG
+		logger.Debug("Finding CloudNativePG replicas")
+		return client.GetPodsFiltered(ctx, filter.And{
+			sameLabel(primary, "cnpg.io/cluster"),
+			filter.Label{Name: "cnpg.io/instanceRole", Value: roleReplica},
+		})
+	case db.zalandoQuery().Matches(primary):
+		// Zalando Postgres Operator
+		logger.Debug("Finding Zalando replicas")
+		return client.GetPodsFiltered(ctx, filter.And{
+			db.zalandoQuery(),
+			sameLabel(primary, "cluster-name"),
+			filter.Label{Name: "spilo-role", Value: roleReplica},
+		})
+	default:
+		return nil, nil
+	}
+}
+
+// sameLabel matches pods with the same value for the given label as pod.
+// If pod does not have the label, pods without the label are matched.
+func sameLabel(pod corev1.Pod, name string) filter.Filter {
+	if v, ok := pod.Labels[name]; ok {
+		return filter.Label{Name: name, Value: v}
+	}
+	return filter.Label{Name: name, Operator: selection.DoesNotExist}
+}
+
+// repmgrRoles queries repmgr for the role of each node in a bitnami/postgresql-ha cluster.
+func (Postgres) repmgrRoles(
+	ctx context.Context,
+	client kubernetes.KubeClient,
+	pod corev1.Pod,
+) (map[string]string, error) {
+	cmd := command.NewBuilder(
+		command.NewEnv("DISABLE_WELCOME_MESSAGE", "true"),
+		"/opt/bitnami/scripts/postgresql-repmgr/entrypoint.sh",
+		"repmgr", "--config-file=/opt/bitnami/repmgr/conf/repmgr.conf",
+		"service", "status", "--csv",
+	)
+
+	var buf bytes.Buffer
+	var errBuf strings.Builder
+	if err := client.Exec(ctx, kubernetes.ExecOptions{
+		Pod:    pod,
+		Cmd:    cmd.String(),
+		Stdout: &buf,
+		Stderr: &errBuf,
+	}); err != nil {
+		return nil, fmt.Errorf("%w: %s", err, errBuf.String())
+	}
+
+	roles := make(map[string]string)
+	r := csv.NewReader(&buf)
+	for {
+		row, err := r.Read()
+		if err != nil {
+			if errors.Is(err, io.EOF) {
+				break
+			}
+			return nil, err
+		}
+		if len(row) > 2 {
+			roles[row[1]] = row[2]
+		}
+	}
+	return roles, nil
 }
 
 func (db Postgres) PasswordEnvs(conf *conftypes.Global) kubernetes.ConfigLookups {
@@ -343,7 +438,7 @@ func (Postgres) baseQuery() filter.Or {
 			filter.Label{
 				Name:     labelComponent,
 				Operator: selection.NotIn,
-				Values:   []string{"read", "replica"},
+				Values:   []string{"read", roleReplica},
 			},
 		},
 		filter.Label{Name: "app", Value: dialectPostgresql},

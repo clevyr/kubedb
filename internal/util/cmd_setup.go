@@ -150,6 +150,13 @@ func DefaultSetup(cmd *cobra.Command, conf *conftypes.Global) error {
 		mask.Add(conf.Password)
 	}
 
+	// Connection details are detected from the primary since replicas may not expose them
+	if conf.Replica && conf.PodName == "" {
+		if replica, ok := discovery.FindReplica(ctx, conf.Client, conf.Dialect, conf.DBPod); ok {
+			conf.DBPod = replica
+		}
+	}
+
 	if db, ok := conf.Dialect.(conftypes.DBCanDisableJob); ok && db.DisableJob() {
 		must.Must(config.K.Set(consts.FlagCreateJob, false))
 	}

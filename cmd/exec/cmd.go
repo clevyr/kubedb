@@ -28,6 +28,7 @@ func New() *cobra.Command {
 	flags.JobPodLabels(cmd)
 	flags.CreateJob(cmd)
 	flags.CreateNetworkPolicy(cmd)
+	flags.Replica(cmd)
 	flags.Port(cmd)
 	flags.Database(cmd)
 	flags.Username(cmd)

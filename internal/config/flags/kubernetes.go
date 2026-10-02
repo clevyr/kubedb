@@ -108,6 +108,13 @@ func Pod(cmd *cobra.Command) {
 	)
 }
 
+func Replica(cmd *cobra.Command) {
+	cmd.Flags().Bool(consts.FlagReplica, false,
+		"Connect to a read replica instead of the primary (falls back to the primary if none are ready)",
+	)
+	must.Must(cmd.RegisterFlagCompletionFunc(consts.FlagReplica, completion.BoolCompletion))
+}
+
 func JobPodLabels(cmd *cobra.Command) {
 	cmd.Flags().StringToString(consts.FlagJobPodLabels, map[string]string{}, "Pod labels to add to the job")
 	must.Must(cmd.RegisterFlagCompletionFunc(consts.FlagJobPodLabels, cobra.NoFileCompletions))

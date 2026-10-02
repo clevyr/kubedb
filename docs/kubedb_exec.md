@@ -25,6 +25,7 @@ kubedb exec [flags]
       --opts string                     Additional options to pass to the database client command
   -p, --password string                 Database password (default discovered)
       --port uint16                     Database port (default discovered)
+      --replica                         Connect to a read replica instead of the primary (falls back to the primary if none are ready)
   -U, --username string                 Database username (default discovered)
 ```
 

@@ -17,6 +17,7 @@ type Result struct {
 	Pods    []corev1.Pod
 }
 
+// Discover finds database pods.
 func Discover(ctx context.Context, client kubernetes.KubeClient, podName, dialectName string) ([]Result, error) {
 	var pods []corev1.Pod
 	if podName != "" {
@@ -79,4 +80,49 @@ func Discover(ctx context.Context, client kubernetes.KubeClient, podName, dialec
 	}
 
 	return results, nil
+}
+
+// FindReplica returns a ready read replica of the given primary.
+// Returns false if the dialect does not support replicas or none are ready.
+func FindReplica(
+	ctx context.Context,
+	client kubernetes.KubeClient,
+	dialect conftypes.Database,
+	primary corev1.Pod,
+) (corev1.Pod, bool) {
+	logger := slog.With("dialect", dialect.Name())
+
+	db, ok := dialect.(conftypes.DBReplicaFilterer)
+	if !ok {
+		logger.Warn("Replica discovery is not supported for this database; using primary")
+		return corev1.Pod{}, false
+	}
+
+	replicas, err := db.FilterReplicaPods(ctx, client, primary)
+	if err != nil {
+		logger.Warn("Could not query replica instances; using primary", "error", err)
+		return corev1.Pod{}, false
+	}
+
+	for _, pod := range replicas {
+		if isPodReady(pod) {
+			logger.Debug("Found replica", "pod", pod.Name)
+			return pod, true
+		}
+	}
+
+	logger.Warn("No ready replica found; using primary")
+	return corev1.Pod{}, false
+}
+
+func isPodReady(pod corev1.Pod) bool {
+	if pod.Status.Phase != corev1.PodRunning || pod.DeletionTimestamp != nil {
+		return false
+	}
+	for _, cond := range pod.Status.Conditions {
+		if cond.Type == corev1.PodReady {
+			return cond.Status == corev1.ConditionTrue
+		}
+	}
+	return false
 }

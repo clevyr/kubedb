@@ -29,6 +29,7 @@ func New() *cobra.Command {
 		ValidArgsFunction: localPortCompletion,
 	}
 
+	flags.Replica(cmd)
 	flags.Port(cmd)
 
 	cmd.Flags().StringSlice(consts.FlagAddress, []string{"127.0.0.1", "::1"}, "Local listen address")

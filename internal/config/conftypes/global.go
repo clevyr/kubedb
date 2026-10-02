@@ -23,6 +23,7 @@ type Global struct {
 	CreateJob           bool              `koanf:"create-job"`
 	CreateNetworkPolicy bool              `koanf:"create-network-policy"`
 	PodName             string            `koanf:"pod"`
+	Replica             bool              `koanf:"replica"`
 	Job                 *batchv1.Job      `koanf:"-"`
 	JobPod              corev1.Pod        `koanf:"-"`
 	JobPodLabels        map[string]string `koanf:"job-pod-labels"`

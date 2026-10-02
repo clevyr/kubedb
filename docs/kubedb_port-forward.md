@@ -20,6 +20,7 @@ kubedb port-forward [local_port] [flags]
   -h, --help                 help for port-forward
       --listen-port uint16   Local listen port (default discovered)
       --port uint16          Database port (default discovered)
+      --replica              Connect to a read replica instead of the primary (falls back to the primary if none are ready)
 ```
 
 ### Options inherited from parent commands

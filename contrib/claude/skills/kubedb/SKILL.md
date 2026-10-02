@@ -29,6 +29,7 @@ or ask the user before reaching for kubectl.
 ## Common flags
 
 - Always pass `-n` and `--context` so the transcript shows which cluster was touched.
+- `--replica` targets a read replica for read-only work (see below).
 - `--pod` picks a specific pod when discovery chooses the wrong one.
 - `--dialect` forces the database type when a namespace has more than one.
 - `--log-level warn` hides kubedb's own log lines when you need to parse output.
@@ -61,27 +62,23 @@ kubedb exec -n prod -c 'db.orders.find({status:"failed"}).limit(5)'
 kubedb exec -n cache -c "INFO memory"
 ```
 
-## Read-only queries on CloudNativePG: use a replica
+## Read-only work on Postgres: use `--replica`
 
-kubedb targets the primary by default. For read-only queries on a CloudNativePG (CNPG)
-cluster, target a replica and skip the Job:
+kubedb targets the primary by default. For read-only queries, dumps, or port-forwards
+against Postgres, pass `--replica` to use a ready read replica instead:
 
 ```sh
-kubectl --context <ctx> -n <namespace> get clusters.postgresql.cnpg.io   # cluster name
-REPLICA=$(kubectl --context <ctx> -n <namespace> get pods \
-  -l cnpg.io/cluster=<cluster>,cnpg.io/instanceRole=replica \
-  --field-selector=status.phase=Running -o jsonpath='{.items[0].metadata.name}')
-kubedb exec --context <ctx> -n <namespace> --pod "$REPLICA" --create-job=false -c "SELECT ..."
+kubedb exec --context <ctx> -n <namespace> --replica -c "SELECT ..."
+kubedb dump --context <ctx> -n <namespace> --replica dump.sql.gz
 ```
 
-- Look up the replica every time. Pod names don't show the role, and failovers move the primary.
-- If the lookup is empty, the cluster has one instance. Drop `--pod` and `--create-job=false`.
-- Replicas reject writes and can't block migrations on the primary, so skipping the Job is safe here.
-- Add a `LIMIT` to exploratory queries. Without a Job, `psql` runs inside the replica's
-  container and a huge result set uses its memory.
+- It works with CloudNativePG, the Zalando operator, and Bitnami `postgresql` / `postgresql-ha`.
+- If there's no ready replica, or the database isn't Postgres, kubedb logs a warning and
+  falls back to the primary. That makes `--replica` safe on single-instance clusters.
+- Replicas reject writes, so leave out `--replica` for anything that modifies data.
 - Replicas can lag slightly. Use the primary when you need a write that just happened.
-
-Everything else keeps the default Job: primaries, writes, dumps, restores, and other databases.
+- Long dumps on a replica can be canceled by replication conflicts. If that happens,
+  retry without `--replica`.
 
 ## Dump
 
@@ -118,9 +115,9 @@ pass one explicitly. Run it in the background and stop it when done.
 
 By default kubedb runs the client in a short-lived Job with a NetworkPolicy, not inside the
 database pod. This keeps a stuck or disconnected command from lingering in the database
-container, where a zombie `pg_dump` has blocked app migrations before. Only pass
-`--create-job=false` for replica reads as above, or when the cluster forbids Jobs and the
-user agrees.
+container, where a zombie `pg_dump` has blocked app migrations before. Keep the Job with
+`--replica` too, because it can fall back to the primary. Only pass `--create-job=false` when
+the cluster forbids Jobs and the user agrees.
 
 Config lives at `~/.config/kubedb/config.yaml`, and any flag can be set with a `KUBEDB_`
 environment variable. Full reference: https://github.com/clevyr/kubedb/blob/main/docs/kubedb.md
