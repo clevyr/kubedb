@@ -131,7 +131,7 @@ func (Redis) ExecCommand(conf *conftypes.Exec) *command.Builder {
 		"exec", command.Raw(`"$(which redis-cli || which valkey-cli)"`), "-h", conf.Host,
 	)
 	if conf.Password != "" {
-		cmd.Unshift(command.NewEnv("REDISCLI_AUTH", conf.Password))
+		cmd.Unshift(conf.PasswordArg("REDISCLI_AUTH"))
 	}
 	if conf.Port != 0 {
 		cmd.Push("-p", strconv.Itoa(int(conf.Port)))

@@ -51,7 +51,7 @@ func (Meilisearch) DumpCommand(conf *conftypes.Dump) *command.Builder {
 		"sh", "-c", dumpScript,
 	)
 	if conf.Password != "" {
-		cmd.Unshift(command.NewEnv("MEILI_MASTER_KEY", conf.Password))
+		cmd.Unshift(conf.PasswordArg("MEILI_MASTER_KEY"))
 	}
 	return cmd
 }
@@ -62,7 +62,7 @@ var restoreScript string
 func (Meilisearch) RestoreCommand(conf *conftypes.Restore, _ sqlformat.Format) *command.Builder {
 	cmd := command.NewBuilder("sh", "-c", restoreScript)
 	if conf.Password != "" {
-		cmd.Unshift(command.NewEnv("MEILI_MASTER_KEY", conf.Password))
+		cmd.Unshift(conf.PasswordArg("MEILI_MASTER_KEY"))
 	}
 	return cmd
 }

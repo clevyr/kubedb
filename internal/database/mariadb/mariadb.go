@@ -115,7 +115,7 @@ func (MariaDB) newCmd(conf *conftypes.Global, p ...any) *command.Builder {
 		cmd.Push("--user=" + conf.Username)
 	}
 	if conf.Password != "" {
-		cmd.Unshift(command.NewEnv("MYSQL_PWD", conf.Password))
+		cmd.Unshift(conf.PasswordArg("MYSQL_PWD"))
 	}
 	return cmd
 }

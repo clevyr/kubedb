@@ -50,3 +50,7 @@ func TestNewEnv(t *testing.T) {
 		})
 	}
 }
+
+func TestVar_Quote(t *testing.T) {
+	assert.Equal(t, `"${PASSWORD}"`, Var("PASSWORD").Quote())
+}

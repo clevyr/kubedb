@@ -331,7 +331,7 @@ func (Postgres) newCmd(conf *conftypes.Global, p ...any) *command.Builder {
 		cmd.Push("--username=" + conf.Username)
 	}
 	if conf.Password != "" {
-		cmd.Unshift(command.NewEnv("PGPASSWORD", conf.Password))
+		cmd.Unshift(conf.PasswordArg("PGPASSWORD"))
 	}
 	if conf.Database != "" {
 		cmd.Push("--dbname=" + conf.Database)

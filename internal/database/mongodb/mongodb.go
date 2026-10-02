@@ -139,7 +139,7 @@ func (db MongoDB) newCmd(conf *conftypes.Global, p ...any) *command.Builder {
 		cmd.Push("--username=" + conf.Username)
 	}
 	if conf.Password != "" {
-		cmd.Push("--password=" + conf.Password)
+		cmd.Push(conf.PasswordArg("--password"))
 	}
 	return cmd
 }

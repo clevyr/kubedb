@@ -11,15 +11,30 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
+// ConfigValue is a value discovered from a pod's config, along with where it is stored.
+type ConfigValue struct {
+	Value string
+
+	// Container is the container that exposes the value via EnvName or File.
+	Container string
+	// EnvName is the name of the env var that holds the value within Container.
+	EnvName string
+	// File is the path to a file that holds the value within Container.
+	File string
+
+	// Source references the Secret or ConfigMap key that holds the value.
+	Source *corev1.EnvVarSource
+}
+
 type ConfigLookup interface {
-	GetValue(ctx context.Context, client KubeClient, pod corev1.Pod) (string, error)
+	GetValue(ctx context.Context, client KubeClient, pod corev1.Pod) (ConfigValue, error)
 }
 
 type ConfigLookups []ConfigLookup
 
-func (c ConfigLookups) Search(ctx context.Context, client KubeClient, pod corev1.Pod) (string, error) {
+func (c ConfigLookups) Search(ctx context.Context, client KubeClient, pod corev1.Pod) (ConfigValue, error) {
 	if len(c) == 0 {
-		return "", nil
+		return ConfigValue{}, nil
 	}
 
 	errs := make([]error, 0, len(c))
@@ -30,7 +45,7 @@ func (c ConfigLookups) Search(ctx context.Context, client KubeClient, pod corev1
 		}
 		errs = append(errs, err)
 	}
-	return "", errors.Join(errs...)
+	return ConfigValue{}, errors.Join(errs...)
 }
 
 type LookupEnv []string
@@ -43,9 +58,9 @@ var (
 )
 
 //nolint:gocognit,funlen
-func (e LookupEnv) GetValue(ctx context.Context, client KubeClient, pod corev1.Pod) (string, error) {
+func (e LookupEnv) GetValue(ctx context.Context, client KubeClient, pod corev1.Pod) (ConfigValue, error) {
 	if len(e) == 0 {
-		return "", ErrNoEnvNames
+		return ConfigValue{}, ErrNoEnvNames
 	}
 
 	for _, lookupName := range e {
@@ -53,33 +68,39 @@ func (e LookupEnv) GetValue(ctx context.Context, client KubeClient, pod corev1.P
 			for _, env := range container.Env {
 				switch env.Name {
 				case lookupName:
+					found := ConfigValue{Container: container.Name, EnvName: env.Name}
 					if env.Value != "" {
-						return env.Value, nil
+						found.Value = env.Value
+						return found, nil
 					}
 					if env.ValueFrom != nil {
 						if env.ValueFrom.SecretKeyRef != nil {
 							secretKeyRef := env.ValueFrom.SecretKeyRef
 							secret, err := client.Secrets().Get(ctx, secretKeyRef.Name, metav1.GetOptions{})
 							if err != nil {
-								return "", err
+								return ConfigValue{}, err
 							}
 							data, ok := secret.Data[secretKeyRef.Key]
 							if !ok {
-								return "", fmt.Errorf("%w: %v", ErrSecretDoesNotHaveKey, secretKeyRef)
+								return ConfigValue{}, fmt.Errorf("%w: %v", ErrSecretDoesNotHaveKey, secretKeyRef)
 							}
-							return string(data), nil
+							found.Value = string(data)
+							found.Source = &corev1.EnvVarSource{SecretKeyRef: secretKeyRef}
+							return found, nil
 						}
 						if env.ValueFrom.ConfigMapKeyRef != nil {
 							configMapRef := env.ValueFrom.ConfigMapKeyRef
 							configMap, err := client.ConfigMaps().Get(ctx, configMapRef.Name, metav1.GetOptions{})
 							if err != nil {
-								return "", err
+								return ConfigValue{}, err
 							}
 							data, ok := configMap.Data[configMapRef.Key]
 							if !ok {
-								return "", fmt.Errorf("%w: %v", ErrConfigMapDoesNotHaveKey, configMapRef)
+								return ConfigValue{}, fmt.Errorf("%w: %v", ErrConfigMapDoesNotHaveKey, configMapRef)
 							}
-							return data, nil
+							found.Value = data
+							found.Source = &corev1.EnvVarSource{ConfigMapKeyRef: configMapRef}
+							return found, nil
 						}
 					}
 				case lookupName + "_FILE":
@@ -89,7 +110,13 @@ func (e LookupEnv) GetValue(ctx context.Context, client KubeClient, pod corev1.P
 						for _, volume := range container.VolumeMounts {
 							mountPath := path.Clean(volume.MountPath)
 							if mountPath == base || (volume.SubPath == key && mountPath == path.Clean(env.Value)) {
-								return LookupSecretVolume{Name: volume.Name, Key: key}.GetValue(ctx, client, pod)
+								found, err := LookupSecretVolume{Name: volume.Name, Key: key}.GetValue(ctx, client, pod)
+								if err != nil {
+									return ConfigValue{}, err
+								}
+								found.Container = container.Name
+								found.File = env.Value
+								return found, nil
 							}
 						}
 					}
@@ -100,28 +127,44 @@ func (e LookupEnv) GetValue(ctx context.Context, client KubeClient, pod corev1.P
 				if source.SecretRef != nil {
 					secret, err := client.Secrets().Get(ctx, source.SecretRef.Name, metav1.GetOptions{})
 					if err != nil {
-						return "", err
+						return ConfigValue{}, err
 					}
 					data, ok := secret.Data[lookupName]
 					if ok {
-						return string(data), nil
+						return ConfigValue{
+							Value:     string(data),
+							Container: container.Name,
+							EnvName:   source.Prefix + lookupName,
+							Source: &corev1.EnvVarSource{SecretKeyRef: &corev1.SecretKeySelector{
+								LocalObjectReference: source.SecretRef.LocalObjectReference,
+								Key:                  lookupName,
+							}},
+						}, nil
 					}
 				}
 				if source.ConfigMapRef != nil {
 					configMap, err := client.ConfigMaps().Get(ctx, source.ConfigMapRef.Name, metav1.GetOptions{})
 					if err != nil {
-						return "", err
+						return ConfigValue{}, err
 					}
 					data, ok := configMap.Data[lookupName]
 					if ok {
-						return data, nil
+						return ConfigValue{
+							Value:     data,
+							Container: container.Name,
+							EnvName:   source.Prefix + lookupName,
+							Source: &corev1.EnvVarSource{ConfigMapKeyRef: &corev1.ConfigMapKeySelector{
+								LocalObjectReference: source.ConfigMapRef.LocalObjectReference,
+								Key:                  lookupName,
+							}},
+						}, nil
 					}
 				}
 			}
 		}
 	}
 
-	return "", fmt.Errorf("%w: %s", ErrEnvNoExist, strings.Join(e, ", "))
+	return ConfigValue{}, fmt.Errorf("%w: %s", ErrEnvNoExist, strings.Join(e, ", "))
 }
 
 type LookupNamedSecret struct {
@@ -129,20 +172,26 @@ type LookupNamedSecret struct {
 	Key  string
 }
 
-func (f LookupNamedSecret) GetValue(ctx context.Context, client KubeClient, _ corev1.Pod) (string, error) {
+func (f LookupNamedSecret) GetValue(ctx context.Context, client KubeClient, _ corev1.Pod) (ConfigValue, error) {
 	if f.Name == "" || f.Key == "" {
-		return "", ErrNoEnvNames
+		return ConfigValue{}, ErrNoEnvNames
 	}
 
 	secret, err := client.Secrets().Get(ctx, f.Name, metav1.GetOptions{})
 	if err != nil {
-		return "", err
+		return ConfigValue{}, err
 	}
 
 	if value, ok := secret.Data[f.Key]; ok {
-		return string(value), nil
+		return ConfigValue{
+			Value: string(value),
+			Source: &corev1.EnvVarSource{SecretKeyRef: &corev1.SecretKeySelector{
+				Name: f.Name,
+				Key:  f.Key,
+			}},
+		}, nil
 	}
-	return "", fmt.Errorf("%w: %s", ErrSecretDoesNotHaveKey, f.Key)
+	return ConfigValue{}, fmt.Errorf("%w: %s", ErrSecretDoesNotHaveKey, f.Key)
 }
 
 type LookupSecretVolume struct {
@@ -155,23 +204,23 @@ var (
 	ErrNoSecretVolume   = errors.New("secret volume does not exist")
 )
 
-func (f LookupSecretVolume) GetValue(ctx context.Context, client KubeClient, pod corev1.Pod) (string, error) {
+func (f LookupSecretVolume) GetValue(ctx context.Context, client KubeClient, pod corev1.Pod) (ConfigValue, error) {
 	if f.Name == "" || f.Key == "" {
-		return "", ErrNoEnvNames
+		return ConfigValue{}, ErrNoEnvNames
 	}
 
 	var secretName string
 	for _, volume := range pod.Spec.Volumes {
 		if volume.Name == f.Name {
 			if volume.Secret == nil {
-				return "", fmt.Errorf("%w: %v", ErrNotASecretVolume, f.Name)
+				return ConfigValue{}, fmt.Errorf("%w: %v", ErrNotASecretVolume, f.Name)
 			}
 			secretName = volume.Secret.SecretName
 			break
 		}
 	}
 	if secretName == "" {
-		return "", fmt.Errorf("%w: %v", ErrNoSecretVolume, f.Name)
+		return ConfigValue{}, fmt.Errorf("%w: %v", ErrNoSecretVolume, f.Name)
 	}
 
 	return LookupNamedSecret{Name: secretName, Key: f.Key}.GetValue(ctx, client, pod)
@@ -179,6 +228,6 @@ func (f LookupSecretVolume) GetValue(ctx context.Context, client KubeClient, pod
 
 type LookupDefault string
 
-func (l LookupDefault) GetValue(context.Context, KubeClient, corev1.Pod) (string, error) {
-	return string(l), nil
+func (l LookupDefault) GetValue(context.Context, KubeClient, corev1.Pod) (ConfigValue, error) {
+	return ConfigValue{Value: string(l)}, nil
 }

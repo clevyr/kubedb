@@ -17,3 +17,10 @@ type Env struct {
 func (e Env) Quote() string {
 	return e.Key + "=" + shellescape.Quote(e.Value)
 }
+
+// Var references a shell variable. It is expanded by the shell.
+type Var string
+
+func (v Var) Quote() string {
+	return `"${` + string(v) + `}"`
+}
