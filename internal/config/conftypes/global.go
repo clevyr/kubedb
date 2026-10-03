@@ -26,7 +26,6 @@ type Global struct {
 	PodName             string            `koanf:"pod"`
 	Replica             bool              `koanf:"replica"`
 	Job                 *batchv1.Job      `koanf:"-"`
-	JobSecret           *corev1.Secret    `koanf:"-"`
 	JobPod              corev1.Pod        `koanf:"-"`
 	JobPodLabels        map[string]string `koanf:"job-pod-labels"`
 	DBPod               corev1.Pod        `koanf:"-"`

@@ -351,7 +351,7 @@ func createJob(ctx context.Context, conf *conftypes.Global, actionName string) e
 
 	if secretRef != nil {
 		if err := createJobSecret(ctx, conf, standardLabels); err != nil {
-			deleteJob(conf)
+			Teardown(conf)
 			return err
 		}
 	}
@@ -363,9 +363,10 @@ func createJob(ctx context.Context, conf *conftypes.Global, actionName string) e
 	if conf.CreateNetworkPolicy {
 		jobPodKey, jobPodVal := jobPodNameLabel(conf, conf.Job)
 		policy := networkingv1.NetworkPolicy{
-			Name:      conf.Job.Name,
-			Namespace: conf.Client.Namespace,
-			Labels:    standardLabels,
+			Name:            conf.Job.Name,
+			Namespace:       conf.Client.Namespace,
+			Labels:          standardLabels,
+			OwnerReferences: jobOwnerReferences(conf.Job),
 			Spec: networkingv1.NetworkPolicySpec{
 				PodSelector: metav1.LabelSelector{MatchLabels: map[string]string{
 					jobPodKey: jobPodVal,
@@ -433,20 +434,28 @@ func createNamedJob(
 
 func createJobSecret(ctx context.Context, conf *conftypes.Global, labels map[string]string) error {
 	secret := corev1.Secret{
-		Name:      conf.Job.Name,
-		Namespace: conf.Namespace,
-		Labels:    labels,
-		Type:      corev1.SecretTypeOpaque,
-		Data:      map[string][]byte{jobSecretPasswordKey: []byte(conf.Password)},
+		Name:            conf.Job.Name,
+		Namespace:       conf.Namespace,
+		Labels:          labels,
+		OwnerReferences: jobOwnerReferences(conf.Job),
+		Type:            corev1.SecretTypeOpaque,
+		Data:            map[string][]byte{jobSecretPasswordKey: []byte(conf.Password)},
 	}
 
 	slog.Debug("Creating password secret", "namespace", conf.Namespace)
-	var err error
-	conf.JobSecret, err = conf.Client.Secrets().Create(ctx, &secret, metav1.CreateOptions{})
-	if err != nil {
-		conf.JobSecret = nil
-	}
+	_, err := conf.Client.Secrets().Create(ctx, &secret, metav1.CreateOptions{})
 	return err
+}
+
+// jobOwnerReferences returns owner references to the job. Owned resources are
+// garbage collected when the job is deleted.
+func jobOwnerReferences(job *batchv1.Job) []metav1.OwnerReference {
+	return []metav1.OwnerReference{{
+		APIVersion: batchv1.SchemeGroupVersion.String(),
+		Kind:       "Job",
+		Name:       job.Name,
+		UID:        job.UID,
+	}}
 }
 
 var (
