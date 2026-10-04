@@ -23,7 +23,7 @@ func Teardown(conf *conftypes.Global) {
 	opts := metav1.DeleteOptions{PropagationPolicy: &foreground}
 
 	jobLog := slog.With("name", conf.Job.Name)
-	jobLog.Info("Cleaning up job")
+	jobLog.Debug("Cleaning up job")
 	if err := conf.Client.Jobs().Delete(ctx, conf.Job.Name, opts); err != nil {
 		jobLog.Error("Failed to delete job", "error", err)
 	}

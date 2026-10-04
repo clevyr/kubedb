@@ -70,7 +70,7 @@ func (action Restore) Run(ctx context.Context) error { //nolint:gocognit
 		"pod", action.DBPod.Name,
 	)
 
-	actionLog.Info("Ready to restore database")
+	actionLog.Debug("Ready to restore database")
 
 	startTime := time.Now()
 	bar := progressbar.New(os.Stderr, -1, "uploading", action.Progress, action.Spinner)

@@ -343,7 +343,7 @@ func createJob(ctx context.Context, conf *conftypes.Global, actionName string) e
 		},
 	}
 
-	nsLog.Info("Creating job")
+	nsLog.Debug("Creating job")
 	var err error
 	if conf.Job, err = createNamedJob(ctx, conf, &job, name, secretRef); err != nil {
 		return err
@@ -468,6 +468,7 @@ func watchJobPod(ctx context.Context, conf *conftypes.Global) error {
 	slog.Info("Waiting for job...",
 		"namespace", conf.Namespace,
 		"job", conf.Job.Name,
+		"pod", conf.DBPod.Name,
 	)
 
 	ctx, cancel := context.WithTimeout(ctx, 5*time.Minute)

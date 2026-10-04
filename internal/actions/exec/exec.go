@@ -20,7 +20,12 @@ type Exec struct {
 }
 
 func (action Exec) Run(ctx context.Context) error {
-	slog.Info("Exec into database",
+	// The job wait log already includes the pod, so only repeat it when no job was created
+	level := slog.LevelDebug
+	if action.Job == nil {
+		level = slog.LevelInfo
+	}
+	slog.Log(ctx, level, "Exec into database",
 		"namespace", action.Client.Namespace,
 		"pod", action.DBPod.Name,
 	)
