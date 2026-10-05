@@ -13,11 +13,9 @@ import (
 
 	"al.essio.dev/pkg/shellescape"
 	"charm.land/huh/v2"
-	"gabe565.com/utils/must"
 	"github.com/clevyr/kubedb/internal/command"
 	"github.com/clevyr/kubedb/internal/config"
 	"github.com/clevyr/kubedb/internal/config/conftypes"
-	"github.com/clevyr/kubedb/internal/consts"
 	"github.com/clevyr/kubedb/internal/discovery"
 	"github.com/clevyr/kubedb/internal/finalizer"
 	"github.com/clevyr/kubedb/internal/kubernetes"
@@ -153,7 +151,7 @@ func DefaultSetup(cmd *cobra.Command, conf *conftypes.Global) error {
 	}
 
 	if db, ok := conf.Dialect.(conftypes.DBCanDisableJob); ok && db.DisableJob() {
-		must.Must(config.K.Set(consts.FlagCreateJob, false))
+		conf.CreateJob = false
 	}
 	if !conf.CreateJob {
 		conf.Host = "127.0.0.1"
