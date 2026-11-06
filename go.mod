@@ -22,7 +22,7 @@ require (
 	github.com/minio/minio-go/v7 v7.3.0
 	github.com/schollz/progressbar/v3 v3.19.1
 	github.com/spf13/cobra v1.10.2
-	github.com/spf13/pflag v1.0.10
+	github.com/spf13/pflag v1.1.0
 	github.com/stretchr/testify v1.12.1
 	golang.org/x/sync v0.23.0
 	golang.org/x/time v0.16.0
