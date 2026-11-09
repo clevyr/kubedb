@@ -5,7 +5,7 @@ go 1.27.1
 require (
 	al.essio.dev/pkg/shellescape v1.6.1
 	charm.land/huh/v2 v2.0.3
-	charm.land/lipgloss/v2 v2.0.6
+	charm.land/lipgloss/v2 v2.1.0
 	cloud.google.com/go/storage v1.69.0
 	gabe565.com/spinners v1.3.0
 	gabe565.com/utils v0.0.0-20260511235214-4059440fa83b
