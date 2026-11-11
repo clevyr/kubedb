@@ -27,7 +27,7 @@ require (
 	golang.org/x/sync v0.23.0
 	golang.org/x/time v0.16.0
 	google.golang.org/api v0.300.0
-	gopkg.in/ini.v1 v1.67.3
+	gopkg.in/ini.v1 v1.68.0
 	k8s.io/api v0.37.1
 	k8s.io/apimachinery v0.37.1
 	k8s.io/client-go v0.37.1
